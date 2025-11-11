@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Venv
+.venv/
+venv/
+
+# OS & IDE
+.DS_Store
+.vscode/
+
+# Future
+.env
+game.db
