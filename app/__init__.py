@@ -5,8 +5,12 @@
 from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
+
+# HELPERS
 from .db import SessionLocal, init_db
 from .models import Player, Tile
+from .progression import level_for_xp, next_threshold
+
 
 def create_app():
     """Factory that creates and configures the Flask app."""
@@ -106,9 +110,35 @@ def create_app():
             # ADD PLAYER XP
             p = s.get(Player, t.player_id)
             if p:
+                # MVP: +10 XP per successful collect
                 p.xp = (p.xp or 0) + 10
+
+                # Recompute level from xp
+                old_level = p.level or 0
+                new_level = level_for_xp(p.xp)
+                if new_level > old_level:
+                    p.level = new_level
+                    level_up = True
             
             s.commit()
-            return jsonify({"ok": True, "next": t.cooldown_until.isoformat(), "player": {"id": p.id, "xp": p.xp}})
+            return jsonify({
+                "ok": True,
+                "next": t.cooldown_until.isoformat(),
+                "player": {
+                    "id": p.id,
+                    "xp": p.xp,
+                    "level": p.level,
+                    "next_xp": next_threshold(p.level)  # None if max
+                },
+                "level_up": level_up
+            })
+            
+    @app.get("/api/levels")
+    def list_levels():
+        """Return thresholds per level and short tips."""
+        from .progression import LEVEL_THRESHOLDS
+        data = [{"level": i, "xp_required": xp} for i, xp in enumerate(LEVEL_THRESHOLDS)]
+        return jsonify({"thresholds": data})
 
     return app
+
