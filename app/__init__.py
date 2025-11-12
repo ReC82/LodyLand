@@ -9,7 +9,7 @@ from sqlalchemy import select
 # HELPERS
 from .db import SessionLocal, init_db
 from .models import Player, Tile, ResourceStock
-from .progression import level_for_xp, next_threshold
+from .progression import level_for_xp, next_threshold, XP_PER_COLLECT
 
 
 def create_app():
@@ -155,7 +155,7 @@ def create_app():
             level_up = False
             p = s.get(Player, t.player_id)
             if p:
-                p.xp = (p.xp or 0) + 1  # <- 1 XP par collecte (comme demandé)
+                p.xp = (p.xp or 0) + XP_PER_COLLECT  # <- 1 XP par collecte (comme demandé)
                 old_level = p.level or 0
                 new_level = level_for_xp(p.xp)
                 if new_level > old_level:
