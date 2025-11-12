@@ -1,0 +1,181 @@
+Parfait que tout tourne ✅
+Voici la suite en BABY STEPS, centrée gameplay (pas encore de “vraie” UI).
+
+Prochaines étapes (2–3 sprints courts)
+Sprint A — Économie & Ressources (backend only)
+
+Yields & cooldowns par ressource
+
+But: wood/stone/water ne donnent plus tous “1 XP”.
+
+TODO code:
+
+app/progression.py : dictionnaires
+
+YIELD = {"wood": {"xp": 1, "qty": 1, "cooldown": 10}, "stone": {...}, "water": {...}}
+
+collect() : lire ces valeurs → appliquer XP gagné, quantité ajoutée, cooldown spécifique.
+
+Tests: adapter test_api.py pour vérifier un cooldown différent selon la ressource.
+
+Prix de vente fixes + endpoint liste des prix
+
+/api/prices (GET) renvoie { "wood": 1, "stone": 2, "water": 1 } (exemple).
+
+/api/sell existe déjà → s’appuie sur ces prix.
+
+Test: vérifier gain de coins cohérent après vente.
+
+Coûts d’unlock
+
+Règles:
+
+1ère tuile d’une ressource: gratuite
+
+2ème: 5 coins
+
+3ème+: 10 coins (exemple simple)
+
+Implémente dans /api/tiles/unlock (compter combien de tiles resource déjà possédées).
+
+Test: créer 3 tiles “wood”, s’assurer que les coins diminuent.
+
+GitHub Issues suggérées
+
+feat(gameplay): yields/cooldowns per resource
+
+feat(economy): fixed sell prices + GET /api/prices
+
+feat(unlock): cost scaling per resource
+
+Sprint B — Crafting minimal (consommer des ressources → objets)
+
+Schéma & tables
+
+Table recipes (id, item, input_json) — ou hardcodé côté code (plus simple au début).
+
+Table inventory_items (optionnelle maintenant).
+
+MVP rapide: garder les “items craftés” dans ResourceStock aussi (ex: plank, brick) pour éviter une nouvelle table.
+
+Endpoint /api/craft (POST)
+
+Body: { "item": "plank", "qty": 1 }
+
+Vérifie les ressources requises (ex: 2×wood → 1×plank), décrémente, incrémente plank.
+
+Retourne inventaire mis à jour.
+
+Tests
+
+Collecter du wood, craft 1 plank, vérifier décrément/incrément.
+
+GitHub Issues
+
+feat(crafting): /api/craft + recettes en dur (wood→plank, stone→brick…)
+
+test(crafting): happy path + manque ressources
+
+Sprint C — Progression & Map
+
+Cap de tiles par niveau
+
+Exemple: level 0 → 2 tiles max global, level 1 → 4, etc.
+
+Bloquer /api/tiles/unlock si cap atteint.
+
+Test: essayer d’unlock au delà du cap → 403/400.
+
+Quêtes journalières (simple)
+
+Une quête du jour (ex: “Collecter 5 wood”) → récompense XP/coins.
+
+Table ou hardcode + état par joueur (nouvelle table daily_quests ou champs simples dans players).
+
+Endpoints:
+
+/api/quests/today (GET)
+
+/api/quests/claim (POST)
+
+“Map expansion” placeholder
+
+Endpoint /api/map/expand qui consomme coins/diams et augmente le cap de tiles (simple compteur map_size dans players).
+
+Test: vérifier coins consommés + cap augmenté.
+
+GitHub Issues
+
+feat(progress): tile cap per level
+
+feat(quests): daily quest MVP
+
+feat(map): /api/map/expand augmente cap
+
+Ordre concret (tout petit pas par petit pas)
+
+Yields/cooldowns par ressource
+
+Modifs: progression.py, app/__init__.py (collect)
+
+pytest -q
+
+/api/prices + vendre basé sur ces prix
+
+Modifs: app/__init__.py
+
+Tests vente (déjà en place) → ajuster si besoin.
+
+Coûts d’unlock
+
+Modifs: app/__init__.py (unlock_tile)
+
+pytest -q
+
+Craft minimal
+
+Nouveau: app/crafting.py (recettes)
+
+Endpoint /api/craft
+
+Tests craft
+
+Cap de tiles
+
+Modifs: models.py (field max_tiles ou calcul sur level), unlock_tile
+
+Tests cap
+
+Quête journalière simple
+
+Endpoints /api/quests/today, /api/quests/claim
+
+Tests
+
+Map expand
+
+/api/map/expand
+
+Tests
+
+Fichiers à toucher (proposés)
+
+app/progression.py : YIELD, level_for_xp, next_threshold, tile_caps
+
+app/__init__.py : endpoints (collect, prices, sell, unlock, craft, quests, map)
+
+app/crafting.py : recettes (dict) + helpers
+
+tests/test_api.py : un test par feature (happy path + 1 cas d’erreur)
+
+Rappels commandes utiles
+
+Lancer serveur: python run.py
+
+Lancer tests: pytest -q
+
+Migrations (si schéma change):
+
+alembic revision --autogenerate -m "feat: ..."
+
+alembic upgrade head

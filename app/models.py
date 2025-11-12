@@ -64,3 +64,13 @@ class ResourceStock(Base):
     __table_args__ = (
         UniqueConstraint("player_id", "resource", name="uix_player_resource"),
     )
+    
+class ResourceDef(Base):
+    __tablename__ = "resource_defs"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String, unique=True, index=True)   # ex: "wood"
+    label: Mapped[str] = mapped_column(String)                          # ex: "Wood"
+    base_cooldown: Mapped[int] = mapped_column(Integer, default=10)     # secondes
+    base_sell_price: Mapped[int] = mapped_column(Integer, default=1)    # coins
+    unlock_min_level: Mapped[int] = mapped_column(Integer, default=0)   # niveau requis
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)    

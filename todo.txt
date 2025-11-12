@@ -1,0 +1,137 @@
+1) Framework le plus adapté (et pourquoi)
+
+Backend (API + temps réel) : Flask
+
+Simple, ultra-léger, parfait pour un MVP rapide.
+
+Écosystème riche : Flask-SocketIO (événements temps réel pour cooldowns/tiles), Flask-Login (cookies simples), Flask-Smorest (OpenAPI/Swagger).
+
+ORM solide : SQLAlchemy 2.0 + Alembic (migrations) sur SQLite (dev), pouvant migrer vers Postgres plus tard.
+
+Frontend (client de jeu, mobile friendly, dans le navigateur) :
+
+Phaser 3 pour le gameplay 2D “click-to-collect”.
+
+React + Vite pour l’UI (inventaire, shop, quêtes, profil). Phaser s’intègre côté React via un composant wrapper.
+
+Temps réel / resets / jobs :
+
+Flask-SocketIO (notifications de cooldown, maj de ressources).
+
+APScheduler (coffre quotidien à 00:00, reset quêtes hebdo).
+
+Auth / sessions (simple) :
+
+Cookies de session (Flask-Login). JWT optionnel plus tard si besoin.
+
+Fichiers & assets :
+
+Sprites Craftpix (tu es premium), audio via banques libres (on branchera plus tard).
+
+2) Roadmap hebdo (aujourd’hui → 20/12/2025)
+
+Semaine 1 (11–17 nov) — Fondation & schéma
+
+Repo GitHub, branches main (prod) / dev (test).
+
+Squelette Flask + SQLAlchemy + Alembic + SocketIO.
+
+Modèle DB MVP : players, player_profiles, resources, player_resources, tiles, tools, transactions, quests, quest_runs.
+
+Endpoints base: /auth/login, /player/me, /resources, /tiles/unlock, /collect.
+
+CI lint+tests (GitHub Actions).
+
+Livrable : API locale qui démarre, /docs Swagger dispo, DB créée.
+
+Semaine 2 — Boucle de jeu & cooldowns
+
+Logique collect (main/hache/pioche), coûts en stamina/outil.
+
+Cooldowns par tuile (stockage en DB + push SocketIO “tile_update”).
+
+Craft d’outils v1 (table de craft simple côté React).
+
+Livrable : on clique → on récolte → ressources/XP montent, cooldown visuel OK.
+
+Semaine 3 — Shop PNJ, monnaies, coffre journalier
+
+PNJ achat/vente (coins), esquisser Diams (mock d’achat + récompenses ponctuelles).
+
+Coffre quotidien (streak), réinitialisation via APScheduler.
+
+Balises pour le marché user-to-user (structure DB + endpoints en brouillon).
+
+Livrable : économie basique fonctionnelle + coffre quotidien opérationnel.
+
+Semaine 4 — Quêtes quotidiennes/hebdo & progression
+
+Modèle quêtes avec objectifs dépendant du niveau (graine dispo, etc.).
+
+XP/Level manager (gains par action/quête/craft).
+
+UI quêtes (React), notifications SocketIO “quest_progress”.
+
+Livrable : faire X actions → gains XP/coins/diams, reset hebdo OK.
+
+Semaine 5 — UX mobile, perf & sécurité
+
+Touch controls, responsive UI, compression assets.
+
+Anti-triche minimal (re-vérifs serveur, limites de fréquence).
+
+Logs/metrics (Sentry optionnel, fichiers rotatifs).
+
+Livrable : jouable confort mobile, perfs stables, logs utiles.
+
+Semaine 6 (jusqu’au 20/12) — Stabilisation & pré-prod
+
+Bug bash, équilibrage rapide, sauvegardes DB quotidiennes.
+
+Split test/prod sur ton serveur Xubuntu (systemd + Nginx reverse proxy).
+
+Whitepaper site (MkDocs Material) : features actuelles + roadmap Q1 2026.
+
+Livrable : démo “alpha jouable” + site whitepaper en ligne (ou local).
+
+3) Outils & plugins à installer
+
+Système & gestion env (Xubuntu)
+
+Python 3.11+, poetry (ou uv) pour gérer deps et scripts.
+
+git, pre-commit, nginx, sqlite3, tmux/screen.
+
+VSCode (extensions)
+
+Python, Pylance, Ruff, Black Formatter, isort, GitHub Pull Requests, EditorConfig, SQLite Viewer, TODO Highlight.
+
+Pour frontend : ESLint, Prettier, Tailwind CSS Intellisense (si UI en Tailwind).
+
+Qualité & Tests
+
+ruff, black, isort, mypy (+ plugin SQLAlchemy), pytest, pytest-cov, httpx (tests API), faker.
+
+Backend (Flask)
+
+flask, flask-smorest (OpenAPI & validation), flask-socketio, flask-login, itsdangerous, python-dotenv.
+
+ORM & DB : sqlalchemy 2.x, alembic, sqlite (builtin).
+
+Jobs : apscheduler.
+
+Utilitaires : pydantic (schemas optionnels), loguru (logs).
+
+Frontend
+
+vite, react, phaser, (option : zustand pour état, react-query pour fetch).
+
+Docs & Outils projet
+
+MkDocs Material (whitepaper), Insomnia/Postman (tests API), DB Browser for SQLite, Tiled (si tu fais des maps 2D).
+
+CI/CD
+
+GitHub Actions : jobs “lint”, “test”, “build”.
+
+Déploiement test via rsync/SSH ou docker-compose (si tu veux conteneuriser).

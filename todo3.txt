@@ -1,0 +1,215 @@
+Parfait 👌
+Tu arrives pile au moment charnière du projet : tout ce que tu as construit jusqu’ici (modèle, logique, tests) forme le socle back-end.
+C’est maintenant qu’on va passer du prototype de logique → au gameplay concret, tout en gardant une architecture propre pour que le front-end arrive naturellement ensuite.
+
+🧭 Feuille de route structurée (avant d’avoir une vraie interface joueur)
+
+Je te la découpe en 4 phases — chacune exploitable avec ton groupe test.
+
+Phase 1 – Backend jouable via mini-UI
+
+🎯 Objectif : que tout soit jouable via ton mini-frontend HTML + API REST
+Durée estimée : 1 à 2 week-ends
+
+✅ Ce que tu as déjà
+
+Auth / Player CRUD
+
+Tiles (unlock, collect)
+
+XP & Level system
+
+Coins & sell
+
+Daily chest (MVP)
+
+Tests unitaires OK
+
+🔜 À finir avant de passer au front complet
+
+Seed YAML auto
+
+Loader pour resources.yml, cards.yml, recipes.yml
+
+Rechargement via /api/dev/reseed
+
+Ajout automatique si tables vides au boot
+
+Card system MVP
+
+Table CardDef, CardEffect, PlayerCard
+
+Endpoint /api/cards (GET possession du joueur)
+
+Endpoint /api/card-shop (GET liste achetable)
+
+Endpoint /api/card-shop/buy
+
+Application des boosts (ex: cooldown *0.9)
+
+Craft system MVP
+
+CraftJob + /api/craft + /api/craft/claim
+
+Tests + debug log en console
+
+Streak Daily Chest
+
+Ajout champ daily_streak
+
+Reset si jour manqué, récompense évolutive
+
+Log des événements joueurs
+
+Table player_logs (timestamp, type, message)
+
+Simple endpoint /api/logs pour debug UI
+
+🧩 Interface temporaire :
+
+Un index.html basique avec :
+
+Champ nom joueur (login / création)
+
+Boutons : Collect, Sell, Daily, Shop, Craft
+
+Sections : Ressources / Cartes / Craft / Logs
+
+🎮 À ce stade :
+
+Tes 2–3 testeurs peuvent vraiment jouer
+
+Tout le gameplay est backend + REST
+
+Tu récoltes du feedback sur les boucles de progression
+
+Phase 2 – Front Next.js (UI joueur)
+
+🎯 Objectif : interface moderne, immersive et testable
+Durée estimée : 2 à 3 week-ends
+
+🔧 Stack
+
+Next.js (App Router)
+
+TypeScript
+
+Bootstrap ou Tailwind
+
+API calls via fetch (backend Flask)
+
+🧱 Écrans à construire
+
+Login / Register
+
+Nom du joueur → cookie player_id
+
+Reconnexion automatique
+
+Dashboard principal
+
+Affiche : niveau, XP, coins, diams
+
+Sections “Ressources”, “Cartes”, “Craft”
+
+Ressources
+
+Liste de tuiles → bouton Collect (cooldown visuel)
+
+Affichage du stock
+
+Daily Chest
+
+Coffre avec effet visuel + streak compteur
+
+Shop
+
+Liste cartes achetables (affiche coût, conditions)
+
+Bouton “Acheter”
+
+Craft Table
+
+Liste des recettes disponibles
+
+Bouton “Craft” + timer + “Claim”
+
+Notifications / logs
+
+Zone texte ou pop-ups “+1 XP”, “+5 coins”, “Craft terminé !”
+
+🧩 Backend inchangé :
+Le front ne fait que consommer les endpoints déjà en place.
+
+Phase 3 – Game feel & polish
+
+🎯 Objectif : rendre l’expérience fluide et gratifiante
+Durée : 2 à 4 semaines (par itérations avec tes testeurs)
+
+🎨 Améliorations
+
+Animations (coffre, collecte, craft terminé)
+
+Barre d’XP et effets visuels de level up
+
+Sons d’action (collect, level up, shop)
+
+Avatars et mini-carte (vue de l’île du joueur)
+
+Message du jour / tips
+
+🧠 Gameplay tuning
+
+Ajustement XP / coûts / cooldowns
+
+Rééquilibrage selon feedback
+
+Ajout de 2–3 nouvelles ressources et 2 cartes rares
+
+Quêtes journalières simples
+
+Phase 4 – Backend "multi-joueurs" & persistance
+
+🎯 Objectif : passer d’un MVP local à un serveur stable
+Durée : 2 semaines
+
+🔐 Tâches
+
+Passage à PostgreSQL
+
+Authentification JWT (ou simple cookie signé)
+
+Gestion multi-sessions
+
+Sauvegardes auto
+
+Leaderboard (XP ou streak)
+
+Monitoring (Prometheus ou logs simples)
+
+🧱 En résumé — plan clair
+Étape	Ce que tu gagnes	Statut
+Phase 1	Système complet jouable via mini-UI	🚧 En cours
+Phase 2	Interface Next.js moderne	⏳ À venir
+Phase 3	Effets, son, polish, quêtes	⏳ Planifié
+Phase 4	Persistance multi-joueur	🔜 Long terme
+🧭 Ma recommandation immédiate (ce week-end)
+
+Focalise sur la Phase 1 jusqu’au bout :
+
+→ que le jeu soit entièrement jouable via API + mini UI simple
+→ card system, craft, streak, logs
+
+Une fois cette étape terminée, tes 2–3 testeurs pourront :
+
+créer leur compte,
+
+farmer des ressources,
+
+acheter leurs premières cartes,
+
+fabriquer des objets,
+
+réclamer leur coffre quotidien.
+
+Et toi tu pourras récupérer un feedback gameplay sans encore gérer de frontend complexe.

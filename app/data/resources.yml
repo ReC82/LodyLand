@@ -1,0 +1,28 @@
+resources:
+  - key: branch
+    label: Branches
+    base_cooldown: 5
+    base_sell_price: 1
+    unlock_min_level: 0
+    enabled: true
+
+  - key: palm_leaf
+    label: Palm Leaf
+    base_cooldown: 6
+    base_sell_price: 1
+    unlock_min_level: 0
+    enabled: true
+
+  - key: stone
+    label: Stone
+    base_cooldown: 8
+    base_sell_price: 1
+    unlock_min_level: 0
+    enabled: true
+
+  - key: wood
+    label: Wood
+    base_cooldown: 10
+    base_sell_price: 2
+    unlock_min_level: 1
+    enabled: true
