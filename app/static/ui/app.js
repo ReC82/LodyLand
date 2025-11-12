@@ -43,7 +43,9 @@ function ensureTicker() {
 
 function updateCountdownUI() {
   // Update the Collect panel button state
-  const tileIdVal = Number(($("#tileId").value || "").trim());
+  const input = $("tileId");
+  if (!input) return;
+  const tileIdVal = Number((input.value || "").trim());
   const btn = $("collectBtn");
   if (tileIdVal && cooldowns[tileIdVal]) {
     const sec = secondsUntil(cooldowns[tileIdVal]);
@@ -147,39 +149,51 @@ function renderTiles(list) {
 }
 
 
-function renderCollect(resp) {
-  if (!resp) return;
+function renderCollect(r) {
   const btn = $("collectBtn");
 
-  if (resp.ok) {
-    const lu = resp.level_up ? " (LEVEL UP 🎉)" : "";
-    $("collectBox").innerHTML = `OK — next=${resp.next}${lu}`;
+  // Network/HTTP error
+  if (!r || !r.ok) {
+    $("collectBox").innerHTML = `ERR ${r?.status} — ${JSON.stringify(r?.data)}`;
+    btn.disabled = false;
+    return;
+  }
 
-    // enregistre le cooldown pour le tile en cours
-    const input = $("tileId");
-    const tileIdVal = Number((input?.value || "").trim());
-    if (tileIdVal && resp.next) {
-      cooldowns[tileIdVal] = resp.next;
-      ensureTicker();
-      btn.disabled = true;
-    }
-    // Met à jour le player si fourni
-    if (resp.player) {
-      renderPlayer({
-        ...resp.player,
-        next_xp: resp.player.next_xp ?? resp.player.nextXp ?? null,
-      });
-    }
+  const d = r.data; // <-- This is your API JSON (ok, next, player, level_up, ...)
+  if (!d || !d.ok) {
+    $("collectBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+    btn.disabled = false;
+    return;
+  }
 
-    // Refresh inventory on successful collect
-    refreshInventory();
-    refreshTiles();
+  const lu = d.level_up ? " (LEVEL UP 🎉)" : "";
+  $("collectBox").innerHTML = `OK — next=${d.next ?? "-"}`;
 
+  // Start cooldown timer only if backend sent a next time
+  const input = $("tileId");
+  const tileIdVal = Number((input?.value || "").trim());
+  if (tileIdVal && d.next) {
+    cooldowns[tileIdVal] = d.next;   // <-- store ISO until
+    ensureTicker();                  // <-- start 1s interval if not running
+    btn.disabled = true;             // lock button during cooldown
   } else {
-    $("collectBox").innerHTML = `ERR ${resp.status} — ${JSON.stringify(resp.data)}`;
+    // if no cooldown returned, re-enable the button
     btn.disabled = false;
   }
+
+  // Update player (progress bar will refresh here)
+  if (d.player) {
+    renderPlayer({
+      ...d.player,
+      next_xp: d.player.next_xp ?? d.player.nextXp ?? null,
+    });
+  }
+
+  // Live refresh lists
+  refreshInventory();
+  refreshTiles();
 }
+
 
 function renderInventory(list) {
   if (!list || !list.length) {
