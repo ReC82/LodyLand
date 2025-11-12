@@ -350,6 +350,20 @@ async function sell() {
   await refreshInventory();
 }
 
+// Claim daily chest
+async function claimDaily() {
+  const btn = $("dailyBtn");
+  btn.disabled = true;
+  const r = await http("POST", "/api/daily");
+  if (r.ok) {
+    $("dailyBox").innerHTML = `OK — +${r.data.coins_awarded} coins`;
+    // refresh player to reflect new coins/xp
+    await refreshPlayer();
+  } else {
+    $("dailyBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+  }
+  btn.disabled = false;
+}
 
 
 

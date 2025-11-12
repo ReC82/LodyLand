@@ -6,6 +6,7 @@ import json
 import os
 import tempfile
 import pytest
+from uuid import uuid4
 from app import create_app
 from app.db import Base, engine
 from app.progression import XP_PER_COLLECT
@@ -96,8 +97,9 @@ def test_daily_chest_once_per_day():
     app = create_app()
     client = app.test_client()
 
+    name = f"POL-{uuid4().hex[:6]}"
     # Create player
-    rv = client.post("/api/player", json={"name": "DailyMan"})
+    rv = client.post("/api/player", json={"name": name})
     assert rv.status_code == 200
     p = rv.get_json()
     pid = p["id"]
