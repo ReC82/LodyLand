@@ -1,0 +1,78 @@
+<!--
+  File: static/ui/index.html
+  Purpose: Minimal debug UI to exercise the API from a browser.
+  Notes: All code comments are in English as requested.
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lodyland — Debug UI</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, Arial; margin: 16px; }
+    h1 { margin-bottom: 4px; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; min-width: 280px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    label { display:block; font-size: 14px; margin: 6px 0 4px; }
+    input, select, button { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; }
+    button { cursor: pointer; }
+    .ok { color: #0a7; }
+    .warn { color: #c60; }
+    .err { color: #c00; }
+    .muted { color: #666; font-size: 12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eee; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <h1>🧪 Lodyland — Debug UI</h1>
+  <div class="muted">Serveur: <span id="serverUrl" class="mono"></span></div>
+
+  <div class="row">
+    <div class="card">
+      <h3>Player</h3>
+      <label>Nom</label>
+      <input id="playerName" value="Lloyd" />
+      <div class="row">
+        <button onclick="createPlayer()">Créer Player</button>
+        <button onclick="refreshPlayer()">Refresh Player</button>
+      </div>
+      <div id="playerBox" class="mono muted">Aucun player.</div>
+    </div>
+
+    <div class="card">
+      <h3>Tiles</h3>
+      <label>Ressource</label>
+      <select id="resource">
+        <option value="wood">wood</option>
+        <option value="stone">stone</option>
+        <option value="water">water</option>
+      </select>
+      <div class="row">
+        <button onclick="unlockTile()">Unlock tile</button>
+        <button onclick="refreshTiles()">Lister tiles</button>
+      </div>
+      <div id="tilesBox" class="mono muted">Aucune tuile.</div>
+    </div>
+
+    <div class="card">
+      <h3>Collect</h3>
+      <label>ID tuile</label>
+      <input id="tileId" class="mono" placeholder="ex: 1" />
+      <div class="row">
+        <button onclick="collect()">Collect</button>
+      </div>
+      <div id="collectBox" class="mono muted">Pas de collecte encore.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Progression</h3>
+    <div id="progressBox" class="grid"></div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

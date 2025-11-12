@@ -139,6 +139,12 @@ def create_app():
         from .progression import LEVEL_THRESHOLDS
         data = [{"level": i, "xp_required": xp} for i, xp in enumerate(LEVEL_THRESHOLDS)]
         return jsonify({"thresholds": data})
+    
+    # ---- DEV UI (static debug page) ---------------------------------------------
+    @app.get("/ui")
+    def dev_ui():
+        # Serve the minimal debug UI from /static/ui/index.html
+        return app.send_static_file("ui/index.html")
 
     return app
 
