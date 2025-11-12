@@ -46,7 +46,7 @@ def _seed_resources_if_missing():
         {
             "key": "wood",
             "label": "Bois (palmier)",
-            "unlock_min_level": 1,
+            "unlock_min_level": 0,
             "base_cooldown": 10,
             "base_sell_price": 2,
             "enabled": True,
