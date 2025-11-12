@@ -79,7 +79,7 @@ def test_sell_flow():
     rv = client.post("/api/collect", json={"tileId": tile2}); assert rv.status_code == 200
 
     # Sell 2 wood
-    rv = client.post("/api/sell", json={"resource": "wood", "qty": 2})
+    rv = client.post("/api/sell", json={"resource": "wood", "qty": 2, "playerId": pid})
     assert rv.status_code == 200
     data = rv.get_json()
     assert data["ok"] is True
