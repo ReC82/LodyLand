@@ -8,6 +8,7 @@ import tempfile
 import pytest
 from app import create_app
 from app.db import Base, engine
+from app.progression import XP_PER_COLLECT
 
 @pytest.fixture(autouse=True)
 def _setup_tmp_db(monkeypatch):
@@ -51,4 +52,5 @@ def test_create_player_and_unlock_collect():
     assert rv.status_code == 200
     data = rv.get_json()
     assert data["ok"] is True
-    assert data["player"]["xp"] >= 10 
+    assert data["player"]["xp"] >= XP_PER_COLLECT
+    assert "next" in data and isinstance(data["next"], str) and len(data["next"]) > 0
