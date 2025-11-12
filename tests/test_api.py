@@ -49,4 +49,6 @@ def test_create_player_and_unlock_collect():
     # Collect once => ok
     rv = client.post("/api/collect", json={"tileId": tile_id})
     assert rv.status_code == 200
-    assert rv.get_json()["ok"] is True
+    data = rv.get_json()
+    assert data["ok"] is True
+    assert data["player"]["xp"] >= 10 

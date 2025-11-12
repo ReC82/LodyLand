@@ -14,6 +14,7 @@ class Player(Base):
     level: Mapped[int] = mapped_column(Integer, default=0)
     coins: Mapped[int] = mapped_column(Integer, default=0)
     diams: Mapped[int] = mapped_column(Integer, default=0)
+    xp: Mapped[int] = mapped_column(Integer, default=0) 
 
 class Tile(Base):
     __tablename__ = "tiles"

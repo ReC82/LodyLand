@@ -29,7 +29,7 @@ def create_app():
             p = s.get(Player, player_id)
             if not p:
                 return jsonify({"error": "not_found"}), 404
-            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams})
+            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams, "xp": p.xp})
 
     # --- NEW: list tiles for a player -------------------------------------------
     @app.get("/api/player/<int:player_id>/tiles")
@@ -62,7 +62,8 @@ def create_app():
             s.add(p)
             s.commit()
             s.refresh(p)
-            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams})
+            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams, "xp": p.xp})
+
 
     @app.post("/api/tiles/unlock")
     def unlock_tile():
@@ -101,7 +102,13 @@ def create_app():
             if t.cooldown_until and t.cooldown_until > now:
                 return jsonify({"error": "on_cooldown", "until": t.cooldown_until.isoformat()}), 409
             t.cooldown_until = now + timedelta(seconds=10)
+            
+            # ADD PLAYER XP
+            p = s.get(Player, t.player_id)
+            if p:
+                p.xp = (p.xp or 0) + 10
+            
             s.commit()
-            return jsonify({"ok": True, "next": t.cooldown_until.isoformat()})
+            return jsonify({"ok": True, "next": t.cooldown_until.isoformat(), "player": {"id": p.id, "xp": p.xp}})
 
     return app
