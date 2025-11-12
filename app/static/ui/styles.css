@@ -1,0 +1,11 @@
+/* Small helpers */
+.font-monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* Progress bar (override Bootstrap var) */
+.progress { height: 16px; border-radius: 999px; overflow: hidden; }
+.progress-bar { width: 0%; transition: width .25s ease; background: linear-gradient(90deg, #4ade80, #22c55e); }
+
+/* Inventory cards */
+.inv-card { border: 1px solid #eee; border-radius: 10px; padding: 8px; background: #fff; }
+.inv-title { font-weight: 600; }
+.inv-qty { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #666; }

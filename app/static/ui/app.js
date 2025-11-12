@@ -21,6 +21,14 @@ let currentPlayer = null;
 const cooldowns = {};
 let tickInterval = null;
 
+// -- after const $ = ... and serverUrlEl...
+const playerNameEl = $("currentPlayerName");
+
+// Update current player name in navbar
+function setCurrentPlayerName(p) {
+  playerNameEl.textContent = p?.name ?? "—";
+}
+
 function secondsUntil(iso) {
   if (!iso) return 0;
   const end = new Date(iso).getTime();
@@ -103,14 +111,15 @@ async function http(method, path, body) {
     if (next !== null && next !== undefined && Number(next) > 0) {
       pct = Math.max(0, Math.min(100, Math.round((xp / Number(next)) * 100)));
     } else {
-      // No next threshold (max level or not provided by API)
-      pct = 100;
+      pct = 100; // max level
     }
 
     // Update progress bar visuals
     $("progressFill").style.width = `${pct}%`;
     $("progressTextLeft").textContent = `XP: ${xp}  •  Level: ${level}`;
     $("progressTextRight").textContent = `${pct}%`;
+
+    setCurrentPlayerName(p);
   }
 
 function renderTiles(list) {
@@ -141,26 +150,61 @@ function renderTiles(list) {
 function renderCollect(resp) {
   if (!resp) return;
   const btn = $("collectBtn");
+
   if (resp.ok) {
     const lu = resp.level_up ? " (LEVEL UP 🎉)" : "";
     $("collectBox").innerHTML = `OK — next=${resp.next}${lu}`;
+
     // enregistre le cooldown pour le tile en cours
-    const tileIdVal = Number(($("#tileId").value || "").trim());
+    const input = $("tileId");
+    const tileIdVal = Number((input?.value || "").trim());
     if (tileIdVal && resp.next) {
       cooldowns[tileIdVal] = resp.next;
       ensureTicker();
       btn.disabled = true;
     }
+    // Met à jour le player si fourni
     if (resp.player) {
       renderPlayer({
         ...resp.player,
         next_xp: resp.player.next_xp ?? resp.player.nextXp ?? null,
       });
     }
+
+    // Refresh inventory on successful collect
+    refreshInventory();
+    refreshTiles();
+
   } else {
     $("collectBox").innerHTML = `ERR ${resp.status} — ${JSON.stringify(resp.data)}`;
     btn.disabled = false;
   }
+}
+
+function renderInventory(list) {
+  if (!list || !list.length) {
+    $("inventoryBox").innerHTML = "<div class='text-muted small'>Inventaire vide.</div>";
+    return;
+  }
+  const html = list.map(r => `
+    <div class="col">
+      <div class="inv-card h-100">
+        <div class="inv-title text-capitalize">${r.resource}</div>
+        <div class="inv-qty">qty: ${r.qty}</div>
+      </div>
+    </div>
+  `).join("");
+  $("inventoryBox").innerHTML = html;
+}
+
+
+async function refreshInventory() {
+  const r = await http("GET", "/api/inventory");
+  if (!r.ok) {
+    $("inventoryBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+    return;
+  }
+  renderInventory(r.data);
 }
 
 
@@ -250,6 +294,8 @@ async function register() {
   currentPlayer = r.data;
   $("authBox").innerHTML = `Connecté en cookie: id=${currentPlayer.id}`;
   renderPlayer(currentPlayer);
+  await refreshInventory();
+  
 }
 
 async function login() {
@@ -262,6 +308,7 @@ async function login() {
   currentPlayer = r.data;
   $("authBox").innerHTML = `Connecté en cookie: id=${currentPlayer.id}`;
   renderPlayer(currentPlayer);
+  await refreshInventory();
 }
 
 async function logout() {

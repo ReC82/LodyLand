@@ -1,7 +1,6 @@
 <!--
   File: static/ui/index.html
-  Purpose: Minimal debug UI to exercise the API from a browser.
-  Notes: All code comments are in English as requested.
+  Purpose: Cleaner debug UI with Bootstrap, same IDs so app.js keeps working.
 -->
 <!DOCTYPE html>
 <html lang="fr">
@@ -9,98 +8,140 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lodyland — Debug UI</title>
-  <style>
-/* --- Progress bar (simple) --- */
-    .progress { width: 100%; height: 16px; background: #eee; border-radius: 999px; overflow: hidden; }
-    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #4ade80, #22c55e); transition: width .2s ease; }
-    .progress-info { display:flex; justify-content:space-between; font-size:12px; color:#444; margin-top:6px; }
-    
 
-/* --- General styles --- */
-    body { font-family: ui-sans-serif, system-ui, Arial; margin: 16px; }
-    h1 { margin-bottom: 4px; }
-    .row { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 12px; min-width: 280px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
-    label { display:block; font-size: 14px; margin: 6px 0 4px; }
-    input, select, button { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; }
-    button { cursor: pointer; }
-    .ok { color: #0a7; }
-    .warn { color: #c60; }
-    .err { color: #c00; }
-    .muted { color: #666; font-size: 12px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eee; margin-right:6px; }
-  </style>
+  <!-- Bootstrap 5 (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="/static/ui/styles.css">
 </head>
-<body>
-  <h1>🧪 Lodyland — Debug UI</h1>
-  <div class="muted">Serveur: <span id="serverUrl" class="mono"></span></div>
+<body class="bg-light">
 
-  <div class="row">
-    <div class="card">
-      <h3>Player</h3>
-      <label>Nom</label>
-      <input id="playerName" value="Lloyd" />
-      <div class="row">
-        <button onclick="createPlayer()">Créer Player</button>
-        <button onclick="refreshPlayer()">Refresh Player</button>
-      </div>
-      <div id="playerBox" class="mono muted">Aucun player.</div>
-    </div>
-
-    <div class="card">
-      <h3>Auth</h3>
-      <div class="row">
-        <button onclick="register()">Register (cookie)</button>
-        <button onclick="login()">Login (cookie)</button>
-        <button onclick="logout()">Logout</button>
-      </div>
-      <div class="muted">Utilise le champ “Nom” pour register/login.</div>
-      <div id="authBox" class="mono muted">Pas connecté.</div>
-    </div>
-
-    <div class="card">
-      <h3>Tiles</h3>
-      <label>Ressource</label>
-      <select id="resource">
-        <option value="wood">wood</option>
-        <option value="stone">stone</option>
-        <option value="water">water</option>
-      </select>
-      <div class="row">
-        <button onclick="unlockTile()">Unlock tile</button>
-        <button onclick="refreshTiles()">Lister tiles</button>
-      </div>
-      <div id="tilesBox" class="mono muted">Aucune tuile.</div>
-    </div>
-
-    <div class="card">
-      <h3>Collect</h3>
-      <label>ID tuile</label>
-      <input id="tileId" class="mono" placeholder="ex: 1" />
-      <div class="row">
-        <button id="collectBtn" onclick="collect()">Collect</button>
-      </div>
-      <div id="collectBox" class="mono muted">Pas de collecte encore.</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Progression</h3>
-    <div id="progressBox">
-      <!-- Filled by JS -->
-      <div class="progress" aria-label="XP progress">
-        <div id="progressFill" class="progress-bar"></div>
-      </div>
-      <div class="progress-info">
-        <span id="progressTextLeft" class="mono muted">XP: 0</span>
-        <span id="progressTextRight" class="mono muted">0%</span>
+  <nav class="navbar navbar-expand-lg bg-white border-bottom mb-3">
+    <div class="container-fluid">
+      <span class="navbar-brand">🧪 Lodyland</span>
+      <div class="ms-auto small text-muted">
+        Serveur: <span id="serverUrl" class="font-monospace"></span>
+        <span class="ms-3">Joueur: <span id="currentPlayerName" class="fw-semibold">—</span></span>
       </div>
     </div>
-  </div>
+  </nav>
 
+  <main class="container">
+    <div class="row g-3">
 
+      <!-- Auth -->
+      <div class="col-12 col-lg-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Auth</h5>
+            <div class="mb-2">
+              <label class="form-label">Name</label>
+              <input id="playerName" class="form-control" value="Lloyd" />
+            </div>
+            <div class="d-flex gap-2 mb-2">
+              <button class="btn btn-primary" onclick="register()">Register (cookie)</button>
+              <button class="btn btn-outline-primary" onclick="login()">Login</button>
+              <button class="btn btn-outline-secondary" onclick="logout()">Logout</button>
+            </div>
+            <div id="authBox" class="text-muted font-monospace small">Not connected.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Player -->
+      <div class="col-12 col-lg-8">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Player</h5>
+            <div class="d-flex gap-2 mb-2">
+              <button class="btn btn-success" onclick="createPlayer()">Create Player</button>
+              <button class="btn btn-outline-success" onclick="refreshPlayer()">Refresh Player</button>
+            </div>
+            <pre id="playerBox" class="bg-body-secondary p-2 rounded small mb-0">No player.</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiles -->
+      <div class="col-12 col-lg-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Tiles</h5>
+            <div class="row g-2 align-items-end mb-2">
+              <div class="col-6">
+                <label class="form-label">Ressource</label>
+                <select id="resource" class="form-select">
+                  <option value="wood">wood</option>
+                  <option value="stone">stone</option>
+                  <option value="water">water</option>
+                </select>
+              </div>
+              <div class="col-6 d-flex gap-2">
+                <button class="btn btn-warning flex-fill" onclick="unlockTile()">Unlock tile</button>
+                <button class="btn btn-outline-warning flex-fill" onclick="refreshTiles()">List Tiles</button>
+              </div>
+            </div>
+            <pre id="tilesBox" class="bg-body-secondary p-2 rounded small mb-0">No tiles.</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collect -->
+      <div class="col-12 col-lg-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Collect</h5>
+            <div class="row g-2 align-items-end mb-2">
+              <div class="col-6">
+                <label class="form-label">ID tuile</label>
+                <input id="tileId" class="form-control font-monospace" placeholder="ex: 1" />
+              </div>
+              <div class="col-6 d-grid">
+                <button id="collectBtn" class="btn btn-danger" onclick="collect()">Collect</button>
+              </div>
+            </div>
+            <pre id="collectBox" class="bg-body-secondary p-2 rounded small mb-0">No collect yet.</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Progression</h5>
+            <div class="progress" aria-label="XP progress">
+              <div id="progressFill" class="progress-bar"></div>
+            </div>
+            <div class="d-flex justify-content-between small mt-2 text-muted">
+              <span id="progressTextLeft" class="font-monospace">XP: 0</span>
+              <span id="progressTextRight" class="font-monospace">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory -->
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="card-title mb-0">Inventory</h5>
+              <button class="btn btn-outline-secondary btn-sm" onclick="refreshInventory()">Refresh</button>
+            </div>
+            <div id="inventoryBox" class="row row-cols-2 row-cols-md-4 g-2 mt-1"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Bootstrap JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- App JS -->
   <script src="/static/ui/app.js"></script>
 </body>
 </html>
