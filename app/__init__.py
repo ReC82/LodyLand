@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 
 # HELPERS
-from .db import SessionLocal, init_db
+from .db import Session, SessionLocal, init_db
 from .models import Player, Tile
 from .progression import level_for_xp, next_threshold
 
@@ -55,19 +55,30 @@ def create_app():
 
     @app.post("/api/player")
     def create_player():
-        """Create a simple player. Body: {"name": "Lloyd"}."""
-        data = request.get_json(silent=True) or {}
-        name = data.get("name", "player1")
-        with SessionLocal() as s:
-            exists = s.execute(select(Player).where(Player.name == name)).scalar_one_or_none()
-            if exists:
-                return jsonify({"error": "name_taken"}), 409
-            p = Player(name=name)
-            s.add(p)
-            s.commit()
-            s.refresh(p)
-            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams, "xp": p.xp})
+        s = Session()
+        name = (request.get_json() or {}).get("name")
+        if not name:
+            s.close()
+            return jsonify({"error": "name_required"}), 400
 
+        existing = s.query(Player).filter_by(name=name).first()
+        if existing:
+            p = existing
+            resp = jsonify({
+                "id": p.id, "name": p.name,
+                "level": p.level, "coins": p.coins, "diams": p.diams, "xp": p.xp
+            })
+            s.close()
+            return resp, 200
+
+        p = Player(name=name)
+        s.add(p); s.commit()
+        resp = jsonify({
+            "id": p.id, "name": p.name,
+            "level": p.level, "coins": p.coins, "diams": p.diams, "xp": p.xp
+        })
+        s.close()
+        return resp
 
     @app.post("/api/tiles/unlock")
     def unlock_tile():
@@ -102,36 +113,46 @@ def create_app():
                 return jsonify({"error": "tile_missing"}), 400
             if t.locked:
                 return jsonify({"error": "locked"}), 400
-            now = datetime.now(timezone.utc)
-            if t.cooldown_until and t.cooldown_until > now:
-                return jsonify({"error": "on_cooldown", "until": t.cooldown_until.isoformat()}), 409
-            t.cooldown_until = now + timedelta(seconds=10)
-            
-            # ADD PLAYER XP
+
+            now = datetime.now(timezone.utc)  # aware UTC
+            cd = t.cooldown_until
+
+            # Normalize DB value to aware UTC before comparing
+            if cd is not None and cd.tzinfo is None:
+                cd = cd.replace(tzinfo=timezone.utc)
+
+            # Use ONLY the normalized value for comparison
+            if cd and cd > now:
+                return jsonify({"error": "on_cooldown", "until": cd.isoformat()}), 409
+
+            # set new cooldown (aware UTC)
+            next_cd = now + timedelta(seconds=10)
+            t.cooldown_until = next_cd
+
+            # XP & Level-up
+            level_up = False
             p = s.get(Player, t.player_id)
             if p:
-                # MVP: +10 XP per successful collect
                 p.xp = (p.xp or 0) + 10
-
-                # Recompute level from xp
                 old_level = p.level or 0
                 new_level = level_for_xp(p.xp)
                 if new_level > old_level:
                     p.level = new_level
                     level_up = True
-            
+
             s.commit()
             return jsonify({
                 "ok": True,
-                "next": t.cooldown_until.isoformat(),
+                "next": next_cd.isoformat(),
                 "player": {
                     "id": p.id,
                     "xp": p.xp,
                     "level": p.level,
-                    "next_xp": next_threshold(p.level)  # None if max
+                    "next_xp": next_threshold(p.level)
                 },
                 "level_up": level_up
             })
+
             
     @app.get("/api/levels")
     def list_levels():
