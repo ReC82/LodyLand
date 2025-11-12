@@ -17,11 +17,52 @@ serverUrlEl.textContent = baseUrl();
 
 let currentPlayer = null;
 
+// Cooldown trackers keyed by tileId -> ISO date string
+const cooldowns = {};
+let tickInterval = null;
+
+function secondsUntil(iso) {
+  if (!iso) return 0;
+  const end = new Date(iso).getTime();
+  const now = Date.now();
+  return Math.max(0, Math.ceil((end - now) / 1000));
+}
+
+function ensureTicker() {
+  if (tickInterval) return;
+  tickInterval = setInterval(updateCountdownUI, 1000);
+}
+
+function updateCountdownUI() {
+  // Update the Collect panel button state
+  const tileIdVal = Number(($("#tileId").value || "").trim());
+  const btn = $("collectBtn");
+  if (tileIdVal && cooldowns[tileIdVal]) {
+    const sec = secondsUntil(cooldowns[tileIdVal]);
+    if (sec > 0) {
+      btn.disabled = true;
+      $("collectBox").innerHTML = `Cooldown… ${sec}s`;
+    } else {
+      delete cooldowns[tileIdVal];
+      btn.disabled = false;
+      $("collectBox").innerHTML = "Prêt à collecter.";
+      // Optionnel: refresh tiles pour refléter cooldown_until nul
+      refreshTiles();
+    }
+  } else {
+    btn.disabled = false;
+  }
+
+  // Met à jour l’affichage des tiles (temps restant)
+  // (léger: on ne refait pas un fetch, on re-rendera sur prochain refreshTiles)
+}
+
 // ---- Generic helpers --------------------------------------------------------
 async function http(method, path, body) {
   const res = await fetch(`${baseUrl()}${path}`, {
     method,
     headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",               // <-- important pour cookies
     body: body ? JSON.stringify(body) : undefined,
   });
   let data = null;
@@ -34,48 +75,83 @@ async function http(method, path, body) {
   return { ok: res.ok, status: res.status, data };
 }
 
-function renderPlayer(p) {
-  if (!p) {
-    $("playerBox").innerHTML = "Aucun player.";
-    $("progressBox").innerHTML = "";
-    return;
-  }
-  $("playerBox").innerHTML = `
-    id=${p.id}  name=${p.name}
-    level=${p.level}  xp=${p.xp}  coins=${p.coins}  diams=${p.diams}
-  `.trim();
+  function renderPlayer(p) {
+    // Render basic player info
+    if (!p) {
+      $("playerBox").innerHTML = "Aucun player.";
+      $("progressTextLeft").textContent = "XP: 0";
+      $("progressTextRight").textContent = "0%";
+      $("progressFill").style.width = "0%";
+      return;
+    }
 
-  const next = p.next_xp ?? p.nextXp ?? null; // tolerate both keys if present
-  let html = `
-    <div class="pill">Level: <b>${p.level}</b></div>
-    <div class="pill">XP: <b>${p.xp}</b></div>
-  `;
-  if (next !== null && next !== undefined) {
-    const pct = Math.max(0, Math.min(100, Math.round((p.xp / next) * 100)));
-    html += `<div class="pill">Next threshold: <b>${next} XP</b> (~${pct}%)</div>`;
-  } else {
-    html += `<div class="pill">Max level for demo thresholds</div>`;
+    $("playerBox").innerHTML = `
+      id=${p.id}  name=${p.name}
+      level=${p.level}  xp=${p.xp}  coins=${p.coins}  diams=${p.diams}
+    `.trim();
+
+    // Compute percentage towards next level
+    // next_xp is the threshold value to reach the next level (absolute XP)
+    const next = p.next_xp ?? p.nextXp ?? null;
+
+    // Safety: ensure numeric XP/level
+    const xp = Number(p.xp || 0);
+    const level = Number(p.level || 0);
+
+    let pct = 0;
+    // If next is present and > 0, compute ratio; else consider "max" (100%)
+    if (next !== null && next !== undefined && Number(next) > 0) {
+      pct = Math.max(0, Math.min(100, Math.round((xp / Number(next)) * 100)));
+    } else {
+      // No next threshold (max level or not provided by API)
+      pct = 100;
+    }
+
+    // Update progress bar visuals
+    $("progressFill").style.width = `${pct}%`;
+    $("progressTextLeft").textContent = `XP: ${xp}  •  Level: ${level}`;
+    $("progressTextRight").textContent = `${pct}%`;
   }
-  $("progressBox").innerHTML = html;
-}
 
 function renderTiles(list) {
   if (!list || !list.length) {
     $("tilesBox").innerHTML = "Aucune tuile.";
     return;
   }
-  $("tilesBox").innerHTML = list.map(t =>
-    `#${t.id}  res=${t.resource}  locked=${t.locked}  cooldown=${t.cooldown_until ?? "-"}`
-  ).join("\n");
+  const lines = list.map(t => {
+    let cd = "-";
+    if (t.cooldown_until) {
+      const sec = secondsUntil(t.cooldown_until);
+      if (sec > 0) {
+        cd = `${sec}s`;
+        // garde en mémoire pour ce tile
+        cooldowns[t.id] = t.cooldown_until;
+        ensureTicker();
+      } else {
+        cd = "-";
+        delete cooldowns[t.id];
+      }
+    }
+    return `#${t.id}  res=${t.resource}  locked=${t.locked}  cooldown=${cd}`;
+  });
+  $("tilesBox").innerHTML = lines.join("\n");
 }
+
 
 function renderCollect(resp) {
   if (!resp) return;
+  const btn = $("collectBtn");
   if (resp.ok) {
     const lu = resp.level_up ? " (LEVEL UP 🎉)" : "";
     $("collectBox").innerHTML = `OK — next=${resp.next}${lu}`;
+    // enregistre le cooldown pour le tile en cours
+    const tileIdVal = Number(($("#tileId").value || "").trim());
+    if (tileIdVal && resp.next) {
+      cooldowns[tileIdVal] = resp.next;
+      ensureTicker();
+      btn.disabled = true;
+    }
     if (resp.player) {
-      // Attach next_xp if API returns it
       renderPlayer({
         ...resp.player,
         next_xp: resp.player.next_xp ?? resp.player.nextXp ?? null,
@@ -83,8 +159,10 @@ function renderCollect(resp) {
     }
   } else {
     $("collectBox").innerHTML = `ERR ${resp.status} — ${JSON.stringify(resp.data)}`;
+    btn.disabled = false;
   }
 }
+
 
 // ---- Actions ----------------------------------------------------------------
 async function createPlayer() {
@@ -99,11 +177,7 @@ async function createPlayer() {
 }
 
 async function refreshPlayer() {
-  if (!currentPlayer) {
-    $("playerBox").innerHTML = "Pas de player en mémoire. Crée d'abord un player.";
-    return;
-  }
-  const r = await http("GET", `/api/player/${currentPlayer.id}`);
+  const r = await http("GET", `/api/me`);
   if (!r.ok) {
     $("playerBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
     return;
@@ -114,13 +188,11 @@ async function refreshPlayer() {
 
 async function unlockTile() {
   if (!currentPlayer) {
-    $("tilesBox").innerHTML = "Crée d'abord un player.";
+    $("tilesBox").innerHTML = "Crée ou login d'abord un player.";
     return;
   }
   const resource = $("resource").value;
-  const r = await http("POST", "/api/tiles/unlock", {
-    playerId: currentPlayer.id, resource
-  });
+  const r = await http("POST", "/api/tiles/unlock", { resource }); // <-- sans playerId
   if (!r.ok) {
     $("tilesBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
     return;
@@ -142,11 +214,66 @@ async function refreshTiles() {
 }
 
 async function collect() {
-  const tileId = Number(($("tileId").value || "").trim());
+  const input = $("tileId");  // <-- important
+  if (!input) {
+    console.warn("Input #tileId not found in DOM.");
+    return;
+  }
+  const tileId = Number((input.value || "").trim());
   if (!tileId) {
     $("collectBox").innerHTML = "Renseigne un tileId (ex: 1).";
     return;
   }
+  if (cooldowns[tileId] && secondsUntil(cooldowns[tileId]) > 0) {
+    $("collectBox").innerHTML = `Cooldown… ${secondsUntil(cooldowns[tileId])}s`;
+    $("collectBtn").disabled = true;
+    return;
+  }
+  $("collectBtn").disabled = true;
+
   const r = await http("POST", "/api/collect", { tileId });
+  if (r.status === 409) {
+    $("collectBox").innerHTML = "⚠️ Action déjà effectuée ou en conflit.";
+    $("collectBtn").disabled = false;
+    return;
+  }
   renderCollect(r);
 }
+
+async function register() {
+  const name = $("playerName").value || "player1";
+  const r = await http("POST", "/api/register", { name });
+  if (!r.ok) {
+    $("authBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+    return;
+  }
+  currentPlayer = r.data;
+  $("authBox").innerHTML = `Connecté en cookie: id=${currentPlayer.id}`;
+  renderPlayer(currentPlayer);
+}
+
+async function login() {
+  const name = $("playerName").value || "player1";
+  const r = await http("POST", "/api/login", { name });
+  if (!r.ok) {
+    $("authBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+    return;
+  }
+  currentPlayer = r.data;
+  $("authBox").innerHTML = `Connecté en cookie: id=${currentPlayer.id}`;
+  renderPlayer(currentPlayer);
+}
+
+async function logout() {
+  const r = await http("POST", "/api/logout");
+  if (!r.ok) {
+    $("authBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+    return;
+  }
+  currentPlayer = null;
+  $("authBox").innerHTML = "Déconnecté.";
+  renderPlayer(null);
+}
+
+
+
