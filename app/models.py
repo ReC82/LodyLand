@@ -23,5 +23,3 @@ class Tile(Base):
     locked: Mapped[bool] = mapped_column(Boolean, default=True)
     cooldown_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-# Optional explicit Index (redundant with index=True, shown as example)
-Index("ix_tiles_player_id", Tile.player_id)
