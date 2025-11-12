@@ -1,3 +1,4 @@
+![Tests](https://github.com/ReC82/LodyLand/actions/workflows/tests.yml/badge.svg)
 # Lodyland (Click & Collect) – MVP
 
 Objectif: jeu 2D "click-to-collect" jouable navigateur (Flask backend).
