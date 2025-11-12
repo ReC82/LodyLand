@@ -44,7 +44,7 @@ def test_create_player_and_unlock_collect():
     # Unlock tile
     rv = client.post("/api/tiles/unlock", json={"playerId": player["id"], "resource": "wood"})
     assert rv.status_code == 200
-    tile_id = rv.get_json()["tileId"]
+    tile_id = rv.get_json()["id"]
 
     # Collect once => ok
     rv = client.post("/api/collect", json={"tileId": tile_id})
