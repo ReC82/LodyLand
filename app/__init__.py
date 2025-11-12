@@ -2,13 +2,15 @@
 # File: app/__init__.py
 # Purpose: Minimal Flask app using SQLite via SQLAlchemy (with simple read routes).
 # =============================================================================
-from flask import Flask, jsonify, request, make_response, session
+from flask import Flask, app, jsonify, request, make_response, session
 from datetime import datetime, timedelta, timezone, date
 from sqlalchemy import select
 
+from app.seed import reseed_resources
+
 # HELPERS
 from .db import SessionLocal, init_db
-from .models import Player, Tile, ResourceStock
+from .models import Player, Tile, ResourceStock, ResourceDef
 from .progression import level_for_xp, next_threshold, XP_PER_COLLECT
 from .economy import get_price, list_prices, DAILY_REWARD_COINS
 
@@ -406,6 +408,35 @@ def create_app():
                 },
                 "next_at": next_reset.isoformat()
             }), 200
+    @app.get("/api/resources")
+    def list_resources():
+        with SessionLocal() as s:
+            rows = s.query(ResourceDef).order_by(ResourceDef.unlock_min_level.asc(), ResourceDef.key.asc()).all()
+            return jsonify([
+                {
+                    "key": r.key,
+                    "label": r.label,
+                    "base_cooldown": r.base_cooldown,
+                    "base_sell_price": r.base_sell_price,
+                    "unlock_min_level": r.unlock_min_level,
+                    "enabled": r.enabled,
+                } for r in rows
+            ])
 
+    @app.post("/api/dev/reseed")
+    def dev_reseed():
+        # Dev only – à protéger plus tard si besoin
+        try:
+            n = reseed_resources()
+            return jsonify({"ok": True, "inserted": n})
+        except Exception as e:
+            return jsonify({"ok": False, "error": str(e)}), 500
+    
+    
+    
+    
+    
+    
+    
     return app
 

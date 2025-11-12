@@ -1,0 +1,153 @@
+
+LODYLAND — CHEATSHEET (Windows / PowerShell)
+
+0) PRÉREQUIS
+- Lancer PowerShell dans le dossier du projet (…\Lodyland).
+- Ne pas utiliser les "\" en fin de ligne (c’est pour Bash). PowerShell utilise le backtick ` pour multi‑lignes.
+
+1) ENVIRONNEMENT PYTHON (venv)
+# Créer le venv (une seule fois)
+python -m venv .venv
+
+# Activer le venv (PowerShell)
+& .\.venv\Scripts\Activate.ps1
+
+# Vérifier que l’interpréteur est bien le bon
+where python
+# → doit pointer vers …\Lodyland\.venv\Scripts\python.exe
+
+# Installer les dépendances de base
+pip install flask sqlalchemy python-dotenv alembic pytest
+
+# Geler les versions (optionnel)
+pip freeze > requirements.txt
+
+2) LANCER / ARRÊTER LE SERVEUR
+# Démarrer l’API Flask
+python run.py
+# L’API écoute sur: http://127.0.0.1:8000
+
+3) TESTS RAPIDES DES ENDPOINTS (PowerShell)
+# Health
+Invoke-RestMethod -Method Get http://127.0.0.1:8000/api/health
+
+# Créer un player
+Invoke-RestMethod -Method Post http://127.0.0.1:8000/api/player `
+  -Body (@{ name="Lloyd"} | ConvertTo-Json) `
+  -ContentType "application/json"
+
+# Déverrouiller une tuile
+Invoke-RestMethod -Method Post http://127.0.0.1:8000/api/tiles/unlock `
+  -Body (@{ playerId=1; resource="wood"} | ConvertTo-Json) `
+  -ContentType "application/json"
+
+# Collect (si 409 on_cooldown, attendre 10s)
+Invoke-RestMethod -Method Post http://127.0.0.1:8000/api/collect `
+  -Body (@{ tileId=1 } | ConvertTo-Json) `
+  -ContentType "application/json"
+
+4) VARIABLES D’ENVIRONNEMENT (.env)
+# Fichier .env (à la racine du projet)
+DATABASE_URL=sqlite:///game.db
+FLASK_ENV=development
+SECRET_KEY=change-me-in-prod
+
+# Vérifier la lecture du .env
+python - << 'PY'
+import os; from dotenv import load_dotenv; load_dotenv(); print(os.getenv("DATABASE_URL"))
+PY
+
+5) ALEMBIC (MIGRATIONS DB)
+# Initialiser Alembic (une seule fois)
+alembic init alembic
+
+# Configurer alembic/env.py pour lire DATABASE_URL via dotenv (déjà fait dans le projet)
+
+# Générer une migration à partir des modèles (auto)
+alembic revision --autogenerate -m "message de migration"
+
+# Appliquer la dernière migration (créer/mettre à jour les tables)
+alembic upgrade head
+
+# Revenir à la migration précédente (si besoin)
+alembic downgrade -1
+
+# Voir la version courante en base
+alembic current
+
+# Lister l’historique des migrations
+alembic history
+
+6) TESTS (PYTEST)
+# Lancer tous les tests
+pytest -q
+
+# Astuce si pytest ne trouve pas ‘app’ : utiliser pytest.ini avec `pythonpath = .`
+
+7) GIT (WORKFLOW DE BASE)
+# Initialiser un repo local (une seule fois)
+git init
+
+# Vérifier l’état
+git status
+
+# Ajouter les fichiers au prochain commit
+git add .
+
+# Faire un commit
+git commit -m "message clair (ex: feat(api): add /collect)"
+
+# Lier le dépôt distant (une seule fois)
+git remote add origin https://github.com/<user>/<repo>.git
+git branch -M main
+
+# Envoyer sur GitHub
+git push -u origin main
+# Push suivants
+git push
+
+# Récupérer les derniers changements
+git pull
+
+# Voir l’historique
+git log --oneline --graph --decorate --all
+
+8) GITHUB CLI (ISSUES) — PowerShell
+# Add a label
+gh label create "docs"   --color 14a2b8 --description "Documentation Updates"
+
+# Créer une issue (en 1 ligne)
+gh issue create -t "feat(api): POST /api/player" -b "Créer un joueur en DB (name unique)." -l feat -l api -l db
+
+# Variante lisible (multi-lignes PowerShell avec backticks `)
+gh issue create `
+  -t "test(api): pytest smoke tests" `
+  -b "Health + create/unlock/collect" `
+  -l test `
+  -l api
+
+# Lier/fermer une issue via commit (remplacer #NUM par le numéro de l’issue)
+git commit -m "feat(api): implémenter /api/player (closes #NUM)"
+
+# Lister les issues ouvertes
+gh issue list
+
+9) DÉPANNAGE RAPIDE
+# (1) venv actif ?
+where python
+
+# (2) paquets installés ?
+pip show flask
+pip show sqlalchemy
+
+# (3) réinitialiser le venv (en dernier recours)
+deactivate  # si actif
+Remove-Item -Recurse -Force .\.venv
+python -m venv .venv
+& .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# (4) Avertissements datetime : utiliser UTC aware
+# Remplacer datetime.utcnow() par:
+from datetime import datetime, timezone
+datetime.now(timezone.utc)
