@@ -1,0 +1,7 @@
+flask
+flask-smorest
+flask-socketio
+flask-login
+sqlalchemy
+alembic
+python-dotenv
