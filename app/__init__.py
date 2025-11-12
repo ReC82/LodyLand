@@ -10,6 +10,8 @@ from sqlalchemy import select
 from .db import SessionLocal, init_db
 from .models import Player, Tile, ResourceStock
 from .progression import level_for_xp, next_threshold, XP_PER_COLLECT
+from .economy import get_price, list_prices
+
 
 
 def create_app():
@@ -303,6 +305,65 @@ def create_app():
         except ValueError:
             return None
         return session.get(Player, pid)
+
+    @app.get("/api/prices")
+    def get_prices():
+        """Return current NPC prices (MVP: fixed)."""
+        return jsonify({"prices": list_prices()})
+    
+    @app.post("/api/sell")
+    def sell_resources():
+        """Sell resources to NPC for coins.
+        Body: {"resource":"wood", "qty": 3}
+        Rules (MVP):
+        - price is fixed (see economy.PRICES)
+        - must have enough qty in inventory
+        """
+        data = request.get_json(silent=True) or {}
+        resource = (data.get("resource") or "").strip().lower()
+        qty = int(data.get("qty") or 0)
+
+        if not resource:
+            return jsonify({"error": "resource_required"}), 400
+        if qty <= 0:
+            return jsonify({"error": "qty_invalid"}), 400
+
+        with SessionLocal() as s:
+            me = _get_current_player(s)
+            if not me:
+                return jsonify({"error": "not_authenticated"}), 401
+
+            price = get_price(resource)
+            if price <= 0:
+                return jsonify({"error": "unknown_resource"}), 400
+
+            # Check inventory
+            rs = (
+                s.query(ResourceStock)
+                .filter_by(player_id=me.id, resource=resource)
+                .first()
+            )
+            if not rs or rs.qty < qty:
+                return jsonify({"error": "not_enough_stock", "have": rs.qty if rs else 0}), 400
+
+            # Apply sale
+            rs.qty -= qty
+            gain = qty * price
+            me.coins = (me.coins or 0) + gain
+
+            s.commit()
+            return jsonify({
+                "ok": True,
+                "sold": {"resource": resource, "qty": qty, "unit_price": price, "gain": gain},
+                "player": {
+                    "id": me.id, "name": me.name,
+                    "coins": me.coins, "diams": me.diams,
+                    "xp": me.xp, "level": me.level,
+                    "next_xp": next_threshold(me.level),
+                },
+                "stock": {"resource": resource, "qty": rs.qty},
+            })
+
 
     return app
 
