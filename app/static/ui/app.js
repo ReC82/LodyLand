@@ -24,6 +24,21 @@ let tickInterval = null;
 // -- after const $ = ... and serverUrlEl...
 const playerNameEl = $("currentPlayerName");
 
+async function loadResources() {
+  const r = await http("GET", "/api/resources");
+  if (!r.ok) return;
+  const sel = $("resource");
+  sel.innerHTML = "";
+  (r.data || []).forEach(it => {
+    if (!it.enabled) return;
+    const opt = document.createElement("option");
+    opt.value = it.key;
+    opt.textContent = `${it.label} (lvl ${it.unlock_min_level})`;
+    sel.appendChild(opt);
+  });
+}
+document.addEventListener("DOMContentLoaded", loadResources);
+
 // Update current player name in navbar
 function setCurrentPlayerName(p) {
   playerNameEl.textContent = p?.name ?? "—";

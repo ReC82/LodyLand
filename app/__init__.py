@@ -14,7 +14,10 @@ from .models import Player, Tile, ResourceStock, ResourceDef
 from .progression import level_for_xp, next_threshold, XP_PER_COLLECT
 from .economy import get_price, list_prices, DAILY_REWARD_COINS
 
-
+def _get_res_def(session, key: str) -> ResourceDef | None:
+    if not key:
+        return None
+    return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
 
 def create_app():
     """Factory that creates and configures the Flask app."""
@@ -91,42 +94,39 @@ def create_app():
 
     @app.post("/api/tiles/unlock")
     def unlock_tile():
-        """Unlock a tile for the current player (cookie) or explicit playerId.
-        Body: {"resource":"wood"}  (playerId optional; cookie fallback)
-        """
+        """Unlock a tile for a player. Body: {"playerId": 1, "resource": "wood"}"""
         data = request.get_json(silent=True) or {}
         resource = (data.get("resource") or "").strip().lower()
-        player_id = data.get("playerId")  # may be None
+        player_id = data.get("playerId")
 
         if not resource:
             return jsonify({"error": "resource_required"}), 400
 
         with SessionLocal() as s:
-            # If playerId missing, try cookie
+            # Si playerId absent, essayer le cookie
             if not player_id:
                 me = _get_current_player(s)
                 if not me:
                     return jsonify({"error": "player_required"}), 400
                 player_id = me.id
 
-            # Validate player
-            p = s.get(Player, int(player_id))
+            p = s.get(Player, player_id)
             if not p:
                 return jsonify({"error": "player_not_found"}), 404
 
-            # Create unlocked tile
-            t = Tile(player_id=p.id, resource=resource, locked=False, cooldown_until=None)
+            rd = _get_res_def(s, resource)
+            if not rd:
+                return jsonify({"error": "resource_unknown_or_disabled"}), 400
+
+            if p.level < rd.unlock_min_level:
+                return jsonify({"error": "level_too_low", "required": rd.unlock_min_level}), 403
+
+            t = Tile(player_id=player_id, resource=resource, locked=False, cooldown_until=None)
             s.add(t)
             s.commit()
             s.refresh(t)
+            return jsonify({"id": t.id, "resource": t.resource, "locked": t.locked}), 200
 
-            return jsonify({
-                "id": t.id,
-                "playerId": t.player_id,
-                "resource": t.resource,
-                "locked": t.locked,
-                "cooldown_until": t.cooldown_until
-            }), 200
 
 
     @app.post("/api/collect")
@@ -152,7 +152,9 @@ def create_app():
                 return jsonify({"error": "on_cooldown", "until": cd.isoformat()}), 409
 
             # cooldown
-            next_cd = now + timedelta(seconds=10)
+            rd = _get_res_def(s, t.resource)
+            base_cd = rd.base_cooldown if rd else 10
+            next_cd = now + timedelta(seconds=base_cd)
             t.cooldown_until = next_cd
 
             # XP + Level
@@ -314,59 +316,43 @@ def create_app():
         return jsonify({"prices": list_prices()})
     
     @app.post("/api/sell")
-    def sell_resources():
-        """Sell resources to NPC for coins.
-        Body: {"resource":"wood", "qty": 3, "playerId": 1 (optional)}
-        - If playerId absent, fallback to cookie.
-        """
+    def sell():
+        """Sell resources from inventory. Body: {"resource":"wood","qty":2} — cookie 'player_id' requis."""
         data = request.get_json(silent=True) or {}
         resource = (data.get("resource") or "").strip().lower()
         qty = int(data.get("qty") or 0)
-        player_id = data.get("playerId")  # optional
-
-        if not resource:
-            return jsonify({"error": "resource_required"}), 400
-        if qty <= 0:
-            return jsonify({"error": "qty_invalid"}), 400
+        if not resource or qty <= 0:
+            return jsonify({"error": "invalid_payload"}), 400
 
         with SessionLocal() as s:
-            # Resolve player
-            if player_id:
-                me = s.get(Player, int(player_id))
-            else:
-                me = _get_current_player(s)
-
+            me = _get_current_player(s)
             if not me:
                 return jsonify({"error": "not_authenticated"}), 401
 
-            price = get_price(resource)
-            if price <= 0:
-                return jsonify({"error": "unknown_resource"}), 400
+            rd = _get_res_def(s, resource)
+            if not rd:
+                return jsonify({"error": "resource_unknown_or_disabled"}), 400
 
-            rs = (
-                s.query(ResourceStock)
-                .filter_by(player_id=me.id, resource=resource)
-                .first()
-            )
+            rs = (s.query(ResourceStock)
+                    .filter_by(player_id=me.id, resource=resource)
+                    .first())
             if not rs or rs.qty < qty:
-                return jsonify({"error": "not_enough_stock", "have": rs.qty if rs else 0}), 400
+                return jsonify({"error": "insufficient_qty"}), 400
 
+            # prix
+            gain = qty * int(rd.base_sell_price)
+
+            # appliquer
             rs.qty -= qty
-            gain = qty * price
             me.coins = (me.coins or 0) + gain
 
             s.commit()
             return jsonify({
                 "ok": True,
-                "sold": {"resource": resource, "qty": qty, "unit_price": price, "gain": gain},
-                "player": {
-                    "id": me.id, "name": me.name,
-                    "coins": me.coins, "diams": me.diams,
-                    "xp": me.xp, "level": me.level,
-                    "next_xp": next_threshold(me.level),
-                },
-                "stock": {"resource": resource, "qty": rs.qty},
+                "sold": {"resource": resource, "qty": qty, "unit_price": rd.base_sell_price, "gain": gain},
+                "player": {"id": me.id, "coins": me.coins}
             }), 200
+    
 
     @app.post("/api/daily")
     def claim_daily():  
@@ -408,6 +394,8 @@ def create_app():
                 },
                 "next_at": next_reset.isoformat()
             }), 200
+            
+            
     @app.get("/api/resources")
     def list_resources():
         with SessionLocal() as s:
