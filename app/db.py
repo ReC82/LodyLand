@@ -15,6 +15,9 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///game.db")
 
 engine = create_engine(DATABASE_URL, echo=False, future=True)
 
+# Session factory (no autocommit, no autoflush)
+SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False, future=True)
+
 class Base(DeclarativeBase):
     """Declarative base for ORM models."""
     pass

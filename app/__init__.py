@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 
 # HELPERS
-from .db import Session, SessionLocal, init_db
+from .db import SessionLocal, init_db
 from .models import Player, Tile
 from .progression import level_for_xp, next_threshold
 
@@ -55,7 +55,7 @@ def create_app():
 
     @app.post("/api/player")
     def create_player():
-        s = Session()
+        s = SessionLocal()
         name = (request.get_json() or {}).get("name")
         if not name:
             s.close()
