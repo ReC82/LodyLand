@@ -64,27 +64,16 @@
       </div>
 
       <!-- Tiles -->
-      <div class="col-12 col-lg-6">
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title">Tiles</h5>
-            <div class="row g-2 align-items-end mb-2">
-              <div class="col-6">
-                <label class="form-label">Ressource</label>
-                <select id="resource" class="form-select">
-                  <option value="wood">wood</option>
-                  <option value="stone">stone</option>
-                  <option value="water">water</option>
-                </select>
-              </div>
-              <div class="col-6 d-flex gap-2">
-                <button class="btn btn-warning flex-fill" onclick="unlockTile()">Unlock tile</button>
-                <button class="btn btn-outline-warning flex-fill" onclick="refreshTiles()">List Tiles</button>
-              </div>
-            </div>
-            <pre id="tilesBox" class="bg-body-secondary p-2 rounded small mb-0">No tiles.</pre>
-          </div>
+      <div class="card">
+        <h3>Tiles</h3>
+        <label>Ressource</label>
+        <select id="resource"></select>
+        <div id="resInfo" class="muted mono" style="margin-top:6px;">—</div>
+        <div class="row" style="margin-top:8px;">
+          <button id="unlockBtn" onclick="unlockTile()">Unlock tile</button>
+          <button onclick="refreshTiles()">Lister tiles</button>
         </div>
+        <div id="tilesBox" class="mono muted">Aucune tuile.</div>
       </div>
 
       <!-- Collect -->

@@ -141,4 +141,32 @@ def test_daily_chest_once_per_day():
     assert data3["ok"] is True
     assert data3["player"]["coins"] >= coins_after + data3["reward"]
 
+def test_unlock_requires_min_level():
+    app = create_app()
+    client = app.test_client()
+
+    # Crée player niveau 0
+    rv = client.post("/api/player", json={"name": "Lowbie"})
+    assert rv.status_code == 200
+    p = rv.get_json()
+    pid = p["id"]
+
+    # Liste resources pour trouver une ressource qui exige un level >= 2 (ex: stone)
+    rv = client.get("/api/resources")
+    assert rv.status_code == 200
+    res = rv.get_json()
+    demanding = None
+    for r in res:
+        if r["unlock_min_level"] >= 2:  # on cible une ressource non déblocable au lvl 0
+            demanding = r
+            break
+    assert demanding is not None, "Besoin d'une ressource avec unlock_min_level >= 2 dans le seed"
+
+    # Essaye de l'unlock au level 0 -> 403
+    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": demanding["key"]})
+    assert rv.status_code == 403
+    data = rv.get_json()
+    assert data["error"] == "level_too_low"
+    assert data["required"] == demanding["unlock_min_level"]
+
     

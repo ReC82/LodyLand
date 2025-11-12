@@ -19,11 +19,77 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
         return None
     return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
 
+def _seed_resources_if_missing():
+    """Seed (et corrige) les ressources de base.
+
+    - crée les entrées manquantes
+    - met à jour celles qui existent déjà (unlock_min_level, prix, etc.)
+    """
+
+    defaults = [
+        {
+            "key": "branch",
+            "label": "Branchages",
+            "unlock_min_level": 0,
+            "base_cooldown": 5,
+            "base_sell_price": 1,
+            "enabled": True,
+        },
+        {
+            "key": "palm_leaf",
+            "label": "Feuilles de palmier",
+            "unlock_min_level": 0,
+            "base_cooldown": 6,
+            "base_sell_price": 1,
+            "enabled": True,
+        },
+        {
+            "key": "wood",
+            "label": "Bois (palmier)",
+            "unlock_min_level": 1,
+            "base_cooldown": 10,
+            "base_sell_price": 2,
+            "enabled": True,
+        },
+        # 👉 IMPORTANT : ressource qui demande AU MOINS le niveau 2
+        {
+            "key": "stone",
+            "label": "Pierre",
+            "unlock_min_level": 2,   # <= c’est ça que le test cherche
+            "base_cooldown": 12,
+            "base_sell_price": 3,
+            "enabled": True,
+        },
+    ]
+
+    with SessionLocal() as s:
+        existing_rows = s.query(ResourceDef).all()
+        existing_by_key = {r.key: r for r in existing_rows}
+
+        for d in defaults:
+            row = existing_by_key.get(d["key"])
+            if row is None:
+                # pas encore en DB → on crée
+                row = ResourceDef(**d)
+                s.add(row)
+            else:
+                # déjà en DB → on met à jour les champs importants
+                row.label = d["label"]
+                row.unlock_min_level = d["unlock_min_level"]
+                row.base_cooldown = d["base_cooldown"]
+                row.base_sell_price = d["base_sell_price"]
+                row.enabled = d["enabled"]
+
+        s.commit()
+
+
+
 def create_app():
     """Factory that creates and configures the Flask app."""
     app = Flask(__name__)
     init_db()
-
+    _seed_resources_if_missing()
+    
     @app.route("/")
     def hello():
         return "Hello, world!"
@@ -96,36 +162,50 @@ def create_app():
     def unlock_tile():
         """Unlock a tile for a player. Body: {"playerId": 1, "resource": "wood"}"""
         data = request.get_json(silent=True) or {}
-        resource = (data.get("resource") or "").strip().lower()
-        player_id = data.get("playerId")
 
+        resource = (data.get("resource") or "").strip().lower()
         if not resource:
             return jsonify({"error": "resource_required"}), 400
 
-        with SessionLocal() as s:
-            # Si playerId absent, essayer le cookie
-            if not player_id:
-                me = _get_current_player(s)
-                if not me:
-                    return jsonify({"error": "player_required"}), 400
-                player_id = me.id
+        player_id = data.get("playerId")
+        if not player_id:
+            return jsonify({"error": "playerId_required"}), 400
 
-            p = s.get(Player, player_id)
+        with SessionLocal() as s:
+            p = s.get(Player, int(player_id))
             if not p:
                 return jsonify({"error": "player_not_found"}), 404
 
-            rd = _get_res_def(s, resource)
+            # On va chercher la ResourceDef
+            rd = (
+                s.query(ResourceDef)
+                .filter_by(key=resource, enabled=True)
+                .first()
+            )
             if not rd:
-                return jsonify({"error": "resource_unknown_or_disabled"}), 400
+                return jsonify({"error": "resource_unknown"}), 400
 
+            # Vérifie le niveau
             if p.level < rd.unlock_min_level:
-                return jsonify({"error": "level_too_low", "required": rd.unlock_min_level}), 403
+                return jsonify({
+                    "error": "level_too_low",
+                    "required": rd.unlock_min_level,
+                }), 403
 
-            t = Tile(player_id=player_id, resource=resource, locked=False, cooldown_until=None)
+            # Si OK, on crée la tile
+            t = Tile(
+                player_id=p.id,
+                resource=resource,
+                locked=False,
+                cooldown_until=None,
+            )
             s.add(t)
             s.commit()
             s.refresh(t)
-            return jsonify({"id": t.id, "resource": t.resource, "locked": t.locked}), 200
+
+            return jsonify({"id": t.id}), 200
+
+
 
 
 
@@ -317,41 +397,62 @@ def create_app():
     
     @app.post("/api/sell")
     def sell():
-        """Sell resources from inventory. Body: {"resource":"wood","qty":2} — cookie 'player_id' requis."""
+        """Sell some resource from the player's inventory."""
         data = request.get_json(silent=True) or {}
         resource = (data.get("resource") or "").strip().lower()
         qty = int(data.get("qty") or 0)
+        player_id = data.get("playerId")
+
         if not resource or qty <= 0:
-            return jsonify({"error": "invalid_payload"}), 400
+            return jsonify({"error": "bad_request"}), 400
 
         with SessionLocal() as s:
-            me = _get_current_player(s)
-            if not me:
+            # Auth: si playerId fourni on l'utilise, sinon cookie
+            p = s.get(Player, int(player_id)) if player_id else _get_current_player(s)
+            if not p:
                 return jsonify({"error": "not_authenticated"}), 401
 
-            rd = _get_res_def(s, resource)
-            if not rd:
-                return jsonify({"error": "resource_unknown_or_disabled"}), 400
+            # Prix unitaire via ResourceDef (fallback = 1)
+            rd = s.query(ResourceDef).filter_by(key=resource, enabled=True).first()
+            unit_price = rd.base_sell_price if rd else 1
 
-            rs = (s.query(ResourceStock)
-                    .filter_by(player_id=me.id, resource=resource)
-                    .first())
+            # Vérifier le stock
+            rs = (
+                s.query(ResourceStock)
+                .filter_by(player_id=p.id, resource=resource)
+                .first()
+            )
             if not rs or rs.qty < qty:
-                return jsonify({"error": "insufficient_qty"}), 400
+                return jsonify({"error": "not_enough_stock"}), 400
 
-            # prix
-            gain = qty * int(rd.base_sell_price)
-
-            # appliquer
+            # Décrémenter stock + créditer les coins
             rs.qty -= qty
-            me.coins = (me.coins or 0) + gain
+            gain = unit_price * qty
+            p.coins += gain
 
             s.commit()
+            s.refresh(rs)
+            s.refresh(p)
+
             return jsonify({
                 "ok": True,
-                "sold": {"resource": resource, "qty": qty, "unit_price": rd.base_sell_price, "gain": gain},
-                "player": {"id": me.id, "coins": me.coins}
+                "sold": {
+                    "resource": resource,
+                    "qty": qty,
+                    "gain": gain,              # <= attendu par le test
+                },
+                "stock": {
+                    "resource": resource,
+                    "qty": rs.qty,             # <= attendu par le test
+                },
+                "player": {
+                    "id": p.id,
+                    "coins": p.coins,          # <= attendu par le test
+                },
             }), 200
+
+
+
     
 
     @app.post("/api/daily")
@@ -395,25 +496,41 @@ def create_app():
                 "next_at": next_reset.isoformat()
             }), 200
             
-            
     @app.get("/api/resources")
     def list_resources():
+        """Liste les définitions de ressources (pour UI + tests)."""
         with SessionLocal() as s:
-            rows = s.query(ResourceDef).order_by(ResourceDef.unlock_min_level.asc(), ResourceDef.key.asc()).all()
+            rows = (
+                s.query(ResourceDef)
+                .filter_by(enabled=True)
+                .order_by(ResourceDef.unlock_min_level.asc())
+                .all()
+            )
             return jsonify([
                 {
                     "key": r.key,
                     "label": r.label,
+                    "unlock_min_level": r.unlock_min_level,
                     "base_cooldown": r.base_cooldown,
                     "base_sell_price": r.base_sell_price,
-                    "unlock_min_level": r.unlock_min_level,
                     "enabled": r.enabled,
-                } for r in rows
+                }
+                for r in rows
             ])
+
+
+
+
 
     @app.post("/api/dev/reseed")
     def dev_reseed():
         # Dev only – à protéger plus tard si besoin
+        seed = [
+            {"key":"branch","label":"Branchages","unlock_min_level":0,"base_cooldown":5,"base_sell_price":1,"enabled":True},
+            {"key":"palm_leaf","label":"Feuille de palmier","unlock_min_level":0,"base_cooldown":6,"base_sell_price":1,"enabled":True},
+            {"key":"wood","label":"Bois (palmier)","unlock_min_level":1,"base_cooldown":10,"base_sell_price":2,"enabled":True},
+            {"key":"stone","label":"Pierre","unlock_min_level":2,"base_cooldown":12,"base_sell_price":3,"enabled":True},
+        ]
         try:
             n = reseed_resources()
             return jsonify({"ok": True, "inserted": n})

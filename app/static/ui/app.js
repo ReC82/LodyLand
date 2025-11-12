@@ -24,20 +24,51 @@ let tickInterval = null;
 // -- after const $ = ... and serverUrlEl...
 const playerNameEl = $("currentPlayerName");
 
+let resources = []; 
+
+document.addEventListener("DOMContentLoaded", loadResources);
+
+function renderResInfo() {
+  const sel = $("resource");
+  const info = $("resInfo");
+  const btn = $("unlockBtn");
+  if (!sel || !info || !btn) return;
+
+  const key = sel.value;
+  const r = resources.find(x => x.key === key);
+  if (!r) {
+    info.textContent = "—";
+    btn.disabled = true;
+    return;
+  }
+  info.innerHTML = `min level=${r.unlock_min_level} • cooldown=${r.base_cooldown}s • prix=${r.base_sell_price}`;
+
+  // si on a déjà le player chargé, désactive le bouton si niveau insuffisant
+  if (currentPlayer && typeof currentPlayer.level === "number") {
+    btn.disabled = currentPlayer.level < r.unlock_min_level;
+  } else {
+    btn.disabled = false;
+  }
+}
+
 async function loadResources() {
   const r = await http("GET", "/api/resources");
   if (!r.ok) return;
+  resources = r.data || [];
   const sel = $("resource");
+  if (!sel) return;
   sel.innerHTML = "";
-  (r.data || []).forEach(it => {
-    if (!it.enabled) return;
-    const opt = document.createElement("option");
-    opt.value = it.key;
-    opt.textContent = `${it.label} (lvl ${it.unlock_min_level})`;
-    sel.appendChild(opt);
-  });
+  resources
+    .filter(x => x.enabled)
+    .forEach(it => {
+      const opt = document.createElement("option");
+      opt.value = it.key;
+      opt.textContent = `${it.label} (lvl ${it.unlock_min_level})`;
+      sel.appendChild(opt);
+    });
+  sel.onchange = renderResInfo;
+  renderResInfo();
 }
-document.addEventListener("DOMContentLoaded", loadResources);
 
 // Update current player name in navbar
 function setCurrentPlayerName(p) {
@@ -137,6 +168,7 @@ async function http(method, path, body) {
     $("progressTextRight").textContent = `${pct}%`;
 
     setCurrentPlayerName(p);
+    renderResInfo();
   }
 
 function renderTiles(list) {
