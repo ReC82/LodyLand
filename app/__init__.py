@@ -1,87 +1,107 @@
 # =============================================================================
 # File: app/__init__.py
-# Purpose: Minimal Flask application setup (Hello World).
+# Purpose: Minimal Flask app using SQLite via SQLAlchemy (with simple read routes).
 # =============================================================================
 from flask import Flask, jsonify, request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from sqlalchemy import select
+from .db import SessionLocal, init_db
+from .models import Player, Tile
 
 def create_app():
     """Factory that creates and configures the Flask app."""
     app = Flask(__name__)
-    
-    MEM = {
-        "players": {},     # id -> {"id": int, "name": str, "level": int, "coins": int, "diams": int}
-        "tiles": {},       # id -> {"id": int, "playerId": int, "resource": str, "locked": bool, "cooldown_until": datetime|None}
-        "seq_player": 0,
-        "seq_tile": 0,
-    }
+    init_db()
 
     @app.route("/")
     def hello():
         return "Hello, world!"
-    
+
     @app.get("/api/health")
     def health():
-        """Simple health check to verify server is up."""
-        return jsonify({"status": "ok", "time": datetime.utcnow().isoformat()})
-    
+        return jsonify({"status": "ok", "time": datetime.now(timezone.utc).isoformat()})
+
+    # --- NEW: read a player by id ------------------------------------------------
+    @app.get("/api/player/<int:player_id>")
+    def get_player(player_id: int):
+        """Return a player by id."""
+        with SessionLocal() as s:
+            p = s.get(Player, player_id)
+            if not p:
+                return jsonify({"error": "not_found"}), 404
+            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams})
+
+    # --- NEW: list tiles for a player -------------------------------------------
+    @app.get("/api/player/<int:player_id>/tiles")
+    def list_tiles(player_id: int):
+        """Return all tiles for a player."""
+        with SessionLocal() as s:
+            # Fast check player exists
+            if not s.get(Player, player_id):
+                return jsonify({"error": "player_not_found"}), 404
+            rows = s.execute(select(Tile).where(Tile.player_id == player_id)).scalars().all()
+            data = [{
+                "id": t.id,
+                "playerId": t.player_id,
+                "resource": t.resource,
+                "locked": t.locked,
+                "cooldown_until": t.cooldown_until.isoformat() if t.cooldown_until else None,
+            } for t in rows]
+            return jsonify(data)
+
     @app.post("/api/player")
     def create_player():
-        """Create a new player with default attributes."""
-        data = request.json
-        name = data.get("name", "Lloyd")
-        
-        # Unique name check
-        if any(p["name"] == name for p in MEM["players"].values()):
-            return jsonify({"error": "name_taken"}), 409
-        
-        MEM["seq_player"] += 1
-        pid = MEM["seq_player"]
-        MEM["players"][pid] = {"id": pid, "name": name, "level": 0, "coins": 0, "diams": 0}
-        return jsonify(MEM["players"][pid])
+        """Create a simple player. Body: {"name": "Lloyd"}."""
+        data = request.get_json(silent=True) or {}
+        name = data.get("name", "player1")
+        with SessionLocal() as s:
+            exists = s.execute(select(Player).where(Player.name == name)).scalar_one_or_none()
+            if exists:
+                return jsonify({"error": "name_taken"}), 409
+            p = Player(name=name)
+            s.add(p)
+            s.commit()
+            s.refresh(p)
+            return jsonify({"id": p.id, "name": p.name, "level": p.level, "coins": p.coins, "diams": p.diams})
 
     @app.post("/api/tiles/unlock")
     def unlock_tile():
         """Unlock a tile for a player. Body: {"playerId": 1, "resource": "wood"}"""
-        
         data = request.get_json(silent=True) or {}
         player_id = data.get("playerId")
         resource = data.get("resource", "wood")
-        
-        if not player_id or player_id not in MEM["players"]:
-            return jsonify({"error": "player_not_found"}), 400
+        if not player_id:
+            return jsonify({"error": "playerId_required"}), 400
 
-        MEM["seq_tile"] += 1
-        tid = MEM["seq_tile"]
-        MEM["tiles"][tid] = {
-            "id": tid,
-            "playerId": player_id,
-            "resource": resource,
-            "locked": False,
-            "cooldown_until": None,
-        }
-        return jsonify({"ok": True, "tileId": tid})
-    
+        with SessionLocal() as s:
+            p = s.get(Player, player_id)
+            if not p:
+                return jsonify({"error": "player_not_found"}), 400
+            t = Tile(player_id=player_id, resource=resource, locked=False, cooldown_until=None)
+            s.add(t)
+            s.commit()
+            s.refresh(t)
+            return jsonify({"ok": True, "tileId": t.id})
+
     @app.post("/api/collect")
     def collect():
         """Collect from an unlocked tile if cooldown passed. Body: {"tileId": 1}."""
         data = request.get_json(silent=True) or {}
         tile_id = data.get("tileId")
-        if not tile_id or tile_id not in MEM["tiles"]:
-            return jsonify({"error": "tile_missing"}), 400
+        if not tile_id:
+            return jsonify({"error": "tileId_required"}), 400
 
-        t = MEM["tiles"][tile_id]
-        if t["locked"]:
-            return jsonify({"error": "locked"}), 400
-
-        now = datetime.utcnow()
-        if t["cooldown_until"] and t["cooldown_until"] > now:
-            return jsonify({"error": "on_cooldown", "until": t["cooldown_until"].isoformat()}), 409
-
-        # grant resource (MVP: just acknowledge)
-        t["cooldown_until"] = now + timedelta(seconds=10)
-        return jsonify({"ok": True, "next": t["cooldown_until"].isoformat()})    
-
-
+        with SessionLocal() as s:
+            t = s.get(Tile, tile_id)
+            if not t:
+                return jsonify({"error": "tile_missing"}), 400
+            if t.locked:
+                return jsonify({"error": "locked"}), 400
+            now = datetime.now(timezone.utc)
+            if t.cooldown_until and t.cooldown_until > now:
+                return jsonify({"error": "on_cooldown", "until": t.cooldown_until.isoformat()}), 409
+            t.cooldown_until = now + timedelta(seconds=10)
+            s.commit()
+            return jsonify({"ok": True, "next": t.cooldown_until.isoformat()})
 
     return app
