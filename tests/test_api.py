@@ -92,3 +92,51 @@ def test_sell_flow():
     # Coins increased
     assert data["player"]["coins"] >= data["sold"]["gain"]
     
+def test_daily_chest_once_per_day():
+    app = create_app()
+    client = app.test_client()
+
+    # Create player
+    rv = client.post("/api/player", json={"name": "DailyMan"})
+    assert rv.status_code == 200
+    p = rv.get_json()
+    pid = p["id"]
+
+    # Set cookie for the session to simulate UI usage
+    # client.set_cookie("localhost", "player_id", str(pid))
+    client.post("/api/login", json={"id": pid})
+
+    # First claim -> OK
+    rv = client.post("/api/daily")
+    assert rv.status_code == 200
+    data = rv.get_json()
+    assert data["ok"] is True
+    assert data["reward"] >= 1
+    coins_after = data["player"]["coins"]
+
+    # Second claim same day -> 409
+    rv = client.post("/api/daily")
+    assert rv.status_code == 409
+    data2 = rv.get_json()
+    assert data2["error"] == "already_claimed"
+    assert "next_at" in data2
+
+    # Force yesterday to allow another claim
+    from app.db import SessionLocal
+    from app.models import Player
+    from datetime import datetime, timezone, timedelta
+
+    with SessionLocal() as s:
+        me = s.get(Player, pid)
+        assert me is not None
+        me.last_daily = (datetime.now(timezone.utc).date() - timedelta(days=1))
+        s.commit()
+
+    # Claim again -> OK
+    rv = client.post("/api/daily")
+    assert rv.status_code == 200
+    data3 = rv.get_json()
+    assert data3["ok"] is True
+    assert data3["player"]["coins"] >= coins_after + data3["reward"]
+
+    

@@ -336,5 +336,20 @@ async function logout() {
   renderPlayer(null);
 }
 
+async function sell() {
+  const r = $("sellResource").value;
+  const q = Number(($("sellQty").value || "0").trim());
+  if (!r || !q) return;
+  const res = await http("POST", "/api/sell", { resource: r, qty: q });
+  if (!res.ok) {
+    alert("Sell error: " + JSON.stringify(res.data));
+    return;
+  }
+  // Update player + inventory
+  if (res.data?.player) renderPlayer(res.data.player);
+  await refreshInventory();
+}
+
+
 
 

@@ -3,14 +3,14 @@
 # Purpose: Minimal Flask app using SQLite via SQLAlchemy (with simple read routes).
 # =============================================================================
 from flask import Flask, jsonify, request, make_response, session
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from sqlalchemy import select
 
 # HELPERS
 from .db import SessionLocal, init_db
 from .models import Player, Tile, ResourceStock
 from .progression import level_for_xp, next_threshold, XP_PER_COLLECT
-from .economy import get_price, list_prices
+from .economy import get_price, list_prices, DAILY_REWARD_COINS
 
 
 
@@ -366,6 +366,46 @@ def create_app():
                 "stock": {"resource": resource, "qty": rs.qty},
             }), 200
 
+    @app.post("/api/daily")
+    def claim_daily():  
+        """Claim daily chest (once per UTC day)."""
+        with SessionLocal() as s:
+            me = _get_current_player(s)
+            if not me:
+                return jsonify({"error": "not_authenticated"}), 401
+
+            today_utc = datetime.now(timezone.utc).date()  # date UTC du jour
+            if me.last_daily == today_utc:
+                # Prochain reset à minuit UTC
+                next_reset = datetime.now(timezone.utc).replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                ) + timedelta(days=1)
+                return jsonify({
+                    "error": "already_claimed",
+                    "next_at": next_reset.isoformat()
+                }), 409
+
+            # Créditer
+            me.last_daily = today_utc
+            me.coins = (me.coins or 0) + DAILY_REWARD_COINS
+            s.commit()
+
+            # Prochain reset à minuit UTC
+            next_reset = datetime.now(timezone.utc).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ) + timedelta(days=1)
+
+            return jsonify({
+                "ok": True,
+                "reward": DAILY_REWARD_COINS,
+                "player": {
+                    "id": me.id, "name": me.name,
+                    "coins": me.coins, "diams": me.diams,
+                    "xp": me.xp, "level": me.level,
+                    "next_xp": next_threshold(me.level),
+                },
+                "next_at": next_reset.isoformat()
+            }), 200
 
     return app
 

@@ -133,7 +133,24 @@
             <div id="inventoryBox" class="row row-cols-2 row-cols-md-4 g-2 mt-1"></div>
           </div>
         </div>
+        <!-- Sell tiles -->
+        <div class="d-flex gap-2 align-items-end mt-3">
+        <div>
+          <label class="form-label">Ressource</label>
+          <select id="sellResource" class="form-select">
+            <option value="wood">wood</option>
+            <option value="stone">stone</option>
+            <option value="water">water</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Qty</label>
+          <input id="sellQty" class="form-control" value="1" />
+        </div>
+        <button class="btn btn-outline-primary" onclick="sell()">Sell</button>
       </div>
+      </div>
+
 
     </div>
   </main>

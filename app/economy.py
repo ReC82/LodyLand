@@ -7,6 +7,8 @@ PRICES = {
     "water": 1,
 }
 
+DAILY_REWARD_COINS = 50
+
 def get_price(resource: str) -> int:
     """Return unit price for a resource, or 0 if unknown."""
     return PRICES.get(resource.lower().strip(), 0)
