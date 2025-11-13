@@ -36,6 +36,7 @@
       </div>
     </div>
   </nav>
+  <!-- ======================= /NAVBAR ========================= -->
 
   <main class="container mb-4">
     <div class="row g-3">
@@ -65,6 +66,7 @@
           </div>
         </div>
       </div>
+      <!-- ===================== /SECTION: Auth ================= -->
 
       <!-- ===================================================== -->
       <!--  SECTION: Player (infos + refresh)                   -->
@@ -79,12 +81,11 @@
               <button class="btn btn-outline-success" onclick="refreshPlayer()">Refresh Player</button>
             </div>
 
-            <pre id="playerBox" class="bg-body-secondary p-2 rounded small mb-0">
-No player.
-            </pre>
+            <pre id="playerBox" class="bg-body-secondary p-2 rounded small mb-0">No player.</pre>
           </div>
         </div>
       </div>
+      <!-- =================== /SECTION: Player ================= -->
 
       <!-- ===================================================== -->
       <!--  SECTION: Tiles (choix ressource + unlock + liste)   -->
@@ -119,12 +120,11 @@ No player.
             </div>
 
             <!-- Résultat: liste des tiles -->
-            <pre id="tilesBox" class="bg-body-secondary p-2 rounded small mb-0">
-Aucune tuile.
-            </pre>
+            <pre id="tilesBox" class="bg-body-secondary p-2 rounded small mb-0">Aucune tuile.</pre>
           </div>
         </div>
       </div>
+      <!-- =================== /SECTION: Tiles ================== -->
 
       <!-- ===================================================== -->
       <!--  SECTION: Collect (récolte + logs)                   -->
@@ -154,12 +154,11 @@ Aucune tuile.
               </div>
             </div>
 
-            <pre id="collectBox" class="bg-body-secondary p-2 rounded small mb-0">
-No collect yet.
-            </pre>
+            <pre id="collectBox" class="bg-body-secondary p-2 rounded small mb-0">No collect yet.</pre>
           </div>
         </div>
       </div>
+      <!-- ================== /SECTION: Collect ================= -->
 
       <!-- ===================================================== -->
       <!--  SECTION: Daily Chest                               -->
@@ -185,6 +184,7 @@ No collect yet.
           </div>
         </div>
       </div>
+      <!-- ================= /SECTION: Daily Chest ============== -->
 
       <!-- ===================================================== -->
       <!--  SECTION: Progression (XP bar + pourcentage)         -->
@@ -210,6 +210,7 @@ No collect yet.
           </div>
         </div>
       </div>
+      <!-- ================ /SECTION: Progression ============== -->
 
       <!-- ===================================================== -->
       <!--  SECTION: Inventory + Sell                           -->
@@ -261,6 +262,38 @@ No collect yet.
           </div>
         </div>
       </div>
+      <!-- =============== /SECTION: Inventory + Sell ========== -->
+
+      <!-- ===================================================== -->
+      <!--  SECTION: Gameplay Grid (preview)                     -->
+      <!--  (affiche les tuiles débloquées sous forme de cartes) -->
+      <!-- ===================================================== -->
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title mb-0">Gameplay Grid (preview)</h5>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis small">
+                Debug only
+              </span>
+            </div>
+
+            <p class="text-muted small mb-3">
+              Ici on affichera la vraie grille de tuiles du jeu
+              (unlocked, prochaine tuile à débloquer, cooldowns, etc.).
+            </p>
+
+            <!-- Conteneur de la grille (rempli par app.js / refreshGrid) -->
+            <div
+              id="gridBox"
+              class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
+            ></div>
+            <!-- /gridBox -->
+          </div>
+        </div>
+      </div>
+      <!-- ============== FIN SECTION: Gameplay Grid (preview) ============== -->
+
 
     </div>
   </main>

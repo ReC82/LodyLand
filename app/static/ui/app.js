@@ -26,8 +26,6 @@ const playerNameEl = $("currentPlayerName");
 
 let resources = []; 
 
-document.addEventListener("DOMContentLoaded", loadResources);
-
 function renderResInfo() {
   const sel = $("resource");
   const info = $("resInfo");
@@ -303,6 +301,7 @@ async function unlockTile() {
     return;
   }
   await refreshTiles();
+  refreshGrid();
 }
 
 async function refreshTiles() {
@@ -318,32 +317,74 @@ async function refreshTiles() {
   renderTiles(r.data);
 }
 
-async function collect() {
-  const input = $("tileId");  // <-- important
-  if (!input) {
-    console.warn("Input #tileId not found in DOM.");
-    return;
-  }
-  const tileId = Number((input.value || "").trim());
-  if (!tileId) {
-    $("collectBox").innerHTML = "Renseigne un tileId (ex: 1).";
-    return;
-  }
-  if (cooldowns[tileId] && secondsUntil(cooldowns[tileId]) > 0) {
-    $("collectBox").innerHTML = `Cooldown… ${secondsUntil(cooldowns[tileId])}s`;
-    $("collectBtn").disabled = true;
-    return;
-  }
-  $("collectBtn").disabled = true;
+// ======================================================================
+//  Collect : depuis l'input OU depuis la grille
+//    - si on appelle collect({ tileId: 123 }) → utilise cet ID
+//    - sinon → lit l'input #tileId
+// ======================================================================
+async function collect(opts) {
+  const statusEl = $("collectBox");
+  const btn = $("collectBtn");
 
-  const r = await http("POST", "/api/collect", { tileId });
-  if (r.status === 409) {
-    $("collectBox").innerHTML = "⚠️ Action déjà effectuée ou en conflit.";
-    $("collectBtn").disabled = false;
+  // 1) ID éventuellement fourni par la grille
+  const fromGrid = opts && typeof opts.tileId !== "undefined"
+    ? opts.tileId
+    : null;
+
+  // 2) Sinon on lit l'input
+  let raw = $("tileId").value.trim();
+  let idFromInput = raw ? parseInt(raw, 10) : null;
+
+  // 3) On choisit la source prioritaire : grille > input
+  const tileId = fromGrid ?? idFromInput;
+
+  if (!tileId || Number.isNaN(tileId)) {
+    statusEl.textContent = "tileId manquant ou invalide.";
     return;
   }
-  renderCollect(r);
+
+  btn.disabled = true;
+  statusEl.textContent = "Collecting...";
+
+    try {
+    const r = await http("POST", "/api/collect", { tileId });
+
+    if (!r.ok) {
+      const err = r.data || {};
+      statusEl.textContent =
+        `ERR ${r.status} — ${err.error || "collect_failed"}`;
+      return;
+    }
+
+    const data = r.data;
+    statusEl.textContent =
+      `OK — next=${data.next || "?"}`;
+
+    // 🔹 On mémorise le cooldown pour cette tuile
+    if (data.next) {
+      cooldowns[tileId] = data.next;
+      ensureTicker();
+    }
+
+    // Mise à jour progression / inventaire
+    if (data.player) {
+      renderPlayer({
+        ...data.player,
+        next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
+      });
+    }
+    await refreshInventory();
+    await refreshGrid();  // pour que la tuile soit rafraîchie
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = "Erreur réseau.";
+  } finally {
+    btn.disabled = false;
+  }
+
 }
+
+
 
 async function register() {
   const name = $("playerName").value || "player1";
@@ -356,7 +397,7 @@ async function register() {
   $("authBox").innerHTML = `Connecté en cookie: id=${currentPlayer.id}`;
   renderPlayer(currentPlayer);
   await refreshInventory();
-  
+  refreshGrid();
 }
 
 async function login() {
@@ -370,6 +411,7 @@ async function login() {
   $("authBox").innerHTML = `Connecté en cookie: id=${currentPlayer.id}`;
   renderPlayer(currentPlayer);
   await refreshInventory();
+  refreshGrid();
 }
 
 async function logout() {
@@ -412,5 +454,129 @@ async function claimDaily() {
   btn.disabled = false;
 }
 
+async function loadGameState() {
+  const r = await http("GET", "/api/state");
+  const box = document.getElementById("gameStateBox");
+  if (!r.ok) {
+    box.textContent = "Error: " + JSON.stringify(r.data);
+    return;
+  }
+  box.textContent = JSON.stringify(r.data, null, 2);
+}
+
+// ======================================================================
+//  Gameplay Grid — Version 1 (cartes Bootstrap)
+// ======================================================================
+async function refreshGrid() {
+  const grid = document.getElementById("gridBox");
+  if (!grid) return;
+
+  grid.innerHTML = `<div class="text-muted small">Loading...</div>`;
+
+  // 1) récupérer le joueur courant (via cookie)
+  const me = await http("GET", "/api/me");
+  if (!me.ok) {
+    grid.innerHTML = `<div class="text-danger small">Not logged in.</div>`;
+    return;
+  }
+
+  const pid = me.data.id;
+
+  // 2) récupérer les tiles du joueur
+  const r = await http("GET", `/api/player/${pid}/tiles`);
+  if (!r.ok) {
+    grid.innerHTML = `<div class="text-danger small">Error loading tiles.</div>`;
+    return;
+  }
+
+  const tiles = r.data || [];
+  if (!tiles.length) {
+    grid.innerHTML = `<div class="text-muted small">Aucune tuile débloquée.</div>`;
+    return;
+  }
+
+  // 3) rendu des cartes
+  grid.innerHTML = "";
+  tiles.forEach((t) => {
+    const col = document.createElement("div");
+    col.className = "col";
+
+    // calcul du cooldown restant (en secondes)
+    // 1) on privilégie la valeur locale (cooldowns[t.id]) si présente
+    // 2) sinon on utilise t.cooldown_until venant du backend
+    let cdText = "—";
+    let onCooldown = false;
+
+    const sourceIso = cooldowns[t.id] || t.cooldown_until || null;
+    if (sourceIso) {
+      const sec = secondsUntil(sourceIso);
+      if (sec > 0) {
+        onCooldown = true;
+        cdText = `${sec}s restantes`;
+        // on garde la source dans la map pour continuer à suivre le temps
+        cooldowns[t.id] = sourceIso;
+        ensureTicker();
+      } else {
+        cdText = "Prêt";
+        // cooldown terminé → on peut nettoyer la map
+        delete cooldowns[t.id];
+      }
+    }
 
 
+    const lockedLabel = t.locked ? "YES" : "NO";
+    const lockedClass = t.locked ? "text-danger" : "text-success";
+
+    // bouton désactivé si tuile lockée ou en cooldown
+    const disabledAttr = t.locked || onCooldown ? "disabled" : "";
+
+    col.innerHTML = `
+      <div class="tile-card small text-center h-100 d-flex flex-column">
+        <div class="tile-card-header">
+          ${t.resource}
+        </div>
+
+        <div class="tile-card-id mb-1">
+          ID&nbsp;: ${t.id}
+        </div>
+
+        <div class="tile-card-meta mb-1">
+          Locked:
+          <strong class="${lockedClass}">${lockedLabel}</strong>
+        </div>
+
+        <div class="tile-card-cooldown mb-1">
+          Cooldown:<br>
+          ${cdText}
+        </div>
+
+        <div class="tile-card-footer mt-auto d-grid">
+          <button
+            class="btn btn-sm btn-outline-success"
+            onclick="collectFromGrid(${t.id})"
+            ${disabledAttr}
+          >
+            Collect
+          </button>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(col);
+  });
+}
+
+
+// ======================================================================
+//  Bouton collect depuis la grille
+// ======================================================================
+async function collectFromGrid(id) {
+  await collect({ tileId: id });
+  refreshGrid();
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadResources();
+  refreshGrid();   // <--- ajout ici !
+});
