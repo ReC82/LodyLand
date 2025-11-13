@@ -747,5 +747,10 @@ def create_app() -> Flask:
                 "resources": resources_payload,
             }), 200
 
+    # ---- GAME PAGE (vraie UI joueur) -----------------------------------------
+    @app.get("/play")
+    def play_page():
+        # Servira la vraie interface de jeu
+        return app.send_static_file("play/index.html")
 
     return app

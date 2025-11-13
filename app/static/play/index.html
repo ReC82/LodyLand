@@ -1,0 +1,117 @@
+<!--
+  File: static/play/index.html
+  Purpose: Première version de la vraie UI joueur (page /play).
+  NOTE: On reste minimal pour l’instant : Auth + infos du joueur.
+-->
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lodyland — Play</title>
+
+  <!-- Bootstrap 5 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- Optionnel: réutiliser ton styles.css plus tard -->
+  <link rel="stylesheet" href="/static/ui/styles.css">
+</head>
+<body class="bg-light">
+
+  <!-- ========================================================= -->
+  <!--  NAVBAR (titre + joueur courant)                         -->
+  <!-- ========================================================= -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom mb-3">
+    <div class="container-fluid">
+      <span class="navbar-brand">🏝️ Lodyland</span>
+      <div class="ms-auto small text-muted">
+        Joueur:
+        <span id="playCurrentPlayerName" class="fw-semibold">—</span>
+      </div>
+    </div>
+  </nav>
+  <!-- ====================== FIN NAVBAR ======================== -->
+
+  <main class="container mb-4">
+    <div class="row g-3">
+
+      <!-- ===================================================== -->
+      <!--  SECTION: Auth (Register / Login)                     -->
+      <!-- ===================================================== -->
+      <div class="col-12 col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Connexion</h5>
+
+            <div class="mb-2">
+              <label class="form-label">Nom du joueur</label>
+              <input id="playPlayerName" class="form-control" value="Lloyd" />
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <button class="btn btn-primary" id="btnPlayRegister">
+                Créer / Register
+              </button>
+              <button class="btn btn-outline-primary" id="btnPlayLogin">
+                Login
+              </button>
+              <button class="btn btn-outline-secondary" id="btnPlayLogout">
+                Logout
+              </button>
+            </div>
+
+            <div id="playAuthBox" class="text-muted small font-monospace">
+              Non connecté.
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ====================== FIN SECTION AUTH ============== -->
+
+      <!-- ===================================================== -->
+      <!--  SECTION: Infos joueur                               -->
+      <!-- ===================================================== -->
+      <div class="col-12 col-md-8">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Joueur</h5>
+            <pre id="playPlayerBox"
+                 class="bg-body-secondary p-2 rounded small mb-0">
+Aucun joueur chargé.
+            </pre>
+          </div>
+        </div>
+      </div>
+      <!-- ====================== FIN SECTION JOUEUR ============ -->
+
+      <!-- ===================================================== -->
+      <!--  SECTION: Placeholder Gameplay                        -->
+      <!--  (On remplira ici la grille de tuiles plus tard)      -->
+      <!-- ===================================================== -->
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Gameplay</h5>
+            <p class="text-muted small mb-0">
+              La vraie grille de jeu sera affichée ici dans l’étape suivante
+              (tuiles, collect, cooldowns, etc.).
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- ==================== FIN SECTION PLACEHOLDER ========= -->
+
+    </div>
+  </main>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JS de la page /play -->
+  <script src="/static/play/app.js"></script>
+</body>
+</html>
