@@ -652,4 +652,78 @@ def create_app() -> Flask:
         except Exception as e:
             return jsonify({"ok": False, "error": str(e)}), 500
 
+    @app.get("/api/state")
+    def get_state():
+        """Retourne l'état complet du joueur courant (pour future UI)."""
+        with SessionLocal() as s:
+            me = _get_current_player(s)
+            if not me:
+                return jsonify({"error": "not_authenticated"}), 401
+
+            # Tiles du joueur
+            tiles = (
+                s.query(Tile)
+                .filter_by(player_id=me.id)
+                .order_by(Tile.id.asc())
+                .all()
+            )
+
+            tiles_payload = []
+            for t in tiles:
+                tiles_payload.append({
+                    "id": t.id,
+                    "playerId": t.player_id,
+                    "resource": t.resource,
+                    "locked": t.locked,
+                    "cooldown_until": t.cooldown_until.isoformat()
+                        if t.cooldown_until else None,
+                })
+
+            # Inventaire
+            stocks = (
+                s.query(ResourceStock)
+                .filter_by(player_id=me.id)
+                .order_by(ResourceStock.resource.asc())
+                .all()
+            )
+            inventory_payload = [
+                {"resource": rs.resource, "qty": rs.qty}
+                for rs in stocks
+            ]
+
+            # Defs de ressources
+            resources_rows = (
+                s.query(ResourceDef)
+                .filter_by(enabled=True)
+                .order_by(ResourceDef.unlock_min_level.asc())
+                .all()
+            )
+            resources_payload = [
+                {
+                    "key": r.key,
+                    "label": r.label,
+                    "unlock_min_level": r.unlock_min_level,
+                    "base_cooldown": r.base_cooldown,
+                    "base_sell_price": r.base_sell_price,
+                    "enabled": r.enabled,
+                }
+                for r in resources_rows
+            ]
+
+            return jsonify({
+                "player": {
+                    "id": me.id,
+                    "name": me.name,
+                    "level": me.level,
+                    "xp": me.xp,
+                    "coins": me.coins,
+                    "diams": me.diams,
+                    "next_xp": next_threshold(me.level),
+                },
+                "tiles": tiles_payload,
+                "inventory": inventory_payload,
+                "resources": resources_payload,
+            }), 200
+
+
     return app
