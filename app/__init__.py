@@ -685,6 +685,8 @@ def create_app() -> Flask:
                         "base_sell_price": r.base_sell_price,
                         "enabled": r.enabled,
                         "unlock_rules": r.unlock_rules,
+                        "description": r.description,
+                        "unlock_description": r.unlock_description,
                     }
                     for r in rows
                 ]
