@@ -26,3 +26,9 @@ resources:
     base_sell_price: 2
     unlock_min_level: 1
     enabled: true
+    unlock_rules:
+      all:
+        - type: level_at_least
+          value: 1
+        - type: coins_at_least
+          value: 10
