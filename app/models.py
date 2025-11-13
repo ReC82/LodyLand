@@ -77,5 +77,7 @@ class ResourceDef(Base):
     base_sell_price: Mapped[int] = mapped_column(Integer, default=1)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-  
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    unlock_description: Mapped[str | None] = mapped_column(Text, nullable=True)
    
+    

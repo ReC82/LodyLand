@@ -1,6 +1,7 @@
 resources:
   - key: branch
     label: Branches
+    description: "Une branche tombée d'un arbre, parfaite pour commencer un feu."
     base_cooldown: 5
     base_sell_price: 1
     unlock_min_level: 0
@@ -8,6 +9,7 @@ resources:
 
   - key: palm_leaf
     label: Palm Leaf
+    description: "Une large feuille de palmier, utile pour tisser ou se protéger du soleil."
     base_cooldown: 6
     base_sell_price: 1
     unlock_min_level: 0
@@ -15,17 +17,20 @@ resources:
 
   - key: stone
     label: Stone
+    description: "Un caillou solide, base de tous les outils sérieux."
     base_cooldown: 8
     base_sell_price: 1
-    unlock_min_level: 0
+    unlock_min_level: 2
     enabled: true
 
   - key: wood
     label: Wood
+    description: "Du bois de palmier, ressource de base pour construire et crafter."
     base_cooldown: 10
     base_sell_price: 2
-    unlock_min_level: 2
+    unlock_min_level: 1
     enabled: true
+    unlock_description: "Niveau 1 et au moins 10 coins."
     unlock_rules:
       all:
         - type: level_at_least
