@@ -290,6 +290,68 @@ async function playLoadPlayer() {
   playRenderPlayer(res.data);
 }
 
+// ======================================================================
+//  DAILY CHEST (/play)
+// ======================================================================
+async function playClaimDaily() {
+  const btn = $("playDailyBtn");
+  const box = $("playDailyBox");
+
+  if (!btn || !box) return;
+
+  btn.disabled = true;
+  box.textContent = "Claiming...";
+
+  const res = await http("POST", "/api/daily");
+
+  if (!res.ok) {
+    const err = res.data || {};
+
+    if (err.error === "not_authenticated") {
+      box.textContent = "Pas connecté. Va sur /ui pour te logger.";
+    } else if (err.error === "already_claimed" && err.next_at) {
+      const next = new Date(err.next_at);
+      box.textContent =
+        "Déjà réclamé. Prochain coffre: " + next.toLocaleString();
+    } else {
+      box.textContent =
+        `ERR ${res.status} — ${JSON.stringify(res.data)}`;
+    }
+
+    btn.disabled = false;
+    return;
+  }
+
+  const data = res.data || {};
+  const reward = data.reward ?? 0;
+
+  let msg = `Coffre réclamé : +${reward} coins`;
+  if (data.next_at) {
+    const next = new Date(data.next_at);
+    msg += ` (prochain: ${next.toLocaleString()})`;
+  }
+  box.textContent = msg + ".";
+
+  // Mettre à jour le player si renvoyé
+  if (data.player) {
+    playRenderPlayer({
+      ...data.player,
+      coins: data.player.coins ?? 0,
+      diams: data.player.diams ?? 0,
+      next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
+    });
+  } else {
+    // fallback : recharge le player
+    await playLoadPlayer();
+  }
+
+  // L'inventaire peut avoir changé (coins affichés ailleurs plus tard)
+  await playRefreshInventory();
+
+  btn.disabled = false;
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   await playLoadPlayer();
   //await playRefreshInventory();
@@ -300,6 +362,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (invBtn) {
       invBtn.addEventListener("click", playRefreshInventory);
     }
+
+    // bouton Daily Chest
+    const dailyBtn = document.getElementById("playDailyBtn");
+    if (dailyBtn) {
+      dailyBtn.addEventListener("click", playClaimDaily);
+    }    
 
     // bouton Sell
     const sellBtn = document.getElementById("playSellBtn");
