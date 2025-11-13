@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, app, jsonify, make_response, render_template, request
 from sqlalchemy import select
 
 from .db import SessionLocal, init_db
@@ -750,7 +750,6 @@ def create_app() -> Flask:
     # ---- GAME PAGE (vraie UI joueur) -----------------------------------------
     @app.get("/play")
     def play_page():
-        # Servira la vraie interface de jeu
-        return app.send_static_file("play/index.html")
+        return render_template("play.html")
 
     return app
