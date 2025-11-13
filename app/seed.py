@@ -35,6 +35,9 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 1,
           "unlock_min_level": 0,
           "enabled": True,
+          "icon": "/static/img/resources/branch.png",
+          "description": "Une branche tombée d'un arbre.",
+          "unlock_text": "Toujours accessible (niveau 0).",
       },
       {
           "key": "palm_leaf",
@@ -43,6 +46,9 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 1,
           "unlock_min_level": 0,
           "enabled": True,
+          "icon": "/static/img/resources/palm_leaf.png",
+          "description": "Une large feuille de palmier, utile pour tisser ou se protéger du soleil.",
+          "unlock_text": "Toujours accessible (niveau 0).",
       },
       {
           "key": "stone",
@@ -51,6 +57,9 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 1,
           "unlock_min_level": 2,
           "enabled": True,
+          "icon": "/static/img/resources/small_stone.png",
+          "description": "Un caillou solide, base de tous les outils sérieux.",
+          "unlock_text": "Débloqué au niveau 2.",
       },
       {
           "key": "wood",
@@ -59,6 +68,9 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 2,
           "unlock_min_level": 0,
           "enabled": True,
+          "icon": "/static/img/resources/palm_wood.png",
+          "description": "Du bois de palmier, ressource de base pour construire et crafter.",
+          "unlock_text": "Toujours accessible (niveau 0).",
       },
   ]
 

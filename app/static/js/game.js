@@ -140,33 +140,16 @@ function playRenderGrid(tiles) {
     const col = document.createElement("div");
     col.className = "col";
 
-    const cdText = t.cooldown_until
-      ? new Date(t.cooldown_until).toLocaleTimeString()
-      : "—";
-
-    const disabledAttr = t.locked ? "disabled" : "";
+    // Fallbacks robustes
+    const icon = t.icon || "";                 // ou "/static/img/placeholder.png" si tu veux
+    const desc = t.description || "";
+    const unlockText = t.unlock_text || "";
 
     col.innerHTML = `
       <div class="border rounded p-2 bg-white small text-center">
-        <div class="fw-semibold text-capitalize">${t.resource}</div>
-        <div class="text-muted">
-          ID: <span class="font-monospace">${t.id}</span>
-        </div>
-        <div class="text-muted">
-          Locked: <strong>${t.locked ? "YES" : "NO"}</strong>
-        </div>
-        <div class="text-muted small">
-          Cooldown:<br>${cdText}
-        </div>
-        <div class="mt-2 d-grid">
-          <button
-            class="btn btn-sm btn-outline-success"
-            onclick="playCollect(${t.id})"
-            ${disabledAttr}
-          >
-            Collect
-          </button>
-        </div>
+        ${icon ? `<img src="${icon}" class="tile-icon">` : ""}
+        ${desc ? `<div class="small text-muted">${desc}</div>` : ""}
+        ${unlockText ? `<div class="small text-info">${unlockText}</div>` : ""}
       </div>
     `;
 

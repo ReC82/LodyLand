@@ -691,6 +691,7 @@ def create_app() -> Flask:
                         "unlock_rules": r.unlock_rules,
                         "description": r.description,
                         "unlock_description": r.unlock_description,
+                        "icon": r.icon,
                     }
                     for r in rows
                 ]
