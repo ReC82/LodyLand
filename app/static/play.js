@@ -1,17 +1,16 @@
 /*
   File: static/play.js
-  Purpose: Minimal “play” UI using existing API:
-   - /api/me
-   - /api/player/<id>/tiles
-   - /api/collect
+  Purpose: Simple "Play" UI for Lodyland (grid + player summary + inventory).
 */
 
+// ------------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------------
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
-const $ = (id) => document.getElementById(id);
 
-let playCurrentPlayer = null;
+const $ = (id) => document.getElementById(id);
 
 async function http(method, path, body) {
   const res = await fetch(`${baseUrl()}${path}`, {
@@ -30,80 +29,144 @@ async function http(method, path, body) {
   return { ok: res.ok, status: res.status, data };
 }
 
-// ---------------------------------------------------------------------------
-// Player
-// ---------------------------------------------------------------------------
-function renderPlayPlayer(p) {
+// ------------------------------------------------------------------
+// State
+// ------------------------------------------------------------------
+let playCurrentPlayer = null;
+
+// ------------------------------------------------------------------
+// Rendu du player + XP
+// ------------------------------------------------------------------
+function playRenderPlayer(p) {
   const box = $("playPlayerBox");
-  const nameEl = $("playCurrentPlayerName");
+  const nameSpan = $("playCurrentPlayerName");
 
   if (!p) {
-    box.textContent = "Pas de joueur connecté (utilise /ui pour register/login).";
-    nameEl.textContent = "—";
+    box.textContent = "No player (login via /ui).";
+    nameSpan.textContent = "—";
+
+    $("playXpFill").style.width = "0%";
+    $("playXpTextLeft").textContent = "XP: 0";
+    $("playXpTextRight").textContent = "0%";
     return;
   }
 
-  nameEl.textContent = p.name;
-  box.innerHTML = `
-    <div><strong>${p.name}</strong></div>
-    <div class="text-muted">
-      Niveau: ${p.level} • XP: ${p.xp} • Coins: ${p.coins} • Diams: ${p.diams}
-    </div>
-  `;
-}
+  playCurrentPlayer = p;
+  nameSpan.textContent = p.name || "—";
 
-async function loadPlayPlayer() {
-  const r = await http("GET", "/api/me");
-  if (!r.ok) {
-    renderPlayPlayer(null);
-    return null;
+  box.textContent = [
+    `id=${p.id}  name=${p.name}`,
+    `level=${p.level}  xp=${p.xp}`,
+    `coins=${p.coins ?? 0}  diams=${p.diams ?? 0}`,
+  ].join("\n");
+
+  const xp = Number(p.xp || 0);
+  const level = Number(p.level || 0);
+  const next = p.next_xp ?? p.nextXp ?? null;
+
+  let pct = 0;
+  if (next !== null && next !== undefined && Number(next) > 0) {
+    pct = Math.max(0, Math.min(100, Math.round((xp / Number(next)) * 100)));
+  } else {
+    pct = 100;
   }
-  playCurrentPlayer = r.data;
-  renderPlayPlayer(playCurrentPlayer);
-  return playCurrentPlayer;
+
+  $("playXpFill").style.width = `${pct}%`;
+  $("playXpTextLeft").textContent = `XP: ${xp} • Level: ${level}`;
+  $("playXpTextRight").textContent = `${pct}%`;
 }
 
-// ---------------------------------------------------------------------------
-// Tiles
-// ---------------------------------------------------------------------------
-function renderPlayTiles(tiles) {
-  const grid = $("playTilesGrid");
-  const status = $("playTilesStatus");
+// ------------------------------------------------------------------
+// Inventory
+// ------------------------------------------------------------------
+function playRenderInventory(list) {
+  const box = $("playInventoryBox");
+  if (!list || !list.length) {
+    box.innerHTML = `
+      <div class="col">
+        <div class="text-muted small">Inventaire vide.</div>
+      </div>
+    `;
+    return;
+  }
 
+  box.innerHTML = list
+    .map(
+      (r) => `
+      <div class="col">
+        <div class="inv-card h-100">
+          <div class="inv-title text-capitalize">${r.resource}</div>
+          <div class="inv-qty">qty: ${r.qty}</div>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+}
+
+async function playRefreshInventory() {
+  const res = await http("GET", "/api/inventory");
+  const box = $("playInventoryBox");
+  if (!res.ok) {
+    box.innerHTML = `
+      <div class="col">
+        <div class="text-danger small">
+          ERR ${res.status} — ${JSON.stringify(res.data)}
+        </div>
+      </div>
+    `;
+    return;
+  }
+  playRenderInventory(res.data);
+}
+
+// ------------------------------------------------------------------
+// Grid de tuiles
+// ------------------------------------------------------------------
+function playRenderGrid(tiles) {
+  const grid = $("playGridBox");
   if (!tiles || !tiles.length) {
-    status.textContent = "Aucune tuile (utilise /ui pour débloquer quelques tuiles).";
-    grid.innerHTML = "";
+    grid.innerHTML = `
+      <div class="col">
+        <div class="text-muted small">Aucune tuile débloquée.</div>
+      </div>
+    `;
     return;
   }
-
-  status.textContent = `${tiles.length} tuile(s)`;
 
   grid.innerHTML = "";
-
-  tiles.forEach(t => {
+  tiles.forEach((t) => {
     const col = document.createElement("div");
     col.className = "col";
 
-    const cooldownText = t.cooldown_until ? t.cooldown_until : "—";
+    const cdText = t.cooldown_until
+      ? new Date(t.cooldown_until).toLocaleTimeString()
+      : "—";
+
+    const disabledAttr = t.locked ? "disabled" : "";
 
     col.innerHTML = `
       <div class="border rounded p-2 bg-white small text-center">
         <div class="fw-semibold text-capitalize">${t.resource}</div>
+
         <div class="text-muted">
           ID: <span class="font-monospace">${t.id}</span>
         </div>
+
         <div class="text-muted">
           Locked: <strong>${t.locked ? "YES" : "NO"}</strong>
         </div>
+
         <div class="text-muted small">
           Cooldown:<br>
-          ${cooldownText}
+          ${cdText}
         </div>
+
         <div class="mt-2 d-grid">
           <button
             class="btn btn-sm btn-outline-success"
             onclick="playCollect(${t.id})"
-            ${t.locked ? "disabled" : ""}
+            ${disabledAttr}
           >
             Collect
           </button>
@@ -115,62 +178,82 @@ function renderPlayTiles(tiles) {
   });
 }
 
-async function loadPlayTiles() {
-  const status = $("playTilesStatus");
-  const grid = $("playTilesGrid");
-  grid.innerHTML = "";
-  status.textContent = "Chargement des tuiles...";
-
+async function playRefreshGrid() {
+  const grid = $("playGridBox");
   if (!playCurrentPlayer) {
-    status.textContent = "Pas de joueur (va sur /ui pour login/register).";
+    grid.innerHTML = `
+      <div class="col">
+        <div class="text-muted small">
+          No player. Va sur /ui pour t’enregistrer / te logger.
+        </div>
+      </div>
+    `;
     return;
   }
 
-  const r = await http("GET", `/api/player/${playCurrentPlayer.id}/tiles`);
-  if (!r.ok) {
-    status.textContent = `Erreur: ${r.status}`;
+  grid.innerHTML = `
+    <div class="col">
+      <div class="text-muted small">Loading tiles…</div>
+    </div>
+  `;
+
+  const res = await http("GET", `/api/player/${playCurrentPlayer.id}/tiles`);
+  if (!res.ok) {
+    grid.innerHTML = `
+      <div class="col">
+        <div class="text-danger small">
+          ERR ${res.status} — ${JSON.stringify(res.data)}
+        </div>
+      </div>
+    `;
     return;
   }
 
-  renderPlayTiles(r.data);
+  playRenderGrid(res.data);
 }
 
-// ---------------------------------------------------------------------------
-// Collect
-// ---------------------------------------------------------------------------
+// ------------------------------------------------------------------
+// Collect depuis la grille
+// ------------------------------------------------------------------
 async function playCollect(tileId) {
-  const status = $("playTilesStatus");
-  status.textContent = `Collecting tile #${tileId}...`;
-
-  const r = await http("POST", "/api/collect", { tileId });
-  if (!r.ok) {
-    const err = r.data || {};
-    status.textContent = `ERR ${r.status} — ${err.error || "collect_failed"}`;
+  const res = await http("POST", "/api/collect", { tileId });
+  if (!res.ok) {
+    alert(`Collect error: ${res.status} — ${JSON.stringify(res.data)}`);
     return;
   }
 
-  const data = r.data;
-  status.textContent = `OK — next=${data.next || "?"}`;
-
-  // Mettre à jour le joueur si renvoyé
+  const data = res.data || {};
+  // Met à jour le player (XP/coins…) s’il est renvoyé
   if (data.player) {
-    playCurrentPlayer = data.player;
-    renderPlayPlayer(playCurrentPlayer);
+    playRenderPlayer({
+      ...data.player,
+      coins: data.player.coins ?? 0,
+      diams: data.player.diams ?? 0,
+      next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
+    });
+  } else {
+    // fallback : recharger /api/me
+    await playLoadPlayer();
   }
 
-  // Recharger la grille
-  await loadPlayTiles();
+  await playRefreshInventory();
+  await playRefreshGrid();
 }
 
-// ---------------------------------------------------------------------------
-// Init
-// ---------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", async () => {
-  const p = await loadPlayPlayer();
-  if (p) {
-    await loadPlayTiles();
+// ------------------------------------------------------------------
+// Init : charger le player courant, inventaire, grid
+// ------------------------------------------------------------------
+async function playLoadPlayer() {
+  const res = await http("GET", "/api/me");
+  if (!res.ok) {
+    playRenderPlayer(null);
+    return;
   }
-});
+  playRenderPlayer(res.data);
+}
 
-// Expose à window pour onclick inline
-window.playCollect = playCollect;
+document.addEventListener("DOMContentLoaded", async () => {
+  await playLoadPlayer();
+  await playRefreshInventory();
+  await playRefreshGrid();
+});
