@@ -9,6 +9,9 @@ LODYLAND — CHEATSHEET (Windows / PowerShell)
 # Créer le venv (une seule fois)
 python -m venv .venv
 
+# en GitBash 
+source .venv/Scripts/activate
+
 # Activer le venv (PowerShell)
 & .\.venv\Scripts\Activate.ps1
 

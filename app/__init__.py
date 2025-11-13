@@ -82,14 +82,20 @@ def _seed_resources_if_missing():
 
         s.commit()
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> main
 def create_app():
     """Factory that creates and configures the Flask app."""
     app = Flask(__name__)
     init_db()
     _seed_resources_if_missing()
+<<<<<<< HEAD
     
+=======
+>>>>>>> main
     @app.route("/")
     def hello():
         return "Hello, world!"
@@ -397,16 +403,33 @@ def create_app():
     
     @app.post("/api/sell")
     def sell():
+<<<<<<< HEAD
         """Sell some resource from the player's inventory."""
         data = request.get_json(silent=True) or {}
         resource = (data.get("resource") or "").strip().lower()
         qty = int(data.get("qty") or 0)
         player_id = data.get("playerId")
 
+=======
+        """Sell resources from inventory.
+
+        Body: {"resource": "wood", "qty": 2, "playerId": 1 (optional)}
+
+        - Si playerId est fourni, on l'utilise directement
+        - Sinon, on essaie de récupérer le player via le cookie 'player_id'
+        """
+        data = request.get_json(silent=True) or {}
+        resource = (data.get("resource") or "").strip().lower()
+        qty = int(data.get("qty") or 0)
+        player_id = data.get("playerId")  # optionnel
+
+        # Validation basique
+>>>>>>> main
         if not resource or qty <= 0:
             return jsonify({"error": "bad_request"}), 400
 
         with SessionLocal() as s:
+<<<<<<< HEAD
             # Auth: si playerId fourni on l'utilise, sinon cookie
             p = s.get(Player, int(player_id)) if player_id else _get_current_player(s)
             if not p:
@@ -417,6 +440,29 @@ def create_app():
             unit_price = rd.base_sell_price if rd else 1
 
             # Vérifier le stock
+=======
+            # 🔐 Auth : priorité à playerId si fourni, sinon cookie
+            if player_id is not None:
+                try:
+                    p = s.get(Player, int(player_id))
+                except (TypeError, ValueError):
+                    p = None
+            else:
+                p = _get_current_player(s)
+
+            if not p:
+                return jsonify({"error": "not_authenticated"}), 401
+
+            # 💰 Prix unitaire via ResourceDef (fallback = 1 coin)
+            rd = (
+                s.query(ResourceDef)
+                .filter_by(key=resource, enabled=True)
+                .first()
+            )
+            unit_price = rd.base_sell_price if rd else 1
+
+            # 📦 Vérifier le stock
+>>>>>>> main
             rs = (
                 s.query(ResourceStock)
                 .filter_by(player_id=p.id, resource=resource)
@@ -425,10 +471,17 @@ def create_app():
             if not rs or rs.qty < qty:
                 return jsonify({"error": "not_enough_stock"}), 400
 
+<<<<<<< HEAD
             # Décrémenter stock + créditer les coins
             rs.qty -= qty
             gain = unit_price * qty
             p.coins += gain
+=======
+            # 🔄 Appliquer la vente
+            rs.qty -= qty
+            gain = unit_price * qty
+            p.coins = (p.coins or 0) + gain
+>>>>>>> main
 
             s.commit()
             s.refresh(rs)
@@ -439,6 +492,7 @@ def create_app():
                 "sold": {
                     "resource": resource,
                     "qty": qty,
+<<<<<<< HEAD
                     "gain": gain,              # <= attendu par le test
                 },
                 "stock": {
@@ -453,6 +507,20 @@ def create_app():
 
 
 
+=======
+                    "gain": gain,          # ✅ utilisé par le test
+                },
+                "stock": {
+                    "resource": resource,
+                    "qty": rs.qty,         # ✅ utilisé par le test
+                },
+                "player": {
+                    "id": p.id,
+                    "coins": p.coins,      # ✅ le test vérifie >= gain
+                },
+            }), 200
+
+>>>>>>> main
     
 
     @app.post("/api/daily")
