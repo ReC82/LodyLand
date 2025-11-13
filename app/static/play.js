@@ -76,49 +76,87 @@ function playRenderPlayer(p) {
   $("playXpTextRight").textContent = `${pct}%`;
 }
 
-// ------------------------------------------------------------------
-// Inventory
-// ------------------------------------------------------------------
+// ======================================================================
+//  INVENTAIRE + VENTE (/play)
+// ======================================================================
+
 function playRenderInventory(list) {
-  const box = $("playInventoryBox");
+  const box = document.getElementById("playInventoryBox");
+  if (!box) return;
+
   if (!list || !list.length) {
-    box.innerHTML = `
-      <div class="col">
-        <div class="text-muted small">Inventaire vide.</div>
-      </div>
-    `;
+    box.innerHTML = "<div class='col small text-muted'>Inventaire vide.</div>";
     return;
   }
 
-  box.innerHTML = list
-    .map(
-      (r) => `
-      <div class="col">
-        <div class="inv-card h-100">
-          <div class="inv-title text-capitalize">${r.resource}</div>
-          <div class="inv-qty">qty: ${r.qty}</div>
-        </div>
+  const html = list.map(r => `
+    <div class="col">
+      <div class="border rounded p-2 bg-light h-100">
+        <div class="fw-semibold text-capitalize">${r.resource}</div>
+        <div class="small text-muted">qty: ${r.qty}</div>
       </div>
-    `
-    )
-    .join("");
+    </div>
+  `).join("");
+
+  box.innerHTML = html;
 }
 
 async function playRefreshInventory() {
+  const box = document.getElementById("playInventoryBox");
+  if (!box) return;
+
   const res = await http("GET", "/api/inventory");
-  const box = $("playInventoryBox");
   if (!res.ok) {
-    box.innerHTML = `
-      <div class="col">
-        <div class="text-danger small">
-          ERR ${res.status} — ${JSON.stringify(res.data)}
-        </div>
-      </div>
-    `;
+    box.innerHTML =
+      `<div class="col text-danger small">ERR ${res.status} — ${JSON.stringify(res.data)}</div>`;
     return;
   }
   playRenderInventory(res.data);
 }
+
+async function playSell() {
+  const resSel = document.getElementById("playSellResource");
+  const qtyInput = document.getElementById("playSellQty");
+  const msg = document.getElementById("playSellBox");
+
+  if (!resSel || !qtyInput || !msg) return;
+
+  const resource = (resSel.value || "").trim();
+  const qty = parseInt(qtyInput.value || "0", 10);
+
+  if (!resource || !qty || qty <= 0) {
+    msg.textContent = "Payload invalide (ressource ou quantité).";
+    return;
+  }
+
+  msg.textContent = "Selling...";
+  const r = await http("POST", "/api/sell", { resource, qty });
+
+  if (!r.ok) {
+    const err = r.data || {};
+    msg.textContent = `ERR ${r.status} — ${err.error || "sell_failed"}`;
+    return;
+  }
+
+  const data = r.data;
+  msg.textContent =
+    `Sold ${data.sold.qty}× ${data.sold.resource} for ${data.sold.gain} coins.`;
+
+  // mettre à jour le player si renvoyé
+  if (data.player) {
+    // on protège contre undefined (comme pour coins/diams plus haut)
+    playRenderPlayer({
+      ...data.player,
+      coins: data.player.coins ?? 0,
+      diams: data.player.diams ?? 0,
+      next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
+    });
+  }
+
+  // Rafraîchir l’inventaire
+  playRefreshInventory();
+}
+
 
 // ------------------------------------------------------------------
 // Grid de tuiles
@@ -254,6 +292,21 @@ async function playLoadPlayer() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   await playLoadPlayer();
-  await playRefreshInventory();
+  //await playRefreshInventory();
   await playRefreshGrid();
+
+    // bouton Refresh inventory
+    const invBtn = document.getElementById("playInventoryRefreshBtn");
+    if (invBtn) {
+      invBtn.addEventListener("click", playRefreshInventory);
+    }
+
+    // bouton Sell
+    const sellBtn = document.getElementById("playSellBtn");
+    if (sellBtn) {
+      sellBtn.addEventListener("click", playSell);
+    }
+
+    // premier chargement auto si le joueur est loggé
+    playRefreshInventory();
 });

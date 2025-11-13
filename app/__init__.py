@@ -498,68 +498,72 @@ def create_app() -> Flask:
 
     @app.post("/api/sell")
     def sell():
-        """Sell some resource from inventory.
-
-        Body: {"resource":"wood","qty":2,"playerId":1?}
-        Tests appellent avec playerId explicite.
-        """
+        """Sell some resource from the player's inventory."""
         data = request.get_json(silent=True) or {}
         resource = (data.get("resource") or "").strip().lower()
         qty = int(data.get("qty") or 0)
-        player_id = data.get("playerId")
+        player_id = data.get("playerId")  # optionnel (tests) ; sinon cookie
 
         if not resource or qty <= 0:
             return jsonify({"error": "invalid_payload"}), 400
 
         with SessionLocal() as s:
-            # Auth: playerId explicite ou cookie
-            me = s.get(Player, int(player_id)) if player_id else _get_current_player(s)
-            if not me:
+            # Auth : si playerId fourni (tests), on l'utilise, sinon cookie
+            if player_id:
+                try:
+                    p = s.get(Player, int(player_id))
+                except Exception:
+                    p = None
+            else:
+                p = _get_current_player(s)
+
+            if not p:
                 return jsonify({"error": "not_authenticated"}), 401
 
-            rd = _get_res_def(s, resource)
-            if not rd:
-                return jsonify(
-                    {"error": "resource_unknown_or_disabled"}
-                ), 400
+            # Prix unitaire via ResourceDef (fallback = 1)
+            rd = s.query(ResourceDef).filter_by(key=resource, enabled=True).first()
+            unit_price = rd.base_sell_price if rd else 1
 
+            # Vérifier le stock
             rs = (
                 s.query(ResourceStock)
-                .filter_by(player_id=me.id, resource=resource)
+                .filter_by(player_id=p.id, resource=resource)
                 .first()
             )
             if not rs or rs.qty < qty:
-                return jsonify({"error": "insufficient_qty"}), 400
+                return jsonify({"error": "not_enough_stock"}), 400
 
-            gain = qty * int(rd.base_sell_price)
+            # Décrémenter stock + créditer les coins
             rs.qty -= qty
-            me.coins = (me.coins or 0) + gain
+            gain = unit_price * qty
+            p.coins = (p.coins or 0) + gain
 
             s.commit()
             s.refresh(rs)
-            s.refresh(me)
+            s.refresh(p)
 
-            return (
-                jsonify(
-                    {
-                        "ok": True,
-                        "sold": {
-                            "resource": resource,
-                            "qty": qty,
-                            "gain": gain,
-                        },
-                        "stock": {
-                            "resource": resource,
-                            "qty": rs.qty,
-                        },
-                        "player": {
-                            "id": me.id,
-                            "coins": me.coins,
-                        },
-                    }
-                ),
-                200,
-            )
+            return jsonify({
+                "ok": True,
+                "sold": {
+                    "resource": resource,
+                    "qty": qty,
+                    "gain": gain,
+                },
+                "stock": {
+                    "resource": resource,
+                    "qty": rs.qty,
+                },
+                "player": {
+                    "id": p.id,
+                    "name": p.name,
+                    "level": p.level,
+                    "xp": p.xp,
+                    "coins": p.coins,
+                    "diams": p.diams,
+                    "next_xp": next_threshold(p.level),
+                },
+            }), 200
+
 
     # -----------------------------------------------------------------
     # Daily chest

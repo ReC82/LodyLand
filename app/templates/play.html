@@ -90,33 +90,78 @@ No player (login via /ui).
           </div>
         </div>
 
-        <!-- --- Inventory ------------------------------------- -->
+      <!-- ===================================================== -->
+      <!--  SECTION: Inventory + Sell                           -->
+      <!-- ===================================================== -->
+      <section class="mb-4">
         <div class="card">
           <div class="card-body">
+
+            <!-- Header Inventory -->
             <div class="d-flex align-items-center justify-content-between mb-2">
               <h5 class="card-title mb-0">Inventory</h5>
               <button
-                class="btn btn-outline-secondary btn-sm"
-                onclick="playRefreshInventory()"
+                id="playInventoryRefreshBtn"
+                class="btn btn-sm btn-outline-secondary"
+                type="button"
               >
                 Refresh
               </button>
             </div>
 
-            <div
-              id="playInventoryBox"
-              class="row row-cols-2 g-2 mt-1"
-            >
+            <!-- Grille d’inventaire -->
+            <div id="playInventoryBox"
+                 class="row row-cols-2 row-cols-md-4 g-2 mt-1">
               <!-- rempli par play.js -->
             </div>
 
-            <!-- Mini zone pour le résultat d’un sell (plus tard) -->
-            <div
-              id="playSellStatus"
-              class="text-muted small mt-2"
-            ></div>
+            <hr class="my-3">
+
+            <!-- Sous-section Sell -->
+            <h6 class="mb-2">Sell to NPC</h6>
+            <div class="row g-2 align-items-end">
+              <div class="col-12 col-md-4">
+                <label for="playSellResource" class="form-label">Ressource</label>
+                <select id="playSellResource" class="form-select">
+                  <!-- on peut laisser ces valeurs en dur pour le moment -->
+                  <option value="branch">branch</option>
+                  <option value="palm_leaf">palm_leaf</option>
+                  <option value="wood">wood</option>
+                  <option value="stone">stone</option>
+                </select>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <label for="playSellQty" class="form-label">Qty</label>
+                <input id="playSellQty"
+                       class="form-control"
+                       type="number"
+                       min="1"
+                       value="1">
+              </div>
+
+              <div class="col-12 col-md-3 d-grid">
+                <button
+                  id="playSellBtn"
+                  class="btn btn-outline-primary"
+                  type="button"
+                >
+                  Sell
+                </button>
+              </div>
+            </div>
+
+            <!-- zone de feedback vente -->
+            <div id="playSellBox"
+                 class="small text-muted mt-2">
+              No sell yet.
+            </div>
+
           </div>
         </div>
+      </section>
+      <!-- ========== FIN SECTION Inventory + Sell ============= -->
+
 
       </div>
     </div>
