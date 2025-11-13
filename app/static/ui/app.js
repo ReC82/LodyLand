@@ -86,30 +86,48 @@ function ensureTicker() {
 }
 
 function updateCountdownUI() {
-  // Update the Collect panel button state
+  // --- 1) Gestion du panneau Collect (input + bouton rouge) ---
   const input = $("tileId");
-  if (!input) return;
-  const tileIdVal = Number((input.value || "").trim());
   const btn = $("collectBtn");
-  if (tileIdVal && cooldowns[tileIdVal]) {
-    const sec = secondsUntil(cooldowns[tileIdVal]);
-    if (sec > 0) {
-      btn.disabled = true;
-      $("collectBox").innerHTML = `Cooldown… ${sec}s`;
+  if (input && btn) {
+    const tileIdVal = Number((input.value || "").trim());
+    if (tileIdVal && cooldowns[tileIdVal]) {
+      const sec = secondsUntil(cooldowns[tileIdVal]);
+      if (sec > 0) {
+        btn.disabled = true;
+        $("collectBox").innerHTML = `Cooldown… ${sec}s`;
+      } else {
+        delete cooldowns[tileIdVal];
+        btn.disabled = false;
+        $("collectBox").innerHTML = "Prêt à collecter.";
+      }
     } else {
-      delete cooldowns[tileIdVal];
       btn.disabled = false;
-      $("collectBox").innerHTML = "Prêt à collecter.";
-      // Optionnel: refresh tiles pour refléter cooldown_until nul
-      refreshTiles();
     }
-  } else {
-    btn.disabled = false;
   }
 
-  // Met à jour l’affichage des tiles (temps restant)
-  // (léger: on ne refait pas un fetch, on re-rendera sur prochain refreshTiles)
+  // --- 2) Gestion de la Gameplay Grid (cartes) ---
+  Object.entries(cooldowns).forEach(([tileId, iso]) => {
+    const sec = secondsUntil(iso);
+    const card = document.querySelector(
+      `.tile-card[data-tile-id="${tileId}"]`
+    );
+    if (!card) return;
+
+    const cdSpan = card.querySelector(".tile-cooldown");
+    const collectBtn = card.querySelector(".tile-collect-btn");
+
+    if (sec > 0) {
+      if (cdSpan) cdSpan.textContent = `${sec}s restantes`;
+      if (collectBtn) collectBtn.disabled = true;
+    } else {
+      if (cdSpan) cdSpan.textContent = "Prêt";
+      if (collectBtn) collectBtn.disabled = false;
+      delete cooldowns[tileId];
+    }
+  });
 }
+
 
 // ---- Generic helpers --------------------------------------------------------
 async function http(method, path, body) {
@@ -497,13 +515,8 @@ async function refreshGrid() {
 
   // 3) rendu des cartes
   grid.innerHTML = "";
-  tiles.forEach((t) => {
-    const col = document.createElement("div");
-    col.className = "col";
-
-    // calcul du cooldown restant (en secondes)
-    // 1) on privilégie la valeur locale (cooldowns[t.id]) si présente
-    // 2) sinon on utilise t.cooldown_until venant du backend
+    tiles.forEach(t => {
+    // calcul du cooldown (version que tu as déjà, gardons-la)
     let cdText = "—";
     let onCooldown = false;
 
@@ -513,48 +526,40 @@ async function refreshGrid() {
       if (sec > 0) {
         onCooldown = true;
         cdText = `${sec}s restantes`;
-        // on garde la source dans la map pour continuer à suivre le temps
         cooldowns[t.id] = sourceIso;
         ensureTicker();
       } else {
         cdText = "Prêt";
-        // cooldown terminé → on peut nettoyer la map
         delete cooldowns[t.id];
       }
     }
 
-
-    const lockedLabel = t.locked ? "YES" : "NO";
-    const lockedClass = t.locked ? "text-danger" : "text-success";
-
-    // bouton désactivé si tuile lockée ou en cooldown
-    const disabledAttr = t.locked || onCooldown ? "disabled" : "";
+    const col = document.createElement("div");
+    col.className = "col";
 
     col.innerHTML = `
-      <div class="tile-card small text-center h-100 d-flex flex-column">
-        <div class="tile-card-header">
-          ${t.resource}
+      <div class="border rounded p-2 bg-white small text-center tile-card"
+           data-tile-id="${t.id}">
+        <div class="fw-semibold text-capitalize">${t.resource}</div>
+
+        <div class="text-muted">
+          ID : <span class="font-monospace">${t.id}</span>
         </div>
 
-        <div class="tile-card-id mb-1">
-          ID&nbsp;: ${t.id}
+        <div class="text-muted">
+          Locked: <strong>${t.locked ? "YES" : "NO"}</strong>
         </div>
 
-        <div class="tile-card-meta mb-1">
-          Locked:
-          <strong class="${lockedClass}">${lockedLabel}</strong>
-        </div>
-
-        <div class="tile-card-cooldown mb-1">
+        <div class="text-muted small">
           Cooldown:<br>
-          ${cdText}
+          <span class="tile-cooldown">${cdText}</span>
         </div>
 
-        <div class="tile-card-footer mt-auto d-grid">
+        <div class="mt-2 d-grid">
           <button
-            class="btn btn-sm btn-outline-success"
+            class="btn btn-sm btn-outline-success tile-collect-btn"
             onclick="collectFromGrid(${t.id})"
-            ${disabledAttr}
+            ${t.locked || onCooldown ? "disabled" : ""}
           >
             Collect
           </button>
@@ -564,6 +569,7 @@ async function refreshGrid() {
 
     grid.appendChild(col);
   });
+
 }
 
 
