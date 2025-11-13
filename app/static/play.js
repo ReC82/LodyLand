@@ -57,7 +57,7 @@ function playRenderPlayer(p) {
   box.textContent = [
     `id=${p.id}  name=${p.name}`,
     `level=${p.level}  xp=${p.xp}`,
-    `coins=${p.coins}  diams=${p.diams}`,
+    `coins=${p.coins ?? 0}  diams=${p.diams ?? 0}`,
   ].join("\n");
 
   const xp = Number(p.xp || 0);
@@ -227,6 +227,8 @@ async function playCollect(tileId) {
   if (data.player) {
     playRenderPlayer({
       ...data.player,
+      coins: data.player.coins ?? 0,
+      diams: data.player.diams ?? 0,
       next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
     });
   } else {
