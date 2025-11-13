@@ -27,7 +27,7 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
     return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
 
 
-def _seed_resources_if_missing() -> None:
+def _seed_resources_if_missing():
     """Seed (et corrige) les ressources de base.
 
     - crée les entrées manquantes
@@ -41,6 +41,7 @@ def _seed_resources_if_missing() -> None:
             "base_cooldown": 5,
             "base_sell_price": 1,
             "enabled": True,
+            "unlock_rules": None,
         },
         {
             "key": "palm_leaf",
@@ -49,23 +50,30 @@ def _seed_resources_if_missing() -> None:
             "base_cooldown": 6,
             "base_sell_price": 1,
             "enabled": True,
+            "unlock_rules": None,
+        },
+        {
+            "key": "stone",
+            "label": "Pierre",
+            "unlock_min_level": 2,
+            "base_cooldown": 8,
+            "base_sell_price": 1,
+            "enabled": True,
+            "unlock_rules": None,
         },
         {
             "key": "wood",
             "label": "Bois (palmier)",
-            "unlock_min_level": 0,
+            "unlock_min_level": 1,          # <- niveau min 1
             "base_cooldown": 10,
             "base_sell_price": 2,
             "enabled": True,
-        },
-        # 👉 IMPORTANT : ressource qui demande AU MOINS le niveau 2
-        {
-            "key": "stone",
-            "label": "Pierre",
-            "unlock_min_level": 2,  # <= utilisée par le test_unlock_requires_min_level
-            "base_cooldown": 12,
-            "base_sell_price": 3,
-            "enabled": True,
+            "unlock_rules": {               # <- nos nouvelles règles
+                "all": [
+                    {"type": "level_at_least",  "value": 1},
+                    {"type": "coins_at_least",  "value": 10},
+                ]
+            },
         },
     ]
 
@@ -76,16 +84,20 @@ def _seed_resources_if_missing() -> None:
         for d in defaults:
             row = existing_by_key.get(d["key"])
             if row is None:
+                # pas encore en DB → on crée
                 row = ResourceDef(**d)
                 s.add(row)
             else:
+                # déjà en DB → on met à jour TOUT ce qui nous intéresse
                 row.label = d["label"]
                 row.unlock_min_level = d["unlock_min_level"]
                 row.base_cooldown = d["base_cooldown"]
                 row.base_sell_price = d["base_sell_price"]
                 row.enabled = d["enabled"]
+                row.unlock_rules = d.get("unlock_rules")
 
         s.commit()
+
 
 
 # ---------------------------------------------------------------------

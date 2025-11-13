@@ -24,7 +24,7 @@ resources:
     label: Wood
     base_cooldown: 10
     base_sell_price: 2
-    unlock_min_level: 1
+    unlock_min_level: 2
     enabled: true
     unlock_rules:
       all:

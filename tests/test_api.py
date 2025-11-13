@@ -44,7 +44,7 @@ def test_create_player_and_unlock_collect():
     assert player["name"] == "Lloyd"
 
     # Unlock tile
-    rv = client.post("/api/tiles/unlock", json={"playerId": player["id"], "resource": "wood"})
+    rv = client.post("/api/tiles/unlock", json={"playerId": player["id"], "resource": "branch"})
     assert rv.status_code == 200
     tile_id = rv.get_json()["id"]
 
@@ -66,27 +66,27 @@ def test_sell_flow():
     p = rv.get_json()
     pid = p["id"]
 
-    # Unlock wood tile
-    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": "wood"})
+    # Unlock branch tile
+    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": "branch"})
     assert rv.status_code == 200
     tile_id = rv.get_json()["id"]
 
     # Collect twice (so we can sell 2)
     rv = client.post("/api/collect", json={"tileId": tile_id}); assert rv.status_code == 200
     # Force cooldown skip for the test: set cooldown_until to None by re-listing and just collecting again after manual patch?
-    # Simpler for MVP: unlock a second wood tile and collect once again:
-    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": "wood"}); assert rv.status_code == 200
+    # Simpler for MVP: unlock a second branch tile and collect once again:
+    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": "branch"}); assert rv.status_code == 200
     tile2 = rv.get_json()["id"]
     rv = client.post("/api/collect", json={"tileId": tile2}); assert rv.status_code == 200
 
-    # Sell 2 wood
-    rv = client.post("/api/sell", json={"resource": "wood", "qty": 2, "playerId": pid})
+    # Sell 2 branch
+    rv = client.post("/api/sell", json={"resource": "branch", "qty": 2, "playerId": pid})
     assert rv.status_code == 200
     data = rv.get_json()
     assert data["ok"] is True
-    assert data["sold"]["resource"] == "wood"
+    assert data["sold"]["resource"] == "branch"
     assert data["sold"]["qty"] == 2
-    # Price must be >=1 coin per wood
+    # Price must be >=1 coin per branch
     assert data["sold"]["gain"] >= 2
     # Inventory decreased
     assert data["stock"]["qty"] >= 0
