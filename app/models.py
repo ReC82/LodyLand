@@ -76,6 +76,6 @@ class ResourceDef(Base):
     base_cooldown: Mapped[int] = mapped_column(Integer, default=10)     # secondes
     base_sell_price: Mapped[int] = mapped_column(Integer, default=1)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    unlock_rules: Mapped[dict | None] = mapped_column(JSON().with_variant(Text, "sqlite"),nullable=True)
+    unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
   
    

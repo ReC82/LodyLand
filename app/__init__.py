@@ -14,6 +14,8 @@ from .economy import DAILY_REWARD_COINS, list_prices
 from .models import Player, ResourceDef, ResourceStock, Tile
 from .progression import XP_PER_COLLECT, level_for_xp, next_threshold
 from .seed import reseed_resources
+from .unlock_rules import check_unlock_rules
+
 
 
 # ---------------------------------------------------------------------
@@ -25,7 +27,7 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
     return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
 
 
-def _seed_resources_if_missing() -> None:
+def _seed_resources_if_missing():
     """Seed (et corrige) les ressources de base.
 
     - crée les entrées manquantes
@@ -39,6 +41,7 @@ def _seed_resources_if_missing() -> None:
             "base_cooldown": 5,
             "base_sell_price": 1,
             "enabled": True,
+            "unlock_rules": None,
         },
         {
             "key": "palm_leaf",
@@ -47,23 +50,30 @@ def _seed_resources_if_missing() -> None:
             "base_cooldown": 6,
             "base_sell_price": 1,
             "enabled": True,
+            "unlock_rules": None,
+        },
+        {
+            "key": "stone",
+            "label": "Pierre",
+            "unlock_min_level": 2,
+            "base_cooldown": 8,
+            "base_sell_price": 1,
+            "enabled": True,
+            "unlock_rules": None,
         },
         {
             "key": "wood",
             "label": "Bois (palmier)",
-            "unlock_min_level": 0,
+            "unlock_min_level": 1,          # <- niveau min 1
             "base_cooldown": 10,
             "base_sell_price": 2,
             "enabled": True,
-        },
-        # 👉 IMPORTANT : ressource qui demande AU MOINS le niveau 2
-        {
-            "key": "stone",
-            "label": "Pierre",
-            "unlock_min_level": 2,  # <= utilisée par le test_unlock_requires_min_level
-            "base_cooldown": 12,
-            "base_sell_price": 3,
-            "enabled": True,
+            "unlock_rules": {               # <- nos nouvelles règles
+                "all": [
+                    {"type": "level_at_least",  "value": 1},
+                    {"type": "coins_at_least",  "value": 10},
+                ]
+            },
         },
     ]
 
@@ -74,16 +84,20 @@ def _seed_resources_if_missing() -> None:
         for d in defaults:
             row = existing_by_key.get(d["key"])
             if row is None:
+                # pas encore en DB → on crée
                 row = ResourceDef(**d)
                 s.add(row)
             else:
+                # déjà en DB → on met à jour TOUT ce qui nous intéresse
                 row.label = d["label"]
                 row.unlock_min_level = d["unlock_min_level"]
                 row.base_cooldown = d["base_cooldown"]
                 row.base_sell_price = d["base_sell_price"]
                 row.enabled = d["enabled"]
+                row.unlock_rules = d.get("unlock_rules")
 
         s.commit()
+
 
 
 # ---------------------------------------------------------------------
@@ -202,45 +216,52 @@ def create_app() -> Flask:
 
     @app.post("/api/tiles/unlock")
     def unlock_tile():
-        """Unlock a tile for the current player or explicit playerId.
+        """
+        Unlock a tile for the current player or explicit playerId.
 
-        Body: {"resource":"wood", "playerId": 1 (optional)}
+        Body: {"resource":"wood", "playerId": 1 (optionnel)}
         """
         data = request.get_json(silent=True) or {}
-        resource = (data.get("resource") or "").strip().lower()
-        player_id = data.get("playerId")
 
+        resource = (data.get("resource") or "").strip().lower()
         if not resource:
             return jsonify({"error": "resource_required"}), 400
 
+        # playerId peut être absent → fallback cookie
+        player_id = data.get("playerId")
+
         with SessionLocal() as s:
-            if not player_id:
+            # 1) Résoudre le player
+            if player_id is not None:
+                p = s.get(Player, int(player_id))
+                if not p:
+                    return jsonify({"error": "player_not_found"}), 404
+            else:
                 me = _get_current_player(s)
                 if not me:
                     return jsonify({"error": "player_required"}), 400
-                player_id = me.id
+                p = me
 
-            p = s.get(Player, int(player_id))
-            if not p:
-                return jsonify({"error": "player_not_found"}), 404
-
+            # 2) ResourceDef
             rd = _get_res_def(s, resource)
             if not rd:
-                return jsonify(
-                    {"error": "resource_unknown_or_disabled"}
-                ), 400
+                return jsonify({"error": "resource_unknown_or_disabled"}), 400
 
+            # 3) Check niveau minimal (comportement existant)
             if p.level < rd.unlock_min_level:
-                return (
-                    jsonify(
-                        {
-                            "error": "level_too_low",
-                            "required": rd.unlock_min_level,
-                        }
-                    ),
-                    403,
-                )
+                return jsonify({
+                    "error": "level_too_low",
+                    "required": rd.unlock_min_level,
+                }), 403
 
+            # 4) Check règles avancées (coins, etc.)
+            ok, details = check_unlock_rules(p, rd.unlock_rules)
+            if not ok:
+                payload = {"error": details.get("reason", "unlock_conditions_not_met")}
+                payload.update(details)
+                return jsonify(payload), 403
+
+            # 5) Si tout est OK -> créer la tuile
             t = Tile(
                 player_id=p.id,
                 resource=resource,
@@ -252,6 +273,7 @@ def create_app() -> Flask:
             s.refresh(t)
 
             return jsonify({"id": t.id}), 200
+
 
     @app.post("/api/collect")
     def collect():
