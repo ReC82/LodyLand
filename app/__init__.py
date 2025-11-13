@@ -14,6 +14,7 @@ from .economy import DAILY_REWARD_COINS, list_prices
 from .models import Player, ResourceDef, ResourceStock, Tile
 from .progression import XP_PER_COLLECT, level_for_xp, next_threshold
 from .seed import reseed_resources
+from app.seed import ensure_resources_seeded, reseed_resources
 
 
 # ---------------------------------------------------------------------
@@ -25,67 +26,6 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
     return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
 
 
-def _seed_resources_if_missing() -> None:
-    """Seed (et corrige) les ressources de base.
-
-    - crée les entrées manquantes
-    - met à jour celles qui existent déjà (unlock_min_level, prix, etc.)
-    """
-    defaults = [
-        {
-            "key": "branch",
-            "label": "Branchages",
-            "unlock_min_level": 0,
-            "base_cooldown": 5,
-            "base_sell_price": 1,
-            "enabled": True,
-        },
-        {
-            "key": "palm_leaf",
-            "label": "Feuilles de palmier",
-            "unlock_min_level": 0,
-            "base_cooldown": 6,
-            "base_sell_price": 1,
-            "enabled": True,
-        },
-        {
-            "key": "wood",
-            "label": "Bois (palmier)",
-            "unlock_min_level": 0,
-            "base_cooldown": 10,
-            "base_sell_price": 2,
-            "enabled": True,
-        },
-        # 👉 IMPORTANT : ressource qui demande AU MOINS le niveau 2
-        {
-            "key": "stone",
-            "label": "Pierre",
-            "unlock_min_level": 2,  # <= utilisée par le test_unlock_requires_min_level
-            "base_cooldown": 12,
-            "base_sell_price": 3,
-            "enabled": True,
-        },
-    ]
-
-    with SessionLocal() as s:
-        existing_rows = s.query(ResourceDef).all()
-        existing_by_key = {r.key: r for r in existing_rows}
-
-        for d in defaults:
-            row = existing_by_key.get(d["key"])
-            if row is None:
-                row = ResourceDef(**d)
-                s.add(row)
-            else:
-                row.label = d["label"]
-                row.unlock_min_level = d["unlock_min_level"]
-                row.base_cooldown = d["base_cooldown"]
-                row.base_sell_price = d["base_sell_price"]
-                row.enabled = d["enabled"]
-
-        s.commit()
-
-
 # ---------------------------------------------------------------------
 # App factory
 # ---------------------------------------------------------------------
@@ -93,7 +33,7 @@ def create_app() -> Flask:
     """Factory that creates and configures the Flask app."""
     app = Flask(__name__)
     init_db()
-    _seed_resources_if_missing()
+    ensure_resources_seeded()
 
     # -----------------------------------------------------------------
     # Basic routes

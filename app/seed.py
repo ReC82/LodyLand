@@ -1,28 +1,166 @@
-import yaml
+# File: app/seed.py
+# Purpose: Charger la config des ressources depuis data/resources.yaml
+#          et faire l'upsert dans la table ResourceDef.
+
+from __future__ import annotations
+
+import logging
 from pathlib import Path
-from sqlalchemy import delete
+from typing import Any, Dict, List
+
+import yaml
+
 from .db import SessionLocal
 from .models import ResourceDef
 
-DATA_PATH = Path(__file__).parent / "data" / "resources.yml"
+log = logging.getLogger(__name__)
 
-def reseed_resources():
-    if not DATA_PATH.exists():
-        raise FileNotFoundError(f"Missing {DATA_PATH}")
+# Emplacement par défaut du YAML
+CONFIG_PATH = (
+    Path(__file__)
+    .resolve()
+    .parent.parent  # remonte au projet
+    / "data"
+    / "resources.yaml"
+)
 
-    payload = yaml.safe_load(DATA_PATH.read_text(encoding="utf-8")) or {}
-    items = payload.get("resources", [])
 
-    with SessionLocal() as s:
-        s.execute(delete(ResourceDef))  # reset soft
-        for it in items:
-            s.add(ResourceDef(
-                key=it["key"],
-                label=it.get("label", it["key"].title()),
-                base_cooldown=int(it.get("base_cooldown", 10)),
-                base_sell_price=int(it.get("base_sell_price", 1)),
-                unlock_min_level=int(it.get("unlock_min_level", 0)),
-                enabled=bool(it.get("enabled", True)),
-            ))
-        s.commit()
-        return len(items)
+def _default_resources() -> List[Dict[str, Any]]:
+  """Fallback si le YAML est manquant ou invalide."""
+  return [
+      {
+          "key": "branch",
+          "label": "Branches",
+          "base_cooldown": 5,
+          "base_sell_price": 1,
+          "unlock_min_level": 0,
+          "enabled": True,
+      },
+      {
+          "key": "palm_leaf",
+          "label": "Palm Leaf",
+          "base_cooldown": 6,
+          "base_sell_price": 1,
+          "unlock_min_level": 0,
+          "enabled": True,
+      },
+      {
+          "key": "stone",
+          "label": "Stone",
+          "base_cooldown": 8,
+          "base_sell_price": 1,
+          "unlock_min_level": 2,
+          "enabled": True,
+      },
+      {
+          "key": "wood",
+          "label": "Wood",
+          "base_cooldown": 10,
+          "base_sell_price": 2,
+          "unlock_min_level": 0,
+          "enabled": True,
+      },
+  ]
+
+
+def load_resources_config(path: Path | None = None) -> List[Dict[str, Any]]:
+  """Charge la config YAML des ressources.
+
+  Retourne une liste de dicts prêts à être upsert en DB.
+  En cas de problème, on retourne un set de ressources par défaut.
+  """
+  path = path or CONFIG_PATH
+
+  if not path.exists():
+      log.warning("resources.yaml introuvable (%s), utilisation des defaults.", path)
+      return _default_resources()
+
+  try:
+      raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+  except Exception as e:
+      log.error("Erreur lors du chargement de %s: %s", path, e)
+      return _default_resources()
+
+  items = raw.get("resources") or []
+  if not isinstance(items, list):
+      log.error("resources.yaml: 'resources' n'est pas une liste, utilisation des defaults.")
+      return _default_resources()
+
+  cleaned: List[Dict[str, Any]] = []
+  for it in items:
+      if not isinstance(it, dict):
+          continue
+
+      key = (it.get("key") or "").strip().lower()
+      if not key:
+          continue
+
+      cleaned.append(
+          {
+              "key": key,
+              "label": it.get("label") or key,
+              "base_cooldown": int(it.get("base_cooldown") or 10),
+              "base_sell_price": int(it.get("base_sell_price") or 1),
+              "unlock_min_level": int(it.get("unlock_min_level") or 0),
+              "enabled": bool(it.get("enabled", True)),
+          }
+      )
+
+  if not cleaned:
+      log.warning("resources.yaml ne contient aucune ressource valide, utilisation des defaults.")
+      return _default_resources()
+
+  return cleaned
+
+
+def _upsert_resources(config_items: List[Dict[str, Any]]) -> int:
+  """Upsert des ResourceDef depuis la config fournie.
+
+  - crée les ressources manquantes
+  - met à jour les champs importants pour celles qui existent déjà
+  Retourne le nombre d'entrées créées ou mises à jour.
+  """
+  with SessionLocal() as s:
+      existing = s.query(ResourceDef).all()
+      by_key = {r.key: r for r in existing}
+      changed = 0
+
+      for d in config_items:
+          key = d["key"]
+          row = by_key.get(key)
+
+          if row is None:
+              row = ResourceDef(**d)
+              s.add(row)
+              changed += 1
+          else:
+              # mise à jour des champs principaux
+              row.label = d["label"]
+              row.base_cooldown = d["base_cooldown"]
+              row.base_sell_price = d["base_sell_price"]
+              row.unlock_min_level = d["unlock_min_level"]
+              row.enabled = d["enabled"]
+              changed += 1
+
+      s.commit()
+      return changed
+
+
+def ensure_resources_seeded() -> None:
+  """Assure que la table ResourceDef est alignée avec le YAML.
+
+  Appelée au démarrage de l'app (create_app).
+  """
+  cfg = load_resources_config()
+  n = _upsert_resources(cfg)
+  log.info("ensure_resources_seeded: %s ressources upsertées.", n)
+
+
+def reseed_resources() -> int:
+  """Endpoint 'dev' pour reseeder.
+
+  Pour l'instant, on fait la même chose que ensure_resources_seeded
+  et on retourne le nombre de lignes touchées.
+  """
+  cfg = load_resources_config()
+  return _upsert_resources(cfg)
