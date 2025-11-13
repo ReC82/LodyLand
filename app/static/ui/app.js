@@ -460,17 +460,31 @@ async function sell() {
 // Claim daily chest
 async function claimDaily() {
   const btn = $("dailyBtn");
+  const box = $("dailyBox");
   btn.disabled = true;
+  box.textContent = "Claiming...";
+
   const r = await http("POST", "/api/daily");
+
   if (r.ok) {
-    $("dailyBox").innerHTML = `OK — +${r.data.coins_awarded} coins`;
+    const d = r.data;
+    const reward = d.reward ?? d.coins_awarded ?? 0;
+    const streak = d.streak ?? 1;
+    const best = d.best_streak ?? streak;
+
+    box.innerHTML = `
+      OK — +${reward} coins<br>
+      Streak: ${streak} jour(s) • Best: ${best}
+    `;
+
     // refresh player to reflect new coins/xp
     await refreshPlayer();
   } else {
-    $("dailyBox").innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
+    box.innerHTML = `ERR ${r.status} — ${JSON.stringify(r.data)}`;
   }
   btn.disabled = false;
 }
+
 
 async function loadGameState() {
   const r = await http("GET", "/api/state");

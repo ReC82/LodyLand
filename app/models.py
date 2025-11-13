@@ -35,8 +35,8 @@ class Player(Base):
     # daily chest (date UTC, sans heure)
     last_daily: Mapped[dt.date | None] = mapped_column(Date, nullable=True)
 
-    # relationships (optionnel pour l’instant)
-    # tiles: Mapped[list["Tile"]] = relationship(back_populates="player")
+    daily_streak: Mapped[int] = mapped_column(Integer, default=0)   # streak courant
+    best_streak: Mapped[int] = mapped_column(Integer, default=0)    # meilleur streak
 
 
 class Tile(Base):

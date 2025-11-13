@@ -566,54 +566,64 @@ def create_app() -> Flask:
     # -----------------------------------------------------------------
     @app.post("/api/daily")
     def claim_daily():
-        """Claim daily chest (once per UTC day)."""
+        """Claim daily chest (once per UTC day, with streak)."""
+        from datetime import timedelta
+
         with SessionLocal() as s:
             me = _get_current_player(s)
             if not me:
                 return jsonify({"error": "not_authenticated"}), 401
 
             today_utc = datetime.now(timezone.utc).date()
+            yesterday = today_utc - timedelta(days=1)
+
+            # Déjà réclamé aujourd'hui ?
             if me.last_daily == today_utc:
                 next_reset = datetime.now(timezone.utc).replace(
                     hour=0, minute=0, second=0, microsecond=0
                 ) + timedelta(days=1)
-                return (
-                    jsonify(
-                        {
-                            "error": "already_claimed",
-                            "next_at": next_reset.isoformat(),
-                        }
-                    ),
-                    409,
-                )
+                return jsonify({
+                    "error": "already_claimed",
+                    "next_at": next_reset.isoformat()
+                }), 409
+
+            # Mise à jour du streak
+            if me.last_daily == yesterday:
+                # streak continué
+                me.daily_streak = (me.daily_streak or 0) + 1
+            else:
+                # streak cassé ou première fois
+                me.daily_streak = 1
+
+            # Meilleur streak
+            if (me.best_streak or 0) < me.daily_streak:
+                me.best_streak = me.daily_streak
+
+            # Récompense : tu peux affiner plus tard (bonus selon streak).
+            reward = DAILY_REWARD_COINS
 
             me.last_daily = today_utc
-            me.coins = (me.coins or 0) + DAILY_REWARD_COINS
+            me.coins = (me.coins or 0) + reward
             s.commit()
 
             next_reset = datetime.now(timezone.utc).replace(
                 hour=0, minute=0, second=0, microsecond=0
             ) + timedelta(days=1)
 
-            return (
-                jsonify(
-                    {
-                        "ok": True,
-                        "reward": DAILY_REWARD_COINS,
-                        "player": {
-                            "id": me.id,
-                            "name": me.name,
-                            "coins": me.coins,
-                            "diams": me.diams,
-                            "xp": me.xp,
-                            "level": me.level,
-                            "next_xp": next_threshold(me.level),
-                        },
-                        "next_at": next_reset.isoformat(),
-                    }
-                ),
-                200,
-            )
+            return jsonify({
+                "ok": True,
+                "reward": reward,
+                "streak": me.daily_streak,
+                "best_streak": me.best_streak,
+                "player": {
+                    "id": me.id, "name": me.name,
+                    "coins": me.coins, "diams": me.diams,
+                    "xp": me.xp, "level": me.level,
+                    "next_xp": next_threshold(me.level),
+                },
+                "next_at": next_reset.isoformat()
+            }), 200
+
 
     # -----------------------------------------------------------------
     # Resources listing (for UI + tests)
