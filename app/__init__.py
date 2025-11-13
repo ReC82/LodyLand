@@ -565,19 +565,18 @@ def create_app() -> Flask:
     # Daily chest
     # -----------------------------------------------------------------
     @app.post("/api/daily")
-    def claim_daily():
-        """Claim daily chest (once per UTC day, with streak)."""
-        from datetime import timedelta
+    def claim_daily():  
+        """Claim daily chest (once per UTC day) + gestion du streak."""
+        from datetime import datetime, timezone, timedelta, date  # au cas où
 
         with SessionLocal() as s:
             me = _get_current_player(s)
             if not me:
                 return jsonify({"error": "not_authenticated"}), 401
 
-            today_utc = datetime.now(timezone.utc).date()
-            yesterday = today_utc - timedelta(days=1)
+            today_utc: date = datetime.now(timezone.utc).date()
 
-            # Déjà réclamé aujourd'hui ?
+            # Déjà pris aujourd'hui ?
             if me.last_daily == today_utc:
                 next_reset = datetime.now(timezone.utc).replace(
                     hour=0, minute=0, second=0, microsecond=0
@@ -587,24 +586,31 @@ def create_app() -> Flask:
                     "next_at": next_reset.isoformat()
                 }), 409
 
-            # Mise à jour du streak
-            if me.last_daily == yesterday:
-                # streak continué
-                me.daily_streak = (me.daily_streak or 0) + 1
-            else:
-                # streak cassé ou première fois
-                me.daily_streak = 1
-
-            # Meilleur streak
-            if (me.best_streak or 0) < me.daily_streak:
-                me.best_streak = me.daily_streak
-
-            # Récompense : tu peux affiner plus tard (bonus selon streak).
-            reward = DAILY_REWARD_COINS
+            # --- Calcul du nouveau streak -------------------------------------
+            # Cas 1 : jamais pris / très vieux -> on repart à 1
+            new_streak = 1
+            if me.last_daily:
+                # Si pris hier, on continue la série
+                if me.last_daily == (today_utc - timedelta(days=1)):
+                    new_streak = (me.daily_streak or 0) + 1
+                else:
+                    new_streak = 1
 
             me.last_daily = today_utc
-            me.coins = (me.coins or 0) + reward
+            me.daily_streak = new_streak
+
+            # Best streak
+            current_best = me.best_streak or 0
+            if new_streak > current_best:
+                me.best_streak = new_streak
+            else:
+                me.best_streak = current_best
+
+            # Créditer les coins
+            me.coins = (me.coins or 0) + DAILY_REWARD_COINS
+
             s.commit()
+            s.refresh(me)
 
             next_reset = datetime.now(timezone.utc).replace(
                 hour=0, minute=0, second=0, microsecond=0
@@ -612,17 +618,23 @@ def create_app() -> Flask:
 
             return jsonify({
                 "ok": True,
-                "reward": reward,
-                "streak": me.daily_streak,
-                "best_streak": me.best_streak,
+                "reward": DAILY_REWARD_COINS,
                 "player": {
-                    "id": me.id, "name": me.name,
-                    "coins": me.coins, "diams": me.diams,
-                    "xp": me.xp, "level": me.level,
+                    "id": me.id,
+                    "name": me.name,
+                    "coins": me.coins,
+                    "diams": me.diams,
+                    "xp": me.xp,
+                    "level": me.level,
                     "next_xp": next_threshold(me.level),
                 },
-                "next_at": next_reset.isoformat()
+                "streak": {
+                    "current": me.daily_streak,
+                    "best": me.best_streak,
+                },
+                "next_at": next_reset.isoformat(),
             }), 200
+
 
 
     # -----------------------------------------------------------------
