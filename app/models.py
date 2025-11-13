@@ -11,8 +11,9 @@ from __future__ import annotations
 import datetime as dt  # use dt.date / dt.datetime for annotations
 from sqlalchemy import (
     Integer, String, Date, DateTime, Boolean,
-    ForeignKey, UniqueConstraint
+    ForeignKey, Text, UniqueConstraint
 )
+from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -75,5 +76,6 @@ class ResourceDef(Base):
     base_cooldown: Mapped[int] = mapped_column(Integer, default=10)     # secondes
     base_sell_price: Mapped[int] = mapped_column(Integer, default=1)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-
+    unlock_rules: Mapped[dict | None] = mapped_column(JSON().with_variant(Text, "sqlite"),nullable=True)
+  
    

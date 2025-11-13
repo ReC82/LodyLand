@@ -64,86 +64,82 @@ def _default_resources() -> List[Dict[str, Any]]:
 
 
 def load_resources_config(path: Path | None = None) -> List[Dict[str, Any]]:
-  """Charge la config YAML des ressources.
+    """Charge la config YAML des ressources.
 
-  Retourne une liste de dicts prêts à être upsert en DB.
-  En cas de problème, on retourne un set de ressources par défaut.
-  """
-  path = path or CONFIG_PATH
+    Retourne une liste de dicts prêts à être upsert en DB.
+    En cas de problème, on retourne un set de ressources par défaut.
+    """
+    path = path or CONFIG_PATH
 
-  if not path.exists():
-      log.warning("resources.yaml introuvable (%s), utilisation des defaults.", path)
-      return _default_resources()
+    if not path.exists():
+        log.warning("resources.yaml introuvable (%s), utilisation des defaults.", path)
+        return _default_resources()
 
-  try:
-      raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-  except Exception as e:
-      log.error("Erreur lors du chargement de %s: %s", path, e)
-      return _default_resources()
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception as e:
+        log.error("Erreur lors du chargement de %s: %s", path, e)
+        return _default_resources()
 
-  items = raw.get("resources") or []
-  if not isinstance(items, list):
-      log.error("resources.yaml: 'resources' n'est pas une liste, utilisation des defaults.")
-      return _default_resources()
+    items = raw.get("resources") or []
+    if not isinstance(items, list):
+        log.error("resources.yaml: 'resources' n'est pas une liste, utilisation des defaults.")
+        return _default_resources()
 
-  cleaned: List[Dict[str, Any]] = []
-  for it in items:
-      if not isinstance(it, dict):
-          continue
+    cleaned: List[Dict[str, Any]] = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
 
-      key = (it.get("key") or "").strip().lower()
-      if not key:
-          continue
+        key = (it.get("key") or "").strip().lower()
+        if not key:
+            continue
 
-      cleaned.append(
-          {
-              "key": key,
-              "label": it.get("label") or key,
-              "base_cooldown": int(it.get("base_cooldown") or 10),
-              "base_sell_price": int(it.get("base_sell_price") or 1),
-              "unlock_min_level": int(it.get("unlock_min_level") or 0),
-              "enabled": bool(it.get("enabled", True)),
-          }
-      )
+        cleaned.append(
+            {
+                "key": key,
+                "label": it.get("label") or key,
+                "base_cooldown": int(it.get("base_cooldown") or 10),
+                "base_sell_price": int(it.get("base_sell_price") or 1),
+                "unlock_min_level": int(it.get("unlock_min_level") or 0),
+                "enabled": bool(it.get("enabled", True)),
+                # 🔥 on stocke brut ce qui vient du YAML
+                "unlock_rules": it.get("unlock") or None,
+            }
+        )
 
-  if not cleaned:
-      log.warning("resources.yaml ne contient aucune ressource valide, utilisation des defaults.")
-      return _default_resources()
+    if not cleaned:
+        log.warning("resources.yaml ne contient aucune ressource valide, utilisation des defaults.")
+        return _default_resources()
 
-  return cleaned
+    return cleaned
 
 
 def _upsert_resources(config_items: List[Dict[str, Any]]) -> int:
-  """Upsert des ResourceDef depuis la config fournie.
+    with SessionLocal() as s:
+        existing = s.query(ResourceDef).all()
+        by_key = {r.key: r for r in existing}
+        changed = 0
 
-  - crée les ressources manquantes
-  - met à jour les champs importants pour celles qui existent déjà
-  Retourne le nombre d'entrées créées ou mises à jour.
-  """
-  with SessionLocal() as s:
-      existing = s.query(ResourceDef).all()
-      by_key = {r.key: r for r in existing}
-      changed = 0
+        for d in config_items:
+            key = d["key"]
+            row = by_key.get(key)
 
-      for d in config_items:
-          key = d["key"]
-          row = by_key.get(key)
+            if row is None:
+                row = ResourceDef(**d)
+                s.add(row)
+                changed += 1
+            else:
+                row.label = d["label"]
+                row.base_cooldown = d["base_cooldown"]
+                row.base_sell_price = d["base_sell_price"]
+                row.unlock_min_level = d["unlock_min_level"]
+                row.enabled = d["enabled"]
+                row.unlock_rules = d.get("unlock_rules")  # ✅ nouveau
+                changed += 1
 
-          if row is None:
-              row = ResourceDef(**d)
-              s.add(row)
-              changed += 1
-          else:
-              # mise à jour des champs principaux
-              row.label = d["label"]
-              row.base_cooldown = d["base_cooldown"]
-              row.base_sell_price = d["base_sell_price"]
-              row.unlock_min_level = d["unlock_min_level"]
-              row.enabled = d["enabled"]
-              changed += 1
-
-      s.commit()
-      return changed
+        s.commit()
+        return changed
 
 
 def ensure_resources_seeded() -> None:
