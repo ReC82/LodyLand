@@ -8,15 +8,6 @@ resources:
     unlock_min_level: 0
     enabled: true
 
-  - key: oak_wood_log
-    label: Log Oak Wood
-    description: "Un gros rondin de bois de chêne, idéal pour construire des structures solides."
-    icon: "/static/img/resources/oak_wood_log.png"
-    base_cooldown: 5
-    base_sell_price: 1
-    unlock_min_level: 0
-    enabled: true    
-
   - key: palm_leaf
     label: Palm Leaf
     description: "Une large feuille de palmier, utile pour tisser ou se protéger du soleil."
@@ -26,7 +17,7 @@ resources:
     unlock_min_level: 0
     enabled: true
 
-  - key: small_stone
+  - key: stone
     label: Small Stone
     description: "Un caillou solide, base de tous les outils sérieux."
     icon: "/static/img/resources/small_stone.png"
@@ -35,7 +26,7 @@ resources:
     unlock_min_level: 2
     enabled: true
 
-  - key: palm_wood
+  - key: wood
     label: Palm Wood
     description: "Du bois de palmier, ressource de base pour construire et crafter."
     icon: "/static/img/resources/palm_wood.png"

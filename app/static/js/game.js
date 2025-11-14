@@ -140,22 +140,23 @@ function playRenderGrid(tiles) {
     const col = document.createElement("div");
     col.className = "col";
 
-    // Fallbacks robustes
-    const icon = t.icon || "";                 // ou "/static/img/placeholder.png" si tu veux
+    const icon = t.icon || "/static/img/resources/default.png";
     const desc = t.description || "";
-    const unlockText = t.unlock_text || "";
+    const unlock = t.unlock_text || "";
 
     col.innerHTML = `
       <div class="border rounded p-2 bg-white small text-center">
-        ${icon ? `<img src="${icon}" class="tile-icon">` : ""}
-        ${desc ? `<div class="small text-muted">${desc}</div>` : ""}
-        ${unlockText ? `<div class="small text-info">${unlockText}</div>` : ""}
+        <img src="${icon}" class="tile-icon mb-1" alt="${t.resource}">
+        <div class="fw-semibold text-capitalize">${t.resource}</div>
+        <div class="small text-muted">${desc}</div>
+        <div class="small text-info">${unlock}</div>
       </div>
     `;
 
     grid.appendChild(col);
   });
 }
+
 
 async function playRefreshGrid() {
   const grid = $("playGridBox");
