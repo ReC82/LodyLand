@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
+import yaml
 
 from flask import Flask, app, jsonify, make_response, render_template, request
 from sqlalchemy import select
@@ -29,73 +31,45 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
 
 
 def _seed_resources_if_missing():
-    """Seed (et corrige) les ressources de base.
+    """Charge app/data/resources.yml et synchronise la table resource_defs."""
+    yaml_path = Path(__file__).resolve().parent / "data" / "resources.yml"
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f) or {}
 
-    - crée les entrées manquantes
-    - met à jour celles qui existent déjà (unlock_min_level, prix, etc.)
-    """
-    defaults = [
-        {
-            "key": "branch",
-            "label": "Branchages",
-            "unlock_min_level": 0,
-            "base_cooldown": 5,
-            "base_sell_price": 1,
-            "enabled": True,
-            "unlock_rules": None,
-        },
-        {
-            "key": "palm_leaf",
-            "label": "Feuilles de palmier",
-            "unlock_min_level": 0,
-            "base_cooldown": 6,
-            "base_sell_price": 1,
-            "enabled": True,
-            "unlock_rules": None,
-        },
-        {
-            "key": "stone",
-            "label": "Pierre",
-            "unlock_min_level": 2,
-            "base_cooldown": 8,
-            "base_sell_price": 1,
-            "enabled": True,
-            "unlock_rules": None,
-        },
-        {
-            "key": "wood",
-            "label": "Bois (palmier)",
-            "unlock_min_level": 1,          # <- niveau min 1
-            "base_cooldown": 10,
-            "base_sell_price": 2,
-            "enabled": True,
-            "unlock_rules": {               # <- nos nouvelles règles
-                "all": [
-                    {"type": "level_at_least",  "value": 1},
-                    {"type": "coins_at_least",  "value": 10},
-                ]
-            },
-        },
-    ]
+    resources = cfg.get("resources", [])
 
     with SessionLocal() as s:
-        existing_rows = s.query(ResourceDef).all()
-        existing_by_key = {r.key: r for r in existing_rows}
+        existing = {r.key: r for r in s.query(ResourceDef).all()}
 
-        for d in defaults:
-            row = existing_by_key.get(d["key"])
+        for d in resources:
+            key = d["key"]
+            row = existing.get(key)
             if row is None:
-                # pas encore en DB → on crée
-                row = ResourceDef(**d)
+                # création
+                row = ResourceDef(
+                    key=key,
+                    label=d.get("label", key),
+                    unlock_min_level=d.get("unlock_min_level", 0),
+                    base_cooldown=d.get("base_cooldown", 10),
+                    base_sell_price=d.get("base_sell_price", 1),
+                    enabled=d.get("enabled", True),
+                    unlock_rules=d.get("unlock_rules"),
+                    description=d.get("description"),
+                    unlock_description=d.get("unlock_description"),
+                    icon=d.get("icon"),
+                )
                 s.add(row)
             else:
-                # déjà en DB → on met à jour TOUT ce qui nous intéresse
-                row.label = d["label"]
-                row.unlock_min_level = d["unlock_min_level"]
-                row.base_cooldown = d["base_cooldown"]
-                row.base_sell_price = d["base_sell_price"]
-                row.enabled = d["enabled"]
-                row.unlock_rules = d.get("unlock_rules")
+                # mise à jour
+                row.label = d.get("label", row.label)
+                row.unlock_min_level = d.get("unlock_min_level", row.unlock_min_level)
+                row.base_cooldown = d.get("base_cooldown", row.base_cooldown)
+                row.base_sell_price = d.get("base_sell_price", row.base_sell_price)
+                row.enabled = d.get("enabled", row.enabled)
+                row.unlock_rules = d.get("unlock_rules", row.unlock_rules)
+                row.description = d.get("description", row.description)
+                row.unlock_description = d.get("unlock_description", row.unlock_description)
+                row.icon = d.get("icon", row.icon)
 
         s.commit()
 
@@ -195,28 +169,42 @@ def create_app() -> Flask:
     # -----------------------------------------------------------------
     @app.get("/api/player/<int:player_id>/tiles")
     def list_tiles(player_id: int):
-        """Return all tiles for a player."""
+        """Return all tiles for a player + metadata de ressource."""
         with SessionLocal() as s:
+            # Fast check player exists
             if not s.get(Player, player_id):
                 return jsonify({"error": "player_not_found"}), 404
+
+            # jointure Tile + ResourceDef
             rows = (
-                s.execute(select(Tile).where(Tile.player_id == player_id))
-                .scalars()
+                s.query(Tile, ResourceDef)
+                .outerjoin(ResourceDef, Tile.resource == ResourceDef.key)
+                .filter(Tile.player_id == player_id)
                 .all()
             )
-            data = [
-                {
+
+            data = []
+            for t, rd in rows:
+                data.append({
                     "id": t.id,
                     "playerId": t.player_id,
                     "resource": t.resource,
                     "locked": t.locked,
-                    "cooldown_until": t.cooldown_until.isoformat()
-                    if t.cooldown_until
-                    else None,
-                }
-                for t in rows
-            ]
+                    "cooldown_until": t.cooldown_until.isoformat() if t.cooldown_until else None,
+
+                    # nouveaux champs pour le front /play :
+                    "icon": rd.icon if rd else None,
+                    "description": rd.description if rd else None,
+                    # on expose un champ unlock_text que ton front consomme
+                    "unlock_text": (
+                        rd.unlock_description
+                        if (rd and rd.unlock_description)
+                        else None
+                    ),
+                })
+
             return jsonify(data)
+
 
     @app.post("/api/tiles/unlock")
     def unlock_tile():
@@ -672,6 +660,7 @@ def create_app() -> Flask:
     # -----------------------------------------------------------------
     @app.get("/api/resources")
     def list_resources():
+        """Liste les définitions de ressources (pour UI + tests)."""
         with SessionLocal() as s:
             rows = (
                 s.query(ResourceDef)
@@ -679,23 +668,18 @@ def create_app() -> Flask:
                 .order_by(ResourceDef.unlock_min_level.asc())
                 .all()
             )
-            return jsonify(
-                [
-                    {
-                        "key": r.key,
-                        "label": r.label,
-                        "unlock_min_level": r.unlock_min_level,
-                        "base_cooldown": r.base_cooldown,
-                        "base_sell_price": r.base_sell_price,
-                        "enabled": r.enabled,
-                        "unlock_rules": r.unlock_rules,
-                        "description": r.description,
-                        "unlock_description": r.unlock_description,
-                        "icon": r.icon,
-                    }
-                    for r in rows
-                ]
-            )
+            return jsonify([
+                {
+                    "key": r.key,
+                    "label": r.label,
+                    "unlock_min_level": r.unlock_min_level,
+                    "base_cooldown": r.base_cooldown,
+                    "base_sell_price": r.base_sell_price,
+                    "enabled": r.enabled,
+                }
+                for r in rows
+            ])
+
 
     # -----------------------------------------------------------------
     # Dev reseed endpoint
