@@ -72,6 +72,7 @@ class ResourceDef(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     key: Mapped[str] = mapped_column(String, unique=True, index=True)   # ex: "wood"
     label: Mapped[str] = mapped_column(String)                          # ex: "Bois"
+    icon: Mapped[str | None] = mapped_column(String, nullable=True)          # ex: "wood.png"
     unlock_min_level: Mapped[int] = mapped_column(Integer, default=0)   # ex: 2
     base_cooldown: Mapped[int] = mapped_column(Integer, default=10)     # secondes
     base_sell_price: Mapped[int] = mapped_column(Integer, default=1)

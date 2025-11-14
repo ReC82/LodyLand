@@ -15,6 +15,7 @@ from .models import Player, ResourceDef, ResourceStock, Tile
 from .progression import XP_PER_COLLECT, level_for_xp, next_threshold
 from .seed import reseed_resources
 from .unlock_rules import check_unlock_rules
+from .frontend import frontend_bp
 
 
 
@@ -108,6 +109,9 @@ def create_app() -> Flask:
     app = Flask(__name__)
     init_db()
     _seed_resources_if_missing()
+
+    # --- Frontend (pages HTML) ----------------------------------------
+    app.register_blueprint(frontend_bp)
 
     # -----------------------------------------------------------------
     # Basic routes
@@ -687,6 +691,7 @@ def create_app() -> Flask:
                         "unlock_rules": r.unlock_rules,
                         "description": r.description,
                         "unlock_description": r.unlock_description,
+                        "icon": r.icon,
                     }
                     for r in rows
                 ]
@@ -775,10 +780,5 @@ def create_app() -> Flask:
                 "inventory": inventory_payload,
                 "resources": resources_payload,
             }), 200
-
-    # ---- GAME PAGE (vraie UI joueur) -----------------------------------------
-    @app.get("/play")
-    def play_page():
-        return render_template("play.html")
 
     return app
