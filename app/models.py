@@ -11,7 +11,7 @@ from __future__ import annotations
 import datetime as dt  # use dt.date / dt.datetime for annotations
 from sqlalchemy import (
     Integer, String, Date, DateTime, Boolean,
-    ForeignKey, Text, UniqueConstraint
+    ForeignKey, Text, UniqueConstraint, Float
 )
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,7 +31,7 @@ class Player(Base):
 
     # progression
     level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    xp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    xp: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
     # daily chest (date UTC, sans heure)
     last_daily: Mapped[dt.date | None] = mapped_column(Date, nullable=True)
@@ -60,7 +60,7 @@ class ResourceStock(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     player_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     resource: Mapped[str] = mapped_column(String(30), index=True, nullable=False)
-    qty: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    qty: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("player_id", "resource", name="uix_player_resource"),
@@ -74,7 +74,7 @@ class ResourceDef(Base):
     label: Mapped[str] = mapped_column(String)                          # ex: "Bois"
     icon: Mapped[str | None] = mapped_column(String, nullable=True)          # ex: "wood.png"
     unlock_min_level: Mapped[int] = mapped_column(Integer, default=0)   # ex: 2
-    base_cooldown: Mapped[int] = mapped_column(Integer, default=10)     # secondes
+    base_cooldown: Mapped[float] = mapped_column(Float, default=10.0)
     base_sell_price: Mapped[int] = mapped_column(Integer, default=1)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
