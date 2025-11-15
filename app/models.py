@@ -81,4 +81,35 @@ class ResourceDef(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     unlock_description: Mapped[str | None] = mapped_column(Text, nullable=True)
    
-    
+class CardDef(Base):
+    __tablename__ = "card_defs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String, unique=True, index=True)
+    label: Mapped[str] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    icon: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    type: Mapped[str] = mapped_column(String)  # "resource_unlock", "building_unlock", etc.
+
+    target_resource: Mapped[str | None] = mapped_column(String, nullable=True)
+    target_building: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    price_coins: Mapped[int] = mapped_column(Integer, default=0)
+    price_diams: Mapped[int] = mapped_column(Integer, default=0)
+
+    max_owned: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 1 pour unique, None = illimité
+
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+
+class PlayerCard(Base):
+    __tablename__ = "player_cards"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), index=True)
+    card_key: Mapped[str] = mapped_column(String, index=True)
+    qty: Mapped[int] = mapped_column(Integer, default=1)
+
+    player = relationship("Player", backref="cards")    
