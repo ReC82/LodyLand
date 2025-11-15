@@ -10,11 +10,11 @@ bp = Blueprint("shop", __name__)
 # -----------------------------------------------------------------
 # Prices & selling
 # -----------------------------------------------------------------
-@bp.get("/api/prices")
+@bp.get("/prices")
 def get_prices():
     return jsonify({"prices": list_prices()})
 
-@bp.post("/api/sell")
+@bp.post("/sell")
 def sell():
     """Sell some resource from the player's inventory."""
     data = request.get_json(silent=True) or {}

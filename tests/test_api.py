@@ -1,50 +1,65 @@
 # =============================================================================
 # File: tests/test_api.py
-# Purpose: Minimal API smoke tests (health, create player).
+# Purpose: Minimal API smoke tests (health, player, collect, sell, daily).
 # =============================================================================
-import json
 import os
-import tempfile
 import pytest
 from uuid import uuid4
-from app.routes import create_app
-from app.db import Base, engine
+
 from app.progression import XP_PER_COLLECT
 
-@pytest.fixture(autouse=True)
-def _setup_tmp_db(monkeypatch):
-    """Use a temporary SQLite file per test run."""
-    fd, path = tempfile.mkstemp(prefix="test_db_", suffix=".sqlite")
-    os.close(fd)
-    os.environ["DATABASE_URL"] = f"sqlite:///{path}"
-    # Re-create tables on this temp engine
-    Base.metadata.create_all(bind=engine)
-    yield
-    try:
-        os.remove(path)
-    except FileNotFoundError:
-        pass
 
-def test_health():
-    app = create_app()
-    client = app.test_client()
+# ---------------------------------------------------------------------------
+#  Fixtures: app + client avec une DB SQLite temp par test
+# ---------------------------------------------------------------------------
+@pytest.fixture
+def app(tmp_path, monkeypatch):
+    """
+    Crée une app Flask avec une base SQLite temporaire.
+
+    Important:
+    - On définit DATABASE_URL AVANT d'importer `create_app`,
+      pour que app.db construise l'engine sur le bon fichier.
+    """
+    db_path = tmp_path / "test_db.sqlite"
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_path}")
+
+    # Import ici, après avoir fixé l'ENV
+    from app import create_app
+
+    application = create_app()
+    return application
+
+
+@pytest.fixture
+def client(app):
+    """Flask test_client basé sur l'app ci-dessus."""
+    return app.test_client()
+
+
+# ---------------------------------------------------------------------------
+#  Tests
+# ---------------------------------------------------------------------------
+def test_health(client):
     rv = client.get("/api/health")
     assert rv.status_code == 200
     data = rv.get_json()
     assert data["status"] == "ok"
 
-def test_create_player_and_unlock_collect():
-    app = create_app()
-    client = app.test_client()
 
+def test_create_player_and_unlock_collect(client):
     # Create player
     rv = client.post("/api/player", json={"name": "Lloyd"})
     assert rv.status_code == 200
     player = rv.get_json()
     assert player["name"] == "Lloyd"
+    pid = player["id"]
 
-    # Unlock tile
-    rv = client.post("/api/tiles/unlock", json={"playerId": player["id"], "resource": "branch"})
+    # Unlock tile (avec playerId explicite, c'est supporté par l'API)
+    rv = client.post(
+        "/api/tiles/unlock",
+        json={"playerId": pid, "resource": "branch"},
+    )
     assert rv.status_code == 200
     tile_id = rv.get_json()["id"]
 
@@ -55,11 +70,9 @@ def test_create_player_and_unlock_collect():
     assert data["ok"] is True
     assert data["player"]["xp"] >= XP_PER_COLLECT
     assert "next" in data and isinstance(data["next"], str) and len(data["next"]) > 0
-    
-def test_sell_flow():
-    app = create_app()
-    client = app.test_client()
 
+
+def test_sell_flow(client):
     # Create player
     rv = client.post("/api/player", json={"name": "Trader"})
     assert rv.status_code == 200
@@ -67,20 +80,34 @@ def test_sell_flow():
     pid = p["id"]
 
     # Unlock branch tile
-    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": "branch"})
+    rv = client.post(
+        "/api/tiles/unlock",
+        json={"playerId": pid, "resource": "branch"},
+    )
     assert rv.status_code == 200
     tile_id = rv.get_json()["id"]
 
-    # Collect twice (so we can sell 2)
-    rv = client.post("/api/collect", json={"tileId": tile_id}); assert rv.status_code == 200
-    # Force cooldown skip for the test: set cooldown_until to None by re-listing and just collecting again after manual patch?
-    # Simpler for MVP: unlock a second branch tile and collect once again:
-    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": "branch"}); assert rv.status_code == 200
+    # First collect
+    rv = client.post("/api/collect", json={"tileId": tile_id})
+    assert rv.status_code == 200
+
+    # Pour éviter de s'embêter avec le cooldown,
+    # on unlock une deuxième tuile et on collecte dessus.
+    rv = client.post(
+        "/api/tiles/unlock",
+        json={"playerId": pid, "resource": "branch"},
+    )
+    assert rv.status_code == 200
     tile2 = rv.get_json()["id"]
-    rv = client.post("/api/collect", json={"tileId": tile2}); assert rv.status_code == 200
+
+    rv = client.post("/api/collect", json={"tileId": tile2})
+    assert rv.status_code == 200
 
     # Sell 2 branch
-    rv = client.post("/api/sell", json={"resource": "branch", "qty": 2, "playerId": pid})
+    rv = client.post(
+        "/api/sell",
+        json={"resource": "branch", "qty": 2, "playerId": pid},
+    )
     assert rv.status_code == 200
     data = rv.get_json()
     assert data["ok"] is True
@@ -88,25 +115,24 @@ def test_sell_flow():
     assert data["sold"]["qty"] == 2
     # Price must be >=1 coin per branch
     assert data["sold"]["gain"] >= 2
-    # Inventory decreased
+    # Inventory decreased (au moins 0, on ne teste pas plus finement ici)
     assert data["stock"]["qty"] >= 0
     # Coins increased
     assert data["player"]["coins"] >= data["sold"]["gain"]
-    
-def test_daily_chest_once_per_day():
-    app = create_app()
-    client = app.test_client()
 
+
+def test_daily_chest_once_per_day(client):
     name = f"POL-{uuid4().hex[:6]}"
+
     # Create player
     rv = client.post("/api/player", json={"name": name})
     assert rv.status_code == 200
     p = rv.get_json()
     pid = p["id"]
 
-    # Set cookie for the session to simulate UI usage
-    # client.set_cookie("localhost", "player_id", str(pid))
-    client.post("/api/login", json={"id": pid})
+    # Simule le login (comme la Debug UI) pour que l'API daily repère le joueur
+    rv = client.post("/api/login", json={"id": pid})
+    assert rv.status_code == 200
 
     # First claim -> OK
     rv = client.post("/api/daily")
@@ -124,9 +150,9 @@ def test_daily_chest_once_per_day():
     assert "next_at" in data2
 
     # Force yesterday to allow another claim
+    from datetime import datetime, timezone, timedelta
     from app.db import SessionLocal
     from app.models import Player
-    from datetime import datetime, timezone, timedelta
 
     with SessionLocal() as s:
         me = s.get(Player, pid)
@@ -141,10 +167,8 @@ def test_daily_chest_once_per_day():
     assert data3["ok"] is True
     assert data3["player"]["coins"] >= coins_after + data3["reward"]
 
-def test_unlock_requires_min_level():
-    app = create_app()
-    client = app.test_client()
 
+def test_unlock_requires_min_level(client):
     # Crée player niveau 0
     rv = client.post("/api/player", json={"name": "Lowbie"})
     assert rv.status_code == 200
@@ -157,16 +181,19 @@ def test_unlock_requires_min_level():
     res = rv.get_json()
     demanding = None
     for r in res:
-        if r["unlock_min_level"] >= 2:  # on cible une ressource non déblocable au lvl 0
+        if r["unlock_min_level"] >= 2:
             demanding = r
             break
-    assert demanding is not None, "Besoin d'une ressource avec unlock_min_level >= 2 dans le seed"
+    assert demanding is not None, (
+        "Besoin d'une ressource avec unlock_min_level >= 2 dans le seed"
+    )
 
     # Essaye de l'unlock au level 0 -> 403
-    rv = client.post("/api/tiles/unlock", json={"playerId": pid, "resource": demanding["key"]})
+    rv = client.post(
+        "/api/tiles/unlock",
+        json={"playerId": pid, "resource": demanding["key"]},
+    )
     assert rv.status_code == 403
     data = rv.get_json()
     assert data["error"] == "level_too_low"
     assert data["required"] == demanding["unlock_min_level"]
-
-    
