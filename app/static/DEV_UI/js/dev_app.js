@@ -12,9 +12,11 @@ function baseUrl() {
 }
 
 const $ = (id) => document.getElementById(id);
+// Try to set server URL only if the element exists
 const serverUrlEl = $("serverUrl");
-serverUrlEl.textContent = baseUrl();
-
+if (serverUrlEl) {
+  serverUrlEl.textContent = baseUrl();
+}
 let currentPlayer = null;
 
 // Cooldown trackers keyed by tileId -> ISO date string
@@ -70,6 +72,7 @@ async function loadResources() {
 
 // Update current player name in navbar
 function setCurrentPlayerName(p) {
+  if (!playerNameEl) return;  // <-- évite une autre erreur
   playerNameEl.textContent = p?.name ?? "—";
 }
 

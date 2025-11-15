@@ -1,0 +1,76 @@
+{% extends "game_base.html" %}
+
+{% block title %}LodyLand — Play{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Bandeau joueur -->
+  <section class="mb-3">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-2 mb-md-0">
+        <div class="d-flex flex-column gap-1">
+          <div class="small text-muted">Joueur actuel</div>
+          <div id="playerHeader" class="fw-semibold">
+            Aucun joueur (clique sur "Commencer").
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <div class="input-group input-group-sm mb-2">
+          <span class="input-group-text">Nom</span>
+          <input id="playerName" type="text" class="form-control" placeholder="Farmer001">
+          <button class="btn btn-success" onclick="startGame()">Commencer</button>
+        </div>
+
+        <!-- Barre d'XP -->
+        <div class="small text-muted mb-1">
+          <span id="xpLabelLeft">XP: 0 • Level: 0</span>
+          <span class="float-end" id="xpLabelRight">0%</span>
+        </div>
+        <div class="progress" style="height: 12px;">
+          <div
+            id="xpBar"
+            class="progress-bar bg-success"
+            role="progressbar"
+            style="width: 0%;"
+            aria-valuemin="0"
+            aria-valuemax="100">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Grille de tuiles -->
+  <section class="mb-4">
+    <h2 class="h5 mb-2">Terrain</h2>
+    <div id="gridBox" class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3">
+      <div class="col">
+        <div class="border border-secondary rounded-3 p-3 text-center small text-muted">
+          Chargement des tuiles...
+        </div>
+      </div>
+    </div>
+
+    <div id="gridStatus" class="small text-muted mt-2">
+      Clique sur une tuile pour récolter.
+    </div>
+  </section>
+
+  <!-- Inventaire -->
+  <section class="mb-4">
+    <h2 class="h5 mb-2">Inventaire</h2>
+    <div id="inventoryBox" class="row row-cols-2 row-cols-md-4 g-2">
+      <div class="col">
+        <div class="border border-secondary rounded-3 p-2 small text-muted h-100 d-flex align-items-center justify-content-center">
+          Inventaire vide.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
+{% endblock %}

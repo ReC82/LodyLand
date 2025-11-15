@@ -2,7 +2,16 @@ resources:
   - key: branch
     label: Branches
     description: "Une branche tombée d'un arbre, parfaite pour commencer un feu."
-    icon: "/static/img/resources/branch.png"
+    icon: "/static/assets/img/resources/branch.png"
+    base_cooldown: 5
+    base_sell_price: 1
+    unlock_min_level: 0
+    enabled: true
+
+  - key: mushroom
+    label: Mushrooms
+    description: "Un champignon comestible, une source de nourriture rapide."
+    icon: "/static/assets/img/resources/mushroom.png"
     base_cooldown: 5
     base_sell_price: 1
     unlock_min_level: 0
@@ -11,7 +20,7 @@ resources:
   - key: palm_leaf
     label: Palm Leaf
     description: "Une large feuille de palmier, utile pour tisser ou se protéger du soleil."
-    icon: "/static/img/resources/palm_leaf.png"
+    icon: "/static/assets/img/resources/palm_leaf.png"
     base_cooldown: 6
     base_sell_price: 1
     unlock_min_level: 0
@@ -20,7 +29,7 @@ resources:
   - key: stone
     label: Small Stone
     description: "Un caillou solide, base de tous les outils sérieux."
-    icon: "/static/img/resources/small_stone.png"
+    icon: "/static/assets/img/resources/small_stone.png"
     base_cooldown: 8
     base_sell_price: 1
     unlock_min_level: 2
@@ -29,7 +38,7 @@ resources:
   - key: wood
     label: Palm Wood
     description: "Du bois de palmier, ressource de base pour construire et crafter."
-    icon: "/static/img/resources/oak_wood_log.png"
+    icon: "/static/assets/img/resources/oak_wood_log.png"
     base_cooldown: 10
     base_sell_price: 2
     unlock_min_level: 1
