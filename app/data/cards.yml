@@ -1,0 +1,28 @@
+cards:
+  - key: basic_stone
+    label: "Carte : Basic Stone"
+    description: "Permet de débloquer la ressource Small Stone."
+    icon: "/static/img/cards/basic_stone.png"
+    type: "resource_unlock"
+    target_resource: "small_stone"
+    price_coins: 25
+    price_diams: 0
+    max_owned: 1             # 1 seule fois
+    unlock_rules:
+      all:
+        - type: level_at_least
+          value: 2
+
+  - key: basic_craft_table
+    label: "Carte : Craft Table (basic)"
+    description: "Débloque la table de craft de base."
+    icon: "/static/img/cards/basic_craft_table.png"
+    type: "building_unlock"
+    target_building: "craft_table_basic"
+    price_coins: 50
+    price_diams: 0
+    max_owned: 1
+    unlock_rules:
+      all:
+        - type: level_at_least
+          value: 3
