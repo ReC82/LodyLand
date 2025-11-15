@@ -16,14 +16,14 @@ from .models import ResourceDef
 log = logging.getLogger(__name__)
 
 # Emplacement par défaut du YAML
+
 CONFIG_PATH = (
     Path(__file__)
     .resolve()
-    .parent.parent  # remonte au projet
+    .parent        # app/
     / "data"
-    / "resources.yaml"
+    / "resources.yml"   # et pas parent.parent / resources.yaml
 )
-
 
 def _default_resources() -> List[Dict[str, Any]]:
   """Fallback si le YAML est manquant ou invalide."""
@@ -37,7 +37,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "enabled": True,
           "icon": "/static/img/resources/branch.png",
           "description": "Une branche tombée d'un arbre.",
-          "unlock_text": "Toujours accessible (niveau 0).",
+          "unlock_description": "Toujours accessible (niveau 0).",
       },
       {
           "key": "palm_leaf",
@@ -48,7 +48,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "enabled": True,
           "icon": "/static/img/resources/palm_leaf.png",
           "description": "Une large feuille de palmier, utile pour tisser ou se protéger du soleil.",
-          "unlock_text": "Toujours accessible (niveau 0).",
+          "unlock_description": "Toujours accessible (niveau 0).",
       },
       {
           "key": "stone",
@@ -59,7 +59,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "enabled": True,
           "icon": "/static/img/resources/small_stone.png",
           "description": "Un caillou solide, base de tous les outils sérieux.",
-          "unlock_text": "Débloqué au niveau 2.",
+          "unlock_description": "Débloqué au niveau 2.",
       },
       {
           "key": "wood",
@@ -70,7 +70,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "enabled": True,
           "icon": "/static/img/resources/palm_wood.png",
           "description": "Du bois de palmier, ressource de base pour construire et crafter.",
-          "unlock_text": "Toujours accessible (niveau 0).",
+          "unlock_description": "Toujours accessible (niveau 0).",
       },
   ]
 
@@ -115,8 +115,16 @@ def load_resources_config(path: Path | None = None) -> List[Dict[str, Any]]:
                 "base_sell_price": int(it.get("base_sell_price") or 1),
                 "unlock_min_level": int(it.get("unlock_min_level") or 0),
                 "enabled": bool(it.get("enabled", True)),
-                # 🔥 on stocke brut ce qui vient du YAML
-                "unlock_rules": it.get("unlock") or None,
+
+                # Front needs these:
+                "icon": it.get("icon") or "/static/assets/img/resources/default.png",
+                "description": it.get("description") or "",
+
+                # Nice human readable text (used by API for /tiles):
+                "unlock_description": it.get("unlock_description") or None,
+
+                # Raw structured rules (JSON column):
+                "unlock_rules": it.get("unlock_rules") or None,
             }
         )
 
@@ -147,7 +155,13 @@ def _upsert_resources(config_items: List[Dict[str, Any]]) -> int:
                 row.base_sell_price = d["base_sell_price"]
                 row.unlock_min_level = d["unlock_min_level"]
                 row.enabled = d["enabled"]
-                row.unlock_rules = d.get("unlock_rules")  # ✅ nouveau
+
+                # New fields
+                row.icon = d.get("icon", row.icon)
+                row.description = d.get("description", row.description)
+                row.unlock_description = d.get("unlock_description", row.unlock_description)
+                row.unlock_rules = d.get("unlock_rules")
+
                 changed += 1
 
         s.commit()

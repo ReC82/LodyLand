@@ -7,7 +7,7 @@ import os
 import tempfile
 import pytest
 from uuid import uuid4
-from app import create_app
+from app.routes import create_app
 from app.db import Base, engine
 from app.progression import XP_PER_COLLECT
 
