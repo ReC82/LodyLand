@@ -1,0 +1,73 @@
+forest:
+  key: "forest"
+  label_fr: "Forêt"
+  label_en: "Forest"
+  starting_land: true           # donné dès l'inscription via la carte
+  slots: 6                      # nombre d'emplacements cliquables
+
+  tools:
+    hands:
+      base_loot:
+        - resource: "branch"
+          min: 1
+          max: 1
+          chance: 1.0           # 100% → tu as toujours au moins 1 branche
+      extra_loot:
+        - resource: "vine"
+          min: 1
+          max: 1
+          chance: 0.10          # 10% → liane en bonus
+    axe:
+      base_loot:
+        - resource: "wood"
+          min: 1
+          max: 1
+          chance: 1.0           # 100% → si tu utilises la hache, tu chopes du bois
+      extra_loot: []            # on pourra rajouter des bonus plus tard
+
+beach:
+  key: "beach"
+  label_fr: "Plage"
+  label_en: "Beach"
+  starting_land: false          # doit être débloqué via carte land_beach
+  slots: 6
+
+  tools:
+    hands:
+      base_loot:
+        - resource: "sand"
+          min: 1
+          max: 1
+          chance: 1.0           # 100% → sable
+      extra_loot:
+        - resource: "seashell"  # coquillage
+          min: 1
+          max: 1
+          chance: 0.0001        # 0.01% de chance
+        - resource: "starfish"  # étoile de mer
+          min: 1
+          max: 1
+          chance: 0.0001        # 0.01%
+        - resource: "pearl"     # perle
+          min: 1
+          max: 1
+          chance: 0.0001        # 0.01%
+    shovel:
+      base_loot:
+        - resource: "sand"
+          min: 1
+          max: 2
+          chance: 1.0           # avec la pelle, tu peux gagner un peu plus de sable
+      extra_loot:
+        - resource: "seashell"
+          min: 1
+          max: 1
+          chance: 0.001         # 0.1% — on ajustera plus tard si tu veux
+        - resource: "starfish"
+          min: 1
+          max: 1
+          chance: 0.001
+        - resource: "pearl"
+          min: 1
+          max: 1
+          chance: 0.001

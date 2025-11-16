@@ -20,3 +20,19 @@ cards:
     price_diams: 0
     max_owned: 5
     enabled: true
+
+  - key: land_forest
+    type: land
+    label: "Forêt"
+    description: "Permet d'accéder à la Forêt."
+    price_coins: 0
+    price_diams: 0
+    enabled: true
+
+  - key: land_beach
+    type: land
+    label: "Plage"
+    description: "Permet d'accéder à la Plage."
+    price_coins: 500
+    price_diams: 0
+    enabled: true

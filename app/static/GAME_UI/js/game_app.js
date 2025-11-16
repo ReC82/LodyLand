@@ -75,23 +75,31 @@ function renderPlayer(p) {
   const xpLeft = $("xpLabelLeft");
   const xpRight = $("xpLabelRight");
   const headerName = $("currentPlayerName");
+  const hudCoins = $("hudCoins");
+  const hudDiams = $("hudDiams");
 
   if (!p) {
-    if (header) header.textContent = "Aucun joueur (clique sur \"Commencer\").";
+    if (header) header.textContent = 'Aucun joueur (clique sur "Commencer").';
     if (xpBar) xpBar.style.width = "0%";
     if (xpLeft) xpLeft.textContent = "XP: 0 • Level: 0";
     if (xpRight) xpRight.textContent = "0%";
     if (headerName) headerName.textContent = "—";
+    if (hudCoins) hudCoins.textContent = "0";
+    if (hudDiams) hudDiams.textContent = "0";
     return;
   }
 
-  if (header) {
-    header.textContent = `id=${p.id} • ${p.name} • lvl=${p.level} • XP=${p.xp} • coins=${p.coins}`;
-  }
-
-  const xp = Number(p.xp || 0);
-  const level = Number(p.level || 0);
+  const xp = Number(p.xp ?? 0);
+  const level = Number(p.level ?? 0);
+  const coins = Number(p.coins ?? 0);
+  const diams = Number(p.diams ?? 0);
   const next = p.next_xp ?? p.nextXp ?? null;
+
+  if (header) {
+    header.textContent =
+      `id=${p.id} • ${p.name} • lvl=${level} ` +
+      `• XP=${xp} • coins=${coins}`;
+  }
 
   let pct = 0;
   if (next !== null && next !== undefined && Number(next) > 0) {
@@ -104,6 +112,8 @@ function renderPlayer(p) {
   if (xpLeft) xpLeft.textContent = `XP: ${xp} • Level: ${level}`;
   if (xpRight) xpRight.textContent = `${pct}%`;
   if (headerName) headerName.textContent = p.name ?? "—";
+  if (hudCoins) hudCoins.textContent = coins;
+  if (hudDiams) hudDiams.textContent = diams;
 }
 
 // ---------------------------------------------------------------------------
