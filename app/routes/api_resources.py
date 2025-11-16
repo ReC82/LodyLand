@@ -21,33 +21,88 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
       return None
   return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
 
-def _compute_collect_amount(session, player_id: int, resource_key: str) -> float:
-    """
-    Compute how much resource to give for a collect, taking owned cards into account.
-
-    Rules (MVP):
-    - base_amount = 1.0
-    - each "resource_boost" card for this resource gives +10%
-      => amount = base * (1 + 0.1 * nb_cards)
-    """
-    base_amount = 1.0
-
-    # Find all resource_boost cards for this player + resource
-    rows = (
+# -----------------------------------------------------------------
+# Card helpers
+# -----------------------------------------------------------------
+def _count_cards(session, player_id: int, card_type: str, target_resource: str | None = None) -> int:
+    """Return total quantity of cards of a given type (optionally tied to a resource)."""
+    q = (
         session.query(PlayerCard, CardDef)
         .join(CardDef, CardDef.key == PlayerCard.card_key)
         .filter(
             PlayerCard.player_id == player_id,
-            CardDef.type == "resource_boost",
+            CardDef.type == card_type,
+        )
+    )
+    if target_resource is not None:
+        q = q.filter(CardDef.target_resource == target_resource)
+
+    rows = q.all()
+    return sum(pc.qty for pc, cd in rows)
+
+
+def _has_unlock_resource_card(session, player_id: int, resource_key: str) -> bool:
+    """Return True if player owns at least one unlock_resource card for this resource."""
+    q = (
+        session.query(PlayerCard, CardDef)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player_id,
+            CardDef.type == "unlock_resource",
             CardDef.target_resource == resource_key,
         )
-        .all()
     )
+    rows = q.all()
+    return any(pc.qty > 0 for pc, cd in rows)
 
-    total_boost_cards = sum(pc.qty for pc, cd in rows)
 
-    multiplier = 1.0 + 0.1 * total_boost_cards
+def _compute_collect_amount(session, player_id: int, resource_key: str) -> float:
+    """
+    Compute how many units of a resource are collected per click.
+
+    Rules:
+      - base_amount = 1.0
+      - each 'resource_boost' card for this resource gives +10%
+    """
+    base_amount = 1.0
+    n_boost = _count_cards(session, player_id, "resource_boost", resource_key)
+    multiplier = 1.0 + 0.1 * n_boost
     return base_amount * multiplier
+
+
+def _compute_xp_gain(session, player_id: int, base_xp: int) -> float:
+    """
+    Compute XP gain per collect.
+
+    Rules:
+      - base_xp from progression.XP_PER_COLLECT
+      - each 'boost_xp' card gives +10% XP globally
+    """
+    n = _count_cards(session, player_id, "boost_xp", None)
+    multiplier = 1.0 + 0.1 * n
+    return base_xp * multiplier
+
+
+def _compute_cooldown(session, player_id: int, resource_key: str, base_cooldown: float) -> float:
+    """
+    Compute cooldown duration in seconds.
+
+    Rules:
+      - base_cooldown from ResourceDef.base_cooldown
+      - 'reduce_cooldown' cards:
+          * if target_resource = resource_key -> resource-specific
+          * if target_resource is NULL -> global
+        Each card gives -10% cooldown, min 10% of base.
+    """
+    n_res = _count_cards(session, player_id, "reduce_cooldown", resource_key)
+    n_global = _count_cards(session, player_id, "reduce_cooldown", None)
+    total = n_res + n_global
+    if total <= 0:
+        return float(base_cooldown)
+
+    # At least 10% of base cooldown
+    factor = max(0.1, 1.0 - 0.1 * total)
+    return float(base_cooldown) * factor
 
 # -----------------------------------------------------------------
 # Resources listing (for UI + tests)
@@ -104,13 +159,19 @@ def collect():
 
         rd = _get_res_def(s, t.resource)
         base_cd = rd.base_cooldown if rd else 10
-        next_cd = now + timedelta(seconds=base_cd)
+
+        # Apply cooldown reduction cards (resource-specific + global)
+        effective_cd = _compute_cooldown(s, t.player_id, t.resource, base_cd)
+        next_cd = now + timedelta(seconds=effective_cd)
         t.cooldown_until = next_cd
 
         level_up = False
         p = s.get(Player, t.player_id)
         if p:
-            p.xp = (p.xp or 0) + XP_PER_COLLECT
+            # Apply XP boost cards
+            gained_xp = _compute_xp_gain(s, p.id, XP_PER_COLLECT)
+            p.xp = (p.xp or 0) + gained_xp
+
             old_level = p.level or 0
             new_level = level_for_xp(p.xp)
             if new_level > old_level:
@@ -129,11 +190,11 @@ def collect():
                 rs = ResourceStock(
                     player_id=t.player_id,
                     resource=t.resource,
-                    qty=0.0,
+                    qty=0.0,  # we use float now
                 )
                 s.add(rs)
 
-            # 🔹 compute amount with cards boosts
+            # Apply resource_boost cards
             amount = _compute_collect_amount(s, t.player_id, t.resource)
             rs.qty = (rs.qty or 0.0) + amount
 
@@ -186,19 +247,25 @@ def unlock_tile():
         if not rd:
             return jsonify({"error": "resource_unknown_or_disabled"}), 400
 
-        # 3) Check niveau minimal (comportement existant)
-        if p.level < rd.unlock_min_level:
-            return jsonify({
-                "error": "level_too_low",
-                "required": rd.unlock_min_level,
-            }), 403
+        # 3) Check unlock conditions unless player owns an unlock_resource card
+        has_unlock_card = _has_unlock_resource_card(s, p.id, resource)
 
-        # 4) Check règles avancées (coins, etc.)
-        ok, details = check_unlock_rules(p, rd.unlock_rules)
-        if not ok:
-            payload = {"error": details.get("reason", "unlock_conditions_not_met")}
-            payload.update(details)
-            return jsonify(payload), 403
+        if not has_unlock_card:
+            # Minimal level check
+            if p.level < rd.unlock_min_level:
+                return jsonify({
+                    "error": "level_too_low",
+                    "required": rd.unlock_min_level,
+                }), 403
+
+            # Advanced unlock rules (coins, other conditions...)
+            ok, details = check_unlock_rules(p, rd.unlock_rules)
+            if not ok:
+                payload = {"error": details.get("reason", "unlock_conditions_not_met")}
+                payload.update(details)
+                return jsonify(payload), 403
+        # else: player has a card, we bypass normal conditions
+
 
         # 5) Si tout est OK -> créer la tuile
         t = Tile(
