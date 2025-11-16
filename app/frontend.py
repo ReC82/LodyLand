@@ -12,3 +12,9 @@ def home():
 def play_redirect():
     """Compatibilité : /play redirige vers /."""
     return redirect(url_for("frontend.home"))
+
+@frontend_bp.get("/land/beach")
+def land_beach():
+    """Display the Beach land page (6 slots)."""
+    # Later we can pass dynamic data here (player, cards, etc.)
+    return render_template("GAME_UI/lands/beach.html")
