@@ -196,7 +196,8 @@ def collect():
 
             # Apply resource_boost cards
             amount = _compute_collect_amount(s, t.player_id, t.resource)
-            rs.qty = (rs.qty or 0.0) + amount
+            new_qty = (rs.qty or 0.0) + amount
+            rs.qty = round(new_qty, 3)
 
         s.commit()
         return jsonify(
