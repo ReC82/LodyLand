@@ -1,52 +1,44 @@
-resources:
-  - key: branch
-    label: Branches
-    description: "Une branche tombée d'un arbre, parfaite pour commencer un feu."
-    icon: "/static/assets/img/resources/branch.png"
-    base_cooldown: 5
-    base_sell_price: 1
-    unlock_min_level: 0
+cards:
+  - key: wood_boost_1
+    label: "Booster Bois I"
+    description: "+10% de bois récolté."
+    icon: "/static/assets/img/cards/wood_boost_1.png"
+    type: "resource_boost"
+    target_resource: "wood"
+    price_coins: 50
+    price_diams: 0
+    max_owned: 5
     enabled: true
 
-  - key: mushroom
-    label: Mushrooms
-    description: "Un champignon comestible, une source de nourriture rapide."
-    icon: "/static/assets/img/resources/mushroom.png"
-    base_cooldown: 5
-    base_sell_price: 1
-    unlock_min_level: 0
+  - key: unlock_stone
+    label: "Carte Pierre"
+    description: "Débloque la ressource Stone même sans le niveau requis."
+    icon: "/static/assets/img/cards/unlock_stone.png"
+    type: "unlock_resource"
+    target_resource: "stone"
+    price_coins: 200
+    price_diams: 0
+    max_owned: 1
     enabled: true
 
-  - key: palm_leaf
-    label: Palm Leaf
-    description: "Une large feuille de palmier, utile pour tisser ou se protéger du soleil."
-    icon: "/static/assets/img/resources/palm_leaf.png"
-    base_cooldown: 6
-    base_sell_price: 1
-    unlock_min_level: 0
+  - key: xp_boost_1
+    label: "XP Booster I"
+    description: "+10% d'XP sur chaque collecte."
+    icon: "/static/assets/img/cards/xp_boost_1.png"
+    type: "boost_xp"
+    target_resource: null
+    price_coins: 100
+    price_diams: 0
+    max_owned: 3
     enabled: true
 
-  - key: stone
-    label: Small Stone
-    description: "Un caillou solide, base de tous les outils sérieux."
-    icon: "/static/assets/img/resources/small_stone.png"
-    base_cooldown: 8
-    base_sell_price: 1
-    unlock_min_level: 2
+  - key: cd_reducer_1
+    label: "Cooldown Reducer I"
+    description: "-10% cooldown sur toutes les ressources."
+    icon: "/static/assets/img/cards/cd_reducer_1.png"
+    type: "reduce_cooldown"
+    target_resource: null
+    price_coins: 150
+    price_diams: 0
+    max_owned: 3
     enabled: true
-
-  - key: wood
-    label: Palm Wood
-    description: "Du bois de palmier, ressource de base pour construire et crafter."
-    icon: "/static/assets/img/resources/oak_wood_log.png"
-    base_cooldown: 10
-    base_sell_price: 2
-    unlock_min_level: 1
-    enabled: true
-    unlock_description: "Niveau 1 et au moins 10 coins."
-    unlock_rules:
-      all:
-        - type: level_at_least
-          value: 1
-        - type: coins_at_least
-          value: 10
