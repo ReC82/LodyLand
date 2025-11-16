@@ -176,3 +176,38 @@ def buy_card():
                 },
             }
         )
+        
+@bp.post("/dev/set_card_qty")
+def dev_set_card_qty():
+    """Admin: set qty of a player card (debug only)."""
+    data = request.get_json(silent=True) or {}
+    pid = data.get("playerId")
+    key = data.get("card_key")
+    qty = data.get("qty")
+
+    if pid is None or key is None or qty is None:
+        return jsonify({"error": "invalid_payload"}), 400
+
+    try:
+        qty = int(qty)
+    except ValueError:
+        return jsonify({"error": "qty_must_be_int"}), 400
+
+    with SessionLocal() as s:
+        pc = (
+            s.query(PlayerCard)
+            .filter_by(player_id=pid, card_key=key)
+            .first()
+        )
+
+        if pc is None:
+            if qty <= 0:
+                return jsonify({"ok": True, "note": "nothing_to_reset"})
+            pc = PlayerCard(player_id=pid, card_key=key, qty=qty)
+            s.add(pc)
+        else:
+            pc.qty = qty
+
+        s.commit()
+        return jsonify({"ok": True, "key": key, "qty": qty})
+        

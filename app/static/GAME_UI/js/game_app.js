@@ -608,6 +608,104 @@ function renderBoostSummary(cards) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// CARD ADMIN PANEL (Debug UI)
+// ---------------------------------------------------------------------------
+
+async function refreshCardsDev() {
+  const table = $("cardDevTable");
+  const status = $("cardDevStatus");
+
+  if (!currentPlayer) {
+    table.innerHTML = `
+      <tr><td colspan="7" class="text-center text-muted">Aucun joueur chargé</td></tr>`;
+    status.textContent = "Aucun joueur.";
+    return;
+  }
+
+  status.textContent = "Chargement...";
+  const r = await http("GET", `/api/cards?playerId=${currentPlayer.id}`);
+
+  if (!r.ok) {
+    table.innerHTML = `
+      <tr><td colspan="7" class="text-danger text-center">Erreur chargement (${r.status})</td></tr>`;
+    status.textContent = "Erreur";
+    return;
+  }
+
+  const cards = r.data || [];
+  if (!cards.length) {
+    table.innerHTML = `
+      <tr><td colspan="7" class="text-center text-muted">Aucune carte définie</td></tr>`;
+    status.textContent = "Aucune carte.";
+    return;
+  }
+
+  table.innerHTML = cards.map(c => {
+    const icon = c.icon && c.icon.startsWith("/")
+      ? `<img src="${c.icon}" style="width:24px;height:24px;image-rendering:pixelated">`
+      : "";
+
+    const tgt = c.target_resource || c.target_building || "-";
+
+    return `
+      <tr>
+        <td>${icon}</td>
+        <td class="font-monospace">${c.key}</td>
+        <td>${c.label}</td>
+        <td>${c.type}</td>
+        <td>${tgt}</td>
+        <td>${c.owned_qty}</td>
+        <td>
+          <button class="btn btn-sm btn-success me-1"
+                  onclick="giveCardDev('${c.key}')">+1</button>
+          <button class="btn btn-sm btn-warning"
+                  onclick="resetCardDev('${c.key}')">Reset</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  status.textContent = "OK.";
+}
+
+async function giveCardDev(cardKey) {
+  if (!currentPlayer) return;
+
+  const body = {
+    card_key: cardKey,
+    playerId: currentPlayer.id
+  };
+
+  const r = await http("POST", "/api/cards/buy", body);
+
+  if (!r.ok) {
+    alert("Erreur d'ajout: " + JSON.stringify(r.data));
+    return;
+  }
+
+  await refreshCardsDev();
+}
+
+async function resetCardDev(cardKey) {
+  if (!currentPlayer) return;
+
+  // Reset = mettre qty = 0 dans player_cards
+  const r = await http("POST", "/api/dev/set_card_qty", {
+    playerId: currentPlayer.id,
+    card_key: cardKey,
+    qty: 0
+  });
+
+  if (!r.ok) {
+    alert("Reset error: " + JSON.stringify(r.data));
+    return;
+  }
+
+  await refreshCardsDev();
+}
+
+
 
 // ---------------------------------------------------------------------------
 // Initialisation
