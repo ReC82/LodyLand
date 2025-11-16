@@ -20,9 +20,9 @@ log = logging.getLogger(__name__)
 CONFIG_PATH = (
     Path(__file__)
     .resolve()
-    .parent        # app/
+    .parent
     / "data"
-    / "resources.yml"   # et pas parent.parent / resources.yaml
+    / "resources.yml"
 )
 
 def _default_resources() -> List[Dict[str, Any]]:
@@ -35,7 +35,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 1,
           "unlock_min_level": 0,
           "enabled": True,
-          "icon": "/static/img/resources/branch.png",
+          "icon": "/static/assets/img/resources/branch.png",
           "description": "Une branche tombée d'un arbre.",
           "unlock_description": "Toujours accessible (niveau 0).",
       },
@@ -46,7 +46,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 1,
           "unlock_min_level": 0,
           "enabled": True,
-          "icon": "/static/img/resources/palm_leaf.png",
+          "icon": "/static/assets/img/resources/palm_leaf.png",
           "description": "Une large feuille de palmier, utile pour tisser ou se protéger du soleil.",
           "unlock_description": "Toujours accessible (niveau 0).",
       },
@@ -57,7 +57,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 1,
           "unlock_min_level": 2,
           "enabled": True,
-          "icon": "/static/img/resources/small_stone.png",
+          "icon": "/static/assets/img/resources/small_stone.png",
           "description": "Un caillou solide, base de tous les outils sérieux.",
           "unlock_description": "Débloqué au niveau 2.",
       },
@@ -68,7 +68,7 @@ def _default_resources() -> List[Dict[str, Any]]:
           "base_sell_price": 2,
           "unlock_min_level": 0,
           "enabled": True,
-          "icon": "/static/img/resources/palm_wood.png",
+          "icon": "/static/assets/img/resources/palm_wood.png",
           "description": "Du bois de palmier, ressource de base pour construire et crafter.",
           "unlock_description": "Toujours accessible (niveau 0).",
       },
