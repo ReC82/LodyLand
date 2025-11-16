@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, jsonify, request
 
 from app.db import SessionLocal
-from app.models import ResourceDef, Tile, Player, ResourceStock
+from app.models import ResourceDef, Tile, Player, ResourceStock, CardDef, PlayerCard
 from app.progression import XP_PER_COLLECT, level_for_xp, next_threshold
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
@@ -20,6 +20,34 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
   if not key:
       return None
   return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
+
+def _compute_collect_amount(session, player_id: int, resource_key: str) -> float:
+    """
+    Compute how much resource to give for a collect, taking owned cards into account.
+
+    Rules (MVP):
+    - base_amount = 1.0
+    - each "resource_boost" card for this resource gives +10%
+      => amount = base * (1 + 0.1 * nb_cards)
+    """
+    base_amount = 1.0
+
+    # Find all resource_boost cards for this player + resource
+    rows = (
+        session.query(PlayerCard, CardDef)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player_id,
+            CardDef.type == "resource_boost",
+            CardDef.target_resource == resource_key,
+        )
+        .all()
+    )
+
+    total_boost_cards = sum(pc.qty for pc, cd in rows)
+
+    multiplier = 1.0 + 0.1 * total_boost_cards
+    return base_amount * multiplier
 
 # -----------------------------------------------------------------
 # Resources listing (for UI + tests)
@@ -101,10 +129,13 @@ def collect():
                 rs = ResourceStock(
                     player_id=t.player_id,
                     resource=t.resource,
-                    qty=0,
+                    qty=0.0,
                 )
                 s.add(rs)
-            rs.qty += 1
+
+            # 🔹 compute amount with cards boosts
+            amount = _compute_collect_amount(s, t.player_id, t.resource)
+            rs.qty = (rs.qty or 0.0) + amount
 
         s.commit()
         return jsonify(

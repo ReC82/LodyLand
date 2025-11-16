@@ -5,6 +5,11 @@
   - Uses same API endpoints as dev_app.js (/api/me, /api/collect, etc.)
 */
 
+let currentPlayer = null;
+const cooldowns = {};
+let tickInterval = null;
+let cardShopLoaded = false;
+
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
@@ -25,10 +30,6 @@ async function http(method, path, body) {
 
   return { ok: res.ok, status: res.status, data };
 }
-
-let currentPlayer = null;
-const cooldowns = {};
-let tickInterval = null;
 
 // ---------------------------------------------------------------------------
 // Helpers cooldown
@@ -340,7 +341,180 @@ async function startGame() {
   renderPlayer(currentPlayer);
   await refreshInventory();
   await refreshGrid();
+  await loadCardShop(); 
 }
+
+// ---------------------------------------------------------------------------
+// Card Shop rendering
+// ---------------------------------------------------------------------------
+function renderCardShop(cards) {
+  const box = $("cardShopBox");
+  const status = $("cardShopStatus");
+  if (!box) return;
+
+  if (!currentPlayer) {
+    box.innerHTML = `
+      <div class="col">
+        <div class="border border-secondary rounded-3 p-3 small text-muted text-center">
+          Connecte-toi d'abord pour voir les cartes.
+        </div>
+      </div>`;
+    if (status) status.textContent = "Aucun joueur connecté.";
+    return;
+  }
+
+  if (!cards || !cards.length) {
+    box.innerHTML = `
+      <div class="col">
+        <div class="border border-secondary rounded-3 p-3 small text-muted text-center">
+          Aucune carte disponible pour l'instant.
+        </div>
+      </div>`;
+    if (status) status.textContent = "Shop vide.";
+    return;
+  }
+
+  const html = cards.map((c) => {
+    const priceParts = [];
+    if (c.price_coins > 0) priceParts.push(`${c.price_coins} coins`);
+    if (c.price_diams > 0) priceParts.push(`${c.price_diams} diams`);
+    const priceText = priceParts.length ? priceParts.join(" + ") : "Gratuit";
+
+    const owned = c.owned_qty || 0;
+    const maxOwned = c.max_owned;
+    const isMaxed = maxOwned !== null && maxOwned !== undefined && owned >= maxOwned;
+
+    const typeLabel =
+      c.type === "resource_boost"
+        ? `Boost ${c.target_resource || "resource"}`
+        : c.type || "Card";
+
+    // If icon is a full path, reuse it, else nothing (no fallback icon here)
+    const iconSrc = c.icon && c.icon.startsWith("/")
+      ? c.icon
+      : (c.icon || "");
+
+    return `
+      <div class="col">
+        <div class="border border-secondary rounded-3 p-3 h-100 d-flex flex-column bg-dark-subtle">
+          <div class="d-flex align-items-center mb-2">
+            ${iconSrc
+              ? `<img src="${iconSrc}" alt="${c.label}"
+                      style="width:32px;height:32px;image-rendering:pixelated;"
+                      class="me-2">`
+              : ""
+            }
+            <div>
+              <div class="small fw-semibold">${c.label}</div>
+              <div class="small text-muted">${typeLabel}</div>
+            </div>
+          </div>
+
+          <div class="small flex-grow-1 mb-2">
+            ${c.description || ""}
+          </div>
+
+          <div class="small mb-2">
+            Prix : <strong>${priceText}</strong><br>
+            Possédées : <strong>${owned}</strong>${maxOwned ? ` / ${maxOwned}` : ""}
+          </div>
+
+          <div class="d-grid">
+            <button
+              class="btn btn-sm btn-primary"
+              ${isMaxed ? "disabled" : ""}
+              onclick="buyCard('${c.key}')"
+            >
+              ${isMaxed ? "Max" : "Acheter"}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  box.innerHTML = html;
+  if (status) status.textContent = "Clique sur une carte pour l'acheter.";
+}
+
+// ---------------------------------------------------------------------------
+// Card Shop loading & actions
+// ---------------------------------------------------------------------------
+async function loadCardShop() {
+  const box = $("cardShopBox");
+  const status = $("cardShopStatus");
+
+  if (!box) return;
+
+  if (!currentPlayer) {
+    // No player -> just render empty state
+    renderCardShop([]);
+    return;
+  }
+
+  if (status) status.textContent = "Chargement du shop...";
+
+  const r = await http("GET", `/api/cards?playerId=${currentPlayer.id}`);
+
+  if (!r.ok) {
+    console.error("Error loading card shop", r);
+    box.innerHTML = `
+      <div class="col">
+        <div class="border border-danger rounded-3 p-3 small text-danger text-center">
+          Erreur chargement shop (${r.status})
+        </div>
+      </div>`;
+    if (status) status.textContent = "Erreur lors du chargement du shop.";
+    return;
+  }
+
+  const cards = r.data || [];
+  renderCardShop(cards);
+  cardShopLoaded = true;
+}
+
+async function buyCard(cardKey) {
+  const status = $("cardShopStatus");
+
+  if (!currentPlayer) {
+    if (status) status.textContent = "Connecte-toi d'abord.";
+    return;
+  }
+
+  if (status) status.textContent = "Achat en cours...";
+
+  const body = {
+    card_key: cardKey,
+    playerId: currentPlayer.id,
+  };
+
+  const r = await http("POST", "/api/cards/buy", body);
+
+  if (!r.ok) {
+    console.error("Buy card error", r);
+    const d = r.data || {};
+    const err = d.error || "buy_failed";
+    if (status) status.textContent = `Erreur : ${err}`;
+    return;
+  }
+
+  const d = r.data || {};
+  if (status) status.textContent = `Achat réussi : ${d.card?.label || cardKey}`;
+
+  // refresh player coins/diams + shop
+  if (d.player) {
+    renderPlayer({
+      ...currentPlayer,
+      coins: d.player.coins,
+      diams: d.player.diams,
+    });
+    currentPlayer.coins = d.player.coins;
+    currentPlayer.diams = d.player.diams;
+  }
+
+  await loadCardShop();
+}
+  
 
 // ---------------------------------------------------------------------------
 // Initialisation
@@ -353,8 +527,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderPlayer(currentPlayer);
     await refreshInventory();
     await refreshGrid();
+    await loadCardShop();  
   } else {
     renderPlayer(null);
+    renderCardShop([]); 
     // On attend que l'utilisateur clique sur "Commencer"
   }
 });

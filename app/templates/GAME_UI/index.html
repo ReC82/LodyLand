@@ -69,6 +69,25 @@
     </div>
   </section>
 </div>
+
+  <!-- 🃏 Shop de cartes -->
+  <section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h5 mb-0">Shop de cartes</h2>
+      <small id="cardShopStatus" class="text-muted">
+        Connecte-toi pour voir les cartes disponibles.
+      </small>
+    </div>
+
+    <div id="cardShopBox" class="row row-cols-1 row-cols-md-3 g-3">
+      <!-- cartes générées en JS -->
+      <div class="col">
+        <div class="border border-secondary rounded-3 p-3 small text-muted text-center">
+          Chargement du shop...
+        </div>
+      </div>
+    </div>
+  </section>
 {% endblock %}
 
 {% block scripts %}
