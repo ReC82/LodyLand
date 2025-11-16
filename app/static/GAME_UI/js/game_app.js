@@ -465,12 +465,16 @@ async function loadCardShop() {
         </div>
       </div>`;
     if (status) status.textContent = "Erreur lors du chargement du shop.";
+    // Also reset boosts
+    renderBoostSummary([]);
     return;
   }
 
   const cards = r.data || [];
   renderCardShop(cards);
+  renderBoostSummary(cards);   // 👈 NEW
   cardShopLoaded = true;
+
 }
 
 async function buyCard(cardKey) {
@@ -514,7 +518,96 @@ async function buyCard(cardKey) {
 
   await loadCardShop();
 }
-  
+
+// ---------------------------------------------------------------------------
+// Boost summary rendering (based on cards list)
+// ---------------------------------------------------------------------------
+function renderBoostSummary(cards) {
+  const box = $("boostSummaryBox");
+  if (!box) return;
+
+  if (!currentPlayer) {
+    box.textContent = "Aucun joueur connecté.";
+    return;
+  }
+
+  if (!cards || !cards.length) {
+    box.textContent = "Aucun boost actif.";
+    return;
+  }
+
+  // Aggregate boosts
+  let xpBoostCards = 0;
+  let globalCdCards = 0;
+  const resourceBoosts = {};     // key -> { qtyBoost: n, qtyCd: n }
+
+  for (const c of cards) {
+    const owned = c.owned_qty || 0;
+    if (!owned) continue;
+
+    const type = c.type;
+    const res = c.target_resource || null;
+
+    if (type === "boost_xp") {
+      xpBoostCards += owned;
+    } else if (type === "reduce_cooldown") {
+      if (res) {
+        if (!resourceBoosts[res]) {
+          resourceBoosts[res] = { qtyBoost: 0, qtyCd: 0 };
+        }
+        resourceBoosts[res].qtyCd += owned;
+      } else {
+        globalCdCards += owned;
+      }
+    } else if (type === "resource_boost") {
+      if (!res) continue;
+      if (!resourceBoosts[res]) {
+        resourceBoosts[res] = { qtyBoost: 0, qtyCd: 0 };
+      }
+      resourceBoosts[res].qtyBoost += owned;
+    }
+  }
+
+  const parts = [];
+
+  // XP boosts: +10% per card
+  if (xpBoostCards > 0) {
+    const pct = xpBoostCards * 10;
+    parts.push(`+${pct}% XP`);
+  }
+
+  // Global cooldown reduction: -10% per card
+  if (globalCdCards > 0) {
+    const pct = globalCdCards * 10;
+    parts.push(`-${pct}% cooldown global`);
+  }
+
+  // Per-resource boosts
+  Object.entries(resourceBoosts).forEach(([resKey, vals]) => {
+    const { qtyBoost, qtyCd } = vals;
+    const labels = [];
+
+    if (qtyBoost > 0) {
+      const pct = qtyBoost * 10;
+      labels.push(`+${pct}% ${resKey}`);
+    }
+    if (qtyCd > 0) {
+      const pct = qtyCd * 10;
+      labels.push(`-${pct}% cooldown ${resKey}`);
+    }
+
+    if (labels.length) {
+      parts.push(labels.join(", "));
+    }
+  });
+
+  if (!parts.length) {
+    box.textContent = "Aucun boost actif.";
+  } else {
+    box.textContent = "Boosts actifs : " + parts.join(" • ");
+  }
+}
+
 
 // ---------------------------------------------------------------------------
 // Initialisation
@@ -531,6 +624,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   } else {
     renderPlayer(null);
     renderCardShop([]); 
+    renderBoostSummary([]);  
     // On attend que l'utilisateur clique sur "Commencer"
   }
 });
