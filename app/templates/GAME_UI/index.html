@@ -3,20 +3,33 @@
 {% block title %}LodyLand — Play{% endblock %}
 
 {% block content %}
-<div class="container">
-  <!-- Bandeau joueur -->
-  <section class="mb-3">
-    <div class="row align-items-center">
-      <div class="col-md-6 mb-2 mb-md-0">
+<div class="container game-wrapper py-4">
+
+  <!-- 🧑 Bandeau joueur / HUD -->
+  <section class="game-panel mb-4">
+    <div class="row align-items-center g-3">
+      <div class="col-md-6">
         <div class="d-flex flex-column gap-1">
-          <div class="small text-muted">Joueur actuel</div>
-          <div id="playerHeader" class="fw-semibold">
+          <div class="small text-uppercase text-muted">Joueur actuel</div>
+          <div id="playerHeader" class="fw-semibold h5 mb-0">
             Aucun joueur (clique sur "Commencer").
+          </div>
+
+          <div class="d-flex gap-3 mt-2 small">
+            <div class="hud-pill">
+              <span class="hud-label">Coins</span>
+              <span id="hudCoins" class="hud-value">0</span>
+            </div>
+            <div class="hud-pill">
+              <span class="hud-label">Diams</span>
+              <span id="hudDiams" class="hud-value">0</span>
+            </div>
           </div>
         </div>
       </div>
+
       <div class="col-md-6 text-md-end">
-        <div class="input-group input-group-sm mb-2">
+        <div class="input-group input-group-sm mb-2 justify-content-md-end">
           <span class="input-group-text">Nom</span>
           <input id="playerName" type="text" class="form-control" placeholder="Farmer001">
           <button class="btn btn-success" onclick="startGame()">Commencer</button>
@@ -27,7 +40,7 @@
           <span id="xpLabelLeft">XP: 0 • Level: 0</span>
           <span class="float-end" id="xpLabelRight">0%</span>
         </div>
-        <div class="progress" style="height: 12px;">
+        <div class="progress game-xpbar">
           <div
             id="xpBar"
             class="progress-bar bg-success"
@@ -41,40 +54,40 @@
     </div>
   </section>
 
-  <!-- Grille de tuiles -->
+  <!-- 🗺️ Grille de tuiles -->
   <section class="mb-4">
-    <h2 class="h5 mb-2">Terrain</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h5 mb-0 section-title">Terrain</h2>
+      <small id="gridStatus" class="text-muted">
+        Clique sur une tuile pour récolter.
+      </small>
+    </div>
+
     <div id="gridBox" class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3">
       <div class="col">
-        <div class="border border-secondary rounded-3 p-3 text-center small text-muted">
+        <div class="game-card placeholder text-center small text-muted">
           Chargement des tuiles...
         </div>
       </div>
     </div>
-
-    <div id="gridStatus" class="small text-muted mt-2">
-      Clique sur une tuile pour récolter.
-    </div>
   </section>
 
-  <!-- Inventaire -->
+  <!-- 🎒 Inventaire -->
   <section class="mb-4">
-    <h2 class="h5 mb-2">Inventaire</h2>
+    <h2 class="h5 mb-2 section-title">Inventaire</h2>
     <div id="inventoryBox" class="row row-cols-2 row-cols-md-4 g-2">
       <div class="col">
-        <div class="border border-secondary rounded-3 p-2 small text-muted h-100 d-flex align-items-center justify-content-center">
+        <div class="game-card small text-muted d-flex align-items-center justify-content-center">
           Inventaire vide.
         </div>
       </div>
     </div>
   </section>
 
-</div>
-
-  <!-- Boosts actifs -->
+  <!-- ⭐ Boosts actifs -->
   <section class="mb-4">
-    <h2 class="h5 mb-2">Boosts actifs</h2>
-    <div id="boostSummaryBox" class="small text-muted border border-secondary rounded-3 p-2 bg-dark-subtle">
+    <h2 class="h5 mb-2 section-title">Boosts actifs</h2>
+    <div id="boostSummaryBox" class="small game-card">
       Aucun boost actif.
     </div>
   </section>
@@ -82,21 +95,22 @@
   <!-- 🃏 Shop de cartes -->
   <section class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-2">
-      <h2 class="h5 mb-0">Shop de cartes</h2>
+      <h2 class="h5 mb-0 section-title">Shop de cartes</h2>
       <small id="cardShopStatus" class="text-muted">
         Connecte-toi pour voir les cartes disponibles.
       </small>
     </div>
 
     <div id="cardShopBox" class="row row-cols-1 row-cols-md-3 g-3">
-      <!-- cartes générées en JS -->
       <div class="col">
-        <div class="border border-secondary rounded-3 p-3 small text-muted text-center">
+        <div class="game-card small text-muted text-center">
           Chargement du shop...
         </div>
       </div>
     </div>
   </section>
+
+</div>
 {% endblock %}
 
 {% block scripts %}

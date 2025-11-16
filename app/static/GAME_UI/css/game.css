@@ -1,0 +1,85 @@
+/* Game layout */
+.game-wrapper {
+  max-width: 1100px;
+}
+
+/* Panel style */
+.game-panel {
+  background: radial-gradient(circle at top left, #273746 0, #12151f 55%, #07090d 100%);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* XP bar */
+.game-xpbar {
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Section titles */
+.section-title {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: #b0bec5;
+}
+
+/* Generic card for tiles, inventory, shop */
+.game-card {
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  background: linear-gradient(145deg, #1b212b, #11141b);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.game-card.placeholder {
+  opacity: 0.7;
+}
+
+/* Tile cards générées côté JS (si tu as .tile-card) */
+.tile-card {
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  background: radial-gradient(circle at top, #243447 0, #11141b 60%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+.tile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
+  border-color: rgba(190, 255, 120, 0.6);
+}
+
+.tile-card img {
+  image-rendering: pixelated;
+}
+
+/* HUD pills (coins / diams) */
+.hud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hud-label {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  color: #b0bec5;
+}
+
+.hud-value {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #ffd54f;
+}
