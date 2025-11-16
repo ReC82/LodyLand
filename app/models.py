@@ -94,6 +94,7 @@ class CardDef(Base):
 
     target_resource: Mapped[str | None] = mapped_column(String, nullable=True)
     target_building: Mapped[str | None] = mapped_column(String, nullable=True)
+    #target_land: Mapped[str | None] = mapped_column(String, nullable=True)
 
     price_coins: Mapped[int] = mapped_column(Integer, default=0)
     price_diams: Mapped[int] = mapped_column(Integer, default=0)

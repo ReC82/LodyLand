@@ -4,7 +4,7 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request, make_response
 
 from app.db import SessionLocal
-from app.models import Player, Tile, ResourceStock, ResourceDef
+from app.models import Player, Tile, ResourceStock, ResourceDef, PlayerCard
 from app.progression import next_threshold
 
 bp = Blueprint("players", __name__)
@@ -20,6 +20,23 @@ def _player_to_dict(p: Player) -> dict:
         "xp": p.xp,
         "next_xp": getattr(p, "next_xp", None),  # ou via progression
     }
+    
+def _ensure_starting_land_card(session, player: Player) -> None:
+    """Ensure the player owns the starting land card (forest)."""
+    # Check if the player already has the card
+    existing = (
+        session.query(PlayerCard)
+        .filter_by(player_id=player.id, card_key="land_forest")
+        .first()
+    )
+    if existing:
+        return  # already has the card
+
+    # If not, create it with qty=1
+    pc = PlayerCard(player_id=player.id, card_key="land_forest", qty=1)
+    session.add(pc)
+    # No commit here: let the caller decide when to commit
+    
     
 @bp.post("/player")
 def create_player():
@@ -100,6 +117,9 @@ def register():
             s.add(p)
             s.commit()
             s.refresh(p)
+
+        _ensure_starting_land_card(s, p)
+        s.commit()
 
         resp = make_response(
             jsonify(

@@ -4,7 +4,7 @@ from app.db import SessionLocal
 from app.models import Player, CardDef, PlayerCard
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
-
+from app.services.cards import set_player_card_qty
 
 bp = Blueprint("cards", __name__)
 
@@ -194,20 +194,17 @@ def dev_set_card_qty():
         return jsonify({"error": "qty_must_be_int"}), 400
 
     with SessionLocal() as s:
-        pc = (
-            s.query(PlayerCard)
-            .filter_by(player_id=pid, card_key=key)
-            .first()
+        pc = set_player_card_qty(s, pid, key, qty)
+        s.commit()
+
+        # pc peut être None si qty <= 0 => on renvoie malgré tout ok=True
+        return jsonify(
+            {
+                "ok": True,
+                "key": key,
+                "qty": qty,
+                "note": "deleted" if pc is None and qty <= 0 else "updated_or_created",
+            }
         )
 
-        if pc is None:
-            if qty <= 0:
-                return jsonify({"ok": True, "note": "nothing_to_reset"})
-            pc = PlayerCard(player_id=pid, card_key=key, qty=qty)
-            s.add(pc)
-        else:
-            pc.qty = qty
-
-        s.commit()
-        return jsonify({"ok": True, "key": key, "qty": qty})
         

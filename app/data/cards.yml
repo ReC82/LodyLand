@@ -22,17 +22,23 @@ cards:
     enabled: true
 
   - key: land_forest
-    type: land
-    label: "Forêt"
-    description: "Permet d'accéder à la Forêt."
+    label: "Accès Forêt"
+    description: "Débloque le land Forêt."
+    icon: "/static/assets/img/cards/land_forest.png"
+    type: "land"
+    #target_land: "forest"     # fait le lien avec app/data/lands.yml
     price_coins: 0
     price_diams: 0
+    max_owned: 1              # tu ne peux l'avoir qu'une fois
     enabled: true
 
   - key: land_beach
-    type: land
-    label: "Plage"
-    description: "Permet d'accéder à la Plage."
-    price_coins: 500
+    label: "Accès Plage"
+    description: "Débloque le land Plage."
+    icon: "/static/assets/img/cards/land_beach.png"
+    type: "land"
+    #target_land: "beach"      # correspond à la key du land
+    price_coins: 500          # à ajuster selon le balancing
     price_diams: 0
+    max_owned: 1
     enabled: true
