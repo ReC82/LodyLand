@@ -771,7 +771,9 @@ function updatePlayerHUD(playerData) {
 // Initialisation
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
-  // Try to reuse existing player via cookie
+  
+  setupGameMenu();  
+
   const me = await tryMe();
   if (me) {
     currentPlayer = me;

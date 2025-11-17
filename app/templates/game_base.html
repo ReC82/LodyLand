@@ -49,6 +49,32 @@
       </div>
     </header>
 
+    <!-- Menu joueur déroulant -->
+    <div class="game-menu" id="game-menu">
+      <div class="game-menu-card">
+        <div class="game-menu-section">
+          <div class="game-menu-title">Menu</div>
+          <button class="game-menu-item" data-action="profile">
+            Profil (plus tard)
+          </button>
+          <button class="game-menu-item" data-action="lands">
+            Lands
+          </button>
+          <button class="game-menu-item" data-action="shop">
+            Boutique (WIP)
+          </button>
+          <button class="game-menu-item" data-action="quests">
+            Quêtes (WIP)
+          </button>
+        </div>
+        <div class="game-menu-section">
+          <button class="game-menu-item game-menu-logout" data-action="logout">
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Contenu principal (lands, etc.) -->
     <main class="game-main">
       {% block content %}{% endblock %}
@@ -56,6 +82,7 @@
 
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
   </body>
 </html>

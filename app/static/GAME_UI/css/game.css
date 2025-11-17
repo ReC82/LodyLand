@@ -178,6 +178,84 @@
 }
 
 /* ===========================
+   Game menu (profil / lands / logout)
+   =========================== */
+
+.game-menu {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  z-index: 30;
+  transition: background 0.15s ease;
+}
+
+/* caché par défaut */
+.game-menu:not(.is-open) {
+  opacity: 0;
+}
+
+/* quand ouvert */
+.game-menu.is-open {
+  pointer-events: auto;
+  opacity: 1;
+  background: radial-gradient(circle at top right, rgba(15, 23, 42, 0.8), transparent);
+}
+
+.game-menu-card {
+  width: 220px;
+  max-width: 70vw;
+  background: #020617;
+  border-radius: 16px;
+  padding: 0.9rem 0.9rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  transform: translateY(8px);
+}
+
+.game-menu-section + .game-menu-section {
+  border-top: 1px solid rgba(51, 65, 85, 0.9);
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+}
+
+.game-menu-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin-bottom: 0.4rem;
+}
+
+.game-menu-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.game-menu-item:hover {
+  background: rgba(30, 64, 175, 0.9);
+}
+
+.game-menu-logout {
+  color: #fecaca;
+}
+
+.game-menu-logout:hover {
+  background: rgba(248, 113, 113, 0.15);
+}
+
+
+/* ===========================
    Land-specific backgrounds
    =========================== */
 
