@@ -15,7 +15,6 @@ from .api_misc import bp as misc_bp
 from .api_cards import bp as cards_bp
 from .api_shop import bp as shop_bp
 
-
 def register_routes(app: Flask) -> None:
     """Enregistre tous les blueprints API sur l'app Flask."""
     app.register_blueprint(players_bp,   url_prefix="/api")

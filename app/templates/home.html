@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>LodyLand - Accueil</title>
+
+    <!-- CSS commun du projet -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='common.css') }}"
+    />
+
+    <!-- Optionnel : CSS supplémentaire pour la home plus tard -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/home.css') }}"> -->
+  </head>
+  <body class="home-body">
+    <main class="home-wrapper">
+      <section class="home-card">
+        <div class="home-logo-container">
+          <img
+            src="{{ url_for('static', filename='assets/img/logo.png') }}"
+            alt="Logo LodyLand"
+            class="home-logo"
+          />
+        </div>
+
+        <h1 class="home-title">LodyLand</h1>
+        <h2 class="home-subtitle">Perdu au cœur de la forêt...</h2>
+
+        <div class="home-text">
+          <p>
+            Vous vous réveillez en plein milieu d'une forêt inconnue, sans aucun souvenir.
+          </p>
+          <p>
+            Vous ne savez ni où vous êtes, ni comment vous êtes arrivé là…
+            et vous n’êtes même pas sûr de votre propre nom.
+          </p>
+          <p>
+            Une chose pourtant s’impose rapidement&nbsp;: il va falloir survivre.
+          </p>
+          <p>
+            Pour une raison mystérieuse, vous maîtrisez malgré tout les bases de la construction,
+            de la cuisine et d'autres compétences artisanales.
+            Peut-être que ces talents vous permettront de rester en vie… et de découvrir la vérité.
+          </p>
+        </div>
+
+        <div class="home-actions">
+          <a href="{{ url_for('frontend.register') }}" class="btn btn-primary">
+            S'inscrire
+          </a>
+          <a href="{{ url_for('frontend.login') }}" class="btn btn-secondary">
+            Se connecter
+          </a>
+        </div>
+
+        <div class="home-links">
+          <!-- Whitepaper / documentation : à raccorder quand tu auras la route -->
+          <a href="/whitepaper" target="_blank" class="home-link">
+            📜 Whitepaper / Documentation
+          </a>
+
+          <!-- Liens futurs (Discord, etc.) -->
+          <a href="#" class="home-link home-link-disabled">
+            💬 Serveur Discord (bientôt)
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
