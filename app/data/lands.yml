@@ -30,7 +30,7 @@ beach:
   label_fr: "Plage"
   label_en: "Beach"
   starting_land: false          # doit être débloqué via carte land_beach
-  slots: 6
+  slots: 5
 
   tools:
     hands:
