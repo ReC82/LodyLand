@@ -1,6 +1,8 @@
 # app/routes/api_resources.py
 from __future__ import annotations
 
+import random
+
 from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, request
@@ -10,6 +12,7 @@ from app.models import ResourceDef, Tile, Player, ResourceStock, CardDef, Player
 from app.progression import XP_PER_COLLECT, level_for_xp, next_threshold
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
+from app.lands import get_land_def
 
 bp = Blueprint("resources", __name__)
 
@@ -20,6 +23,59 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
   if not key:
       return None
   return session.query(ResourceDef).filter_by(key=key, enabled=True).first()
+
+def _player_has_land(session, player_id: int, land_key: str) -> bool:
+    """
+    Return True if the player owns the card that unlocks this land.
+
+    Convention:
+      land 'forest' -> card_key 'land_forest'
+      land 'beach'  -> card_key 'land_beach'
+    """
+    card_key = f"land_{land_key}"
+    row = (
+        session.query(PlayerCard)
+        .filter_by(player_id=player_id, card_key=card_key)
+        .first()
+    )
+    return bool(row and row.qty > 0)
+
+def _roll_land_loot(tool_cfg: dict) -> dict[str, float]:
+    """
+    Given a tool config from lands.yml, roll base_loot + extra_loot.
+
+    Returns:
+        dict {resource_key: total_amount}
+    """
+    loot: dict[str, float] = {}
+
+    def add_res(key: str, amount: float) -> None:
+        loot[key] = loot.get(key, 0.0) + float(amount)
+
+    for entry in tool_cfg.get("base_loot", []) or []:
+        res = entry.get("resource")
+        if not res:
+            continue
+        chance = float(entry.get("chance", 1.0))
+        if random.random() <= chance:
+            mn = int(entry.get("min", 1))
+            mx = int(entry.get("max", mn))
+            amount = random.randint(mn, mx)
+            add_res(res, amount)
+
+    for entry in tool_cfg.get("extra_loot", []) or []:
+        res = entry.get("resource")
+        if not res:
+            continue
+        chance = float(entry.get("chance", 0.0))
+        if random.random() <= chance:
+            mn = int(entry.get("min", 1))
+            mx = int(entry.get("max", mn))
+            amount = random.randint(mn, mx)
+            add_res(res, amount)
+
+    return loot
+
 
 # -----------------------------------------------------------------
 # Card helpers
@@ -133,6 +189,132 @@ def list_resources():
 @bp.post("/collect")
 def collect():
     data = request.get_json(silent=True) or {}
+
+    # --------- 1) Nouveau mode: collect sur un land (beach, forest, ...) ----------
+    land_key = (data.get("land") or "").strip()
+    if land_key:
+        slot = data.get("slot")
+        if slot is None:
+            return jsonify({"error": "slot_required"}), 400
+
+        try:
+            slot = int(slot)
+        except ValueError:
+            return jsonify({"error": "slot_invalid"}), 400
+
+        with SessionLocal() as s:
+            # Joueur via cookie
+            p = get_current_player(s)
+            if not p:
+                return jsonify({"error": "player_required"}), 401
+
+            # Vérifier la carte de land
+            if not _player_has_land(s, p.id, land_key):
+                return jsonify({"error": "land_locked"}), 403
+
+            # Définition du land
+            land_def = get_land_def(land_key)
+            if not land_def:
+                return jsonify({"error": "land_unknown"}), 400
+
+            slots = int(land_def.get("slots", 0) or 0)
+            if slots <= 0:
+                return jsonify({"error": "land_has_no_slots"}), 400
+            if slot < 0 or slot >= slots:
+                return jsonify({"error": "slot_out_of_range", "max": slots}), 400
+
+            # Pour l'instant: on utilise toujours les mains
+            tools_cfg = land_def.get("tools") or {}
+            tool_key = "hands"
+            tool_cfg = tools_cfg.get(tool_key)
+            if not tool_cfg:
+                return jsonify({"error": "tool_not_allowed", "tool": tool_key}), 400
+
+            # Calcul du loot brut (sans boosts)
+            raw_loot = _roll_land_loot(tool_cfg)  # {resource: base_qty}
+
+            # Temps actuel (pour XP et cooldown client-side)
+            now = datetime.now(timezone.utc)
+
+            # XP (une action = un collect)
+            level_up = False
+            gained_xp = _compute_xp_gain(s, p.id, XP_PER_COLLECT)
+            p.xp = (p.xp or 0) + gained_xp
+            old_level = p.level or 0
+            new_level = level_for_xp(p.xp)
+            if new_level > old_level:
+                p.level = new_level
+                level_up = True
+
+            # Appliquer les boosts de ressource + maj inventaire
+            loot_payload = []
+            for res_key, base_amount in raw_loot.items():
+                # quantité boostée par les cartes "resource_boost"
+                per_unit = _compute_collect_amount(s, p.id, res_key)
+                amount = base_amount * per_unit
+
+                rs = (
+                    s.query(ResourceStock)
+                    .filter_by(player_id=p.id, resource=res_key)
+                    .first()
+                )
+                if not rs:
+                    rs = ResourceStock(
+                        player_id=p.id,
+                        resource=res_key,
+                        qty=0.0,
+                    )
+                    s.add(rs)
+
+                new_qty = (rs.qty or 0.0) + amount
+                rs.qty = round(new_qty, 3)
+
+                loot_payload.append(
+                    {
+                        "resource": res_key,
+                        "base_amount": base_amount,
+                        "final_amount": round(amount, 3),
+                    }
+                )
+
+            # Cooldown "virtuel" pour le client (pour l'instant pas stocké par slot)
+            # On prend la première resource de base_loot comme référence
+            base_res = None
+            base_loot_list = (tool_cfg.get("base_loot") or [])
+            if base_loot_list:
+                base_res = base_loot_list[0].get("resource")
+            base_cd = 10
+            if base_res:
+                rd = _get_res_def(s, base_res)
+                if rd and rd.base_cooldown is not None:
+                    base_cd = rd.base_cooldown
+
+            effective_cd = _compute_cooldown(s, p.id, base_res or "", base_cd)
+            next_cd = now + timedelta(seconds=effective_cd)
+
+            s.commit()
+            s.refresh(p)
+
+            return jsonify(
+                {
+                    "ok": True,
+                    "mode": "land",
+                    "land": land_key,
+                    "slot": slot,
+                    "loot": loot_payload,
+                    "next": next_cd.isoformat(),
+                    "player": {
+                        "id": p.id,
+                        "name": p.name,
+                        "xp": p.xp,
+                        "level": p.level,
+                        "next_xp": next_threshold(p.level),
+                    },
+                    "level_up": level_up,
+                }
+            ), 200
+
+    # --------- 2) Mode existant: collect sur une Tile ----------
     tile_id = data.get("tileId")
     if not tile_id:
         return jsonify({"error": "tileId_required"}), 400
@@ -213,7 +395,8 @@ def collect():
                 },
                 "level_up": level_up,
             }
-        )        
+        )
+     
         
 @bp.post("/tiles/unlock")
 def unlock_tile():

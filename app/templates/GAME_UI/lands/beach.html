@@ -57,6 +57,7 @@
       }
     </style>
   </head>
+
   <body>
     <div class="land-container">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -114,24 +115,7 @@
         </div>
       </div>
     </div>
-
-    <script>
-      // Simple placeholder logic: show which slot is clicked.
-      // Later this will call /api/collect with land="beach" and the slot index.
-      document.addEventListener("DOMContentLoaded", () => {
-        const tiles = document.querySelectorAll(".slot-tile");
-
-        tiles.forEach((tile) => {
-          tile.addEventListener("click", () => {
-            const slot = tile.getAttribute("data-slot");
-            const status = tile.querySelector(".slot-status");
-            if (status) {
-              status.textContent = "Fouille en cours... (logic à venir)";
-            }
-            console.log("Clicked slot", slot, "on land 'beach'");
-          });
-        });
-      });
-    </script>
+    <!-- JS spécifique à la Plage -->
+    <script src="{{ url_for('static', filename='GAME_UI/js/lands/beach_app.js') }}"></script>
   </body>
 </html>
