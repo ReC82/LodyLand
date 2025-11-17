@@ -32,9 +32,7 @@ function setupGameMenu() {
 
     switch (action) {
       case "lands":
-        // Pour l'instant on renvoie simplement vers la forêt.
-        // Plus tard : page de sélection de land.
-        window.location.href = "/land/forest";
+        window.location.href = "/lands";
         break;
       case "logout":
         window.location.href = "/logout";

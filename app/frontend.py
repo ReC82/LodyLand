@@ -65,6 +65,22 @@ def play_redirect():
     """Compatibilité : /play redirige vers /."""
     return redirect(url_for("frontend.home"))
 
+@frontend_bp.route("/lands")
+def lands_select():
+    """Page de sélection des lands (Forêt, Plage, etc.)."""
+    session = SessionLocal()
+    try:
+        me = get_current_player(session)
+        if not me:
+            # pas loggé -> retour à la home
+            return redirect(url_for("frontend.home"))
+
+        # Pour l'instant, on ne passe pas encore la liste des lands,
+        # on affiche juste Forest (unlock) + Beach (lock) en statique.
+        return render_template("GAME_UI/lands/select.html")
+    finally:
+        session.close()
+
 @frontend_bp.get("/land/beach")
 def land_beach():
     """Display the Beach land page (x slots)."""
