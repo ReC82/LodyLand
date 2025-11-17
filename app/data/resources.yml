@@ -1,44 +1,70 @@
-cards:
-  - key: wood_boost_1
-    label: "Booster Bois I"
-    description: "+10% de bois récolté."
-    icon: "/static/assets/img/cards/wood_boost_1.png"
-    type: "resource_boost"
-    target_resource: "wood"
-    price_coins: 50
-    price_diams: 0
-    max_owned: 5
+resources:
+  - key: branch
+    label: "Branches"
+    base_cooldown: 5
+    base_sell_price: 1
+    unlock_min_level: 0
     enabled: true
+    icon: "/static/assets/img/resources/branch.png"
+    description: "Une branche tombée d'un arbre."
+    unlock_description: "Toujours accessible (niveau 0)."
 
-  - key: unlock_stone
-    label: "Carte Pierre"
-    description: "Débloque la ressource Stone même sans le niveau requis."
-    icon: "/static/assets/img/cards/unlock_stone.png"
-    type: "unlock_resource"
-    target_resource: "stone"
-    price_coins: 200
-    price_diams: 0
-    max_owned: 1
+  - key: vine
+    label: "Lianes"
+    base_cooldown: 5
+    base_sell_price: 2
+    unlock_min_level: 0
     enabled: true
+    icon: "/static/assets/img/resources/vine.png"
+    description: "Des lianes qui serviront de ficelle pour fabriquer des objets."
+    unlock_description: "Trouvées parfois en fouillant la forêt."
 
-  - key: xp_boost_1
-    label: "XP Booster I"
-    description: "+10% d'XP sur chaque collecte."
-    icon: "/static/assets/img/cards/xp_boost_1.png"
-    type: "boost_xp"
-    target_resource: null
-    price_coins: 100
-    price_diams: 0
-    max_owned: 3
+  - key: wood
+    label: "Bois"
+    base_cooldown: 10
+    base_sell_price: 2
+    unlock_min_level: 0
     enabled: true
+    icon: "/static/assets/img/resources/palm_wood.png"
+    description: "Du bois de palmier, ressource de base pour construire et crafter."
+    unlock_description: "Récolté avec une hache dans la forêt."
 
-  - key: cd_reducer_1
-    label: "Cooldown Reducer I"
-    description: "-10% cooldown sur toutes les ressources."
-    icon: "/static/assets/img/cards/cd_reducer_1.png"
-    type: "reduce_cooldown"
-    target_resource: null
-    price_coins: 150
-    price_diams: 0
-    max_owned: 3
+  - key: sand
+    label: "Sable"
+    base_cooldown: 5
+    base_sell_price: 1
+    unlock_min_level: 0
     enabled: true
+    icon: "/static/assets/img/resources/sand.png"
+    description: "Du sable fin, trouvé sur la plage."
+    unlock_description: "Toujours accessible sur la plage."
+
+  - key: seashell
+    label: "Coquillage"
+    base_cooldown: 30
+    base_sell_price: 5
+    unlock_min_level: 0
+    enabled: true
+    icon: "/static/assets/img/resources/seashell.png"
+    description: "Un coquillage rare trouvé dans le sable."
+    unlock_description: "Trouvé très rarement en fouillant la plage."
+
+  - key: starfish
+    label: "Étoile de mer"
+    base_cooldown: 30
+    base_sell_price: 8
+    unlock_min_level: 0
+    enabled: true
+    icon: "/static/assets/img/resources/starfish.png"
+    description: "Une étoile de mer colorée."
+    unlock_description: "Trouvée très rarement en fouillant la plage."
+
+  - key: pearl
+    label: "Perle"
+    base_cooldown: 60
+    base_sell_price: 20
+    unlock_min_level: 0
+    enabled: true
+    icon: "/static/assets/img/resources/pearl.png"
+    description: "Une perle précieuse, très rare."
+    unlock_description: "Découverte exceptionnellement dans les coquillages."

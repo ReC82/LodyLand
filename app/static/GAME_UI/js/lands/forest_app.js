@@ -98,4 +98,4 @@ function initForestLand() {
 }
 
 // Wait for DOM ready
-document.addEventListener("DOMContentLoaded", initForestLand);
+document.addEventListener("DOMContentLoaded", initForestLand);  
