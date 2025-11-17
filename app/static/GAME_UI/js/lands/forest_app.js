@@ -77,6 +77,14 @@ async function collectOnForestSlot(slotEl) {
       statusEl.textContent = `Tu as trouvé : ${summary}`;
     }
 
+        // 🔥🔥🔥 UPDATE HUD (IMPORTANT !!!) 🔥🔥🔥
+    if (data.player) {
+      renderPlayer({
+        ...data.player,
+        next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
+      });
+    }
+
     console.log("Forest collect OK:", data);
   } catch (err) {
     console.error("Forest collect request failed:", err);
