@@ -1,0 +1,37 @@
+{% extends "game_base.html" %}
+
+{% block title %}LodyLand – Choix du land{% endblock %}
+
+{% block content %}
+<div class="land-select-container">
+  <div class="land-select-header">
+    <h1 class="land-select-title">Choisir un land</h1>
+    <p class="land-select-subtitle">
+      Tu peux te rendre sur l’un de tes lands. D’autres arriveront plus tard.
+    </p>
+  </div>
+
+  <div class="land-select-grid">
+    <!-- Land Forêt (disponible) -->
+    <a href="{{ url_for('frontend.land_forest') }}"
+       class="land-card land-card-unlocked">
+      <div class="land-card-icon">🌲</div>
+      <div class="land-card-title">Forêt</div>
+      <div class="land-card-desc">
+        Land de départ – collecte des branches, chance de lianes.
+      </div>
+      <div class="land-card-tag">Débloqué</div>
+    </a>
+
+    <!-- Land Plage (encore verrouillé pour l’instant) -->
+    <div class="land-card land-card-locked">
+      <div class="land-card-icon">🏝️</div>
+      <div class="land-card-title">Plage</div>
+      <div class="land-card-desc">
+        Bientôt disponible – sable, coquillages, perles rares.
+      </div>
+      <div class="land-card-tag">Verrouillé</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
