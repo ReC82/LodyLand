@@ -11,10 +11,11 @@ from __future__ import annotations
 import datetime as dt  # use dt.date / dt.datetime for annotations
 from sqlalchemy import (
     Integer, String, Date, DateTime, Boolean,
-    ForeignKey, Text, UniqueConstraint, Float
+    ForeignKey, Text, UniqueConstraint, Float, Column
 )
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
 
 from .db import Base
 class Player(Base):
@@ -31,12 +32,28 @@ class Player(Base):
     level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     xp: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
-    # daily chest (date UTC, sans heure)
+    # daily chest
     last_daily: Mapped[dt.date | None] = mapped_column(Date, nullable=True)
+    daily_streak: Mapped[int] = mapped_column(Integer, default=0)
+    best_streak: Mapped[int] = mapped_column(Integer, default=0)
 
-    daily_streak: Mapped[int] = mapped_column(Integer, default=0)   # streak courant
-    best_streak: Mapped[int] = mapped_column(Integer, default=0)    # meilleur streak
+    # 🔥 AJOUT À FAIRE ICI :
+    account: Mapped["Account"] = relationship(
+        "Account",
+        back_populates="player",
+        uselist=False
+    )
+class Account(Base):
+    __tablename__ = "accounts"
 
+    id = Column(Integer, primary_key=True)
+    email = Column(String(255), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # One account -> one player profile (you can adapt)
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=True)
+    player = relationship("Player", back_populates="account")
 
 class Tile(Base):
     __tablename__ = "tiles"

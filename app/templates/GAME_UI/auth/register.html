@@ -1,0 +1,38 @@
+{% extends "game_base.html" %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <h1>Créer un compte</h1>
+
+    {% if errors %}
+      <ul class="auth-errors">
+        {% for err in errors %}
+          <li>{{ err }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form method="post">
+      <label>Adresse email</label>
+      <input type="email" name="email" value="{{ email or '' }}" required>
+
+      <label>Mot de passe</label>
+      <input type="password" name="password" required>
+
+      <label>Confirmer le mot de passe</label>
+      <input type="password" name="password_confirm" required>
+
+      <button type="submit" class="btn-primary">S'inscrire</button>
+    </form>
+
+    <p class="auth-switch">Vous avez déjà un compte ?
+      <a href="{{ url_for('frontend.login') }}">Se connecter</a>
+    </p>
+
+    <p class="auth-back">
+      <a href="{{ url_for('frontend.home') }}">← Retour à l'accueil</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
