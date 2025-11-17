@@ -204,7 +204,7 @@ function setupShopTabs() {
   const tabSell = $("shopTabSell");
   const tabCards = $("shopTabCards");
   const panelSell = $("shopPanelSell");
-  const panelCards = $("shopPanelCards");
+  const panelCards = $("shopPanelCards")
 
   if (!tabSell || !panelSell) return;
 
@@ -228,7 +228,168 @@ function setupShopTabs() {
   }
 }
 
+// Charge la liste des cartes depuis /api/cards et met à jour le HUD si besoin
+async function loadCardShop() {
+  console.log("Loading card shop...");
+  const r = await http("GET", "/api/cards");
+  if (!r.ok) {
+    alert("Impossible de charger les cartes.");
+    console.error("Card shop error:", r);
+    return;
+  }
+
+  const cards = r.data || [];
+
+  // On a déjà currentPlayer rempli par /api/me via game_app.js,
+  // donc ici pas besoin de recharger le joueur.
+  renderCardShopList(cards);
+}
+
+function renderCardShopList(cards) {
+  console.log("Rendering card shop list:", cards);
+  const container = document.getElementById("shopCardsList");
+  if (!container) return;
+
+  if (!cards.length) {
+    container.innerHTML = `
+      <div class="shop-empty text-muted">
+        Aucune carte disponible pour le moment.
+      </div>`;
+    return;
+  }
+
+  const coins = currentPlayer?.coins ?? 0;
+  const diams = currentPlayer?.diams ?? 0;
+
+  const html = cards
+    .map((card) => {
+      const priceCoins = card.price_coins || 0;
+      const priceDiams = card.price_diams || 0;
+
+      const priceParts = [];
+      if (priceCoins) priceParts.push(`${priceCoins} 🪙`);
+      if (priceDiams) priceParts.push(`${priceDiams} 💎`);
+      const priceText = priceParts.length ? priceParts.join(" + ") : "Gratuit";
+
+      const owned = card.owned_qty || 0;
+      const maxOwned = card.max_owned;
+
+      // Règles basiques côté UI (le backend recalcule de toute façon)
+      let canBuy = true;
+      let btnLabel = "Acheter";
+
+      if (maxOwned !== null && maxOwned !== undefined && owned >= maxOwned) {
+        canBuy = false;
+        btnLabel = "Max atteint";
+      } else if (coins < priceCoins || diams < priceDiams) {
+        canBuy = false;
+        btnLabel = "Fonds insuffisants";
+      }
+
+      return `
+        <div class="shop-card-row" data-card-key="${card.key}">
+          <div class="shop-card-main">
+            <div class="shop-card-icon">
+              ${
+                card.icon
+                  ? `<img src="${card.icon}" alt="${card.label}" />`
+                  : "🃏"
+              }
+            </div>
+            <div class="shop-card-text">
+              <div class="shop-card-title">${card.label}</div>
+              <div class="shop-card-desc">${card.description || ""}</div>
+              <div class="shop-card-meta">
+                Type : ${card.type}
+                ${
+                  owned > 0
+                    ? ` • Tu en possèdes <strong>${owned}</strong>`
+                    : ""
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="shop-card-side">
+            <div class="shop-card-price">${priceText}</div>
+            <button
+              class="shop-card-buy-btn"
+              ${canBuy ? "" : "disabled"}
+            >
+              ${btnLabel}
+            </button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  container.innerHTML = html;
+
+  // Hook sur les boutons "Acheter"
+  container.querySelectorAll(".shop-card-row").forEach((row) => {
+    const key = row.dataset.cardKey;
+    const btn = row.querySelector(".shop-card-buy-btn");
+    if (!btn || !key || btn.disabled) return;
+
+    btn.addEventListener("click", () => buyCard(key));
+  });
+}
+
+async function buyCard(cardKey) {
+  if (!cardKey) return;
+
+  const confirmBuy = confirm("Acheter cette carte ?");
+  if (!confirmBuy) return;
+
+  const r = await http("POST", "/api/cards/buy", {
+    card_key: cardKey,
+    // pas besoin de playerId côté GAME_UI, le backend prend le cookie
+  });
+
+  if (!r.ok) {
+    const err = r.data || {};
+    let msg = `Achat impossible : ${err.error || `Erreur serveur (${r.status})`}`;
+
+    if (err.error === "not_enough_coins") {
+      msg = "Tu n'as pas assez de coins.";
+    } else if (err.error === "not_enough_diams") {
+      msg = "Tu n'as pas assez de diams.";
+    } else if (err.error === "max_owned_reached") {
+      msg = "Tu possèdes déjà le nombre maximum de cette carte.";
+    }
+
+    alert(msg);
+    console.error("Buy card error:", err);
+    return;
+  }
+
+  const d = r.data;
+  const c = d.card || {};
+
+  alert(
+    `Tu as acheté 1x "${c.label || c.key}".`
+  );
+
+  // MAJ HUD à partir de la réponse
+  if (d.player) {
+    currentPlayer = {
+      ...currentPlayer,
+      coins: d.player.coins,
+      diams: d.player.diams,
+    };
+    renderPlayer(currentPlayer);
+  }
+
+  // Recharger la liste de cartes pour mettre à jour owned_qty / boutons
+  await loadCardShop();
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   setupShopTabs();
+ 
+  loadCardShop();
+  
   await loadShop();
 });

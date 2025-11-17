@@ -23,39 +23,38 @@
       class="shop-tab"
       id="shopTabCards"
       data-tab="cards"
-      disabled
-      title="Bientôt disponible"
     >
       Acheter des cartes
     </button>
   </div>
 
   <div class="shop-content">
-    <!-- Onglet Vente -->
-    <section id="shopPanelSell" class="shop-panel shop-panel-active">
-      <div class="shop-sell-info">
-        <p class="mb-1">
-          ⚖️ Pour l'instant, chaque ressource vaut
-          <strong>1 coin par unité</strong>.
-        </p>
-      </div>
-      <div id="shopSellList" class="shop-sell-grid">
-        <!-- items remplis en JS -->
-      </div>
-      <div id="shopSellEmpty" class="shop-empty d-none">
-        Tu n'as pas encore de ressources à vendre.
-      </div>
-    </section>
-
-    <!-- Onglet Cartes (placeholder) -->
-    <section id="shopPanelCards" class="shop-panel">
-      <p class="text-muted">
-        L'achat de cartes (déblocage de lands, boosts, etc.) arrive bientôt.
+  <!-- Onglet Vente -->
+  <section id="shopPanelSell" class="shop-panel shop-panel-active">
+    <div class="shop-sell-info">
+      <p class="mb-1">
+        ⚖️ Pour l'instant, chaque ressource vaut
+        <strong>1 coin par unité</strong>.
       </p>
-    </section>
-  </div>
+    </div>
+    <div id="shopSellList" class="shop-sell-grid">
+      <!-- items remplis en JS -->
+    </div>
+    <div id="shopSellEmpty" class="shop-empty d-none">
+      Tu n'as pas encore de ressources à vendre.
+    </div>
+  </section>
+
+  <!-- Onglet Cartes -->
+  <section id="shopPanelCards" class="shop-panel">
+    <div id="shopCardsList"></div>
+  </section>
 </div>
 
 <!-- JS spécifique Shop -->
 <script src="{{ url_for('static', filename='GAME_UI/js/shop_app.js') }}"></script>
+<script>
+  console.log("[SHOP] inline script exécuté");
+  console.log("[SHOP] typeof loadCardShop =", typeof loadCardShop);
+</script>
 {% endblock %}
