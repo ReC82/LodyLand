@@ -39,12 +39,23 @@
       </div>
 
       <div class="gh-right">
+       
         <div class="gh-currency gh-coins">
           🪙 <span id="hud-coins">0</span>
         </div>
         <div class="gh-currency gh-diams">
           💎 <span id="hud-diams">0</span>
         </div>
+        <!-- Daily Chest (icon HUD) -->
+        <div class="hud-daily" id="hudDaily">
+          <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
+            🎁
+            <span id="dailyAlert" class="daily-alert-badge">!</span>
+          </div>
+          <div class="hud-daily-tooltip" id="dailyTooltip">
+            Chargement...
+          </div>
+        </div>        
         <button class="gh-menu-btn" id="hud-menu-btn" type="button">☰</button>
       </div>
     </header>
@@ -67,6 +78,7 @@
             Quêtes (WIP)
           </button>
         </div>
+        
         <div class="game-menu-section">
           <button class="game-menu-item game-menu-logout" data-action="logout">
             Se déconnecter
