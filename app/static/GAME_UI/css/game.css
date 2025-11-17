@@ -524,3 +524,149 @@
   background: rgba(248, 113, 113, 0.12);
   color: #fecaca;
 }
+
+/* ===========================
+   Shop page
+   =========================== */
+
+.shop-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.shop-header {
+  margin-bottom: 1rem;
+}
+
+.shop-tabs {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 999px;
+  padding: 0.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  margin-bottom: 1rem;
+}
+
+.shop-tab {
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.shop-tab-active {
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  font-weight: 600;
+}
+
+.shop-tab[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shop-content {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 1rem 1.1rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.shop-sell-info {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  margin-bottom: 0.8rem;
+}
+
+.shop-sell-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.8rem;
+}
+
+.shop-sell-item {
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 14px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.shop-sell-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shop-sell-icon {
+  font-size: 1.4rem;
+}
+
+.shop-sell-name {
+  font-weight: 600;
+}
+
+.shop-sell-qty {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.shop-sell-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.shop-sell-footer input[type="number"] {
+  width: 70px;
+  font-size: 0.85rem;
+}
+
+.shop-sell-price {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  flex: 1;
+}
+
+.shop-sell-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  cursor: pointer;
+}
+
+.shop-sell-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shop-empty {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.d-none {
+  display: none !important;
+}
+
+.shop-panel {
+  display: none;
+}
+
+.shop-panel-active {
+  display: block;
+}

@@ -39,6 +39,8 @@ function setupGameMenu() {
         break;
       case "profile":
       case "shop":
+        window.location.href = "/shop";
+        break;
       case "quests":
       default:
         // TODO: pages dédiées à venir

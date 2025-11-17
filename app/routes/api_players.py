@@ -258,6 +258,7 @@ def get_state():
             {
                 "key": r.key,
                 "label": r.label,
+                "icon": r.icon, 
                 "unlock_min_level": r.unlock_min_level,
                 "base_cooldown": r.base_cooldown,
                 "base_sell_price": r.base_sell_price,

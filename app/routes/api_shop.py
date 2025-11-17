@@ -14,36 +14,56 @@ bp = Blueprint("shop", __name__)
 def get_prices():
     return jsonify({"prices": list_prices()})
 
+# -----------------------------------------------------------------
+# Vendre une ressource contre des coins
+# -----------------------------------------------------------------
 @bp.post("/sell")
 def sell():
-    """Sell some resource from the player's inventory."""
-    data = request.get_json(silent=True) or {}
-    resource = (data.get("resource") or "").strip().lower()
-    qty = int(data.get("qty") or 0)
-    player_id = data.get("playerId")  # optionnel (tests) ; sinon cookie
+    """
+    Vendre une ressource du joueur contre des coins.
 
-    if not resource or qty <= 0:
-        return jsonify({"error": "invalid_payload"}), 400
+    JSON attendu :
+    {
+      "resource": "branch",
+      "qty": 2,
+      "playerId": 1   # optionnel : pour les tests / DEV UI
+    }
+    """
+    data = request.get_json(silent=True) or {}
+
+    resource = (data.get("resource") or "").strip()
+    qty = data.get("qty")
+    player_id = data.get("playerId")
+
+    # --- Validation basique -------------------------------------------------
+    if not resource:
+        return jsonify({"error": "invalid_payload", "detail": "missing_resource"}), 400
+
+    try:
+        qty = int(qty)
+    except (TypeError, ValueError):
+        return jsonify({"error": "invalid_payload", "detail": "invalid_qty"}), 400
+
+    if qty <= 0:
+        return jsonify({"error": "invalid_payload", "detail": "qty_must_be_positive"}), 400
 
     with SessionLocal() as s:
-        # Auth : si playerId fourni (tests), on l'utilise, sinon cookie
-        if player_id:
+        # 1) On essaie d'abord via le cookie (GAME_UI)
+        p: Player | None = get_current_player(s)
+
+        # 2) Sinon, on accepte playerId (tests + Debug UI)
+        if not p and player_id is not None:
             try:
-                p = s.get(Player, int(player_id))
-            except Exception:
-                p = None
-        else:
-            p = get_current_player(s)
+                pid_int = int(player_id)
+            except (TypeError, ValueError):
+                return jsonify({"error": "invalid_payload", "detail": "invalid_playerId"}), 400
+            p = s.get(Player, pid_int)
 
         if not p:
             return jsonify({"error": "not_authenticated"}), 401
 
-        # Prix unitaire via ResourceDef (fallback = 1)
-        rd = s.query(ResourceDef).filter_by(key=resource, enabled=True).first()
-        unit_price = rd.base_sell_price if rd else 1
-
-        # Vérifier le stock
-        rs = (
+        # Stock du joueur
+        rs: ResourceStock | None = (
             s.query(ResourceStock)
             .filter_by(player_id=p.id, resource=resource)
             .first()
@@ -51,7 +71,15 @@ def sell():
         if not rs or rs.qty < qty:
             return jsonify({"error": "not_enough_stock"}), 400
 
-        # Décrémenter stock + créditer les coins
+        # Prix unitaire : ResourceDef.base_sell_price (fallback = 1)
+        rd: ResourceDef | None = (
+            s.query(ResourceDef)
+            .filter_by(key=resource)
+            .first()
+        )
+        unit_price: int = rd.base_sell_price if rd and rd.base_sell_price is not None else 1
+
+        # Calcul du gain + mise à jour
         rs.qty -= qty
         gain = unit_price * qty
         p.coins = (p.coins or 0) + gain
@@ -60,24 +88,27 @@ def sell():
         s.refresh(rs)
         s.refresh(p)
 
-        return jsonify({
-            "ok": True,
-            "sold": {
-                "resource": resource,
-                "qty": qty,
-                "gain": gain,
-            },
-            "stock": {
-                "resource": resource,
-                "qty": rs.qty,
-            },
-            "player": {
-                "id": p.id,
-                "name": p.name,
-                "level": p.level,
-                "xp": p.xp,
-                "coins": p.coins,
-                "diams": p.diams,
-                "next_xp": next_threshold(p.level),
-            },
-        }), 200
+        return jsonify(
+            {
+                "ok": True,
+                "sold": {                      # 👈 structure attendue par les tests
+                    "resource": resource,
+                    "qty": qty,
+                    "gain": gain,
+                    "unit_price": unit_price,
+                },
+                "stock": {
+                    "resource": rs.resource,
+                    "qty": rs.qty,
+                },
+                "player": {
+                    "id": p.id,
+                    "name": p.name,
+                    "level": p.level,
+                    "xp": p.xp,
+                    "coins": p.coins,
+                    "diams": p.diams,
+                    "next_xp": next_threshold(p.level),
+                },
+            }
+        ), 200

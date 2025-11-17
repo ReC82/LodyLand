@@ -65,6 +65,12 @@ def play_redirect():
     """Compatibilité : /play redirige vers /."""
     return redirect(url_for("frontend.home"))
 
+@frontend_bp.route("/shop")
+def shop():
+    """Page boutique joueur (vente ressources + achat cartes)."""
+    # Pour le moment, la page sera majoritairement pilotée par JS
+    return render_template("GAME_UI/shop/index.html")
+
 @frontend_bp.route("/lands")
 def lands_select():
     """Page de sélection des lands (Forêt, Plage, etc.)."""

@@ -1,0 +1,61 @@
+{% extends "game_base.html" %}
+
+{% block title %}Boutique — LodyLand{% endblock %}
+
+{% block content %}
+<div class="shop-container">
+  <div class="shop-header">
+    <h1 class="h3 mb-1">Boutique</h1>
+    <p class="text-muted mb-0">
+      Vends tes ressources pour obtenir des coins. (Achat de cartes à venir.)
+    </p>
+  </div>
+
+  <div class="shop-tabs">
+    <button
+      class="shop-tab shop-tab-active"
+      id="shopTabSell"
+      data-tab="sell"
+    >
+      Vendre des ressources
+    </button>
+    <button
+      class="shop-tab"
+      id="shopTabCards"
+      data-tab="cards"
+      disabled
+      title="Bientôt disponible"
+    >
+      Acheter des cartes
+    </button>
+  </div>
+
+  <div class="shop-content">
+    <!-- Onglet Vente -->
+    <section id="shopPanelSell" class="shop-panel shop-panel-active">
+      <div class="shop-sell-info">
+        <p class="mb-1">
+          ⚖️ Pour l'instant, chaque ressource vaut
+          <strong>1 coin par unité</strong>.
+        </p>
+      </div>
+      <div id="shopSellList" class="shop-sell-grid">
+        <!-- items remplis en JS -->
+      </div>
+      <div id="shopSellEmpty" class="shop-empty d-none">
+        Tu n'as pas encore de ressources à vendre.
+      </div>
+    </section>
+
+    <!-- Onglet Cartes (placeholder) -->
+    <section id="shopPanelCards" class="shop-panel">
+      <p class="text-muted">
+        L'achat de cartes (déblocage de lands, boosts, etc.) arrive bientôt.
+      </p>
+    </section>
+  </div>
+</div>
+
+<!-- JS spécifique Shop -->
+<script src="{{ url_for('static', filename='GAME_UI/js/shop_app.js') }}"></script>
+{% endblock %}
