@@ -15,6 +15,12 @@ def play_redirect():
 
 @frontend_bp.get("/land/beach")
 def land_beach():
-    """Display the Beach land page (6 slots)."""
+    """Display the Beach land page (x slots)."""
     # Later we can pass dynamic data here (player, cards, etc.)
     return render_template("GAME_UI/lands/beach.html")
+
+@frontend_bp.get("/land/forest")
+def land_forest():
+    """Display the Beach land page (x slots)."""
+    # Later we can pass dynamic data here (player, cards, etc.)
+    return render_template("GAME_UI/lands/forest.html")
