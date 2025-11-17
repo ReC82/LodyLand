@@ -254,19 +254,68 @@
   background: rgba(248, 113, 113, 0.15);
 }
 
-
 /* ===========================
-   Land-specific backgrounds
+   Daily Chest HUD
    =========================== */
 
-/* Forêt */
-.forest-body {
-  background: linear-gradient(to bottom, #345c3c, #e2f3e4);
-  min-height: 100vh;
+.hud-daily {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
 }
 
-/* Plage */
-.beach-body {
-  background: linear-gradient(to bottom, #5dc8ff, #fff7d1);
-  min-height: 100vh;
+.hud-daily-icon {
+  cursor: pointer;
+  font-size: 1.3rem;
+  position: relative;
+  transition: transform 0.1s ease;
+  user-select: none;
+}
+
+.hud-daily-icon:hover {
+  transform: scale(1.15);
+}
+
+/* état "en cours" */
+.hud-daily-icon.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Petit badge rouge "!" */
+.daily-alert-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Infobulle */
+.hud-daily-tooltip {
+  position: absolute;
+  top: 28px;
+  right: -10px;
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  min-width: 180px;
+  display: none;
+  border: 1px solid rgba(148,163,184,0.3);
+  z-index: 50;
+}
+
+.hud-daily:hover .hud-daily-tooltip {
+  display: block;
 }

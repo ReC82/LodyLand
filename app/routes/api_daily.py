@@ -1,4 +1,7 @@
 # app/routes/api_players.py
+
+from datetime import datetime, timezone, timedelta, date
+
 from flask import Blueprint, jsonify, request
 from app.db import SessionLocal
 from app.models import Player
@@ -79,4 +82,41 @@ def claim_daily():
                 "best": me.best_streak,
             },
             "next_at": next_reset.isoformat(),
+        }), 200
+
+@bp.get("/daily/status")
+def daily_status():
+    """Retourne le statut du coffre quotidien (sans rien modifier)."""
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            # Pour le front, un 401 clair est ok : pas loggé = pas de coffre.
+            return jsonify({"error": "not_authenticated"}), 401
+
+        today_utc: date = datetime.now(timezone.utc).date()
+
+        # Par défaut : streak 0 si null
+        current_streak = me.daily_streak or 0
+        best_streak = me.best_streak or 0
+
+        # Calcul du prochain reset (minuit UTC du lendemain)
+        next_reset_dt = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) + timedelta(days=1)
+        next_reset_iso = next_reset_dt.isoformat()
+
+        # Eligible si : jamais pris OU dernier daily < aujourd'hui
+        if not me.last_daily or me.last_daily < today_utc:
+            eligible = True
+        else:
+            # me.last_daily == today_utc -> déjà pris aujourd'hui
+            eligible = False
+
+        return jsonify({
+            "eligible": eligible,
+            "next_reset": next_reset_iso,
+            "streak": {
+                "current": current_streak,
+                "best": best_streak,
+            },
         }), 200

@@ -773,6 +773,7 @@ function updatePlayerHUD(playerData) {
 document.addEventListener("DOMContentLoaded", async () => {
   
   setupGameMenu();  
+  refreshDailyStatus();
 
   const me = await tryMe();
   if (me) {
