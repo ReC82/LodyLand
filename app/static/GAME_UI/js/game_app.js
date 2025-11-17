@@ -86,6 +86,16 @@ function renderPlayer(p) {
     if (headerName) headerName.textContent = "—";
     if (hudCoins) hudCoins.textContent = "0";
     if (hudDiams) hudDiams.textContent = "0";
+    
+    // HUD moderne à zéro
+    updatePlayerHUD({
+      level: 0,
+      xp: 0,
+      xp_next: 100,
+      coins: 0,
+      diams: 0,
+      land_name: window.LAND_NAME || "",
+    });
     return;
   }
 
@@ -114,6 +124,16 @@ function renderPlayer(p) {
   if (headerName) headerName.textContent = p.name ?? "—";
   if (hudCoins) hudCoins.textContent = coins;
   if (hudDiams) hudDiams.textContent = diams;
+
+    // 🔥 Mise à jour du nouveau HUD
+  updatePlayerHUD({
+    level,
+    xp,
+    xp_next: next ?? 100,
+    coins,
+    diams,
+    land_name: window.LAND_NAME || "",
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -715,6 +735,36 @@ async function resetCardDev(cardKey) {
   await refreshCardsDev();
 }
 
+// ---------------------------------------------------------------------------
+// HUD helpers
+// ---------------------------------------------------------------------------
+
+function updatePlayerHUD(playerData) {
+  // playerData attendu: { level, xp, xp_next, coins, diams, land_name }
+  const levelEl = document.getElementById("hud-level");
+  const xpFillEl = document.getElementById("hud-xp-fill");
+  const xpCurEl = document.getElementById("hud-xp-current");
+  const xpNextEl = document.getElementById("hud-xp-next");
+  const coinsEl = document.getElementById("hud-coins");
+  const diamsEl = document.getElementById("hud-diams");
+  const landNameEl = document.getElementById("gh-land-name");
+
+  if (!playerData) return;
+
+  if (levelEl) levelEl.textContent = playerData.level ?? 0;
+  if (xpCurEl) xpCurEl.textContent = playerData.xp ?? 0;
+  if (xpNextEl) xpNextEl.textContent = playerData.xp_next ?? 100;
+  if (coinsEl) coinsEl.textContent = playerData.coins ?? 0;
+  if (diamsEl) diamsEl.textContent = playerData.diams ?? 0;
+  if (landNameEl) landNameEl.textContent = playerData.land_name || "";
+
+  if (xpFillEl) {
+    const cur = playerData.xp ?? 0;
+    const next = playerData.xp_next ?? 100;
+    const ratio = next > 0 ? Math.max(0, Math.min(1, cur / next)) : 0;
+    xpFillEl.style.width = `${ratio * 100}%`;
+  }
+}
 
 
 // ---------------------------------------------------------------------------

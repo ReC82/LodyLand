@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .auth import get_current_player
 from .db import SessionLocal
 from .models import Player, Account
+from .routes.api_players import _ensure_starting_land_card
 
 frontend_bp = Blueprint("frontend", __name__)
 
@@ -123,6 +124,8 @@ def register():
             player_id=player.id,
         )
         session.add(account)
+
+        _ensure_starting_land_card(session, player)
 
         session.commit()
 

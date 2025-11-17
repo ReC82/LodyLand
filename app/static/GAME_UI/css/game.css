@@ -1,85 +1,194 @@
-/* Game layout */
-.game-wrapper {
-  max-width: 1100px;
+/* ===========================
+   Global game layout + HUD
+   =========================== */
+
+.game-body {
+  margin: 0;
+  background: #020617;
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Panel style */
-.game-panel {
-  background: radial-gradient(circle at top left, #273746 0, #12151f 55%, #07090d 100%);
-  border-radius: 1rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: radial-gradient(circle at top, #1d283a, #020617);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
 
-/* XP bar */
-.game-xpbar {
-  height: 14px;
-  border-radius: 999px;
-  overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.06);
+.gh-left,
+.gh-center,
+.gh-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* Section titles */
-.section-title {
+/* --- Left: logo + land name --- */
+
+.gh-logo {
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-size: 0.9rem;
+  color: #a5b4fc;
+}
+
+.gh-land {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* --- Center: XP --- */
+
+.gh-center {
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.gh-xp-label {
   font-size: 0.8rem;
-  color: #b0bec5;
+  color: #c4b5fd;
 }
 
-/* Generic card for tiles, inventory, shop */
-.game-card {
-  border-radius: 0.9rem;
-  padding: 0.75rem;
-  background: linear-gradient(145deg, #1b212b, #11141b);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+.gh-xp-bar {
+  width: 260px;
+  max-width: 40vw;
+  height: 8px;
+  border-radius: 999px;
+  background: #020617;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  overflow: hidden;
 }
 
-.game-card.placeholder {
-  opacity: 0.7;
+.gh-xp-fill {
+  height: 100%;
+  width: 30%; /* valeur par défaut, sera mise à jour en JS */
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  transition: width 0.3s ease;
 }
 
-/* Tile cards générées côté JS (si tu as .tile-card) */
-.tile-card {
-  border-radius: 0.9rem;
-  padding: 0.75rem;
-  background: radial-gradient(circle at top, #243447 0, #11141b 60%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out;
+.gh-xp-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.2rem;
 }
 
-.tile-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
-  border-color: rgba(190, 255, 120, 0.6);
+/* --- Right: currencies + menu --- */
+
+.gh-right {
+  gap: 0.75rem;
 }
 
-.tile-card img {
-  image-rendering: pixelated;
-}
-
-/* HUD pills (coins / diams) */
-.hud-pill {
+.gh-currency {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.hud-label {
-  text-transform: uppercase;
-  font-size: 0.65rem;
-  color: #b0bec5;
-}
-
-.hud-value {
-  font-weight: 600;
+  gap: 0.35rem;
   font-size: 0.85rem;
-  color: #ffd54f;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+.gh-coins {
+  color: #facc15;
+}
+
+.gh-diams {
+  color: #38bdf8;
+}
+
+.gh-menu-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.6rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.gh-menu-btn:hover {
+  background: rgba(30, 64, 175, 0.9);
+}
+
+/* Main game area */
+.game-main {
+  padding: 0.75rem;
+}
+
+/* ===========================
+   Lands: layout commun
+   =========================== */
+
+.land-container {
+  max-width: 900px;
+  margin: 1.5rem auto;
+}
+
+/* grille 3x2 pour les slots */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.slot-tile {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.slot-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.slot-index {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+}
+
+.slot-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.slot-status {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.slot-icon {
+  font-size: 2rem;
+}
+
+/* ===========================
+   Land-specific backgrounds
+   =========================== */
+
+/* Forêt */
+.forest-body {
+  background: linear-gradient(to bottom, #345c3c, #e2f3e4);
+  min-height: 100vh;
+}
+
+/* Plage */
+.beach-body {
+  background: linear-gradient(to bottom, #5dc8ff, #fff7d1);
+  min-height: 100vh;
 }

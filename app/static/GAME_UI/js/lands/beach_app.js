@@ -77,6 +77,14 @@ async function collectOnBeachSlot(slotEl) {
       statusEl.textContent = `Tu as trouvé : ${summary}`;
     }
 
+        // 🔥 Mise à jour HUD
+    if (data.player) {
+      renderPlayer({
+        ...data.player,
+        next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
+      });
+    }
+
     console.log("Beach collect OK:", data);
   } catch (err) {
     console.error("Beach collect request failed:", err);
