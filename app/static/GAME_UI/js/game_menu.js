@@ -75,6 +75,9 @@ async function claimDaily() {
       const cur = streak.current ?? "?";
       const best = streak.best ?? "?";
 
+    // 👉 affiche le modal animé
+    showDailyModal(reward, streak);
+
       tooltip.innerHTML =
         `Coffre ouvert 🎁<br>` +
         `+${reward} coins<br>` +
@@ -163,4 +166,49 @@ async function refreshDailyStatus() {
   }
 
   tooltip.innerHTML = html;
+}
+
+// ------------------------------
+// Daily modal helpers
+// ------------------------------
+
+function showDailyModal(reward, streak) {
+  const modal = $("dailyModal");
+  if (!modal) return;
+
+  const rewardEl = $("dailyModalReward");
+  const streakCurEl = $("dailyModalStreakCurrent");
+  const streakBestEl = $("dailyModalStreakBest");
+
+  if (rewardEl) rewardEl.textContent = reward ?? 0;
+  if (streakCurEl) streakCurEl.textContent = streak?.current ?? 0;
+  if (streakBestEl) streakBestEl.textContent = streak?.best ?? 0;
+
+  modal.classList.add("is-open");
+}
+
+function setupDailyModal() {
+  const modal = $("dailyModal");
+  if (!modal) return;
+
+  const closeBtn = $("dailyModalClose");
+  const backdrop = modal.querySelector(".daily-modal-backdrop");
+
+  const close = () => {
+    modal.classList.remove("is-open");
+  };
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", close);
+  }
+  if (backdrop) {
+    backdrop.addEventListener("click", close);
+  }
+
+  // fermer avec ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("is-open")) {
+      close();
+    }
+  });
 }

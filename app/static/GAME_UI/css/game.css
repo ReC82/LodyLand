@@ -319,3 +319,114 @@
 .hud-daily:hover .hud-daily-tooltip {
   display: block;
 }
+
+/* ===========================
+   Daily Chest Modal
+   =========================== */
+
+.daily-modal {
+  position: fixed;
+  inset: 0;
+  display: none; /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+}
+
+.daily-modal.is-open {
+  display: flex;
+}
+
+.daily-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(2px);
+}
+
+.daily-modal-box {
+  position: relative;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: #e5e7eb;
+  min-width: 260px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+
+  /* animation when opening */
+  animation: dailyModalPop 0.38s ease-out;
+}
+
+.daily-modal-icon {
+  font-size: 2.4rem;
+  margin-bottom: 0.5rem;
+  animation: dailyIconBounce 0.9s ease-out;
+}
+
+.daily-modal-title {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.daily-modal-reward {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.daily-modal-reward span {
+  font-weight: 700;
+  color: #facc15;
+}
+
+.daily-modal-streak {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin-bottom: 0.8rem;
+}
+
+.daily-modal-close {
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  cursor: pointer;
+}
+
+.daily-modal-close:hover {
+  filter: brightness(1.05);
+}
+
+/* pop-in + légère translation */
+@keyframes dailyModalPop {
+  0% {
+    transform: scale(0.7) translateY(20px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* petite animation sur l'icône */
+@keyframes dailyIconBounce {
+  0% {
+    transform: translateY(-8px) scale(0.9);
+  }
+  40% {
+    transform: translateY(0) scale(1.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}

@@ -92,6 +92,25 @@
       {% block content %}{% endblock %}
     </main>
 
+    <!-- Daily Chest modal -->
+    <div id="dailyModal" class="daily-modal">
+      <div class="daily-modal-backdrop"></div>
+      <div class="daily-modal-box">
+        <div class="daily-modal-icon">🎁</div>
+        <h2 class="daily-modal-title">Coffre ouvert !</h2>
+        <p class="daily-modal-reward">
+          Tu reçois <span id="dailyModalReward">0</span> coins.
+        </p>
+        <p class="daily-modal-streak">
+          Streak actuel : <span id="dailyModalStreakCurrent">0</span><br />
+          Meilleur streak : <span id="dailyModalStreakBest">0</span>
+        </p>
+        <button id="dailyModalClose" class="daily-modal-close">
+          OK
+        </button>
+      </div>
+    </div>
+
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
