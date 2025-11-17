@@ -17,8 +17,6 @@ from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
-
-
 class Player(Base):
     __tablename__ = "players"
 
