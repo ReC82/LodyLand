@@ -184,3 +184,16 @@ def login():
 
     finally:
         session.close()
+
+@frontend_bp.route("/logout")
+def logout():
+    """Simple logout: clear player_id cookie and redirect to home."""
+    resp = make_response(redirect(url_for("frontend.home")))
+    resp.set_cookie(
+        "player_id",
+        "",
+        httponly=True,
+        samesite="Lax",
+        max_age=0,           # expire immédiatement
+    )
+    return resp
