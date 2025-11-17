@@ -23,11 +23,21 @@ resources:
     label: "Bois"
     base_cooldown: 10
     base_sell_price: 2
-    unlock_min_level: 0
+    unlock_min_level: 1
     enabled: true
     icon: "/static/assets/img/resources/palm_wood.png"
     description: "Du bois de palmier, ressource de base pour construire et crafter."
     unlock_description: "Récolté avec une hache dans la forêt."
+
+  - key: stone
+    label: "Small Stone"
+    base_cooldown: 10
+    base_sell_price: 2
+    unlock_min_level: 2
+    enabled: true
+    icon: "/static/assets/img/resources/small_stone.png"
+    description: "De petites pierres, utiles pour la construction."
+    unlock_description: "Récolté avec à la main dans la forêt."   
 
   - key: sand
     label: "Sable"
