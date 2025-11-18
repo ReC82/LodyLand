@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Documentation — Ajouter un Land</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f7f7fb;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  header {
+    background: #4a6fa5;
+    color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    color: #26416b;
+  }
+
+  h3 {
+    margin-top: 1.5rem;
+    color: #375a7f;
+  }
+
+  .container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  pre {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+
+  code {
+    background: #e8e8e8;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  ul {
+    margin-left: 1rem;
+  }
+
+  .box {
+    background: white;
+    padding: 1.2rem 1.4rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.09);
+    margin-bottom: 2rem;
+  }
+
+  .important {
+    background: #fff7d4;
+    border-left: 5px solid #ffcd00;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .tip {
+    background: #dff4ff;
+    border-left: 5px solid #52baff;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .toc a {
+    text-decoration: none;
+    color: #375a7f;
+  }
+  
+  .toc a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Guide complet : Ajouter un Land dans LodyLand</h1>
+</header>
+
+<div class="container">
+
+<div class="box toc">
+  <h2>📚 Table des matières</h2>
+  <ul>
+    <li><a href="#principes">0. Principe général d’un Land</a></li>
+    <li><a href="#slug">1. Choisir un identifiant (slug)</a></li>
+    <li><a href="#card">2. Ajouter la carte d’accès (cards.yml)</a></li>
+    <li><a href="#selector">3. Intégration dans le sélecteur /lands</a></li>
+    <li><a href="#route">4. Ajouter la route Flask</a></li>
+    <li><a href="#template">5. Créer le template du land</a></li>
+    <li><a href="#js">6. Ajouter le JS spécifique</a></li>
+    <li><a href="#emoji">7. Ajouter l’emoji du land</a></li>
+    <li><a href="#test">8. Tester le flux complet</a></li>
+    <li><a href="#lands-yml">9. Optionnel : config gameplay (lands.yml)</a></li>
+    <li><a href="#tldr">10. TL;DR — Checklist rapide</a></li>
+  </ul>
+</div>
+
+<!-- ==================== SECTION 0 ==================== -->
+<div class="box" id="principes">
+<h2>0. 🗺️ Principe général</h2>
+
+<p>Dans LodyLand, un <strong>Land jouable</strong> est défini par :</p>
+
+<ul>
+  <li>Une <strong>carte d’accès</strong> dans <code>cards.yml</code>.</li>
+  <li>Une <strong>route Flask</strong> (ex: <code>/land/village</code>).</li>
+  <li>Un <strong>template HTML</strong> dans <code>GAME_UI/lands/</code>.</li>
+  <li>Un <strong>fichier JS</strong> propre au land (optionnel).</li>
+  <li>(Optionnel) Une entrée gameplay dans <code>lands.yml</code>.</li>
+</ul>
+
+<div class="important">
+Un land <strong>n’apparaît dans /lands</strong> que s’il existe une carte <code>land_*</code> dans
+<code>card_defs</code>.
+</div>
+</div>
+
+
+<!-- ==================== SECTION 1 ==================== -->
+<div class="box" id="slug">
+<h2>1. 🔤 Choisir un identifiant (slug)</h2>
+
+<p>Exemples valides :</p>
+
+<ul>
+  <li><code>village</code></li>
+  <li><code>desert</code></li>
+  <li><code>mountain</code></li>
+</ul>
+
+Correspondances obligatoires :</p>
+
+<ul>
+  <li>Carte : <code>land_&lt;slug&gt;</code></li>
+  <li>Route Flask : <code>/land/&lt;slug&gt;</code></li>
+  <li>Template HTML : <code>lands/&lt;slug&gt;.html</code></li>
+  <li>Script JS : <code>lands/&lt;slug&gt;_app.js</code></li>
+</ul>
+</div>
+
+
+<!-- ==================== SECTION 2 ==================== -->
+<div class="box" id="card">
+<h2>2. 🃏 Ajouter la carte d’accès dans cards.yml</h2>
+
+<p>Fichier : <code>app/data/cards.yml</code></p>
+
+<pre>
+- key: land_village
+  label: "Accès Village"
+  description: "Un petit village paisible."
+  icon: "/static/assets/img/cards/land_village.png"
+  type: "land_access"
+  price_coins: 200
+  price_diams: 0
+  max_owned: 1
+  enabled: true
+</pre>
+
+<p>Redémarre l'application → <code>seed_cards_from_yaml()</code> synchronise les changements.</p>
+</div>
+
+
+<!-- ==================== SECTION 3 ==================== -->
+<div class="box" id="selector">
+<h2>3. 🔓 Intégration dans le sélecteur <code>/lands</code></h2>
+
+<p>Le sélecteur est dynamique. Il charge :</p>
+
+<ul>
+  <li>Toutes les cartes dont la clé commence par <code>land_</code>.</li>
+  <li>Vérifie si le joueur a acheté la carte.</li>
+  <li>Affiche un bouton <strong>Débloqué</strong> ou <strong>Verrouillé</strong>.</li>
+</ul>
+
+<div class="tip">
+Donc : <strong>si tu ajoutes land_village dans cards.yml → il apparaît automatiquement !</strong>
+</div>
+</div>
+
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="box" id="route">
+<h2>4. 🧩 Ajouter la route Flask</h2>
+
+<p>Dans <code>frontend.py</code> :</p>
+
+<pre>
+@frontend_bp.get("/land/village")
+def land_village():
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        return render_template("GAME_UI/lands/village.html")
+    finally:
+        session.close()
+</pre>
+
+</div>
+
+
+<!-- ==================== SECTION 5 ==================== -->
+<div class="box" id="template">
+<h2>5. 🎨 Créer le template HTML</h2>
+
+<p>Fichier : <code>templates/GAME_UI/lands/village.html</code></p>
+
+<pre>
+{% extends "game_base.html" %}
+
+{% block title %}Village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-container">
+  <h1 class="h3 mb-0">🏘️ Village</h1>
+  <p class="text-muted">Ici tu pourras commercer et faire des quêtes (à venir).</p>
+
+  <div class="slot-grid">
+    {% for i in range(6) %}
+    <div class="slot-tile" data-slot="{{ i }}">
+      🏠 Emplacement {{ i + 1 }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='GAME_UI/js/lands/village_app.js') }}"></script>
+{% endblock %}
+</pre>
+</div>
+
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="box" id="js">
+<h2>6. ⚙️ Ajouter le JS du land</h2>
+
+<p>Fichier : <code>static/GAME_UI/js/lands/village_app.js</code></p>
+
+<pre>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[Village] Script chargé");
+
+  document.querySelectorAll(".slot-tile").forEach((el) => {
+    el.addEventListener("click", () => {
+      alert("Interaction du village à venir !");
+    });
+  });
+});
+</pre>
+</div>
+
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="box" id="emoji">
+<h2>7. 😀 Ajouter un emoji pour la liste /lands</h2>
+
+Dans <code>frontend.py</code> :
+
+<pre>
+EMOJI_BY_SLUG = {
+    "forest": "🌲",
+    "beach": "🏝️",
+    "village": "🏘️",
+}
+</pre>
+
+</div>
+
+
+<!-- ==================== SECTION 8 ==================== -->
+<div class="box" id="test">
+<h2>8. 🔍 Tester le flux complet</h2>
+
+<ol>
+  <li>Vérifie que la carte apparaît dans le shop.</li>
+  <li>Achète l’accès.</li>
+  <li>Va sur <code>/lands</code> → le village doit être déverrouillé.</li>
+  <li>Clique → page du village.</li>
+</ol>
+</div>
+
+
+<!-- ==================== SECTION 9 ==================== -->
+<div class="box" id="lands-yml">
+<h2>9. 📦 Optionnel : Config gameplay (lands.yml)</h2>
+
+<p>Quand tu feras la logique réelle de récolte par land, tu pourras définir :</p>
+
+<ul>
+  <li>Types de ressources</li>
+  <li>Cooldowns</li>
+  <li>Loot tables</li>
+  <li>Slots & zones</li>
+</ul>
+</div>
+
+
+<!-- ==================== SECTION 10 ==================== -->
+<div class="box" id="tldr">
+<h2>10. 🧾 TL;DR — Checklist rapide</h2>
+
+<ul>
+  <li>Créer <code>land_slug</code> dans <code>cards.yml</code>.</li>
+  <li>Redémarrer → seeded automatiquement.</li>
+  <li>Créer la route <code>/land/slug</code>.</li>
+  <li>Créer le template <code>lands/slug.html</code>.</li>
+  <li>(Optionnel) JS : <code>lands/slug_app.js</code>.</li>
+  <li>Ajouter un emoji pour <code>/lands</code>.</li>
+  <li>Tester achat → déblocage → accès.</li>
+</ul>
+</div>
+
+</div> <!-- container -->
+</body>
+</html>
