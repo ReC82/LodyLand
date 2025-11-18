@@ -254,6 +254,22 @@
   background: rgba(248, 113, 113, 0.15);
 }
 
+.game-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.game-menu-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #fff;           /* à adapter à ton thème */
+}
+
 /* ===========================
    Daily Chest HUD
    =========================== */
