@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from .auth import get_current_player
 from .db import SessionLocal
-from .models import Player, Account
+from .models import Player, Account, PlayerCard
 from .routes.api_players import _ensure_starting_land_card
 
 frontend_bp = Blueprint("frontend", __name__)
@@ -43,7 +43,6 @@ def validate_password(password: str) -> list[str]:
         errors.append("Le mot de passe doit contenir au moins une lettre.")
     return errors
 
-
 @frontend_bp.route("/")
 def home():
     """Page d'accueil publique. Si le joueur est connecté, on le redirige vers la forêt."""
@@ -71,21 +70,51 @@ def shop():
     # Pour le moment, la page sera majoritairement pilotée par JS
     return render_template("GAME_UI/shop/index.html")
 
-@frontend_bp.route("/lands")
+@frontend_bp.get("/lands")
 def lands_select():
-    """Page de sélection des lands (Forêt, Plage, etc.)."""
+    """Écran de sélection de land selon les cartes possédées."""
     session = SessionLocal()
     try:
-        me = get_current_player(session)
-        if not me:
-            # pas loggé -> retour à la home
+        player = get_current_player(session)
+        if not player:
+            # pas connecté → retour home / login
             return redirect(url_for("frontend.home"))
 
-        # Pour l'instant, on ne passe pas encore la liste des lands,
-        # on affiche juste Forest (unlock) + Beach (lock) en statique.
-        return render_template("GAME_UI/lands/select.html")
+        # Récupérer les cartes "land_*" du joueur
+        owned_land_cards = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key.in_(["land_forest", "land_beach"]),
+                PlayerCard.qty > 0,
+            )
+            .all()
+        )
+        owned_keys = {pc.card_key for pc in owned_land_cards}
+
+        lands = [
+            {
+                "key": "forest",
+                "title": "Forêt",
+                "emoji": "🌲",
+                "desc": "Land de départ – collecte des branches, chance de lianes.",
+                "url": url_for("frontend.land_forest"),
+                "unlocked": "land_forest" in owned_keys,
+            },
+            {
+                "key": "beach",
+                "title": "Plage",
+                "emoji": "🏝️",
+                "desc": "Sable, coquillages, perles rares.",
+                "url": url_for("frontend.land_beach"),
+                "unlocked": "land_beach" in owned_keys,
+            },
+        ]
+
     finally:
         session.close()
+
+    return render_template("GAME_UI/lands/select.html", lands=lands)
 
 @frontend_bp.get("/land/beach")
 def land_beach():
