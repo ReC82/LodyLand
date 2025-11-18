@@ -267,13 +267,13 @@ def collect():
                     s.add(rs)
 
                 new_qty = (rs.qty or 0.0) + amount
-                rs.qty = round(new_qty, 3)
+                rs.qty = round(new_qty, 2)
 
                 loot_payload.append(
                     {
                         "resource": res_key,
                         "base_amount": base_amount,
-                        "final_amount": round(amount, 3),
+                        "final_amount": round(amount, 2),
                     }
                 )
 
@@ -309,6 +309,8 @@ def collect():
                         "xp": p.xp,
                         "level": p.level,
                         "next_xp": next_threshold(p.level),
+                        "coins": p.coins,
+                        "diams": p.diams,
                     },
                     "level_up": level_up,
                 }
@@ -379,7 +381,7 @@ def collect():
             # Apply resource_boost cards
             amount = _compute_collect_amount(s, t.player_id, t.resource)
             new_qty = (rs.qty or 0.0) + amount
-            rs.qty = round(new_qty, 3)
+            rs.qty = round(new_qty, 2)
 
         s.commit()
         return jsonify(
@@ -392,6 +394,8 @@ def collect():
                     "xp": p.xp,
                     "level": p.level,
                     "next_xp": next_threshold(p.level),
+                    "coins": p.coins,
+                    "diams": p.diams,
                 },
                 "level_up": level_up,
             }

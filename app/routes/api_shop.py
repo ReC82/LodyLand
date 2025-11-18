@@ -7,6 +7,12 @@ from app.economy import list_prices
 from app.auth import get_current_player 
 
 bp = Blueprint("shop", __name__) 
+
+def _round_qty(q, digits: int = 2) -> float:
+    if q is None:
+        q = 0.0
+    return round(float(q), digits)
+
 # -----------------------------------------------------------------
 # Prices & selling
 # -----------------------------------------------------------------
@@ -99,7 +105,7 @@ def sell():
                 },
                 "stock": {
                     "resource": rs.resource,
-                    "qty": rs.qty,
+                    "qty": _round_qty(rs.qty),
                 },
                 "player": {
                     "id": p.id,

@@ -9,6 +9,11 @@ from app.progression import next_threshold
 
 bp = Blueprint("players", __name__)
 
+def _round_qty(q, digits: int = 2) -> float:
+    if q is None:
+        q = 0.0
+    return round(float(q), digits)
+
 def _player_to_dict(p: Player) -> dict:
     # Petit helper pour uniformiser les réponses
     return {
@@ -243,7 +248,7 @@ def get_state():
             .all()
         )
         inventory_payload = [
-            {"resource": rs.resource, "qty": rs.qty}
+            {"resource": rs.resource, "qty": _round_qty(rs.qty)}
             for rs in stocks
         ]
 

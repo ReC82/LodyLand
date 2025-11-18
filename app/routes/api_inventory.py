@@ -6,7 +6,11 @@ from app.auth import get_current_player
 
 bp = Blueprint("indeventory", __name__) 
 
-
+def _round_qty(q, digits: int = 2) -> float:
+    """Return a float rounded to a fixed number of decimals for JSON."""
+    if q is None:
+        q = 0.0
+    return round(float(q), digits)
 
 # -----------------------------------------------------------------
 # Inventory
@@ -25,6 +29,6 @@ def get_inventory():
             .all()
         )
         payload = [
-            {"resource": r.resource, "qty": r.qty} for r in rows
+            {"resource": r.resource, "qty": _round_qty(r.qty)} for r in rows
         ]
         return jsonify(payload)

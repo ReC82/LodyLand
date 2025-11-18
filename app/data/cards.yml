@@ -25,7 +25,7 @@ cards:
     label: "Accès Forêt"
     description: "Débloque le land Forêt."
     icon: "/static/assets/img/cards/land_forest.png"
-    type: "land"
+    type: "land_access"
     #target_land: "forest"     # fait le lien avec app/data/lands.yml
     price_coins: 0
     price_diams: 0
@@ -36,7 +36,7 @@ cards:
     label: "Accès Plage"
     description: "Débloque le land Plage."
     icon: "/static/assets/img/cards/land_beach.png"
-    type: "land"
+    type: "land_access"
     #target_land: "beach"      # correspond à la key du land
     price_coins: 500          # à ajuster selon le balancing
     price_diams: 0
