@@ -42,3 +42,13 @@ cards:
     price_diams: 0
     max_owned: 1
     enabled: true
+
+  - key: land_village
+    label: "Accès Village"
+    description: "Un petit village où tu pourras commercer, accepter des quêtes, etc."
+    icon: "/static/assets/img/cards/land_village.png"   # ou laisse vide pour le moment
+    type: "land_access"         # le type n'est pas utilisé par /lands, mais c'est propre
+    price_coins: 200
+    price_diams: 0
+    max_owned: 1
+    enabled: true    

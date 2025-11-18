@@ -1,5 +1,5 @@
 forest:
-  key: "forest"
+  key: "land_forest"
   label_fr: "Forêt"
   label_en: "Forest"
   starting_land: true           # donné dès l'inscription via la carte
@@ -26,7 +26,7 @@ forest:
       extra_loot: []            # on pourra rajouter des bonus plus tard
 
 beach:
-  key: "beach"
+  key: "land_beach"
   label_fr: "Plage"
   label_en: "Beach"
   starting_land: false          # doit être débloqué via carte land_beach
@@ -71,3 +71,30 @@ beach:
           min: 1
           max: 1
           chance: 0.001
+
+village:
+  key: "land_village"
+  label_fr: "Village"
+  label_en: "Village"
+  starting_land: true           # donné dès l'inscription via la carte
+  slots: 0                    # nombre d'emplacements cliquables
+
+  tools:
+    hands:
+      base_loot:
+        - resource: "branch"
+          min: 1
+          max: 1
+          chance: 1.0           # 100% → tu as toujours au moins 1 branche
+      extra_loot:
+        - resource: "vine"
+          min: 1
+          max: 1
+          chance: 0.10          # 10% → liane en bonus
+    axe:
+      base_loot:
+        - resource: "wood"
+          min: 1
+          max: 1
+          chance: 1.0           # 100% → si tu utilises la hache, tu chopes du bois
+      extra_loot: []            # on pourra rajouter des bonus plus tard          

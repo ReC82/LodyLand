@@ -12,35 +12,40 @@
   </div>
 
   <div class="land-select-grid">
-{% for land in lands %}
-  {% if land.unlocked %}
-    <a href="{{ land.url }}"
-       class="land-card land-card-unlocked">
-      <div class="land-card-icon">{{ land.emoji }}</div>
-      <div class="land-card-title">{{ land.title }}</div>
-      <div class="land-card-desc">
-        {{ land.desc }}
-      </div>
-      <div class="land-card-tag">Débloqué</div>
-    </a>
-  {% else %}
-    <div class="land-card land-card-locked">
-      <div class="land-card-icon">{{ land.emoji }}</div>
-      <div class="land-card-title">{{ land.title }}</div>
-      <div class="land-card-desc">
-        {{ land.desc }}
-      </div>
-      <div class="land-card-tag">Verrouillé</div>
+    {% for land in lands %}
+      {% if land.unlocked and land.has_route %}
+        <!-- Land débloqué + jouable -->
+        <a href="{{ land.url }}" class="land-card land-card-unlocked">
+          <div class="land-card-icon">{{ land.emoji }}</div>
+          <div class="land-card-title">{{ land.title }}</div>
+          <div class="land-card-desc">
+            {{ land.desc }}
+          </div>
+          <div class="land-card-tag">Débloqué</div>
+        </a>
+      {% else %}
+        <!-- Land verrouillé ou pas encore implémenté -->
+        <div class="land-card land-card-locked">
+          <div class="land-card-icon">{{ land.emoji }}</div>
+          <div class="land-card-title">{{ land.title }}</div>
+          <div class="land-card-desc">
+            {% if land.has_route %}
+              {{ land.desc }}
+            {% else %}
+              Bientôt disponible.
+            {% endif %}
+          </div>
+          <div class="land-card-tag">Verrouillé</div>
 
-      <p class="land-card-hint">
-        Carte disponible dans la boutique
-        {% if land.price_text %}
-          – <strong>{{ land.price_text }}</strong>
-        {% endif %}
-      </p>
-    </div>
-  {% endif %}
-{% endfor %}
+          <p class="land-card-hint">
+            Carte disponible dans la boutique
+            {% if land.price_text %}
+              – <strong>{{ land.price_text }}</strong>
+            {% endif %}
+          </p>
+        </div>
+      {% endif %}
+    {% endfor %}
   </div>
 </div>
 {% endblock %}
