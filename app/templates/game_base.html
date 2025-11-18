@@ -61,10 +61,21 @@
     </header>
 
     <!-- Menu joueur déroulant -->
-    <div class="game-menu" id="game-menu">
+      <div class="game-menu" id="game-menu">
       <div class="game-menu-card">
-        <div class="game-menu-section">
+        <div class="game-menu-header">
           <div class="game-menu-title">Menu</div>
+          <button
+            class="game-menu-close"
+            id="game-menu-close"
+            type="button"
+            aria-label="Fermer le menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="game-menu-section">
           <button class="game-menu-item" data-action="profile">
             Profil (plus tard)
           </button>
@@ -81,7 +92,7 @@
             Inventaire (WIP)
           </button>          
         </div>
-        
+
         <div class="game-menu-section">
           <button class="game-menu-item game-menu-logout" data-action="logout">
             Se déconnecter
@@ -89,6 +100,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Contenu principal (lands, etc.) -->
     <main class="game-main">

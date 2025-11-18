@@ -5,27 +5,56 @@
 function setupGameMenu() {
   const btn = document.getElementById("hud-menu-btn");
   const menu = document.getElementById("game-menu");
+  const closeBtn = document.getElementById("game-menu-close");
 
   if (!btn || !menu) return;
 
   // Toggle open/close on button click
   btn.addEventListener("click", (ev) => {
+    // Prevent click from bubbling to document
     ev.stopPropagation();
     menu.classList.toggle("is-open");
   });
 
-  // Close when clicking outside
+  // Close when clicking on the "X" button
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (ev) => {
+      // Prevent click from bubbling to document
+      ev.stopPropagation();
+      menu.classList.remove("is-open");
+    });
+  }
+
+  // Close when clicking outside the menu element (if overlay does not cover full screen)
   document.addEventListener("click", (ev) => {
     if (!menu.classList.contains("is-open")) return;
+
     const target = ev.target;
+
+    // Do not close if click on the toggle button or inside the menu overlay
     if (target === btn || menu.contains(target)) return;
+
     menu.classList.remove("is-open");
   });
 
-  // Handle actions
+  // Handle clicks inside the overlay:
+  // - click on backdrop (outside .game-menu-card) => close
+  // - click on .game-menu-item => run action
   menu.addEventListener("click", (ev) => {
+    const card = ev.target.closest(".game-menu-card");
+
+    // If there is NO game-menu-card under the click, it means we clicked on the backdrop
+    if (!card) {
+      // Click on dark background => close menu
+      menu.classList.remove("is-open");
+      return;
+    }
+
     const item = ev.target.closest(".game-menu-item");
-    if (!item) return;
+    if (!item) {
+      // Click inside the card but not on an item => do nothing
+      return;
+    }
 
     const action = item.dataset.action;
     menu.classList.remove("is-open");
@@ -43,7 +72,7 @@ function setupGameMenu() {
         break;
       case "quests":
       default:
-        // TODO: pages dédiées à venir
+        // TODO: dedicated pages to come
         console.log("[GameMenu] Action not implemented:", action);
         break;
     }
