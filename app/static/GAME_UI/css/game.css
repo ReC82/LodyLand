@@ -670,3 +670,54 @@
 .shop-panel-active {
   display: block;
 }
+
+/* ---------------------------------------------------------- */
+/* Shop – cartes                                              */
+/* ---------------------------------------------------------- */
+
+/* Une ligne de carte dans l'onglet "Acheter des cartes" */
+.shop-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: rgba(10, 15, 30, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  margin-bottom: 0.75rem;
+}
+
+/* Zone icône (à gauche) */
+.shop-card-icon {
+  width: 80px;            /* zone "carrée" fixe */
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* L'image de la carte en elle-même */
+.shop-card-icon img {
+  max-width: 72px;        /* limite stricte */
+  max-height: 72px;
+  display: block;
+  object-fit: contain;    /* garde les proportions */
+  border-radius: 12px;    /* petit arrondi sympa */
+}
+
+/* Texte principal de la carte */
+.shop-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Colonne droite (prix + bouton) */
+.shop-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
