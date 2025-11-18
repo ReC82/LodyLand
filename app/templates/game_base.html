@@ -118,5 +118,7 @@
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
+    {# Scripts spécifiques à certaines pages (shop, lands spéciaux, etc.) #}
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>
