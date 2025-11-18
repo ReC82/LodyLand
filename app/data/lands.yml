@@ -3,7 +3,7 @@ forest:
   label_fr: "Forêt"
   label_en: "Forest"
   starting_land: true           # donné dès l'inscription via la carte
-  slots: 6                      # nombre d'emplacements cliquables
+  slots: 8                     # nombre d'emplacements cliquables
 
   tools:
     hands:

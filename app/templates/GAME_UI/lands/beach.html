@@ -14,14 +14,14 @@
       <div>
         <h1 class="h3 mb-0">🏝️ Plage</h1>
         <small class="text-muted">
-          6 emplacements – Récolte de sable avec les mains (pour l’instant).
+          {{ slots }} emplacements – Fouille avec les mains : branches + chance de lianes.
         </small>
       </div>
       <a href="/" class="btn btn-outline-secondary btn-sm">⬅ Retour</a>
     </div>
 
     <div class="slot-grid">
-      {% for idx in range(6) %}
+      {% for idx in range(slots) %}
       <div class="slot-tile" data-slot="{{ idx }}">
         <div class="slot-icon">⛱️</div>
         <div class="slot-index">Emplacement {{ idx + 1 }}</div>
