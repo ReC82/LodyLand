@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from .auth import get_current_player
 from .db import SessionLocal
-from .models import Player, Account
+from .models import Player, Account, PlayerCard, CardDef
 from .routes.api_players import _ensure_starting_land_card
 
 frontend_bp = Blueprint("frontend", __name__)
@@ -43,7 +43,6 @@ def validate_password(password: str) -> list[str]:
         errors.append("Le mot de passe doit contenir au moins une lettre.")
     return errors
 
-
 @frontend_bp.route("/")
 def home():
     """Page d'accueil publique. Si le joueur est connecté, on le redirige vers la forêt."""
@@ -71,33 +70,126 @@ def shop():
     # Pour le moment, la page sera majoritairement pilotée par JS
     return render_template("GAME_UI/shop/index.html")
 
-@frontend_bp.route("/lands")
+@frontend_bp.get("/lands")
 def lands_select():
-    """Page de sélection des lands (Forêt, Plage, etc.)."""
     session = SessionLocal()
     try:
-        me = get_current_player(session)
-        if not me:
-            # pas loggé -> retour à la home
+        player = get_current_player(session)
+        if not player:
             return redirect(url_for("frontend.home"))
 
-        # Pour l'instant, on ne passe pas encore la liste des lands,
-        # on affiche juste Forest (unlock) + Beach (lock) en statique.
-        return render_template("GAME_UI/lands/select.html")
+        # Cartes land possédées
+        owned_land_cards = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key.in_(["land_forest", "land_beach"]),
+                PlayerCard.qty > 0,
+            )
+            .all()
+        )
+        owned_keys = {pc.card_key for pc in owned_land_cards}
+
+        # Définitions de cartes land_* pour récupérer le prix
+        land_defs = (
+            session.query(CardDef)
+            .filter(CardDef.key.in_(["land_forest", "land_beach"]))
+            .all()
+        )
+        defs_by_key = {cd.key: cd for cd in land_defs}
+
+        def make_price_text(cd: CardDef | None) -> str:
+            if not cd:
+                return ""
+            parts = []
+            if cd.price_coins:
+                parts.append(f"{cd.price_coins} 🪙")
+            if cd.price_diams:
+                parts.append(f"{cd.price_diams} 💎")
+            if not parts:
+                return "Gratuit"
+            return " + ".join(parts)
+
+        lands = [
+            {
+                "key": "forest",
+                "title": "Forêt",
+                "emoji": "🌲",
+                "desc": "Land de départ – collecte des branches, chance de lianes.",
+                "url": url_for("frontend.land_forest"),
+                "unlocked": "land_forest" in owned_keys,
+                "price_text": make_price_text(defs_by_key.get("land_forest")),
+            },
+            {
+                "key": "beach",
+                "title": "Plage",
+                "emoji": "🏝️",
+                "desc": "Sable, coquillages, perles rares.",
+                "url": url_for("frontend.land_beach"),
+                "unlocked": "land_beach" in owned_keys,
+                "price_text": make_price_text(defs_by_key.get("land_beach")),
+            },
+        ]
+
     finally:
         session.close()
 
+    return render_template("GAME_UI/lands/select.html", lands=lands)
+
+
 @frontend_bp.get("/land/beach")
 def land_beach():
-    """Display the Beach land page (x slots)."""
-    # Later we can pass dynamic data here (player, cards, etc.)
-    return render_template("GAME_UI/lands/beach.html")
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        has_beach = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == "land_beach",
+                PlayerCard.qty > 0,
+            )
+            .first()
+        )
+
+        if not has_beach:
+            # plus tard on pourra afficher un message dans /lands
+            return redirect(url_for("frontend.lands_select"))
+
+        return render_template("GAME_UI/lands/beach.html")
+    finally:
+        session.close()
+
 
 @frontend_bp.get("/land/forest")
 def land_forest():
-    """Display the Beach land page (x slots)."""
-    # Later we can pass dynamic data here (player, cards, etc.)
-    return render_template("GAME_UI/lands/forest.html")
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            # pas connecté → retour home (ou login)
+            return redirect(url_for("frontend.home"))
+
+        # ici, pas besoin de vérifier la carte si tu donnes toujours land_forest à l'inscription.
+        # Si plus tard tu veux vérifier aussi la carte :
+        # has_forest = (
+        #     session.query(PlayerCard)
+        #     .filter(
+        #         PlayerCard.player_id == player.id,
+        #         PlayerCard.card_key == "land_forest",
+        #         PlayerCard.qty > 0,
+        #     )
+        #     .first()
+        # )
+        # if not has_forest:
+        #     return redirect(url_for("frontend.lands_select"))
+
+        return render_template("GAME_UI/lands/forest.html")
+    finally:
+        session.close()
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
 def register():

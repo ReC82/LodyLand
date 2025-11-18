@@ -525,6 +525,13 @@
   color: #fecaca;
 }
 
+.land-card-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
 /* ===========================
    Shop page
    =========================== */
