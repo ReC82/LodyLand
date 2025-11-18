@@ -13,6 +13,10 @@ from .auth import get_current_player
 from .db import SessionLocal
 from .models import Player, Account, PlayerCard, CardDef
 from .routes.api_players import _ensure_starting_land_card
+from .lands import get_land_def
+
+from pathlib import Path
+import yaml
 
 frontend_bp = Blueprint("frontend", __name__)
 
@@ -42,6 +46,25 @@ def validate_password(password: str) -> list[str]:
     if not any(c.isalpha() for c in password):
         errors.append("Le mot de passe doit contenir au moins une lettre.")
     return errors
+
+# ----------------- Lands config helper -----------------
+
+def get_land_slots(slug: str, default: int = 6) -> int:
+    """
+    Retourne le nombre de slots pour un land donné à partir de lands.yml.
+    slug : "forest", "beach", "village", ...
+    default : valeur de secours si la config est absente ou invalide.
+    """
+    conf = get_land_def(slug)  # lit app/data/lands.yml via lands.py
+    if not isinstance(conf, dict):
+        # Land inconnu -> valeur par défaut
+        return default
+
+    try:
+        return int(conf.get("slots", default))
+    except (TypeError, ValueError):
+        return default
+
 
 @frontend_bp.route("/")
 def home():
@@ -150,6 +173,22 @@ def lands_select():
 
     return render_template("GAME_UI/lands/select.html", lands=lands)
 
+@frontend_bp.get("/land/forest")
+def land_forest():
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            # pas connecté → retour home (ou login)
+            return redirect(url_for("frontend.home"))
+
+        # Nombre de slots depuis lands.yml
+        slots = get_land_slots("forest", default=6)
+
+        return render_template("GAME_UI/lands/forest.html", slots=slots)
+    finally:
+        session.close()
+
 @frontend_bp.get("/land/beach")
 def land_beach():
     session = SessionLocal()
@@ -172,35 +211,9 @@ def land_beach():
             # plus tard on pourra afficher un message dans /lands
             return redirect(url_for("frontend.lands_select"))
 
-        return render_template("GAME_UI/lands/beach.html")
-    finally:
-        session.close()
+        slots = get_land_slots("beach", default=6)
 
-
-@frontend_bp.get("/land/forest")
-def land_forest():
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            # pas connecté → retour home (ou login)
-            return redirect(url_for("frontend.home"))
-
-        # ici, pas besoin de vérifier la carte si tu donnes toujours land_forest à l'inscription.
-        # Si plus tard tu veux vérifier aussi la carte :
-        # has_forest = (
-        #     session.query(PlayerCard)
-        #     .filter(
-        #         PlayerCard.player_id == player.id,
-        #         PlayerCard.card_key == "land_forest",
-        #         PlayerCard.qty > 0,
-        #     )
-        #     .first()
-        # )
-        # if not has_forest:
-        #     return redirect(url_for("frontend.lands_select"))
-
-        return render_template("GAME_UI/lands/forest.html")
+        return render_template("GAME_UI/lands/beach.html", slots=slots)
     finally:
         session.close()
         
