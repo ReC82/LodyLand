@@ -744,3 +744,107 @@
   align-items: flex-end;
   gap: 0.5rem;
 }
+
+/* ------------------------------ */
+/* Inventory page                 */
+/* ------------------------------ */
+
+.inventory-container {
+  max-width: 1000px;
+  margin: 1.5rem auto;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.inventory-header {
+  margin-bottom: 1.5rem;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.inv-section {
+  background: #f5f7fb;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.inv-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #334163;
+}
+
+.inv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inv-empty {
+  font-size: 0.9rem;
+  color: #777;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.inv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.inv-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inv-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf1ff;
+  font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.inv-icon img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}
+
+.inv-text-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.inv-text-sub {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.inv-meta {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.inv-meta strong {
+  font-size: 0.95rem;
+}

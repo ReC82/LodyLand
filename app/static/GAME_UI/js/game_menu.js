@@ -70,7 +70,9 @@ function setupGameMenu() {
       case "shop":
         window.location.href = "/shop";
         break;
-      case "quests":
+      case "inventory":
+        window.location.href = "/inventory";
+      break;
       default:
         // TODO: dedicated pages to come
         console.log("[GameMenu] Action not implemented:", action);

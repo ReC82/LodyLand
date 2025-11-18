@@ -1,0 +1,36 @@
+{% extends "game_base.html" %}
+
+{% block title %}Inventaire — LodyLand{% endblock %}
+
+{% block content %}
+<div class="inventory-container">
+  <div class="inventory-header">
+    <h1 class="h3 mb-1">Inventaire</h1>
+    <p class="text-muted mb-0">
+      Toutes tes ressources et tes cartes au même endroit.
+    </p>
+  </div>
+
+  <div class="inventory-grid">
+    <!-- Colonne Ressources -->
+    <section class="inv-section">
+      <h2 class="inv-title">Ressources</h2>
+      <div id="invResourcesList" class="inv-list"></div>
+      <div id="invResourcesEmpty" class="inv-empty d-none">
+        Tu n'as pas encore de ressources.
+      </div>
+    </section>
+
+    <!-- Colonne Cartes -->
+    <section class="inv-section">
+      <h2 class="inv-title">Cartes</h2>
+      <div id="invCardsList" class="inv-list"></div>
+      <div id="invCardsEmpty" class="inv-empty d-none">
+        Tu n'as pas encore de cartes.
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='GAME_UI/js/inventory_app.js') }}"></script>
+{% endblock %}
