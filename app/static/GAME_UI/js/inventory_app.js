@@ -1,161 +1,231 @@
 /*
   File: static/GAME_UI/js/inventory_app.js
-  Purpose: Affichage de l'inventaire joueur (ressources + cartes).
+  Purpose: UI Inventaire (ressources + cartes) pour le GAME_UI.
   Notes:
-  - http() et $() viennent de common.js / game_app.js
-  - currentPlayer est déjà rempli par /api/me via game_app.js
+  - Utilise http() et $() de common.js
+  - Utilise currentPlayer / renderPlayer de game_app.js (si besoin plus tard)
 */
 
-async function loadInventoryResources() {
-  const listEl = document.getElementById("invResourcesList");
-  const emptyEl = document.getElementById("invResourcesEmpty");
+let invResources = [];
+let invResourceDefsByKey = {};
+let invCards = [];
+
+// ---------------------------------------------------------------------------
+// Helpers de rendu
+// ---------------------------------------------------------------------------
+
+function renderResourceList(filterText = "") {
+  const listEl = $("invResourcesList");
+  const emptyEl = $("invResourcesEmpty");
   if (!listEl || !emptyEl) return;
 
+  const term = (filterText || "").toLowerCase().trim();
+
+  const items = invResources.filter((item) => {
+    const def = invResourceDefsByKey[item.resource] || {};
+    const label = (def.label || item.resource || "").toLowerCase();
+    const key = (item.resource || "").toLowerCase();
+    if (!term) return true;
+    return label.includes(term) || key.includes(term);
+  });
+
   listEl.innerHTML = "";
+  if (!items.length) {
+    emptyEl.classList.remove("d-none");
+    return;
+  }
   emptyEl.classList.add("d-none");
 
-  try {
-    // On récupère :
-    // - l'inventaire (quantités)
-    // - les définitions de ressources (labels, icônes, etc.)
-    const [invRes, defsRes] = await Promise.all([
-      http("GET", "/api/inventory"),
-      http("GET", "/api/resources"),
-    ]);
+  items.forEach((item) => {
+    const def = invResourceDefsByKey[item.resource] || {};
+    const label = def.label || item.resource || "???";
+    const icon = def.icon || null;
+    const qty = item.qty ?? item.quantity ?? 0;
 
-    if (!invRes.ok) {
-      listEl.innerHTML =
-        "<div class='inv-empty'>Erreur en chargeant l'inventaire.</div>";
-      return;
-    }
-    if (!defsRes.ok) {
-      listEl.innerHTML =
-        "<div class='inv-empty'>Erreur en chargeant les ressources.</div>";
-      return;
-    }
+    const row = document.createElement("div");
+    row.className = "inv-card-row";
 
-    const inventory = invRes.data || [];
-    const defs = defsRes.data || [];
+    row.innerHTML = `
+      <div class="inv-card-main">
+        <div class="inv-card-icon">
+          ${
+            icon
+              ? `<img src="${icon}" alt="${label}" />`
+              : "📦"
+          }
+        </div>
+        <div class="inv-card-text">
+          <div class="inv-card-title">${label}</div>
+          <div class="inv-card-sub">${item.resource}</div>
+        </div>
+      </div>
+      <div class="inv-card-side">
+        <div class="inv-card-qty-label">Quantité</div>
+        <div class="inv-card-qty-value">${qty}</div>
+      </div>
+    `;
 
-    const defsByKey = {};
-    defs.forEach((d) => {
-      if (d.key) defsByKey[d.key] = d;
-    });
+    listEl.appendChild(row);
+  });
+}
 
-    // On normalise : certains endpoints utilisent qty, d'autres quantity
-    const items = inventory.map((raw) => {
-      const key = raw.resource || raw.key || raw.code;
-      const qty = raw.qty ?? raw.quantity ?? 0;
-      return { key, qty };
-    });
+function renderCardList(filterText = "") {
+  const listEl = $("invCardsList");
+  const emptyEl = $("invCardsEmpty");
+  if (!listEl || !emptyEl) return;
 
-    const nonEmpty = items.filter((it) => it.qty > 0);
-    if (!nonEmpty.length) {
-      emptyEl.classList.remove("d-none");
-      return;
-    }
+  const term = (filterText || "").toLowerCase().trim();
 
-    nonEmpty.forEach((it) => {
-      const def = defsByKey[it.key] || {};
-      const label = def.label || it.key;
-      const icon = def.icon || null;
+  // On ne garde que les cartes possédées
+  const owned = invCards.filter((c) => (c.owned_qty || 0) > 0);
 
-      const row = document.createElement("div");
-      row.className = "inv-row inv-row-resource";
+  const items = owned.filter((card) => {
+    if (!term) return true;
+    const label = (card.label || "").toLowerCase();
+    const desc = (card.description || "").toLowerCase();
+    const type = (card.type || "").toLowerCase();
+    const key = (card.key || "").toLowerCase();
+    return (
+      label.includes(term) ||
+      desc.includes(term) ||
+      type.includes(term) ||
+      key.includes(term)
+    );
+  });
 
-      row.innerHTML = `
-        <div class="inv-main">
-          <div class="inv-icon">
+  listEl.innerHTML = "";
+  if (!items.length) {
+    emptyEl.classList.remove("d-none");
+    return;
+  }
+  emptyEl.classList.add("d-none");
+
+  items.forEach((card) => {
+    const icon = card.icon || null;
+    const qty = card.owned_qty || 0;
+
+    const row = document.createElement("div");
+    row.className = "inv-card-row";
+
+    row.innerHTML = `
+      <div class="inv-card-main">
+        <div class="inv-card-icon">
+          ${
+            icon
+              ? `<img src="${icon}" alt="${card.label || card.key}" />`
+              : "🃏"
+          }
+        </div>
+        <div class="inv-card-text">
+          <div class="inv-card-title">${card.label || card.key}</div>
+          <div class="inv-card-sub">
+            Type : ${card.type || "?"}
             ${
-              icon
-                ? `<img src="${icon}" alt="${label}">`
-                : "📦"
+              card.target_resource
+                ? ` • Cible : ${card.target_resource}`
+                : ""
             }
           </div>
-          <div>
-            <div class="inv-text-label">${label}</div>
-            <div class="inv-text-sub">${it.key}</div>
-          </div>
+          ${
+            card.description
+              ? `<div class="inv-card-desc">${card.description}</div>`
+              : ""
+          }
         </div>
-        <div class="inv-meta">
-          Quantité<br><strong>${it.qty}</strong>
-        </div>
-      `;
+      </div>
+      <div class="inv-card-side">
+        <div class="inv-card-qty-label">Possédées</div>
+        <div class="inv-card-qty-value">${qty}</div>
+      </div>
+    `;
 
-      listEl.appendChild(row);
+    listEl.appendChild(row);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Tabs + filtres
+// ---------------------------------------------------------------------------
+
+function setupInventoryTabs() {
+  const tabRes = $("invTabResources");
+  const tabCards = $("invTabCards");
+  const panelRes = $("invPanelResources");
+  const panelCards = $("invPanelCards");
+
+  if (!tabRes || !tabCards || !panelRes || !panelCards) return;
+
+  tabRes.addEventListener("click", () => {
+    tabRes.classList.add("inv-tab-active");
+    tabCards.classList.remove("inv-tab-active");
+    panelRes.classList.add("inv-panel-active");
+    panelCards.classList.remove("inv-panel-active");
+  });
+
+  tabCards.addEventListener("click", () => {
+    tabCards.classList.add("inv-tab-active");
+    tabRes.classList.remove("inv-tab-active");
+    panelCards.classList.add("inv-panel-active");
+    panelRes.classList.remove("inv-panel-active");
+  });
+}
+
+function setupFilters() {
+  const resFilter = $("invResourceFilter");
+  const cardFilter = $("invCardFilter");
+
+  if (resFilter) {
+    resFilter.addEventListener("input", () => {
+      renderResourceList(resFilter.value);
     });
-  } catch (err) {
-    console.error("[Inventory] loadInventoryResources error:", err);
-    listEl.innerHTML =
-      "<div class='inv-empty'>Erreur inattendue en chargeant l'inventaire.</div>";
+  }
+  if (cardFilter) {
+    cardFilter.addEventListener("input", () => {
+      renderCardList(cardFilter.value);
+    });
   }
 }
 
-async function loadInventoryCards() {
-  const listEl = document.getElementById("invCardsList");
-  const emptyEl = document.getElementById("invCardsEmpty");
-  if (!listEl || !emptyEl) return;
+// ---------------------------------------------------------------------------
+// Chargement des données
+// ---------------------------------------------------------------------------
 
-  listEl.innerHTML = "";
-  emptyEl.classList.add("d-none");
-
-  try {
-    const r = await http("GET", "/api/cards");
-    if (!r.ok) {
-      listEl.innerHTML =
-        "<div class='inv-empty'>Erreur en chargeant les cartes.</div>";
-      console.error("[Inventory] /api/cards error:", r);
-      return;
-    }
-
-    const cards = (r.data || []).filter((c) => (c.owned_qty || 0) > 0);
-    if (!cards.length) {
-      emptyEl.classList.remove("d-none");
-      return;
-    }
-
-    cards.forEach((card) => {
-      const icon = card.icon || null;
-      const label = card.label || card.key;
-      const desc = card.description || "";
-      const type = card.type || "card";
-      const owned = card.owned_qty || 0;
-
-      const row = document.createElement("div");
-      row.className = "inv-row inv-row-card";
-
-      row.innerHTML = `
-        <div class="inv-main">
-          <div class="inv-icon">
-            ${
-              icon
-                ? `<img src="${icon}" alt="${label}">`
-                : "🃏"
-            }
-          </div>
-          <div>
-            <div class="inv-text-label">${label}</div>
-            <div class="inv-text-sub">
-              Type : ${type}${desc ? " • " + desc : ""}
-            </div>
-          </div>
-        </div>
-        <div class="inv-meta">
-          Possédées<br><strong>${owned}</strong>
-        </div>
-      `;
-
-      listEl.appendChild(row);
-    });
-  } catch (err) {
-    console.error("[Inventory] loadInventoryCards error:", err);
-    listEl.innerHTML =
-      "<div class='inv-empty'>Erreur inattendue en chargeant les cartes.</div>";
+async function loadInventoryData() {
+  // 1) état global pour ressources + inventaire
+  const s = await http("GET", "/api/state");
+  if (!s.ok) {
+    alert("Impossible de charger l'inventaire (state).");
+    console.error("Inventory /api/state error:", s);
+    return;
   }
+
+  const state = s.data || {};
+  invResources = state.inventory || [];
+  invResourceDefsByKey = {};
+  (state.resources || []).forEach((r) => {
+    invResourceDefsByKey[r.key] = r;
+  });
+
+  renderResourceList("");
+
+  // 2) cartes pour ce joueur
+  const c = await http("GET", "/api/cards");
+  if (!c.ok) {
+    // On log l'erreur mais on n'empêche pas les ressources d'apparaître
+    console.error("Inventory /api/cards error:", c);
+    return;
+  }
+
+  invCards = c.data || [];
+  renderCardList("");
 }
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // HUD déjà géré par game_app.js (appel à /api/me)
-  await loadInventoryResources();
-  await loadInventoryCards();
+  setupInventoryTabs();
+  setupFilters();
+  await loadInventoryData();
 });

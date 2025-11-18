@@ -745,106 +745,210 @@
   gap: 0.5rem;
 }
 
-/* ------------------------------ */
-/* Inventory page                 */
-/* ------------------------------ */
+/* ------------------------------------------------------------------
+   INVENTAIRE (GAME_UI)
+------------------------------------------------------------------- */
 
-.inventory-container {
-  max-width: 1000px;
-  margin: 1.5rem auto;
-  padding: 1.5rem;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+.inv-container {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 2rem 2.5rem;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.9); /* proche de la boutique */
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+  color: #e5e7eb;
 }
 
-.inventory-header {
+.inv-header {
   margin-bottom: 1.5rem;
 }
 
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+.inv-header .text-muted {
+  color: #9ca3af !important;
 }
 
-.inv-section {
-  background: #f5f7fb;
-  border-radius: 14px;
-  padding: 1rem;
+/* Onglets (même logique que la boutique) */
+
+.inv-tabs {
+  display: inline-flex;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  margin-bottom: 1.5rem;
 }
 
-.inv-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: #334163;
+.inv-tab {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  padding: 0.45rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
-.inv-list {
+.inv-tab:hover {
+  color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.inv-tab-active {
+  background: #16a34a; /* vert coins */
+  color: #041015;
+}
+
+/* Panels */
+
+.inv-content {
+  margin-top: 0.5rem;
+}
+
+.inv-panel {
+  display: none;
+}
+
+.inv-panel-active {
+  display: block;
+}
+
+/* Toolbar + filtres */
+
+.inv-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.inv-filter-label {
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
+.inv-filter-input {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+  font-size: 0.82rem;
+}
+
+.inv-filter-input:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+.inv-toolbar-btn {
+  border-radius: 999px;
+  border: none;
+  padding: 0.4rem 1.2rem;
+  font-size: 0.85rem;
+  background: #22c55e;
+  color: #041015;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.35);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.inv-toolbar-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.45);
+  background: #16a34a;
+}
+
+/* Listes */
+
+.inv-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.inv-empty {
-  font-size: 0.9rem;
-  color: #777;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.inv-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-}
-
-.inv-main {
-  display: flex;
-  align-items: center;
   gap: 0.75rem;
 }
 
-.inv-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+.inv-empty {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* Cartes (ressources & cartes) */
+
+.inv-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(30, 64, 175, 0.35);
+}
+
+.inv-card-main {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.inv-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #fef9c3, #f97316);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #edf1ff;
-  font-size: 1.2rem;
   overflow: hidden;
 }
 
-.inv-icon img {
-  width: 32px;
-  height: 32px;
-  image-rendering: pixelated;
+.inv-card-icon img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
 }
 
-.inv-text-label {
+.inv-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.inv-card-title {
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 0.95rem;
+  color: #e5e7eb;
 }
 
-.inv-text-sub {
-  font-size: 0.8rem;
-  color: #777;
+.inv-card-sub {
+  font-size: 0.78rem;
+  color: #9ca3af;
 }
 
-.inv-meta {
+.inv-card-desc {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: #cbd5f5;
+}
+
+.inv-card-side {
   text-align: right;
-  font-size: 0.85rem;
-  color: #555;
+  min-width: 80px;
 }
 
-.inv-meta strong {
-  font-size: 0.95rem;
+.inv-card-qty-label {
+  font-size: 0.76rem;
+  color: #9ca3af;
+}
+
+.inv-card-qty-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #22c55e;
 }

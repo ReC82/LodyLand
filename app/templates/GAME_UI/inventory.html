@@ -3,28 +3,94 @@
 {% block title %}Inventaire — LodyLand{% endblock %}
 
 {% block content %}
-<div class="inventory-container">
-  <div class="inventory-header">
+<div class="inv-container">
+  <div class="inv-header">
     <h1 class="h3 mb-1">Inventaire</h1>
     <p class="text-muted mb-0">
       Toutes tes ressources et tes cartes au même endroit.
     </p>
   </div>
 
-  <div class="inventory-grid">
-    <!-- Colonne Ressources -->
-    <section class="inv-section">
-      <h2 class="inv-title">Ressources</h2>
-      <div id="invResourcesList" class="inv-list"></div>
+  <!-- Onglets -->
+  <div class="inv-tabs">
+    <button
+      class="inv-tab inv-tab-active"
+      id="invTabResources"
+      data-tab="resources"
+    >
+      Ressources
+    </button>
+    <button
+      class="inv-tab"
+      id="invTabCards"
+      data-tab="cards"
+    >
+      Cartes
+    </button>
+  </div>
+
+  <div class="inv-content">
+    <!-- Panel RESSOURCES -->
+    <section id="invPanelResources" class="inv-panel inv-panel-active">
+      <div class="inv-toolbar">
+        <div class="inv-toolbar-left">
+          <label class="inv-filter-label">
+            Filtrer :
+            <input
+              id="invResourceFilter"
+              type="text"
+              class="inv-filter-input"
+              placeholder="Nom ou clé de ressource…"
+            />
+          </label>
+        </div>
+        <div class="inv-toolbar-right">
+          <button
+            type="button"
+            class="inv-toolbar-btn"
+            onclick="window.location.href='{{ url_for('frontend.shop') }}#sell'"
+          >
+            Vendre des ressources
+          </button>
+        </div>
+      </div>
+
+      <div id="invResourcesList" class="inv-grid">
+        <!-- rempli en JS -->
+      </div>
       <div id="invResourcesEmpty" class="inv-empty d-none">
         Tu n'as pas encore de ressources.
       </div>
     </section>
 
-    <!-- Colonne Cartes -->
-    <section class="inv-section">
-      <h2 class="inv-title">Cartes</h2>
-      <div id="invCardsList" class="inv-list"></div>
+    <!-- Panel CARTES -->
+    <section id="invPanelCards" class="inv-panel">
+      <div class="inv-toolbar">
+        <div class="inv-toolbar-left">
+          <label class="inv-filter-label">
+            Filtrer :
+            <input
+              id="invCardFilter"
+              type="text"
+              class="inv-filter-input"
+              placeholder="Nom, type ou description…"
+            />
+          </label>
+        </div>
+        <div class="inv-toolbar-right">
+          <button
+            type="button"
+            class="inv-toolbar-btn"
+            onclick="window.location.href='{{ url_for('frontend.shop') }}#cards'"
+          >
+            Voir les cartes en boutique
+          </button>
+        </div>
+      </div>
+
+      <div id="invCardsList" class="inv-grid">
+        <!-- rempli en JS -->
+      </div>
       <div id="invCardsEmpty" class="inv-empty d-none">
         Tu n'as pas encore de cartes.
       </div>
