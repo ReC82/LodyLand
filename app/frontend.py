@@ -78,30 +78,30 @@ def lands_select():
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # Cartes land possédées
-        owned_land_cards = (
-            session.query(PlayerCard)
+        # 1) Cartes d'accès land_* possédées par le joueur
+        owned_land_rows = (
+            session.query(PlayerCard.card_key)
             .filter(
                 PlayerCard.player_id == player.id,
-                PlayerCard.card_key.in_(["land_forest", "land_beach"]),
+                PlayerCard.card_key.like("land_%"),
                 PlayerCard.qty > 0,
             )
             .all()
         )
-        owned_keys = {pc.card_key for pc in owned_land_cards}
+        owned_keys = {key for (key,) in owned_land_rows}
 
-        # Définitions de cartes land_* pour récupérer le prix
-        land_defs = (
+        # 2) Tous les CardDef de type land_* (activés)
+        land_cards = (
             session.query(CardDef)
-            .filter(CardDef.key.in_(["land_forest", "land_beach"]))
+            .filter(CardDef.key.like("land_%"), CardDef.enabled == True)
+            .order_by(CardDef.key.asc())
             .all()
         )
-        defs_by_key = {cd.key: cd for cd in land_defs}
 
         def make_price_text(cd: CardDef | None) -> str:
             if not cd:
                 return ""
-            parts = []
+            parts: list[str] = []
             if cd.price_coins:
                 parts.append(f"{cd.price_coins} 🪙")
             if cd.price_diams:
@@ -110,32 +110,45 @@ def lands_select():
                 return "Gratuit"
             return " + ".join(parts)
 
-        lands = [
-            {
-                "key": "forest",
-                "title": "Forêt",
-                "emoji": "🌲",
-                "desc": "Land de départ – collecte des branches, chance de lianes.",
-                "url": url_for("frontend.land_forest"),
-                "unlocked": "land_forest" in owned_keys,
-                "price_text": make_price_text(defs_by_key.get("land_forest")),
-            },
-            {
-                "key": "beach",
-                "title": "Plage",
-                "emoji": "🏝️",
-                "desc": "Sable, coquillages, perles rares.",
-                "url": url_for("frontend.land_beach"),
-                "unlocked": "land_beach" in owned_keys,
-                "price_text": make_price_text(defs_by_key.get("land_beach")),
-            },
-        ]
+        # Optionnel : petit mapping d’emoji par land (juste cosmétique)
+        EMOJI_BY_SLUG = {
+            "forest": "🌲",
+            "beach": "🏝️",
+            "village": "🏘️",
+            # "desert": "🏜️", etc. quand tu en ajoutes
+        }
+
+        lands: list[dict] = []
+        for cd in land_cards:
+            # key = "land_forest" -> slug = "forest"
+            slug = cd.key[len("land_") :]
+
+            # On tente de trouver la route frontend.land_<slug>
+            endpoint = f"frontend.land_{slug}"
+            try:
+                land_url = url_for(endpoint)
+                has_route = True
+            except Exception:
+                land_url = None
+                has_route = False
+
+            lands.append(
+                {
+                    "key": slug,
+                    "title": cd.label or slug.capitalize(),
+                    "emoji": EMOJI_BY_SLUG.get(slug, "❓"),
+                    "desc": cd.description or "",
+                    "url": land_url,
+                    "has_route": has_route,
+                    "unlocked": cd.key in owned_keys,
+                    "price_text": make_price_text(cd),
+                }
+            )
 
     finally:
         session.close()
 
     return render_template("GAME_UI/lands/select.html", lands=lands)
-
 
 @frontend_bp.get("/land/beach")
 def land_beach():
@@ -190,6 +203,18 @@ def land_forest():
         return render_template("GAME_UI/lands/forest.html")
     finally:
         session.close()
+        
+@frontend_bp.get("/land/village")
+def land_village():
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+        # Optionnel : check carte land_desert ici
+        return render_template("GAME_UI/lands/village.html")
+    finally:
+        session.close()        
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
 def register():
