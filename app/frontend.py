@@ -349,3 +349,16 @@ def logout():
         max_age=0,           # expire immédiatement
     )
     return resp
+
+@frontend_bp.get("/inventory")
+def inventory_page():
+    """Page Inventaire (ressources + cartes), nécessite d'être connecté."""
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        return render_template("GAME_UI/inventory.html")
+    finally:
+        session.close()
