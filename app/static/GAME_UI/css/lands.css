@@ -1,0 +1,162 @@
+/* ============================
+   LAND SLOTS — Global styling
+   ============================ */
+
+/* Grille d’emplacements */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  padding: 10px 0;
+}
+
+/* Une tuile */
+.slot-tile {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Effet hover */
+.slot-tile:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Désactiver hover sur la tuile "add slot" pour varier légèrement */
+.slot-tile.slot-add:hover {
+  background: rgba(68, 255, 120, 0.12);
+}
+
+
+/* ============================
+   📌 Icônes d’emplacements
+   ============================ */
+
+.land-slot-icon {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  margin-bottom: 6px;
+}
+
+/* Un peu plus petit sur mobile */
+@media (max-width: 500px) {
+  .land-slot-icon {
+    width: 58px;
+    height: 58px;
+  }
+}
+
+/* 🟩 Icône du bouton Ajouter Slot ( "+" ) */
+.slot-add .land-slot-icon {
+  filter: drop-shadow(0 0 3px rgba(0, 255, 100, 0.4));
+}
+
+/* ============================
+   Textes des tuiles
+   ============================ */
+
+.slot-index {
+  font-weight: bold;
+  margin-bottom: 3px;
+  color: #cdd6f4;
+  font-size: 0.9rem;
+}
+
+.slot-label {
+  font-size: 0.8rem;
+  color: #a0a8c0;
+}
+
+.slot-status {
+  margin-top: 5px;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+/* ============================
+   Tuile BONUS "Ajouter Slot"
+   ============================ */
+
+.slot-tile.slot-add {
+  border: 1px solid rgba(0, 255, 128, 0.4);
+  background: rgba(0, 128, 64, 0.10);
+}
+
+.slot-tile.slot-add:hover {
+  border-color: rgba(0, 255, 128, 0.8);
+}
+
+/* Texte coût / carte */
+.slot-tile.slot-add .slot-label {
+  color: #7cffc4;
+}
+
+/* Texte “Clique pour débloquer” */
+.slot-tile.slot-add .slot-status {
+  color: #c8ffe7;
+}
+
+.slot-add-container {
+  margin-top: 20px;
+}
+
+.slot-tile.full-width {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 18px 12px;
+}
+
+/* Glow + effet premium */
+.slot-tile.slot-add {
+  background: rgba(0, 140, 90, 0.15);
+  border: 1px solid rgba(0, 255, 160, 0.40);
+  box-shadow: 0 0 8px rgba(0, 255, 140, 0.25);
+  transition: 0.25s ease;
+}
+
+.slot-tile.slot-add:hover {
+  background: rgba(0, 170, 110, 0.22);
+  border-color: rgba(0, 255, 160, 0.8);
+  box-shadow: 0 0 14px rgba(0, 255, 160, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Icône du "+" avec glow */
+.slot-tile.slot-add .land-slot-icon {
+  width: 68px;
+  height: 68px;
+  filter: drop-shadow(0 0 5px rgba(0,255,170,0.75))
+          drop-shadow(0 0 10px rgba(0,255,150,0.35));
+  opacity: 0.95;
+}
+
+/* Texte de la tuile + */
+.slot-tile.slot-add .slot-label {
+  color: #afffda;
+  font-weight: 600;
+}
+
+.slot-tile.slot-add .slot-index {
+  font-size: 1.1rem;
+  color: #cafff2 !important;
+}
+
+.land-container small.text-muted {
+  color: #cfd8ff !important;
+  opacity: 0.9;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-top: 4px;
+}

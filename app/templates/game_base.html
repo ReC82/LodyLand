@@ -16,14 +16,23 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='GAME_UI/css/game.css') }}"
     />
+
+    <!-- CSS spécifique aux lands -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+
   </head>
   <body class="{% block body_class %}game-body{% endblock %}">
     <!-- HUD joueur -->
     <header class="game-header">
       <div class="gh-left">
-        <div class="gh-logo">LodyLand</div>
-        <div class="gh-land" id="gh-land-name"></div>
-      </div>
+        <div class="gh-logo">
+          <img
+            src="{{ url_for('static', filename='assets/img/ui/logo_hud.png') }}"
+            alt="LodyLand"
+            class="gh-logo-img"
+          />
+        </div>
+</div>
 
       <div class="gh-center">
         <div class="gh-xp-label">

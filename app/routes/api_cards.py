@@ -1,10 +1,11 @@
 # app/routes/api_players.py
 from flask import Blueprint, jsonify, request
 from app.db import SessionLocal
-from app.models import Player, CardDef, PlayerCard, ResourceStock
+from app.models import Player, CardDef, PlayerCard, ResourceStock, PlayerLandSlots
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
 from app.services.cards import set_player_card_qty
+from app.lands import get_player_land_state
 
 bp = Blueprint("cards", __name__)
 
@@ -255,4 +256,3 @@ def dev_set_card_qty():
             }
         )
 
-        

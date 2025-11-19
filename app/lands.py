@@ -59,7 +59,7 @@ def get_land_def(land_key: str) -> Optional[Dict[str, Any]]:
     lands = load_lands()
     return lands.get(land_key)
 
-def get_player_land_state(session, player_id: int, land_key: str):
+def get_player_land_state(session, player_id: int, land_key: str) -> dict:
     cfg = get_land_def(land_key)
     if not cfg:
         raise ValueError(f"Land inconnu: {land_key}")

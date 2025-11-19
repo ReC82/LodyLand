@@ -8,28 +8,60 @@
     // Nom du land pour le HUD
     window.LAND_NAME = "Forêt";
   </script>
+
   <div class="land-container forest-land">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h1 class="h3 mb-0">🌲 Forêt</h1>
-      <small class="text-muted">
-        {{ slots }} emplacements – Fouille avec les mains : branches + chance de lianes.
-      </small>
+        <small class="text-muted">
+          {{ state.total_slots }} emplacements ({{ state.base_slots }} de base, {{ state.extra_slots }} bonus)
+          – Fouille avec les mains : branches + chance de lianes.
+        </small>
       </div>
       <a href="/" class="btn btn-outline-secondary btn-sm">⬅ Retour</a>
     </div>
 
     <div class="slot-grid">
-      {% for idx in range(slots) %}
-      <div class="slot-tile" data-slot="{{ idx }}">
-        <div class="slot-icon">🌿</div>
-        <div class="slot-index">Emplacement {{ idx + 1 }}</div>
-        <div class="slot-label">Sous-bois</div>
-        <div class="slot-status">Clique pour fouiller</div>
-      </div>
+      {% for idx in range(state.total_slots) %}
+        <div class="slot-tile" data-slot="{{ idx }}">
+          <div class="slot-icon">
+            <img
+              src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
+              class="land-slot-icon"
+            />
+          </div>
+          <div class="slot-index">Slot {{ idx + 1 }}</div>
+          <div class="slot-label">Sous-bois</div>
+          <div class="slot-status">Clique pour fouiller</div>
+        </div>
       {% endfor %}
     </div>
-  </div>
+
+    <!-- TUYAU : la tuile "+" est ici seule -->
+    <div class="slot-add-container">
+      <div
+        class="slot-tile slot-add full-width"
+        id="add-slot-btn"
+        data-next-cost="{{ state.next_cost }}"
+        data-has-free="{{ 1 if has_free_slot_card else 0 }}"
+      >
+        <div class="slot-icon">
+          <img
+            src="{{ url_for('static', filename='assets/img/lands/add_slot.png') }}"
+            class="land-slot-icon"
+          />
+        </div>
+        <div class="slot-index">+1 emplacement</div>
+        <div class="slot-label">
+          {% if has_free_slot_card %}
+            1 carte gratuite dispo 🎟️
+          {% else %}
+            Coût actuel : {{ state.next_cost }} 💎
+          {% endif %}
+        </div>
+        <div class="slot-status">Clique pour débloquer</div>
+      </div>
+    </div>
 
   <!-- JS spécifique à la Forêt -->
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/forest_app.js') }}"></script>

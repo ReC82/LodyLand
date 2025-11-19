@@ -13,7 +13,7 @@ from .auth import get_current_player
 from .db import SessionLocal
 from .models import Player, Account, PlayerCard, CardDef
 from .routes.api_players import _ensure_starting_land_card
-from .lands import get_land_def
+from .lands import get_land_def, get_player_land_state
 
 from pathlib import Path
 import yaml
@@ -204,13 +204,29 @@ def land_forest():
     try:
         player = get_current_player(session)
         if not player:
-            # pas connecté → retour home (ou login)
             return redirect(url_for("frontend.home"))
 
-        # Nombre de slots depuis lands.yml
-        slots = get_land_slots("forest", default=6)
+        # État du land (base_slots, extra_slots, total_slots, next_cost, slot_icon, ...)
+        state = get_player_land_state(session, player.id, "forest")
 
-        return render_template("GAME_UI/lands/forest.html", slots=slots)
+        # Le joueur possède-t-il une carte free slot pour la forêt ?
+        free_card_key = "land_forest_free_slot"
+        has_free_slot_card = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == free_card_key,
+                PlayerCard.qty > 0,
+            )
+            .count()
+            > 0
+        )
+
+        return render_template(
+            "GAME_UI/lands/forest.html",
+            state=state,
+            has_free_slot_card=has_free_slot_card,
+        )
     finally:
         session.close()
 

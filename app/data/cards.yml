@@ -348,3 +348,20 @@ cards:
       purchase_limit: null
       max_owned: 1
       enabled: true
+
+##### END LAND S#####
+
+##### SLOTS CARDS #####
+
+  - key: land_forest_free_slot
+    label: "Forest Free Slot"
+    description: "Unlock a free slot in the Forest land."
+    icon: "/static/assets/img/cards/land_forest_free_slot.png"
+    type: "land_slot"
+    rarity: "uncommon"
+
+    gameplay:
+      land: "forest"   # doit matcher la clé dans lands.yml
+      slots: 1         # combien de slots gratuits on ajoute
+
+##### END SLOTS CARDS #####
