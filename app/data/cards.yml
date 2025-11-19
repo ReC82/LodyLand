@@ -377,4 +377,20 @@ cards:
     prices: []        # ou tu en mets si tu veux la vendre
     shop: {}
     enabled: true
+
+  - key: land_lake_free_slot
+    label: "Lake Free Slot"
+    description: "Débloque un emplacement supplémentaire sur le Lac."
+    icon: "/static/assets/img/cards/land_lake_free_slot.png"
+    type: "land_slot"
+    categorie: "lands"
+    rarity: "uncommon"
+
+    gameplay:
+      land: "lake"
+      slots: 1
+
+    prices: []      # tu pourras en mettre si tu veux la vendre
+    shop: {}
+    enabled: true    
 ##### END SLOTS CARDS #####

@@ -160,3 +160,55 @@
   display: inline-block;
   margin-top: 4px;
 }
+
+/* ============================
+   Loot Toasts (gauche de l'écran)
+   ============================ */
+
+.loot-toasts {
+  position: fixed;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 200;
+  pointer-events: none; /* les clics passent à travers */
+}
+
+.loot-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.7);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+}
+
+.loot-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.loot-toast img {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+}
+
+.loot-toast-qty {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.loot-toast-name {
+  opacity: 0.9;
+}
