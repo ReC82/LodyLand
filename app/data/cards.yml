@@ -348,3 +348,33 @@ cards:
       purchase_limit: null
       max_owned: 1
       enabled: true
+
+##### END LAND S#####
+
+##### SLOTS CARDS #####
+
+  - key: land_forest_free_slot
+    label: "Forest Free Slot"
+    description: "Unlock a free slot in the Forest land."
+    icon: "/static/assets/img/cards/land_forest_free_slot.png"
+    type: "land_slot"
+    rarity: "uncommon"
+
+    gameplay:
+      land: "forest"   # doit matcher la clé dans lands.yml
+      slots: 1         # combien de slots gratuits on ajoute
+
+  # Carte free slot pour la plage
+  - key: land_beach_free_slot
+    label: "Beach Free Slot"
+    description: "Débloque un emplacement supplémentaire sur la Plage."
+    icon: "/static/assets/img/cards/land_beach_free_slot.png"
+    type: "land_slot"
+    rarity: "uncommon"
+    gameplay:
+      land: "beach"
+      slots: 1
+    prices: []        # ou tu en mets si tu veux la vendre
+    shop: {}
+    enabled: true
+##### END SLOTS CARDS #####

@@ -1,9 +1,6 @@
 // static/GAME_UI/js/lands/forest_app.js
 // Handle UI + collect logic for the Forest land page.
 
-/**
- * Build base URL (protocol + host).
- */
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
@@ -77,7 +74,7 @@ async function collectOnForestSlot(slotEl) {
       statusEl.textContent = `Tu as trouvé : ${summary}`;
     }
 
-        // 🔥🔥🔥 UPDATE HUD (IMPORTANT !!!) 🔥🔥🔥
+    // 🔥 UPDATE HUD
     if (data.player) {
       renderPlayer({
         ...data.player,
@@ -102,15 +99,80 @@ async function collectOnForestSlot(slotEl) {
 }
 
 /**
- * Init click handlers on all forest slots.
+ * Init click handlers on all forest slots (except the + tile).
  */
-function initForestLand() {
-  const tiles = document.querySelectorAll(".slot-tile");
+function initForestCollect() {
+  // On exclut la tuile "add slot"
+  const tiles = document.querySelectorAll(".slot-tile:not(.slot-add)");
   tiles.forEach((tile) => {
     tile.addEventListener("click", () => collectOnForestSlot(tile));
   });
   console.log("[Forest] Land initialized with", tiles.length, "slots");
 }
 
+/**
+ * Init "add slot" button logic.
+ */
+function initForestAddSlot() {
+  const addBtn = document.getElementById("add-slot-btn");
+  if (!addBtn) return;
+
+  addBtn.addEventListener("click", async (evt) => {
+    evt.stopPropagation(); // évite tout clic parasite
+
+    const hasFree = addBtn.dataset.hasFree === "1";
+    const nextCost = Number(addBtn.dataset.nextCost || "0");
+
+    let message;
+    if (hasFree) {
+      message =
+        "Utiliser une carte 'Forest Free Slot' pour débloquer un emplacement ?\n" +
+        "(Cela ne coûtera pas de diams.)";
+    } else {
+      message = `Confirmer l'achat d'un emplacement Forêt pour ${nextCost} 💎 ?`;
+    }
+
+    if (!confirm(message)) return;
+
+    try {
+      const r = await fetch(baseUrl() + "/api/lands/forest/slots/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({}),
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        console.warn("Buy slot error:", data);
+        alert(data.error || "Erreur lors de l'ajout du slot.");
+        return;
+      }
+
+      // Mettre à jour le HUD (diams)
+      if (data.player && window.renderPlayer) {
+        renderPlayer(data.player);
+      }
+
+      // Petit message informatif (optionnel)
+      if (data.used_free_card) {
+        alert("Carte 'Forest Free Slot' utilisée. Nouvel emplacement débloqué !");
+      } else {
+        alert("Emplacement Forêt acheté avec des diams !");
+      }
+
+      // Recharger pour afficher le nouveau nombre de slots + nouvel état du bouton
+      location.reload();
+    } catch (err) {
+      console.error("Buy slot request failed:", err);
+      alert("Erreur réseau lors de l'achat du slot.");
+    }
+  });
+}
+
 // Wait for DOM ready
-document.addEventListener("DOMContentLoaded", initForestLand);  
+document.addEventListener("DOMContentLoaded", () => {
+  initForestCollect();
+  initForestAddSlot();
+});

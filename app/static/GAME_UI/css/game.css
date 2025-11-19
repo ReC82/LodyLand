@@ -1397,3 +1397,36 @@
 
 
 /* ===========================
+LOGO
+=========================== */
+/* Header : hauteur fixe, contenu centré */
+.game-header {
+  position: relative;
+  height: 72px;              /* hauteur de la barre HUD */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: visible;         /* pour laisser dépasser le logo */
+}
+
+/* Bloc de gauche (texte "Forêt", etc.) */
+.gh-left {
+  position: relative;
+  padding-left: 180px;       /* espace réservé pour le logo */
+}
+
+/* Logo absolu, superposé sur la barre */
+.gh-logo {
+  position: absolute;
+  left: 0px;                /* décale le logo vers la droite */
+  top: 50%;                  /* base sur le centre vertical du header */
+  transform: translateY(-20%); /* le fait légèrement déborder vers le bas */
+  pointer-events: none;      /* le logo ne capte pas les clics */
+}
+
+/* Taille du logo */
+.gh-logo-img {
+  height: 256px;              /* tu peux ajuster (80–110) selon le rendu */
+  width: auto;
+  display: block;
+}

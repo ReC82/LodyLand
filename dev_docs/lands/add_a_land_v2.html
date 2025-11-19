@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Documentation — Ajouter un Land</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f7f7fb;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  header {
+    background: #4a6fa5;
+    color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    color: #26416b;
+  }
+
+  h3 {
+    margin-top: 1.5rem;
+    color: #375a7f;
+  }
+
+  .container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  pre {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+
+  code {
+    background: #e8e8e8;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  ul {
+    margin-left: 1rem;
+  }
+
+  .box {
+    background: white;
+    padding: 1.2rem 1.4rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.09);
+    margin-bottom: 2rem;
+  }
+
+  .important {
+    background: #fff7d4;
+    border-left: 5px solid #ffcd00;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .tip {
+    background: #dff4ff;
+    border-left: 5px solid #52baff;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .toc a {
+    text-decoration: none;
+    color: #375a7f;
+  }
+  
+  .toc a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Guide complet : Ajouter un Land dans LodyLand</h1>
+</header>
+
+<div class="container">
+
+<div class="box toc">
+  <h2>📚 Table des matières</h2>
+  <ul>
+    <li><a href="#principes">0. Principe général d’un Land</a></li>
+    <li><a href="#slug">1. Choisir un identifiant (slug)</a></li>
+    <li><a href="#card">2. Ajouter la carte d’accès (cards.yml)</a></li>
+    <li><a href="#selector">3. Intégration dans le sélecteur /lands</a></li>
+    <li><a href="#route">4. Ajouter la route Flask</a></li>
+    <li><a href="#template">5. Créer le template du land</a></li>
+    <li><a href="#js">6. Ajouter le JS spécifique</a></li>
+    <li><a href="#emoji">7. Ajouter l’emoji du land</a></li>
+    <li><a href="#lands-yml">8. Config gameplay (lands.yml + slots)</a></li>
+    <li><a href="#slots-free">9. Slots supplémentaires & cartes Free Slot</a></li>
+    <li><a href="#tldr">10. TL;DR — Checklist rapide</a></li>
+  </ul>
+</div>
+
+<!-- ==================== SECTION 0 ==================== -->
+<div class="box" id="principes">
+<h2>0. 🗺️ Principe général</h2>
+
+<p>Dans LodyLand, un <strong>Land jouable</strong> est défini par :</p>
+
+<ul>
+  <li>Une <strong>carte d’accès</strong> dans <code>cards.yml</code> (type <code>land_access</code>).</li>
+  <li>Une <strong>route Flask</strong> (ex: <code>/land/village</code>).</li>
+  <li>Un <strong>template HTML</strong> dans <code>GAME_UI/lands/</code>.</li>
+  <li>Un <strong>fichier JS</strong> propre au land (optionnel mais recommandé).</li>
+  <li>Une entrée gameplay dans <code>lands.yml</code> (slots de base, icône, coûts, loot, ...).</li>
+</ul>
+
+<div class="important">
+Un land <strong>n’apparaît dans /lands</strong> que s’il existe une carte <code>land_*</code> dans
+<code>card_defs</code> (type <code>land_access</code>).
+</div>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<div class="box" id="slug">
+<h2>1. 🔤 Choisir un identifiant (slug)</h2>
+
+<p>Exemples valides :</p>
+
+<ul>
+  <li><code>forest</code></li>
+  <li><code>beach</code></li>
+  <li><code>village</code></li>
+</ul>
+
+<p>Correspondances obligatoires :</p>
+
+<ul>
+  <li>Carte d’accès : <code>land_&lt;slug&gt;</code> (ex : <code>land_beach</code>).</li>
+  <li>Route Flask : <code>/land/&lt;slug&gt;</code></li>
+  <li>Template HTML : <code>GAME_UI/lands/&lt;slug&gt;.html</code></li>
+  <li>Script JS : <code>static/GAME_UI/js/lands/&lt;slug&gt;_app.js</code></li>
+  <li>Clé YAML : <code>&lt;slug&gt;</code> dans <code>lands.yml</code></li>
+</ul>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<div class="box" id="card">
+<h2>2. 🃏 Ajouter la carte d’accès dans cards.yml</h2>
+
+<p>Fichier : <code>app/data/cards.yml</code></p>
+
+<p>Exemple <strong>moderne</strong> avec le nouveau modèle (prices + shop) :</p>
+
+<pre>
+- key: land_beach
+  label: "Accès Plage"
+  description: "Une plage ensoleillée pour fouiller le sable."
+  icon: "/static/assets/img/cards/land_beach.png"
+  type: "land_access"
+  categorie: "lands"
+  rarity: "common"
+
+  gameplay: {}
+
+  prices:
+    - coins: 500      # 1ère option : 500 coins
+      diams: 0
+
+  shop:
+    max_owned: 1      # le joueur peut en posséder maximum 1
+
+  enabled: true
+</pre>
+
+<p>Redémarre l'application → la fonction de seed synchronise les CardDef en DB.</p>
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<div class="box" id="selector">
+<h2>3. 🔓 Intégration dans le sélecteur <code>/lands</code></h2>
+
+<p>Le sélecteur est dynamique. Il charge :</p>
+
+<ul>
+  <li>Toutes les cartes dont la clé commence par <code>land_</code>.</li>
+  <li>Vérifie si le joueur a acheté la carte (via <code>PlayerCard</code>).</li>
+  <li>Affiche un bouton <strong>Débloqué</strong> ou <strong>Verrouillé</strong> et un lien vers <code>/land/&lt;slug&gt;</code> si la route existe.</li>
+</ul>
+
+<div class="tip">
+Donc : <strong>si tu ajoutes land_beach dans cards.yml → il apparaît automatiquement dans /lands !</strong>
+</div>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="box" id="route">
+<h2>4. 🧩 Ajouter la route Flask</h2>
+
+<p>Dans <code>frontend.py</code> :</p>
+
+<pre>
+@frontend_bp.get("/land/beach")
+def land_beach():
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        # Vérifier carte d'accès
+        has_beach = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == "land_beach",
+                PlayerCard.qty > 0,
+            )
+            .first()
+        )
+        if not has_beach:
+            return redirect(url_for("frontend.lands_select"))
+
+        from app.lands import get_player_land_state
+        state = get_player_land_state(session, player.id, "beach")
+
+        # Carte "free slot" pour la plage ?
+        has_free_slot_card = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == "land_beach_free_slot",
+                PlayerCard.qty > 0,
+            )
+            .count()
+            > 0
+        )
+
+        return render_template(
+            "GAME_UI/lands/beach.html",
+            state=state,
+            has_free_slot_card=has_free_slot_card,
+        )
+    finally:
+        session.close()
+</pre>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<div class="box" id="template">
+<h2>5. 🎨 Créer le template HTML</h2>
+
+<p>Fichier : <code>templates/GAME_UI/lands/beach.html</code></p>
+
+<pre>
+{% raw %}{% extends "game_base.html" %}
+
+{% block title %}Plage — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-container beach-land">
+  &lt;!-- Header --&gt;
+  &lt;h1 class="h3 mb-0"&gt;🏝️ Plage&lt;/h1&gt;
+  &lt;small class="text-muted"&gt;
+    {{ state.total_slots }} emplacements ({{ state.base_slots }} de base, {{ state.extra_slots }} bonus)
+  &lt;/small&gt;
+
+  &lt;!-- Grille des slots --&gt;
+  &lt;div class="slot-grid"&gt;
+    {% for idx in range(state.total_slots) %}
+    &lt;div class="slot-tile" data-slot="{{ idx }}"&gt;
+      &lt;div class="slot-icon"&gt;
+        &lt;img
+          src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
+          class="land-slot-icon"
+        /&gt;
+      &lt;/div&gt;
+      &lt;div class="slot-index"&gt;Slot {{ idx + 1 }}&lt;/div&gt;
+      &lt;div class="slot-label"&gt;Zone de sable&lt;/div&gt;
+      &lt;div class="slot-status"&gt;Clique pour fouiller&lt;/div&gt;
+    &lt;/div&gt;
+    {% endfor %}
+  &lt;/div&gt;
+
+  &lt;!-- Tuile +1 emplacement (pleine largeur) --&gt;
+  &lt;div class="slot-add-container"&gt;
+    &lt;div
+      class="slot-tile slot-add full-width"
+      id="add-slot-btn"
+      data-next-cost="{{ state.next_cost }}"
+      data-has-free="{{ 1 if has_free_slot_card else 0 }}"
+    &gt;
+      &lt;div class="slot-icon"&gt;
+        &lt;img src="{{ url_for('static', filename='assets/img/lands/add_slot.png') }}"
+             class="land-slot-icon" /&gt;
+      &lt;/div&gt;
+      &lt;div class="slot-index"&gt;+1 emplacement&lt;/div&gt;
+      &lt;div class="slot-label"&gt;
+        {% if has_free_slot_card %}
+          1 carte gratuite dispo 🎟️
+        {% else %}
+          Coût actuel : {{ state.next_cost }} 💎
+        {% endif %}
+      &lt;/div&gt;
+      &lt;div class="slot-status"&gt;Clique pour débloquer&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+</div>
+
+&lt;script src="{{ url_for('static', filename='GAME_UI/js/lands/beach_app.js') }}"&gt;&lt;/script&gt;
+{% endblock %}{% endraw %}
+</pre>
+</div>
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="box" id="js">
+<h2>6. ⚙️ Ajouter le JS du land</h2>
+
+<p>Fichier : <code>static/GAME_UI/js/lands/beach_app.js</code></p>
+
+<p>Idée : copier le script de la forêt et adapter le paramètre <code>land</code> + l’URL de l’API :</p>
+
+<pre>
+// collectOnBeachSlot(...) → POST /api/collect avec { land: "beach", slot: &lt;index&gt; }
+// initBeachAddSlot(...) → POST /api/lands/beach/slots/buy
+</pre>
+</div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="box" id="emoji">
+<h2>7. 😀 Ajouter un emoji pour la liste /lands</h2>
+
+Dans <code>frontend.py</code> :
+
+<pre>
+EMOJI_BY_SLUG = {
+    "forest": "🌲",
+    "beach": "🏝️",
+    "village": "🏘️",
+}
+</pre>
+</div>
+
+<!-- ==================== SECTION 8 ==================== -->
+<div class="box" id="lands-yml">
+<h2>8. 📦 Config gameplay (lands.yml + slots)</h2>
+
+<p>Fichier : <code>app/data/lands.yml</code></p>
+
+<pre>
+forest:
+  key: "land_forest"
+  label_fr: "Forêt"
+  label_en: "Forest"
+  starting_land: true
+  slots: 8
+  slot_icon: "assets/img/lands/forest_slot.png"
+  additional_slot_base_cost_diams: 10
+  additional_slot_cost_multiplier: 1.5
+  tools:
+    hands:
+      base_loot: ...
+      extra_loot: ...
+
+beach:
+  key: "land_beach"
+  label_fr: "Plage"
+  label_en: "Beach"
+  starting_land: false
+  slots: 6
+  slot_icon: "assets/img/lands/beach_slot.png"
+  additional_slot_base_cost_diams: 15
+  additional_slot_cost_multiplier: 1.6
+  tools:
+    hands:
+      base_loot: ...
+</pre>
+
+<p><code>get_player_land_state()</code> lit cette config et applique ensuite les éventuels slots bonus de la table <code>player_land_slots</code>.</p>
+</div>
+
+<!-- ==================== SECTION 9 ==================== -->
+<div class="box" id="slots-free">
+<h2>9. 🔓 Slots supplémentaires & cartes Free Slot</h2>
+
+<p>Les slots d’un land sont composés de :</p>
+
+<ul>
+  <li><strong>slots de base</strong> → définis dans <code>lands.yml</code> (champ <code>slots</code>).</li>
+  <li><strong>slots bonus</strong> → enregistrés en DB dans <code>player_land_slots</code>.</li>
+</ul>
+
+<p>Le joueur peut débloquer un slot bonus en cliquant sur la tuile « +1 emplacement » :</p>
+
+<ol>
+  <li>Si le joueur possède une carte <code>land_&lt;slug&gt;_free_slot</code> (ex : <code>land_beach_free_slot</code>), elle est consommée et le slot est ajouté gratuitement.</li>
+  <li>Sinon, le coût est calculé en diams : <code>base_cost * (multiplier ** extra_slots)</code> puis débité et le slot est ajouté.</li>
+</ol>
+
+<p>Logique implémentée dans l’API :</p>
+
+<pre>
+POST /api/lands/&lt;land_key&gt;/slots/buy
+
+- Vérifie le player via cookie
+- Cherche une carte "land_&lt;land_key&gt;_free_slot"
+- Si présente &gt;0 :
+    - décrémente / supprime la carte
+- Sinon :
+    - vérifie que p.diams &gt;= next_cost
+    - débite les diams
+- Incrémente extra_slots dans player_land_slots
+- Retourne le nouvel état du land (total_slots, next_cost, etc.)
+</pre>
+</div>
+
+<!-- ==================== SECTION 10 ==================== -->
+<div class="box" id="tldr">
+<h2>10. 🧾 TL;DR — Checklist rapide</h2>
+
+<ul>
+  <li>Créer <code>land_slug</code> dans <code>cards.yml</code> (type <code>land_access</code>).</li>
+  <li>Optionnel : ajouter une carte <code>land_slug_free_slot</code> (type <code>land_slot</code>).</li>
+  <li>Définir <code>slug</code> dans <code>lands.yml</code> (slots, slot_icon, coûts, loot...).</li>
+  <li>Créer la route <code>/land/slug</code> dans <code>frontend.py</code> (vérif carte + appel <code>get_player_land_state()</code>).</li>
+  <li>Créer le template <code>GAME_UI/lands/slug.html</code> avec :
+    <ul>
+      <li>une grille de slots basée sur <code>state.total_slots</code></li>
+      <li>une tuile « +1 emplacement » qui appelle l’API</li>
+    </ul>
+  </li>
+  <li>Créer le JS <code>lands/slug_app.js</code> pour la collecte et l’achat de slot.</li>
+  <li>Ajouter un emoji pour <code>/lands</code>.</li>
+  <li>Tester : achat carte → accès land → collecte → slots bonus + free slot cards.</li>
+</ul>
+</div>
+
+</div> <!-- container -->
+</body>
+</html>

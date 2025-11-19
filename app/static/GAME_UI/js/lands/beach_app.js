@@ -1,16 +1,12 @@
 // static/GAME_UI/js/lands/beach_app.js
 // Handle UI + collect logic for the Beach land page.
 
-/**
- * Build base URL (protocol + host).
- */
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
 
 /**
- * Call /api/collect in "land" mode for the Beach.
- * @param {HTMLElement} slotEl - The clicked slot tile element.
+ * Appelle /api/collect en mode "land" pour la Plage.
  */
 async function collectOnBeachSlot(slotEl) {
   const slotIndex = Number(slotEl.getAttribute("data-slot"));
@@ -32,7 +28,7 @@ async function collectOnBeachSlot(slotEl) {
     const response = await fetch(baseUrl() + "/api/collect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "same-origin", // needed for player_id cookie
+      credentials: "same-origin",
       body: JSON.stringify({
         land: "beach",
         slot: slotIndex,
@@ -43,7 +39,6 @@ async function collectOnBeachSlot(slotEl) {
 
     if (!response.ok || !data.ok) {
       console.warn("Beach collect error:", data);
-
       let msg = "Erreur de collecte";
       if (data.error === "land_locked") {
         msg = "Tu n'as pas la carte 'Accès Plage'.";
@@ -52,14 +47,10 @@ async function collectOnBeachSlot(slotEl) {
       } else if (data.error) {
         msg = `Erreur: ${data.error}`;
       }
-
-      if (statusEl) {
-        statusEl.textContent = msg;
-      }
+      if (statusEl) statusEl.textContent = msg;
       return;
     }
 
-    // Build loot summary
     let summary = "Rien trouvé...";
     if (Array.isArray(data.loot) && data.loot.length > 0) {
       summary = data.loot
@@ -77,22 +68,19 @@ async function collectOnBeachSlot(slotEl) {
       statusEl.textContent = `Tu as trouvé : ${summary}`;
     }
 
-        // 🔥 Mise à jour HUD
-    if (data.player) {
+    if (data.player && window.renderPlayer) {
       renderPlayer({
         ...data.player,
         next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
       });
     }
 
-    // 🌟 Level-up modal
     if (data.level_up) {
       const lvl = data.player?.level ?? 0;
       const rewards = data.level_rewards || [];
       showLevelUpModal(lvl, rewards);
     }
 
-    console.log("Beach collect OK:", data);
   } catch (err) {
     console.error("Beach collect request failed:", err);
     if (statusEl) {
@@ -101,16 +89,70 @@ async function collectOnBeachSlot(slotEl) {
   }
 }
 
-/**
- * Init click handlers on all beach slots.
- */
-function initBeachLand() {
-  const tiles = document.querySelectorAll(".slot-tile");
+function initBeachCollect() {
+  const tiles = document.querySelectorAll(".slot-tile:not(.slot-add)");
   tiles.forEach((tile) => {
     tile.addEventListener("click", () => collectOnBeachSlot(tile));
   });
   console.log("[Beach] Land initialized with", tiles.length, "slots");
 }
 
-// Wait for DOM ready
-document.addEventListener("DOMContentLoaded", initBeachLand);
+function initBeachAddSlot() {
+  const addBtn = document.getElementById("add-slot-btn");
+  if (!addBtn) return;
+
+  addBtn.addEventListener("click", async (evt) => {
+    evt.stopPropagation();
+
+    const hasFree = addBtn.dataset.hasFree === "1";
+    const nextCost = Number(addBtn.dataset.nextCost || "0");
+
+    let message;
+    if (hasFree) {
+      message =
+        "Utiliser une carte 'Beach Free Slot' pour débloquer un emplacement ?\n" +
+        "(Cela ne coûtera pas de diams.)";
+    } else {
+      message = `Confirmer l'achat d'un emplacement Plage pour ${nextCost} 💎 ?`;
+    }
+
+    if (!confirm(message)) return;
+
+    try {
+      const r = await fetch(baseUrl() + "/api/lands/beach/slots/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({}),
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        console.warn("Buy beach slot error:", data);
+        alert(data.error || "Erreur lors de l'ajout du slot.");
+        return;
+      }
+
+      if (data.player && window.renderPlayer) {
+        renderPlayer(data.player);
+      }
+
+      if (data.used_free_card) {
+        alert("Carte 'Beach Free Slot' utilisée. Nouvel emplacement débloqué !");
+      } else {
+        alert("Emplacement Plage acheté avec des diams !");
+      }
+
+      location.reload();
+    } catch (err) {
+      console.error("Buy beach slot request failed:", err);
+      alert("Erreur réseau lors de l'achat du slot.");
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initBeachCollect();
+  initBeachAddSlot();
+});
