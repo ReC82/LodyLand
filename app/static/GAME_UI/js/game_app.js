@@ -16,6 +16,106 @@ function baseUrl() {
 
 const $ = (id) => document.getElementById(id);
 
+function formatRewardLabel(r) {
+  const amount = r.amount ?? 0;
+
+  if (r.type === "coins" || r.type === "diams") {
+    return `${amount} ${r.label || r.type}`;
+  }
+
+  if (r.type === "resource") {
+    const name = r.label || r.key || "???";
+    return `${amount} x ${name}`;
+  }
+
+  if (r.type === "card") {
+    const name = r.label || r.key || "Carte";
+    return `${amount} x ${name}`;
+  }
+
+  return JSON.stringify(r);
+}
+
+function getRewardIconPath(r) {
+  // Choose an icon path based on reward type and key
+  if (r.type === "resource") {
+    // ex: /static/GAME_UI/img/resources/branch.png
+    return `/static/assets/img/resources/${r.key}.png`;
+  }
+
+  if (r.type === "card") {
+    // ex: /static/GAME_UI/img/cards/land_beach.png
+    return `/static/assets/img/cards/${r.key}.png`;
+  }
+
+  if (r.type === "coins") {
+    return `/static/assets/img/ui/coins.png`; 
+  }
+
+  if (r.type === "diams") {
+    return `/static/assets/img/ui/diams.png`;
+  }
+
+  return null;
+}
+
+function showLevelUpModal(level, rewards) {
+  const modal = document.getElementById("levelUpModal");
+  if (!modal) return;
+
+  const levelSpan = document.getElementById("levelUpModalLevel");
+  const rewardsContainer = document.getElementById("levelUpModalRewards");
+  if (!levelSpan || !rewardsContainer) return;
+
+  levelSpan.textContent = level;
+  rewardsContainer.innerHTML = "";
+
+  (rewards || []).forEach((r) => {
+    const item = document.createElement("div");
+    item.className = "levelup-reward-item";
+
+    const iconPath = getRewardIconPath(r);
+    if (iconPath) {
+      const img = document.createElement("img");
+
+      // Cartes → taille spéciale
+      if (r.type === "card") {
+        img.className = "levelup-reward-card";
+      } else {
+        img.className = "levelup-reward-icon";
+      }
+
+      img.src = iconPath;
+      img.alt = r.label || r.type;
+      item.appendChild(img);
+    }
+
+    const label = document.createElement("div");
+    label.className = "levelup-reward-label";
+    label.textContent = formatRewardLabel(r);
+    item.appendChild(label);
+
+    rewardsContainer.appendChild(item);
+  });
+
+  modal.classList.add("is-open");
+}
+
+function initLevelUpModal() {
+  const modal = document.getElementById("levelUpModal");
+  if (!modal) return;
+
+  const closeBtn = document.getElementById("levelUpModalClose");
+  const backdrop = document.getElementById("levelUpModalBackdrop");
+
+  const close = () => {
+    modal.classList.remove("is-open");
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (backdrop) backdrop.addEventListener("click", close);
+}
+
 async function http(method, path, body) {
   const res = await fetch(`${baseUrl()}${path}`, {
     method,
@@ -125,6 +225,8 @@ function renderPlayer(p) {
   if (hudCoins) hudCoins.textContent = coins;
   if (hudDiams) hudDiams.textContent = diams;
 
+
+  
     // 🔥 Mise à jour du nouveau HUD
   updatePlayerHUD({
     level,
@@ -771,7 +873,7 @@ function updatePlayerHUD(playerData) {
 // Initialisation
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
-  
+  initLevelUpModal();
   setupGameMenu();  
   setupDailyModal();
   refreshDailyStatus();
