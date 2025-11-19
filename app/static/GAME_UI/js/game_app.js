@@ -17,20 +17,23 @@ function baseUrl() {
 const $ = (id) => document.getElementById(id);
 
 function formatRewardLabel(r) {
-  // Build a human-readable label for a reward
   const amount = r.amount ?? 0;
-  switch (r.type) {
-    case "coins":
-      return `${amount} coins`;
-    case "diams":
-      return `${amount} diams`;
-    case "resource":
-      return `${amount} x ${r.key}`;
-    case "card":
-      return `Carte: ${r.key}`;
-    default:
-      return JSON.stringify(r);
+
+  if (r.type === "coins" || r.type === "diams") {
+    return `${amount} ${r.label || r.type}`;
   }
+
+  if (r.type === "resource") {
+    const name = r.label || r.key || "???";
+    return `${amount} x ${name}`;
+  }
+
+  if (r.type === "card") {
+    const name = r.label || r.key || "Carte";
+    return `${amount} x ${name}`;
+  }
+
+  return JSON.stringify(r);
 }
 
 function getRewardIconPath(r) {
@@ -76,7 +79,7 @@ function showLevelUpModal(level, rewards) {
       const img = document.createElement("img");
       img.className = "levelup-reward-icon";
       img.src = iconPath;
-      img.alt = r.type;
+      img.alt = r.label || r.type;
       item.appendChild(img);
     }
 

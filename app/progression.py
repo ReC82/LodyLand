@@ -117,36 +117,76 @@ def _grant_card(session, player_id: int, card_key: str, amount: int = 1) -> None
 
 # Exemple adapté — à mettre dans app/progression.py
 
-def apply_level_rewards(session, player, new_level: int) -> list[dict]:
-    """Apply rewards for a given level and return a list of applied rewards."""
+def apply_level_rewards(session, player, new_level: int) -> List[Dict]:
+    """Apply rewards for the given level and return a list of applied rewards.
+
+    Each reward dict will contain:
+    - type: "coins" | "diams" | "resource" | "card"
+    - amount
+    - key (for resource/card)
+    - label (human readable)
+    - icon (path used directly in <img src="...">)
+    - level (ajouté plus tard dans apply_xp_and_level_up)
+    """
     cfg = LEVELS.get(new_level)
     if not cfg:
         return []
 
+    from .models import ResourceDef, CardDef  # local import to avoid circular deps
+
     rewards = cfg.get("rewards", []) or []
-    applied: list[dict] = []
+    applied: List[Dict] = []
+
+    # Cache defs pour éviter des queries répétées dans une même montée de niveau
+    resource_defs = {
+        r.key: r
+        for r in session.query(ResourceDef).filter_by(enabled=True).all()
+    }
+    card_defs = {
+        c.key: c
+        for c in session.query(CardDef).filter_by(enabled=True).all()
+    }
 
     for r in rewards:
         r_type = r.get("type")
+
         if r_type == "coins":
             amount = int(r.get("amount", 0))
             player.coins = (player.coins or 0) + amount
-            applied.append({"type": "coins", "amount": amount})
+            applied.append(
+                {
+                    "type": "coins",
+                    "amount": amount,
+                    "label": "Coins",
+                    "icon": "/static/GAME_UI/img/ui/coins.png",
+                }
+            )
 
         elif r_type == "diams":
             amount = int(r.get("amount", 0))
             player.diams = (player.diams or 0) + amount
-            applied.append({"type": "diams", "amount": amount})
+            applied.append(
+                {
+                    "type": "diams",
+                    "amount": amount,
+                    "label": "Diams",
+                    "icon": "/static/GAME_UI/img/ui/diams.png",
+                }
+            )
 
         elif r_type == "resource":
             resource_key = r.get("resource_key") or ""
             amount = float(r.get("amount", 0))
             _grant_resource(session, player.id, resource_key, amount)
+
+            rd = resource_defs.get(resource_key)
             applied.append(
                 {
                     "type": "resource",
                     "key": resource_key,
                     "amount": amount,
+                    "label": rd.label if rd else resource_key,
+                    "icon": rd.icon if rd else None,
                 }
             )
 
@@ -154,11 +194,15 @@ def apply_level_rewards(session, player, new_level: int) -> list[dict]:
             card_key = r.get("card_key") or ""
             amount = int(r.get("amount", 1))
             _grant_card(session, player.id, card_key, amount)
+
+            cd = card_defs.get(card_key)
             applied.append(
                 {
                     "type": "card",
                     "key": card_key,
                     "amount": amount,
+                    "label": cd.label if cd else card_key,
+                    "icon": cd.icon if cd else None,
                 }
             )
 
