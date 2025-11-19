@@ -109,3 +109,129 @@ items:
       output_quantity: 1
       craft_time_seconds: 5
       required_table_level: 1
+
+improvised_fishing_rod:
+  key: "tool_improvised_fishing_rod"
+  type: "tool"
+  category: "fishing"
+
+  label_fr: "Canne à pêche de fortune"
+  label_en: "Improvised fishing rod"
+
+  description_fr: "Une canne à pêche bricolée avec des branches et des lianes."
+  description_en: "A makeshift fishing rod made from branches and vines."
+
+  icon: "tools/improvised_fishing_rod.png"  # TODO: add icon
+
+  stackable: false
+  tradable: true
+  buyable: false
+
+  #unlock_condition:
+  #  type: "card"
+  #  key: "craft_base"
+
+  recipe:
+    craft_location: "craft_table"
+    kind: "shaped"
+    width: 3
+    height: 1
+
+    # b = branch
+    # v = vine
+    pattern:
+      - "bv."   # 1x branch + 1x vine on the first row
+
+    legend:
+      b:
+        type: "resource"
+        key: "branch"
+        quantity: 1
+      v:
+        type: "resource"
+        key: "vine"
+        quantity: 1
+
+    output_quantity: 1
+    craft_time_seconds: 5
+    required_table_level: 1
+
+  rope:
+    key: "item_rope"
+    type: "item"
+    category: "material"
+
+    label_fr: "Corde"
+    label_en: "Rope"
+
+    description_fr: "Une corde tressée à partir de lianes."
+    description_en: "A rope braided from vines."
+
+    icon: "items/rope.png"  # TODO: add icon
+
+    stackable: true
+    tradable: true
+    buyable: false
+
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
+
+      # v = vine
+      pattern:
+        - "vvv"   # 3x vine
+
+      legend:
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 3
+      required_table_level: 1
+
+  improvised_shovel:
+    key: "tool_improvised_shovel"
+    type: "tool"
+    category: "shovel"
+
+    label_fr: "Pelle de fortune"
+    label_en: "Improvised shovel"
+
+    description_fr: "Une pelle rudimentaire faite de branches et de lianes."
+    description_en: "A crude shovel made from branches and vines."
+
+    icon: "tools/improvised_shovel.png"  # TODO: add icon
+
+    stackable: false
+    tradable: true
+    buyable: false
+
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
+
+      # b = branch
+      # v = vine
+      pattern:
+        - "bbv"   # 2x branch + 1x vine
+
+      legend:
+        b:
+          type: "resource"
+          key: "branch"
+          quantity: 1
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 5
+      required_table_level: 1
+
