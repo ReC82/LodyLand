@@ -143,12 +143,110 @@
           OK
         </button>
       </div>
-    </div>    
+    </div>
 
+    <!-- ===========================
+        Craft Modal
+        =========================== -->
+    <div id="craft-modal" class="craft-modal">
+      <div class="craft-modal-backdrop"></div>
+
+      <div class="craft-modal-box">
+        <!-- Header -->
+        <div class="craft-modal-header">
+          <h2 class="craft-modal-title">Table de craft</h2>
+          <div class="craft-modal-header-actions">
+            <button
+              id="craft-recipes-toggle-btn"
+              class="craft-recipes-toggle-btn"
+              title="Voir les recettes"
+            >
+              📖
+            </button>
+            <button id="craft-close-btn" class="craft-close-btn">✕</button>
+          </div>
+        </div>
+
+        <div class="craft-modal-body">
+          <!-- Left: ingredients + (recipes via toggle) -->
+          <div class="craft-left-panel">
+            <!-- Ingrédients du joueur -->
+            <div class="craft-ingredients-panel" id="craft-ingredients-panel">
+              <h3 class="craft-section-title">Ingrédients disponibles</h3>
+              <div id="craft-ingredients-list" class="craft-ingredients-list">
+                <!-- JS: resources du joueur -->
+              </div>
+            </div>
+
+            <!-- Recettes (affichées uniquement quand on clique sur le livre) -->
+            <div
+              class="craft-recipes-panel"
+              id="craft-recipes-panel"
+              style="display:none;"
+            >
+              <h3 class="craft-section-title">Recettes</h3>
+              <div id="craft-recipes-list" class="craft-recipes-list"></div>
+            </div>
+          </div>
+
+
+          <!-- Center: craft grid (pour l'instant juste 3 cases) -->
+          <div class="craft-grid-panel">
+            <h3 class="craft-section-title">
+              Table (niveau <span id="craft-table-level">1</span>)
+            </h3>
+
+            <div class="craft-grid">
+              <div class="craft-slot" data-slot="0"></div>
+              <div class="craft-slot" data-slot="1"></div>
+              <div class="craft-slot" data-slot="2"></div>
+            </div>
+
+            <div class="craft-quantity-row">
+              <label for="craft-quantity-input">Quantité</label>
+              <input
+                id="craft-quantity-input"
+                type="number"
+                min="1"
+                value="1"
+                step="1"
+              />
+            </div>
+
+            <button id="craft-perform-btn" class="craft-perform-btn" disabled>
+              Crafte
+            </button>
+
+            <div id="craft-success" class="craft-success-msg" style="display:none;"></div>
+            <div id="craft-error" class="craft-error-msg" style="display:none;"></div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+
+    <!-- HUD bottom-left actions -->
+    <div class="hud-bottom-left">
+      <!-- autres boutons éventuels... -->
+      <button
+        id="craft-open-btn"
+        class="craft-fab-btn"
+        title="Table de craft"
+      >
+        <img
+          src="{{ url_for('static', filename='assets/img/ui/craft.png') }}"
+          alt="Craft"
+        />
+      </button>
+    </div>
+    
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/craft_app.js') }}"></script>
+
     {# Scripts spécifiques à certaines pages (shop, lands spéciaux, etc.) #}
     {% block extra_scripts %}{% endblock %}
   </body>

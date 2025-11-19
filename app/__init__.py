@@ -6,6 +6,7 @@ from .seed_cards import seed_cards_from_yaml
 from .routes import register_routes
 from .frontend import frontend_bp
 from .progression import LEVELS
+from .craft_defs import load_craft_defs
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -14,7 +15,10 @@ def create_app() -> Flask:
     seed_cards_from_yaml()
     ensure_resources_seeded()
     reseed_resources()
+    load_craft_defs()
     register_routes(app)
+
+    
     app.register_blueprint(frontend_bp)
 
     @app.get("/")

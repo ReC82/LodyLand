@@ -4,8 +4,17 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request, make_response
 
 from app.db import SessionLocal
-from app.models import Player, Tile, ResourceStock, ResourceDef, PlayerCard, CardDef
+from app.models import (
+    Player,
+    Tile,
+    ResourceStock,
+    ResourceDef,
+    PlayerCard,
+    CardDef,
+    PlayerItem,        # NEW
+)
 from app.progression import next_threshold
+from app.craft_defs import CRAFT_DEFS
 
 bp = Blueprint("players", __name__)
 
@@ -25,6 +34,38 @@ def _player_to_dict(p: Player) -> dict:
         "xp": p.xp,
         "next_xp": getattr(p, "next_xp", None),  # ou via progression
     }
+    
+def _compute_craft_table_level(session, player: Player) -> int:
+    """
+    Compute the craft table level for a player based on owned cards.
+
+    Version simple:
+    - level 1 par défaut (table de craft de base)
+    - +1 pour chaque upgrade (on pourra affiner plus tard)
+    """
+    level = 1  # on donne la table de craft de base à tout le monde
+
+    def has_card(card_key: str) -> bool:
+        return (
+            session.query(PlayerCard)
+            .filter_by(player_id=player.id, card_key=card_key)
+            .count()
+            > 0
+        )
+
+    # Base craft (si un jour tu veux démarrer à 0 et exiger craft_base, tu ajusteras)
+    if has_card("craft_base"):
+        level = max(level, 1)
+
+    # Upgrades
+    if has_card("craft_upgrade_1"):
+        level = max(level, 2)
+
+    if has_card("craft_upgrade_2"):
+        level = max(level, 3)
+
+    return level
+    
     
 def _ensure_starting_land_card(session, player: Player) -> None:
     """Ensure the player owns the starting land card (forest)."""
@@ -319,6 +360,41 @@ def get_state():
             })
 
         # ------------------------------
+        # Items craftés (PlayerItem)
+        # ------------------------------
+        item_rows = (
+            s.query(PlayerItem)
+            .filter_by(player_id=me.id)
+            .order_by(PlayerItem.item_key.asc())
+            .all()
+        )
+
+        items_payload = []
+        for it in item_rows:
+            if it.quantity <= 0:
+                continue  # on n'envoie pas les stacks vides
+
+            cfg = CRAFT_DEFS.get(it.item_key, {})  # peut être vide si supprimé du YAML
+
+            items_payload.append({
+                "item_key": it.item_key,
+                "qty": it.quantity,
+                "label_fr": cfg.get("label_fr"),
+                "label_en": cfg.get("label_en"),
+                "icon": cfg.get("icon"),
+                "type": cfg.get("type"),
+                "category": cfg.get("category"),
+            })
+
+        # ------------------------------
+        # Info Craft (niveau de table)
+        # ------------------------------
+        craft_table_level = _compute_craft_table_level(s, me)
+        craft_payload = {
+            "craft_table_level": craft_table_level,
+        }
+
+        # ------------------------------
         # Return final state
         # ------------------------------
         return jsonify({
@@ -337,6 +413,9 @@ def get_state():
 
             # NEW
             "cards": cards_payload,
+            
+            "items": items_payload,
+            "craft": craft_payload,
         }), 200
 
         

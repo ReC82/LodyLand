@@ -877,7 +877,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupGameMenu();  
   setupDailyModal();
   refreshDailyStatus();
-
+  if (typeof initCraftUI === "function") {
+    initCraftUI();
+  }
   const me = await tryMe();
   if (me) {
     currentPlayer = me;

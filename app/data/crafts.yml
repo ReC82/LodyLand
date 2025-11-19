@@ -1,0 +1,111 @@
+# craft.yml
+# All craftable items, tools, etc.
+
+items:
+  pearl_necklace:
+    key: "item_pearl_necklace"
+    type: "item"          # "item", "tool", "consumable", ...
+    category: "jewelry"
+
+    label_fr: "Collier de perles"
+    label_en: "Pearl necklace"
+
+    description_fr: "Un beau collier à offrir."
+    description_en: "A beautiful necklace to offer."
+
+    icon: "items/pearl_necklace.png"
+
+    stackable: false
+    tradable: false
+    buyable: false
+
+    prices:
+      - coins: 200
+      - diams: 10
+
+    unlock_condition:
+      type: "card"              # "card", "level", "quest", ...
+      key: "craft_jewelry_1"
+
+    recipe:
+      craft_location: "craft_table"   # could be alchemy_table, firepit, kitchen, ...
+      kind: "shaped"                  # later we can add "shapeless"
+      width: 5
+      height: 5
+
+      # . = empty
+      # p = pearl
+      # g = gold ingot
+      pattern:
+        - "....."
+        - ".ppp."
+        - ".pgp."
+        - ".ppp."
+        - "....."
+
+      legend:
+        p:
+          type: "resource"
+          key: "pearl"
+          quantity: 1
+        g:
+          type: "resource"
+          key: "gold_ingot"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 10
+      required_table_level: 2
+
+  wooden_axe:
+    key: "tool_wooden_axe"
+    type: "tool"
+    category: "axe"
+
+    label_fr: "Hache en bois"
+    label_en: "Wooden axe"
+
+    description_fr: "Une hache basique pour couper du bois."
+    description_en: "A basic axe to chop wood."
+
+    icon: "tools/wooden_axe.png"
+
+    stackable: false
+    tradable: true
+    buyable: false
+
+    tool_stats:
+      durability: 50
+      bonus:
+        wood_collect_multiplier: 1.2
+
+    #unlock_condition:
+    #  type: "card"
+    #  key: "craft_base"
+
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 3
+
+      # w = wood
+      # s = stick
+      pattern:
+        - "ww."
+        - "ws."
+        - ".s."
+
+      legend:
+        w:
+          type: "resource"
+          key: "wood"
+          quantity: 1
+        s:
+          type: "resource"
+          key: "stick"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 5
+      required_table_level: 1

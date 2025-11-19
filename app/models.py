@@ -11,7 +11,7 @@ from __future__ import annotations
 import datetime as dt  # use dt.date / dt.datetime for annotations
 from sqlalchemy import (
     Integer, String, Date, DateTime, Boolean,
-    ForeignKey, Text, UniqueConstraint, Float, Column
+    ForeignKey, Text, UniqueConstraint, Float, Column, func
 )
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -145,3 +145,16 @@ class PlayerCard(Base):
     qty: Mapped[int] = mapped_column(Integer, default=1)
 
     player = relationship("Player", backref="cards")    
+    
+class PlayerItem(Base):
+    __tablename__ = "player_items"
+
+    id = Column(Integer, primary_key=True)
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    item_key = Column(String, nullable=False)
+    quantity = Column(Integer, nullable=False, default=0)
+
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )    

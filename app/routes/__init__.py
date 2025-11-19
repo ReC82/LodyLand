@@ -13,6 +13,7 @@ from .api_daily import bp as daily_bp
 from .api_misc import bp as misc_bp
 from .api_cards import bp as cards_bp
 from .api_shop import bp as shop_bp
+from .api_craft import bp as craft_bp
 
 def register_routes(app: Flask) -> None:
     """Enregistre tous les blueprints API sur l'app Flask."""
@@ -23,3 +24,5 @@ def register_routes(app: Flask) -> None:
     app.register_blueprint(misc_bp,      url_prefix="/api")
     app.register_blueprint(cards_bp,     url_prefix="/api")
     app.register_blueprint(shop_bp,      url_prefix="/api")
+    app.register_blueprint(craft_bp,     url_prefix="/api")
+
