@@ -981,4 +981,26 @@
   text-align: center;
 }
 
+/* ============================
+   Level Up Modal — Card reward
+   ============================ */
+
+.levelup-reward-card {
+  width: 180px;           /* largeur fixe en px (ajuste à ton goût) */
+  aspect-ratio: 1024 / 1536; /* 👈 respecte parfaitement le format carte */
+  object-fit: contain;       /* aucune déformation */
+  border-radius: 12px;       /* jolie bordure */
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+  image-rendering: auto;     /* pas de pixel-art pour les cartes */
+  margin-bottom: 0.5rem;
+}
+
+/* Icônes normales (coins, resources...) */
+.levelup-reward-icon {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  margin-bottom: 0.25rem;
+}
+
 /* ===========================

@@ -77,7 +77,14 @@ function showLevelUpModal(level, rewards) {
     const iconPath = getRewardIconPath(r);
     if (iconPath) {
       const img = document.createElement("img");
-      img.className = "levelup-reward-icon";
+
+      // Cartes → taille spéciale
+      if (r.type === "card") {
+        img.className = "levelup-reward-card";
+      } else {
+        img.className = "levelup-reward-icon";
+      }
+
       img.src = iconPath;
       img.alt = r.label || r.type;
       item.appendChild(img);
