@@ -1,82 +1,68 @@
-# app/seed_cards.py
-# Safe card seeding: never crash when cards.yml is missing (CI)
-
+# =============================================================================
+# File: seed_cards.py
+# Purpose: Load cards.yml (new format) → populate card_defs table
+# =============================================================================
 from __future__ import annotations
 
-import logging
-from pathlib import Path
 import yaml
+from pathlib import Path
 
-from .db import SessionLocal
-from .models import CardDef
-
-log = logging.getLogger(__name__)
+from app.db import SessionLocal
+from app.models import CardDef
 
 
-def seed_cards_from_yaml() -> int:
-    """
-    Charge app/data/cards.yml si présent.
-    IMPORTANT :
-    - En CI (GitHub Actions), le fichier n'existe pas → NE DOIT PAS planter.
-    - En local, si cards.yml existe → seed normal.
-    - Retourne le nombre de cartes detectées, même si aucun insert.
-    """
+CARDS_FILE = Path("app/data/cards.yml")
 
-    # ✔️ Chemin correct : app/data/cards.yml
-    yaml_path = (
-        Path(__file__).resolve().parent   # app/
-        / "data"
-        / "cards.yml"
-    )
 
-    # ✔️ Si le fichier n'existe pas (cas CI) → on skip
-    if not yaml_path.exists():
-        log.warning("cards.yml not found (%s) – skipping card seeding.", yaml_path)
-        return 0
+def seed_cards_from_yaml() -> None:
+    """Load cards.yml (new format) and sync card_defs table (dev mode)."""
+    if not CARDS_FILE.exists():
+        print("cards.yml missing → skipping card seed")
+        return
 
-    try:
-        raw = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
-    except Exception as e:
-        log.error("Failed to load cards.yml: %s", e)
-        return 0
+    with CARDS_FILE.open("r", encoding="utf-8") as f:
+        raw = yaml.safe_load(f) or {}
 
-    cards = raw.get("cards", [])
-    if not isinstance(cards, list):
-        log.error("cards.yml: 'cards' must be a list.")
-        return 0
-
-    # ✔️ Si aucun élément → rien à faire
+    cards = raw.get("cards") or []
     if not cards:
-        log.info("cards.yml contains no cards (empty list).")
-        return 0
+        print("⚠ cards.yml contains no cards")
+        return
 
-    # ✔️ Seed réel
     with SessionLocal() as s:
-        existing = {c.key: c for c in s.query(CardDef).all()}
+        for cfg in cards:
+            key = cfg["key"]
 
-        for d in cards:
-            key = d["key"]
-            row = existing.get(key)
+            # Delete existing row (dev reset)
+            existing = s.query(CardDef).filter_by(key=key).first()
+            if existing:
+                s.delete(existing)
+                s.commit()
 
-            if row is None:
-                # nouvelle carte
-                row = CardDef(**d)
-                s.add(row)
-            else:
-                # update idempotent
-                row.label = d.get("label", row.label)
-                row.description = d.get("description", row.description)
-                row.icon = d.get("icon", row.icon)
-                row.type = d.get("type", row.type)
-                row.target_resource = d.get("target_resource", row.target_resource)
-                row.target_building = d.get("target_building", row.target_building)
-                row.price_coins = d.get("price_coins", row.price_coins)
-                row.price_diams = d.get("price_diams", row.price_diams)
-                row.max_owned = d.get("max_owned", row.max_owned)
-                row.enabled = d.get("enabled", row.enabled)
-                row.unlock_rules = d.get("unlock_rules", row.unlock_rules)
+            cd = CardDef(
+                key=key,
+                label=cfg["label"],
+                description=cfg.get("description"),
+                icon=cfg.get("icon"),
 
-        s.commit()
+                type=cfg.get("type", "").strip() or "generic",
 
-    log.info("Cards seeded successfully: %d entries.", len(cards))
-    return len(cards)
+                target_resource=cfg.get("target_resource"),
+                target_building=cfg.get("target_building"),
+
+                max_owned=cfg.get("max_owned"),
+                enabled=cfg.get("enabled", True),
+                unlock_rules=cfg.get("unlock_rules"),
+
+                categorie=cfg.get("categorie"),
+                rarity=cfg.get("rarity"),
+
+                gameplay=cfg.get("gameplay"),
+                prices=cfg.get("prices"),
+                shop=cfg.get("shop"),
+                buy_rules=cfg.get("buy_rules"),
+            )
+
+            s.add(cd)
+            s.commit()
+
+        print(f"✓ Loaded {len(cards)} cards from cards.yml")

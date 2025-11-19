@@ -4,7 +4,7 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request, make_response
 
 from app.db import SessionLocal
-from app.models import Player, Tile, ResourceStock, ResourceDef, PlayerCard
+from app.models import Player, Tile, ResourceStock, ResourceDef, PlayerCard, CardDef
 from app.progression import next_threshold
 
 bp = Blueprint("players", __name__)
@@ -215,20 +215,21 @@ def whoami():
         
 @bp.get("/state")
 def get_state():
-    """Retourne l'état complet du joueur courant (pour future UI)."""
-    with SessionLocal() as s:
+    """Return full player state, including cards (new format)."""
+    with SessionLocal() as s:   
         me = _get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
-        # Tiles du joueur
+        # ------------------------------
+        # Tiles
+        # ------------------------------
         tiles = (
             s.query(Tile)
             .filter_by(player_id=me.id)
             .order_by(Tile.id.asc())
             .all()
         )
-
         tiles_payload = []
         for t in tiles:
             tiles_payload.append({
@@ -236,11 +237,14 @@ def get_state():
                 "playerId": t.player_id,
                 "resource": t.resource,
                 "locked": t.locked,
-                "cooldown_until": t.cooldown_until.isoformat()
-                    if t.cooldown_until else None,
+                "cooldown_until": (
+                    t.cooldown_until.isoformat() if t.cooldown_until else None
+                ),
             })
 
-        # Inventaire
+        # ------------------------------
+        # Resource inventory
+        # ------------------------------
         stocks = (
             s.query(ResourceStock)
             .filter_by(player_id=me.id)
@@ -252,7 +256,9 @@ def get_state():
             for rs in stocks
         ]
 
-        # Defs de ressources
+        # ------------------------------
+        # Resource defs
+        # ------------------------------
         resources_rows = (
             s.query(ResourceDef)
             .filter_by(enabled=True)
@@ -263,7 +269,7 @@ def get_state():
             {
                 "key": r.key,
                 "label": r.label,
-                "icon": r.icon, 
+                "icon": r.icon,
                 "unlock_min_level": r.unlock_min_level,
                 "base_cooldown": r.base_cooldown,
                 "base_sell_price": r.base_sell_price,
@@ -272,6 +278,49 @@ def get_state():
             for r in resources_rows
         ]
 
+        # ------------------------------
+        # Cards (NEW)
+        # ------------------------------
+        # 1) all enabled card defs
+        card_defs = (
+            s.query(CardDef)
+            .filter_by(enabled=True)
+            .order_by(CardDef.key.asc())
+            .all()
+        )
+
+        # 2) owned qty indexed by card_key
+        owned_rows = (
+            s.query(PlayerCard)
+            .filter_by(player_id=me.id)
+            .all()
+        )
+        owned_map = {pc.card_key: pc.qty for pc in owned_rows}
+
+        cards_payload = []
+        for cd in card_defs:
+            cards_payload.append({
+                "key": cd.key,
+                "label": cd.label,
+                "description": cd.description,
+                "icon": cd.icon,
+
+                "categorie": cd.categorie,
+                "rarity": cd.rarity,
+                "type": cd.type,
+
+                "gameplay": cd.gameplay or {},
+                "prices": cd.prices or [],
+                "shop": cd.shop or {},
+                "buy_rules": cd.buy_rules or {},
+
+                "enabled": cd.enabled,
+                "owned_qty": owned_map.get(cd.key, 0),
+            })
+
+        # ------------------------------
+        # Return final state
+        # ------------------------------
         return jsonify({
             "player": {
                 "id": me.id,
@@ -285,7 +334,11 @@ def get_state():
             "tiles": tiles_payload,
             "inventory": inventory_payload,
             "resources": resources_payload,
-        }), 200        
+
+            # NEW
+            "cards": cards_payload,
+        }), 200
+
         
 # -----------------------------------------------------------------
 # Helper: cookie-based auth

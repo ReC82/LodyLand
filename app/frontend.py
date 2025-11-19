@@ -90,6 +90,13 @@ def play_redirect():
 @frontend_bp.route("/shop")
 def shop():
     """Page boutique joueur (vente ressources + achat cartes)."""
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+    finally:
+        session.close()        
     # Pour le moment, la page sera majoritairement pilotée par JS
     return render_template("GAME_UI/shop/index.html")
 
@@ -124,13 +131,31 @@ def lands_select():
         def make_price_text(cd: CardDef | None) -> str:
             if not cd:
                 return ""
+
+            # New multi-price format: we only display the first option for now.
+            prices = cd.prices or []
+            if not prices:
+                return "Gratuit"
+
+            first = prices[0] or {}
             parts: list[str] = []
-            if cd.price_coins:
-                parts.append(f"{cd.price_coins} 🪙")
-            if cd.price_diams:
-                parts.append(f"{cd.price_diams} 💎")
+
+            coins = first.get("coins", 0)
+            diams = first.get("diams", 0)
+            res_costs: dict = first.get("resources", {}) or {}
+
+            if coins:
+                parts.append(f"{coins} 🪙")
+            if diams:
+                parts.append(f"{diams} 💎")
+
+            # Simple display for resource costs, e.g. "100 wood"
+            for res_key, qty in res_costs.items():
+                parts.append(f"{qty} {res_key}")
+
             if not parts:
                 return "Gratuit"
+
             return " + ".join(parts)
 
         # Optionnel : petit mapping d’emoji par land (juste cosmétique)
