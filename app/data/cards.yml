@@ -74,84 +74,6 @@ cards:
       max_owned: 5
       enabled: true
 
-
-  - key: land_forest
-    categorie: "land"
-    label: "Accès Forêt"
-    description: "Débloque le land Forêt."
-    icon: "/static/assets/img/cards/land_forest.png"
-    default_resource_icon: "/static/assets/img/lands/forest_slot.png"
-
-    type: "land_access"
-    rarity: "common"
-
-    gameplay:
-      target_land: "forest"
-
-    prices:
-      - coins: 0
-
-    buy_rules: null
-
-    shop:
-      tradable: false
-      giftable: true
-      quantity: 0
-      purchase_limit: null
-      max_owned: 1
-      enabled: true
-
-  - key: land_beach
-    categorie: "land"
-    label: "Accès Plage"
-    description: "Débloque le land Plage."
-    icon: "/static/assets/img/cards/land_beach.png"
-    default_resource_icon: "/static/assets/img/lands/beach_slot.png"
-
-    type: "land_access"
-    rarity: "uncommon"
-
-    gameplay:
-      target_land: "beach"
-
-    prices:
-      - coins: 500
-
-    buy_rules: null
-
-    shop:
-      tradable: false
-      giftable: true
-      quantity: 0
-      purchase_limit: null
-      max_owned: 1
-      enabled: true
-
-  - key: land_village
-    categorie: "land"
-    label: "Accès Village"
-    description: "Un petit village où tu pourras commercer, accepter des quêtes, etc."
-    icon: "/static/assets/img/cards/land_village.png"
-
-    type: "land_access"
-    rarity: "rare"
-
-    gameplay:
-      target_land: "village"
-
-    prices:
-      - coins: 200
-
-    buy_rules: null
-
-    shop:
-      tradable: false
-      giftable: true
-      quantity: 0
-      purchase_limit: null
-      max_owned: 1
-      enabled: true
-
   - key: forest_loot_boost_1
     categorie: "boost"
     label: "Butin Forêt I"
@@ -241,3 +163,188 @@ cards:
       giftable: true
       quantity: 0
       purchase_limit: null
+
+#########################################################
+# LANDS
+#########################################################
+
+  - key: land_forest
+    categorie: "land"
+    label: "Accès Forêt"
+    description: "Débloque le land Forêt."
+    icon: "/static/assets/img/cards/land_forest.png"
+    default_resource_icon: "/static/assets/img/lands/forest_slot.png"
+
+    type: "land_access"
+    rarity: "common"
+
+    gameplay:
+      target_land: "forest"
+
+    prices:
+      - coins: 0
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true
+
+  - key: land_beach
+    categorie: "land"
+    label: "Accès Plage"
+    description: "Débloque le land Plage."
+    icon: "/static/assets/img/cards/land_beach.png"
+    default_resource_icon: "/static/assets/img/lands/beach_slot.png"
+
+    type: "land_access"
+    rarity: "uncommon"
+
+    gameplay:
+      target_land: "beach"
+
+    prices:
+      - coins: 500
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true
+
+  - key: land_lake
+    categorie: "lake"
+    label: "Accès Lac"
+    description: "Débloque le land Lac"
+    icon: "/static/assets/img/cards/land_lake.png"
+    default_resource_icon: "/static/assets/img/lands/lake_slot.png"
+
+    type: "land_access"
+    rarity: "uncommon"
+
+    gameplay:
+      target_land: "lake"
+
+    prices:
+      - coins: 500
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true
+
+  - key: land_cave
+    categorie: "cave"
+    label: "Accès Grottes"
+    description: "Débloque le land Grottes"
+    icon: "/static/assets/img/cards/land_cave.png"
+    default_resource_icon: "/static/assets/img/lands/cave_slot.png"
+
+    type: "land_access"
+    rarity: "uncommon"
+
+    gameplay:
+      target_land: "lake"
+
+    prices:
+      - coins: 500
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true      
+
+  - key: land_desert
+    categorie: "desert"
+    label: "Accès Désert"
+    description: "Débloque le land Désert"
+    icon: "/static/assets/img/cards/land_desert.png"
+    default_resource_icon: "/static/assets/img/lands/desert_slot.png"
+
+    type: "land_access"
+    rarity: "uncommon"
+
+    gameplay:
+      target_land: "lake"
+
+    prices:
+      - coins: 500
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true     
+
+  - key: land_farm
+    categorie: "farm"
+    label: "Accès Ferme"
+    description: "Débloque le land Ferme"
+    icon: "/static/assets/img/cards/land_farm.png"
+    default_resource_icon: "/static/assets/img/lands/farm_slot.png"
+
+    type: "land_access"
+    rarity: "uncommon"
+
+    gameplay:
+      target_land: "lake"
+
+    prices:
+      - coins: 500
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true                   
+
+  - key: land_village
+    categorie: "land"
+    label: "Accès Village"
+    description: "Un petit village où tu pourras commercer, accepter des quêtes, etc."
+    icon: "/static/assets/img/cards/land_village.png"
+
+    type: "land_access"
+    rarity: "rare"
+
+    gameplay:
+      target_land: "village"
+
+    prices:
+      - coins: 200
+
+    buy_rules: null
+
+    shop:
+      tradable: false
+      giftable: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+      enabled: true

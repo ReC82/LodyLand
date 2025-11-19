@@ -158,25 +158,41 @@ async function claimDaily() {
   }
 }
 
+function setDailyChestReady(isReady) {
+  const icon = document.getElementById("dailyIcon");
+  const alertBadge = document.getElementById("dailyAlert");
+  if (!icon || !alertBadge) return;
+
+  if (isReady) {
+    // Add animation + badge
+    icon.classList.add("hud-daily-ready");
+    alertBadge.style.display = "block";
+  } else {
+    // Stop animation + cacher le badge
+    icon.classList.remove("hud-daily-ready");
+    alertBadge.style.display = "none";
+  }
+}
+
 
 async function refreshDailyStatus() {
-  const alert = $("dailyAlert");
   const tooltip = $("dailyTooltip");
 
-  if (!alert || !tooltip) return;
+  if (!tooltip) return;
 
   const r = await http("GET", "/api/daily/status");
 
   if (!r.ok) {
     tooltip.textContent = "Impossible de récupérer le statut du coffre.";
-    alert.style.display = "none";
+    // Daily not ready on error
+    setDailyChestReady(false);
     return;
   }
 
   const d = r.data || {};
 
-  // Badge "!"
-  alert.style.display = d.eligible ? "flex" : "none";
+  // ✅ Ici on active / désactive animation + badge "!"
+  setDailyChestReady(!!d.eligible);
 
   // Contenu de l'infobulle
   let html = "";
@@ -198,6 +214,7 @@ async function refreshDailyStatus() {
 
   tooltip.innerHTML = html;
 }
+
 
 // ------------------------------
 // Daily modal helpers

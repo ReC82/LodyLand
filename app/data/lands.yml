@@ -4,7 +4,7 @@ forest:
   label_en: "Forest"
   starting_land: true           # donné dès l'inscription via la carte
   slots: 8                     # nombre d'emplacements cliquables
-
+  slot_icon: "static/assets/img/lands/forest_slot.png"  # icône pour les emplacements
   tools:
     hands:
       base_loot:
@@ -31,7 +31,7 @@ beach:
   label_en: "Beach"
   starting_land: false          # doit être débloqué via carte land_beach
   slots: 5
-
+  slot_icon: "static/assets/img/lands/beach_slot.png"  # icône pour les emplacements
   tools:
     hands:
       base_loot:
@@ -98,3 +98,50 @@ village:
           max: 1
           chance: 1.0           # 100% → si tu utilises la hache, tu chopes du bois
       extra_loot: []            # on pourra rajouter des bonus plus tard          
+
+lake:
+  key: "land_lake"
+  label_fr: "Lac"
+  label_en: "Lake"
+  starting_land: false          # doit être débloqué via carte land_lake
+  slots: 5
+  slot_icon: "static/assets/img/lands/lake_slot.png"  # icône pour les emplacements
+  tools:
+    hands:
+      base_loot:
+        - resource: "water_lily"  # nénuphar
+          min: 1
+          max: 1
+          chance: 1.0           
+      extra_loot:
+        - resource: "seashell"  # coquillage
+          min: 1
+          max: 1
+          chance: 0.0001        # 0.01% de chance
+        - resource: "starfish"  # étoile de mer
+          min: 1
+          max: 1
+          chance: 0.0001        # 0.01%
+        - resource: "pearl"     # perle
+          min: 1
+          max: 1
+          chance: 0.0001        # 0.01%
+    shovel:
+      base_loot:
+        - resource: "sand"
+          min: 1
+          max: 2
+          chance: 1.0           # avec la pelle, tu peux gagner un peu plus de sable
+      extra_loot:
+        - resource: "seashell"
+          min: 1
+          max: 1
+          chance: 0.001         # 0.1% — on ajustera plus tard si tu veux
+        - resource: "starfish"
+          min: 1
+          max: 1
+          chance: 0.001
+        - resource: "pearl"
+          min: 1
+          max: 1
+          chance: 0.001
