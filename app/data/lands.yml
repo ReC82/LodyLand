@@ -5,6 +5,8 @@ forest:
   starting_land: true           # donné dès l'inscription via la carte
   slots: 8                     # nombre d'emplacements cliquables
   slot_icon: "static/assets/img/lands/forest_slot.png"  # icône pour les emplacements
+  additional_slot_base_cost_diams: 10   # coût en diams pour débloquer un emplacement supplémentaire
+  additional_slot_cost_multiplier: 1.5  # multiplicateur du coût pour chaque emplacement supplémentaire   
   tools:
     hands:
       base_loot:

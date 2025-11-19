@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Documentation — Craft avancé (LodyLand)</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f7f7fb;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  header {
+    background: #334155;
+    color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    color: #1f2937;
+  }
+
+  h3 {
+    margin-top: 1.5rem;
+    color: #374151;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  pre {
+    background: #111827;
+    color: #e5e7eb;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+
+  code {
+    background: #e5e7eb;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  ul {
+    margin-left: 1.2rem;
+  }
+
+  .box {
+    background: white;
+    padding: 1.2rem 1.4rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.09);
+    margin-bottom: 2rem;
+  }
+
+  .important {
+    background: #fef3c7;
+    border-left: 5px solid #f59e0b;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .tip {
+    background: #e0f2fe;
+    border-left: 5px solid #3b82f6;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .toc a {
+    text-decoration: none;
+    color: #1d4ed8;
+  }
+
+  .toc a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Craft avancé — Recettes, tables et mécaniques (LodyLand)</h1>
+</header>
+
+<div class="container">
+
+<div class="box toc">
+  <h2>📚 Table des matières</h2>
+  <ul>
+    <li><a href="#overview">0. Rappel rapide du système de base</a></li>
+    <li><a href="#tables">1. Gérer plusieurs tables de craft</a></li>
+    <li><a href="#levels">2. Niveaux de table & recettes avancées</a></li>
+    <li><a href="#patterns">3. Patterns 3×3 et évolutions de l’UI</a></li>
+    <li><a href="#shapeless">4. Recettes « shapeless » (ordre libre)</a></li>
+    <li><a href="#unlock">5. Conditions de déblocage (cartes, niveaux, quêtes)</a></li>
+    <li><a href="#outputs">6. Quantité produite & sous-produits</a></li>
+    <li><a href="#balance">7. Balancer les coûts, temps de craft & XP</a></li>
+    <li><a href="#debug">8. Debug & bonnes pratiques</a></li>
+    <li><a href="#checklist">9. Checklist craft avancé</a></li>
+  </ul>
+</div>
+
+<!-- ==================== 0. OVERVIEW ==================== -->
+<div class="box" id="overview">
+  <h2>0. 🧠 Rappel rapide du système de base</h2>
+
+  <ul>
+    <li>Les items craftables sont définis dans <code>app/data/craft.yml</code>, section <code>items:</code>.</li>
+    <li>Chaque item contient un bloc <code>recipe:</code> avec :
+      <ul>
+        <li><code>craft_location</code> (ex : <code>craft_table</code>)</li>
+        <li><code>kind</code> (pour l’instant <code>shaped</code>)</li>
+        <li><code>pattern</code> / <code>legend</code></li>
+        <li><code>output_quantity</code>, <code>craft_time_seconds</code>, <code>required_table_level</code></li>
+      </ul>
+    </li>
+    <li>Le backend expose les recettes via <code>/api/craft/recipes?location=craft_table</code>.</li>
+    <li>L’UI :
+      <ul>
+        <li>affiche les recettes dans le popup via 📖,</li>
+        <li>décodage du pattern → slots attendus,</li>
+        <li>drag &amp; drop des ingrédients depuis l’inventaire, validation avant craft.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="important">
+    À ce stade, la table de craft de base fonctionne avec <strong>3 slots sur une ligne</strong>  
+    (<code>width: 3</code>, <code>height: 1</code>).  
+    Cette page explique comment aller plus loin (nouvelles tables, 3×3, shapeless, etc.),  
+    même si tout n’est pas encore implémenté dans l’UI.
+  </div>
+</div>
+
+<!-- ==================== 1. TABLES ==================== -->
+<div class="box" id="tables">
+  <h2>1. 🧪 Gérer plusieurs tables de craft</h2>
+
+  <p>LodyLand pourra gérer plusieurs « stations » de craft :</p>
+  <ul>
+    <li><code>craft_table</code> : table de base (outils simples, matériaux bruts).</li>
+    <li><code>alchemy_table</code> : potions, buffs, consommables.</li>
+    <li><code>firepit</code> : cuisson, grillades, transformation d’aliments.</li>
+    <li><code>kitchen</code> : recettes complexes de cuisine.</li>
+    <li>… et d’autres à venir (forge, laboratoire, etc.).</li>
+  </ul>
+
+  <p>Dans le YAML, ça se déclare simplement :</p>
+
+  <pre>
+recipe:
+  craft_location: "alchemy_table"
+  kind: "shaped"
+  width: 3
+  height: 1
+  ...
+  </pre>
+
+  <p>Côté backend :</p>
+  <ul>
+    <li><code>/api/craft/recipes?location=alchemy_table</code> retourne uniquement les recettes compatibles avec cette table.</li>
+    <li>Le joueur doit posséder la bonne <strong>carte de station</strong> (ex. carte « Alchemy Table ») pour y accéder.</li>
+  </ul>
+
+  <div class="tip">
+    Design futur : chaque table aura son propre bouton dans l’UI (ex : 🔨 forge, ⚗️ alchimie, 🍳 cuisine),  
+    ou sera accessible via un onglet dans le popup de craft.
+  </div>
+</div>
+
+<!-- ==================== 2. TABLE LEVELS ==================== -->
+<div class="box" id="levels">
+  <h2>2. 📈 Niveaux de table & recettes avancées</h2>
+
+  <p>Chaque recipe peut spécifier un <code>required_table_level</code> :</p>
+
+  <pre>
+recipe:
+  craft_location: "craft_table"
+  ...
+  required_table_level: 3
+  </pre>
+
+  <p>Principe :</p>
+  <ul>
+    <li><strong>Niveau de table</strong> stocké côté joueur (ex: dans <code>/api/state.craft.craft_table_level</code>).</li>
+    <li>Le backend filtre les recettes :
+      <ul>
+        <li>recettes visibles ≥ niveau de table,</li>
+        <li>ou recettes visibles mais non craftables avec un indicateur “verrouillé”.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p>Idées d’évolution :</p>
+  <ul>
+    <li>Une carte « Craft Table Upgrade I/II/III » qui augmente <code>craft_table_level</code>.</li>
+    <li>Chaque niveau débloque :
+      <ul>
+        <li>plus de slots (ex. 3 → 6 → 9),</li>
+        <li>de nouvelles catégories d’items.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="important">
+    Quand tu passeras à une table 3×3, pense à :
+    <ul>
+      <li>mettre à jour le YAML (ex. <code>width: 3</code>, <code>height: 3</code>),</li>
+      <li>adapter le code <code>decodeRecipeIntoSlots</code> et l’UI pour gérer 9 slots au lieu de 3.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== 3. PATTERNS 3x3 ==================== -->
+<div class="box" id="patterns">
+  <h2>3. 🧩 Patterns 3×3 et extension de l’UI</h2>
+
+  <p>Un pattern 3×3 ressemble au collier de perles déjà défini :</p>
+
+  <pre>
+recipe:
+  craft_location: "craft_table"
+  kind: "shaped"
+  width: 5
+  height: 5
+
+  pattern:
+    - "....."
+    - ".ppp."
+    - ".pgp."
+    - ".ppp."
+    - "....."
+
+  legend:
+    p:
+      type: "resource"
+      key: "pearl"
+      quantity: 1
+    g:
+      type: "resource"
+      key: "gold_ingot"
+      quantity: 1
+  </pre>
+
+  <p>Pour une table 3×3 classique, tu utiliseras plutôt :</p>
+
+  <pre>
+recipe:
+  craft_location: "craft_table"
+  kind: "shaped"
+  width: 3
+  height: 3
+
+  pattern:
+    - "wb."
+    - "vb."
+    - "..b"
+
+  legend:
+    w: { type: "resource", key: "wood",  quantity: 1 }
+    b: { type: "resource", key: "branch", quantity: 1 }
+    v: { type: "resource", key: "vine",  quantity: 1 }
+  </pre>
+
+  <p>Évolutions à prévoir côté code :</p>
+  <ul>
+    <li><strong>Backend</strong> : déjà OK, le pattern complet est chargé depuis YAML.</li>
+    <li><strong>Frontend</strong> :
+      <ul>
+        <li>Adapter <code>decodeRecipeIntoSlots</code> pour lire chaque <code>row</code> et chaque colonne.</li>
+        <li>Passer de 3 slots à 9 slots (grille CSS 3×3).</li>
+        <li>Associer les indices (0–8) aux positions du pattern (x, y).</li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="tip">
+    Tu peux garder l’implémentation actuelle (ligne de 3) comme <strong>niveau 1</strong>  
+    et débloquer la version 3×3 à partir d’un certain <code>craft_table_level</code> ou d’une carte d’upgrade.
+  </div>
+</div>
+
+<!-- ==================== 4. SHAPELESS ==================== -->
+<div class="box" id="shapeless">
+  <h2>4. 🌀 Recettes « shapeless » (ordre libre)</h2>
+
+  <p>Une recette <code>shaped</code> impose une forme précise dans la grille.  
+  Parfois tu voudras simplement dire : « 3 lianes n’importe où ».</p>
+
+  <p>Exemple de recette <strong>shapeless</strong> (concept, à implémenter plus tard) :</p>
+
+  <pre>
+recipe:
+  craft_location: "craft_table"
+  kind: "shapeless"
+
+  ingredients:
+    - type: "resource"
+      key: "vine"
+      quantity: 3
+
+  output_quantity: 1
+  craft_time_seconds: 3
+  required_table_level: 1
+  </pre>
+
+  <p>À implémenter côté backend :</p>
+  <ul>
+    <li>pour <code>kind == "shapeless"</code>, ignorer <code>pattern</code> et <code>legend</code>,</li>
+    <li>compter les ressources dans l’inventaire global du joueur,</li>
+    <li>ne pas imposer de positions exactes dans la grille.</li>
+  </ul>
+
+  <p>À implémenter côté UI :</p>
+  <ul>
+    <li>soit pas de drag &amp; drop (juste un check sur les quantités),</li>
+    <li>soit une zone « sac » dans laquelle le joueur jette les ingrédients sans pattern.</li>
+  </ul>
+
+  <div class="important">
+    Pour l’instant, reste sur des <code>kind: "shaped"</code>  
+    afin de rester compatible avec la version actuelle de l’UI.
+  </div>
+</div>
+
+<!-- ==================== 5. UNLOCK CONDITIONS ==================== -->
+<div class="box" id="unlock">
+  <h2>5. 🔓 Conditions de déblocage (cartes, niveaux, quêtes)</h2>
+
+  <p>Chaque item peut définir une condition de déblocage :</p>
+
+  <pre>
+unlock_condition:
+  type: "card"        # "card", "level", "quest", "flag", ...
+  key: "craft_jewelry_1"
+  </pre>
+
+  <p>Exemples d’usages :</p>
+  <ul>
+    <li><code>type: "card"</code> : le joueur doit posséder une carte spécifique incluse dans l’inventaire de cartes.</li>
+    <li><code>type: "level"</code> : débloquer certains crafts à partir d’un niveau de joueur.</li>
+    <li><code>type: "quest"</code> : recette accessible après avoir terminé une quête donnée.</li>
+  </ul>
+
+  <p>Backend (concept) :</p>
+  <ul>
+    <li>Lors de la construction de la liste des recettes pour <code>/api/craft/recipes</code>, filtrer ou marquer les recettes en fonction de <code>unlock_condition</code> et de l’état du joueur.</li>
+  </ul>
+
+  <p>UI (idée) :</p>
+  <ul>
+    <li>Afficher les recettes verrouillées en gris avec un petit cadenas 🔒.</li>
+    <li>Afficher un tooltip « Débloqué au niveau 5 », « Nécessite carte : Craft Base », etc.</li>
+  </ul>
+</div>
+
+<!-- ==================== 6. OUTPUTS ==================== -->
+<div class="box" id="outputs">
+  <h2>6. 📦 Quantité produite & sous-produits</h2>
+
+  <p>Actuellement, chaque recette définit :</p>
+
+  <pre>
+output_quantity: 1
+  </pre>
+
+  <p>Idées d’extensions :</p>
+  <ul>
+    <li>Produire plus d’un item à la fois (ex: 3 cordes pour 3× lianes + 1 booster, etc.).</li>
+    <li>Ajouter des sous-produits (ex: résidus, objets de qualité variable).</li>
+  </ul>
+
+  <p>Exemple conceptuel avec sous-produits :</p>
+
+  <pre>
+recipe:
+  ...
+  output:
+    main:
+      key: "item_rope"
+      quantity: 1
+    byproducts:
+      - key: "item_fiber"
+        quantity: 1
+        chance: 0.2   # 20% de chance
+  </pre>
+
+  <div class="tip">
+    Le backend peut gérer ça facilement, l’UI devra simplement afficher les résultats  
+    (ex: “Tu as crafté 1 corde et tu as récupéré 1 fibre bonus !”).
+  </div>
+</div>
+
+<!-- ==================== 7. BALANCE ==================== -->
+<div class="box" id="balance">
+  <h2>7. ⚖️ Balancer coûts, temps de craft & XP</h2>
+
+  <p>Pour garder le jeu intéressant :</p>
+
+  <ul>
+    <li><strong>Coût en ressources</strong> : plus un item est puissant / rare, plus il doit coûter cher.</li>
+    <li><strong>Temps de craft</strong> (<code>craft_time_seconds</code>) :
+      <ul>
+        <li>items simples : 1–5s,</li>
+        <li>items rares : 10–30s,</li>
+        <li>objets très puissants : 30–60s ou plus.</li>
+      </ul>
+    </li>
+    <li><strong>XP</strong> (à connecter plus tard) :
+      <ul>
+        <li>chaque craft pourrait donner une quantité d’XP en fonction du niveau de l’item,</li>
+        <li>cela alimente un “Crafting XP” séparé ou directement le niveau de joueur.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <p>Tu peux prévoir un champ futur :</p>
+
+  <pre>
+recipe:
+  ...
+  xp_reward: 5
+  </pre>
+
+  <div class="tip">
+    Au début, reste simple : 1 craft = 1 XP, puis affine avec un barème plus tard  
+    (ex: basé sur la rareté des ressources consommées).
+  </div>
+</div>
+
+<!-- ==================== 8. DEBUG ==================== -->
+<div class="box" id="debug">
+  <h2>8. 🐛 Debug & bonnes pratiques</h2>
+
+  <h3>8.1. YAML ne se charge pas</h3>
+  <ul>
+    <li>Vérifie la console au démarrage : <code>Loaded X craft item definitions</code>.</li>
+    <li>Si le nombre ne change pas → problème d’indentation ou de syntaxe YAML.</li>
+    <li>Vérifie que les nouveaux items sont bien sous <code>items:</code>, avec 2 espaces.</li>
+  </ul>
+
+  <h3>8.2. Recette non visible dans l’UI</h3>
+  <ul>
+    <li>Vérifie <code>/api/craft/recipes?location=craft_table</code>.</li>
+    <li>Si l’item n’y apparaît pas :
+      <ul>
+        <li>checker <code>craft_location</code>,</li>
+        <li>checker <code>required_table_level</code>,</li>
+        <li>checker <code>unlock_condition</code> (si tu filtres côté backend).</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>8.3. Icône ne s’affiche pas</h3>
+  <ul>
+    <li>Vérifie l’onglet Network (404 sur les PNG ?).</li>
+    <li>Vérifie le chemin dans <code>craft.yml</code> (ex: <code>static/assets/img/items/rope.png</code>).</li>
+    <li>Vérifie que le fichier est bien dans <code>app/static/assets/img/...</code>.</li>
+  </ul>
+
+  <h3>8.4. Drag &amp; drop ne valide pas le craft</h3>
+  <ul>
+    <li>Vérifie le <code>pattern</code> et la <code>legend</code>.</li>
+    <li>Vérifie que les <code>key</code> des ressources dans la légende correspondent à celles des ressources (ex: <code>branch</code>, <code>vine</code>).</li>
+    <li>Vérifie que l’UI lit bien la première ligne si <code>height: 1</code>.</li>
+  </ul>
+</div>
+
+<!-- ==================== 9. CHECKLIST ==================== -->
+<div class="box" id="checklist">
+  <h2>9. ✅ Checklist craft avancé</h2>
+
+  <ul>
+    <li>Choisir la <strong>table</strong> (<code>craft_table</code>, <code>alchemy_table</code>, ...).</li>
+    <li>Choisir la <strong>forme</strong> :
+      <ul>
+        <li><code>kind: "shaped"</code> + pattern 3×3, ou</li>
+        <li><code>kind: "shapeless"</code> (plus tard).</li>
+      </ul>
+    </li>
+    <li>Définir correctement <code>pattern</code> et <code>legend</code>.</li>
+    <li>Fixer <code>required_table_level</code> en cohérence avec la puissance de l’item.</li>
+    <li>Configurer éventuellement <code>unlock_condition</code> (carte, niveau, quête).</li>
+    <li>Placer l’icône dans <code>static/assets/img/items/...</code> et référencer le bon chemin.</li>
+    <li>Redémarrer le serveur & vérifier <code>Loaded X craft item definitions</code>.</li>
+    <li>Tester via <code>/api/craft/recipes</code> puis via le popup de craft :</li>
+    <li>Drag &amp; drop → bouton Crafte actif → résultat & inventaire mis à jour.</li>
+  </ul>
+</div>
+
+</div> <!-- /container -->
+</body>
+</html>

@@ -158,3 +158,15 @@ class PlayerItem(Base):
     updated_at = Column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )    
+    
+class PlayerLandSlots(Base):
+    __tablename__ = "player_land_slots"
+
+    id = mapped_column(Integer, primary_key=True)
+    player_id = mapped_column(Integer, ForeignKey("players.id"), index=True, nullable=False)
+    land_key = mapped_column(String, nullable=False)  # "forest", "beach"...
+    extra_slots = mapped_column(Integer, default=0, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("player_id", "land_key", name="uix_player_land_slots"),
+    )    
