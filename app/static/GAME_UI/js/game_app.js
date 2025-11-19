@@ -868,6 +868,67 @@ function updatePlayerHUD(playerData) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Loot Toasts (icône + quantité)
+// ---------------------------------------------------------------------------
+
+function formatLootAmount(value) {
+  const v = Number(value || 0);
+  return "+ " + v.toFixed(1); // ex: + 1.6
+}
+
+function showLootToasts(lootArray) {
+  if (!Array.isArray(lootArray) || lootArray.length === 0) return;
+
+  const container = document.getElementById("loot-toasts");
+  if (!container) return;
+
+  lootArray.forEach((entry, index) => {
+    const rawAmount =
+      typeof entry.final_amount === "number"
+        ? entry.final_amount
+        : entry.base_amount;
+    const qtyText = formatLootAmount(rawAmount);
+    const resKey = entry.resource; // ex: "branch", "vine"
+
+    // On construit le chemin de l'icône à partir de la clé ressource
+    // => /static/assets/img/resources/<resource>.png
+    const iconUrl = `/static/assets/img/resources/${resKey}.png`;
+
+    const toast = document.createElement("div");
+    toast.className = "loot-toast";
+
+    const img = document.createElement("img");
+    img.src = iconUrl;
+    img.alt = resKey;
+    toast.appendChild(img);
+
+    const qtySpan = document.createElement("span");
+    qtySpan.className = "loot-toast-qty";
+    qtySpan.textContent = qtyText;
+    toast.appendChild(qtySpan);
+
+    container.appendChild(toast);
+
+    // déclenche l'animation CSS
+    requestAnimationFrame(() => {
+      toast.classList.add("show");
+    });
+
+    const lifeTime = 2200 + index * 250; // le 2e reste un peu plus, etc.
+    setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => {
+        toast.remove();
+      }, 200);
+    }, lifeTime);
+  });
+}
+
+// On met la fonction sur window pour l'appeler depuis les lands
+window.showLootToasts = showLootToasts;
+
+
 
 // ---------------------------------------------------------------------------
 // Initialisation

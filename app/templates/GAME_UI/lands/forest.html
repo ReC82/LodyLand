@@ -30,9 +30,7 @@
               class="land-slot-icon"
             />
           </div>
-          <div class="slot-index">Slot {{ idx + 1 }}</div>
-          <div class="slot-label">Sous-bois</div>
-          <div class="slot-status">Clique pour fouiller</div>
+          <div class="slot-index">{{ idx + 1 }}</div>
         </div>
       {% endfor %}
     </div>
@@ -62,6 +60,9 @@
         <div class="slot-status">Clique pour débloquer</div>
       </div>
     </div>
+
+    <!-- Toasts de loot -->
+    <div id="loot-toasts" class="loot-toasts"></div>
 
   <!-- JS spécifique à la Forêt -->
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/forest_app.js') }}"></script>

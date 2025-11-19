@@ -1,21 +1,21 @@
 {% extends "game_base.html" %}
 
-{% block title %}Land – Plage{% endblock %}
-{% block body_class %}game-body beach-body{% endblock %}
+{% block title %}Land – Lac{% endblock %}
+{% block body_class %}game-body lake-body{% endblock %}
 
 {% block content %}
   <script>
     // Nom du land pour le HUD
-    window.LAND_NAME = "Plage";
+    window.LAND_NAME = "Lac";
   </script>
 
-  <div class="land-container beach-land">
+  <div class="land-container lake-land">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
-        <h1 class="h3 mb-0">🏝️ Plage</h1>
+        <h1 class="h3 mb-0">🌊 Lac</h1>
         <small class="text-muted">
           {{ state.total_slots }} emplacements ({{ state.base_slots }} de base, {{ state.extra_slots }} bonus)
-          – Fouille avec les mains : coquillages, sable, etc. (à définir).
+          – Fouille avec les mains : poissons, algues, etc. (à définir).
         </small>
       </div>
       <a href="{{ url_for('frontend.lands_select') }}" class="btn btn-outline-secondary btn-sm">⬅ Retour</a>
@@ -29,14 +29,16 @@
             {% if state.slot_icon %}
               <img
                 src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
-                alt="Plage"
+                alt="Lac"
                 class="land-slot-icon"
               />
             {% else %}
-              🏖️
+              🐟
             {% endif %}
           </div>
-          <div class="slot-index">{{ idx + 1 }}</div>
+          <div class="slot-index">Slot {{ idx + 1 }}</div>
+          <div class="slot-label">Berge / eau</div>
+          <div class="slot-status">Clique pour fouiller</div>
         </div>
       {% endfor %}
     </div>
@@ -69,10 +71,9 @@
     </div>
   </div>
 
-
       <!-- Toasts de loot -->
     <div id="loot-toasts" class="loot-toasts"></div>
-    
-  <!-- JS spécifique à la Plage -->
-  <script src="{{ url_for('static', filename='GAME_UI/js/lands/beach_app.js') }}"></script>
+
+  <!-- JS spécifique au Lac -->
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/lake_app.js') }}"></script>
 {% endblock %}

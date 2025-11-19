@@ -276,6 +276,52 @@ def land_beach():
     finally:
         session.close()
         
+@frontend_bp.get("/land/lake")
+def land_lake():
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        # Vérifier la carte d'accès au lac
+        has_lake = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == "land_lake",
+                PlayerCard.qty > 0,
+            )
+            .first()
+        )
+        if not has_lake:
+            return redirect(url_for("frontend.lands_select"))
+
+        # État du land (slots de base + bonus + coût prochain slot)
+        state = get_player_land_state(session, player.id, "lake")
+
+        # Possède-t-il une carte Lake Free Slot ?
+        free_card_key = "land_lake_free_slot"
+        has_free_slot_card = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == free_card_key,
+                PlayerCard.qty > 0,
+            )
+            .count()
+            > 0
+        )
+
+        return render_template(
+            "GAME_UI/lands/lake.html",
+            state=state,
+            has_free_slot_card=has_free_slot_card,
+        )
+    finally:
+        session.close()
+        
+        
 @frontend_bp.get("/land/village")
 def land_village():
     session = SessionLocal()

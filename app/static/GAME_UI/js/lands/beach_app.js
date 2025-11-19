@@ -68,6 +68,11 @@ async function collectOnBeachSlot(slotEl) {
       statusEl.textContent = `Tu as trouvé : ${summary}`;
     }
 
+    // Toasts de loot (icône + quantité au format "+ 1.6")
+    if (Array.isArray(data.loot) && data.loot.length > 0 && window.showLootToasts) {
+      window.showLootToasts(data.loot);
+    }
+
     if (data.player && window.renderPlayer) {
       renderPlayer({
         ...data.player,
