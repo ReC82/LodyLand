@@ -9,7 +9,7 @@ from flask import Blueprint, jsonify, request
 
 from app.db import SessionLocal
 from app.models import ResourceDef, Tile, Player, ResourceStock, CardDef, PlayerCard
-from app.progression import XP_PER_COLLECT, level_for_xp, next_threshold
+from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
 from app.lands import get_land_def
@@ -453,15 +453,9 @@ def collect():
             # Temps actuel (pour XP et cooldown client-side)
             now = datetime.now(timezone.utc)
 
-            # XP (une action = un collect)
-            level_up = False
+            # XP (one collect action = base XP_PER_COLLECT, with boost cards)
             gained_xp = _compute_xp_gain(s, p.id, XP_PER_COLLECT)
-            p.xp = (p.xp or 0) + gained_xp
-            old_level = p.level or 0
-            new_level = level_for_xp(p.xp)
-            if new_level > old_level:
-                p.level = new_level
-                level_up = True
+            level_up, new_level, level_rewards = apply_xp_and_level_up(s, p, gained_xp)
 
             # Appliquer les boosts de ressource + maj inventaire
             loot_payload = []
@@ -530,6 +524,7 @@ def collect():
                         "diams": p.diams,
                     },
                     "level_up": level_up,
+                    "level_rewards": level_rewards,
                 }
             ), 200
 
@@ -567,17 +562,13 @@ def collect():
         t.cooldown_until = next_cd
 
         level_up = False
+        level_rewards = []
         p = s.get(Player, t.player_id)
         if p:
-            # Apply XP boost cards
             gained_xp = _compute_xp_gain(s, p.id, XP_PER_COLLECT)
-            p.xp = (p.xp or 0) + gained_xp
+            level_up, new_level, level_rewards = apply_xp_and_level_up(s, p, gained_xp)
 
-            old_level = p.level or 0
-            new_level = level_for_xp(p.xp)
-            if new_level > old_level:
-                p.level = new_level
-                level_up = True
+
 
         if t.resource:
             rs = (

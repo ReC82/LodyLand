@@ -126,6 +126,25 @@
       </div>
     </div>
 
+    <!-- Level Up modal -->
+    <div id="levelUpModal" class="daily-modal levelup-modal">
+      <div class="daily-modal-backdrop" id="levelUpModalBackdrop"></div>
+      <div class="daily-modal-box">
+        <div class="daily-modal-icon">⭐</div>
+        <h2 class="daily-modal-title">
+          Niveau <span id="levelUpModalLevel">1</span> atteint !
+        </h2>
+
+        <div class="levelup-modal-rewards" id="levelUpModalRewards">
+          <!-- Filled dynamically with reward items -->
+        </div>
+
+        <button id="levelUpModalClose" class="daily-modal-close">
+          OK
+        </button>
+      </div>
+    </div>    
+
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>

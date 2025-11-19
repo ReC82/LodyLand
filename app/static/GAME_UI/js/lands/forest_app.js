@@ -85,6 +85,13 @@ async function collectOnForestSlot(slotEl) {
       });
     }
 
+    // 🌟 Level-up modal
+    if (data.level_up) {
+      const lvl = data.player?.level ?? 0;
+      const rewards = data.level_rewards || [];
+      showLevelUpModal(lvl, rewards);
+    }
+
     console.log("Forest collect OK:", data);
   } catch (err) {
     console.error("Forest collect request failed:", err);

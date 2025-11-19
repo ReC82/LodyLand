@@ -1,0 +1,1100 @@
+levels:
+  - level: 1
+    xp_required: 10
+    rewards:
+    - type: coins
+      amount: 20
+
+  - level: 2
+    xp_required: 30
+    rewards:
+    - type: coins
+      amount: 50
+    - type: diams
+      amount: 1
+
+  - level: 3
+    xp_required: 60
+    rewards:
+    - type: card
+      card_key: land_beach
+
+  - level: 4
+    xp_required: 100
+    rewards:
+    - type: resource
+      resource_key: branch
+      amount: 50
+    - type: resource
+      resource_key: vine
+      amount: 10
+    - type: coins
+      amount: 20
+
+  - level: 5
+    xp_required: 150
+    rewards:
+    - type: card
+      card_key: land_village
+
+  - level: 6
+    xp_required: 210
+    rewards:
+    - type: coins
+      amount: 60
+    - type: resource
+      resource_key: branch
+      amount: 30
+    - type: resource
+      resource_key: vine
+      amount: 12
+
+  - level: 7
+    xp_required: 280
+    rewards:
+    - type: coins
+      amount: 70
+    - type: resource
+      resource_key: branch
+      amount: 35
+    - type: resource
+      resource_key: vine
+      amount: 14
+
+  - level: 8
+    xp_required: 360
+    rewards:
+    - type: coins
+      amount: 80
+    - type: resource
+      resource_key: branch
+      amount: 40
+    - type: resource
+      resource_key: vine
+      amount: 16
+
+  - level: 9
+    xp_required: 450
+    rewards:
+    - type: coins
+      amount: 90
+    - type: resource
+      resource_key: branch
+      amount: 45
+    - type: resource
+      resource_key: vine
+      amount: 18
+
+  - level: 10
+    xp_required: 550
+    rewards:
+    - type: coins
+      amount: 200
+    - type: diams
+      amount: 1
+
+  - level: 11
+    xp_required: 660
+    rewards:
+    - type: coins
+      amount: 110
+    - type: resource
+      resource_key: branch
+      amount: 55
+    - type: resource
+      resource_key: vine
+      amount: 22
+
+  - level: 12
+    xp_required: 780
+    rewards:
+    - type: coins
+      amount: 120
+    - type: resource
+      resource_key: branch
+      amount: 60
+    - type: resource
+      resource_key: vine
+      amount: 24
+
+  - level: 13
+    xp_required: 910
+    rewards:
+    - type: coins
+      amount: 130
+    - type: resource
+      resource_key: branch
+      amount: 65
+    - type: resource
+      resource_key: vine
+      amount: 26
+
+  - level: 14
+    xp_required: 1050
+    rewards:
+    - type: coins
+      amount: 140
+    - type: resource
+      resource_key: branch
+      amount: 70
+    - type: resource
+      resource_key: vine
+      amount: 28
+
+  - level: 15
+    xp_required: 1200
+    rewards:
+    - type: card
+      card_key: land_castle
+
+  - level: 16
+    xp_required: 1360
+    rewards:
+    - type: coins
+      amount: 160
+    - type: resource
+      resource_key: branch
+      amount: 80
+    - type: resource
+      resource_key: vine
+      amount: 32
+
+  - level: 17
+    xp_required: 1530
+    rewards:
+    - type: coins
+      amount: 170
+    - type: resource
+      resource_key: branch
+      amount: 85
+    - type: resource
+      resource_key: vine
+      amount: 34
+
+  - level: 18
+    xp_required: 1710
+    rewards:
+    - type: coins
+      amount: 180
+    - type: resource
+      resource_key: branch
+      amount: 90
+    - type: resource
+      resource_key: vine
+      amount: 36
+
+  - level: 19
+    xp_required: 1900
+    rewards:
+    - type: coins
+      amount: 190
+    - type: resource
+      resource_key: branch
+      amount: 95
+    - type: resource
+      resource_key: vine
+      amount: 38
+
+  - level: 20
+    xp_required: 2100
+    rewards:
+    - type: coins
+      amount: 400
+    - type: diams
+      amount: 2
+
+  - level: 21
+    xp_required: 2310
+    rewards:
+    - type: coins
+      amount: 210
+    - type: resource
+      resource_key: branch
+      amount: 105
+    - type: resource
+      resource_key: vine
+      amount: 42
+
+  - level: 22
+    xp_required: 2530
+    rewards:
+    - type: coins
+      amount: 220
+    - type: resource
+      resource_key: branch
+      amount: 110
+    - type: resource
+      resource_key: vine
+      amount: 44
+
+  - level: 23
+    xp_required: 2760
+    rewards:
+    - type: coins
+      amount: 230
+    - type: resource
+      resource_key: branch
+      amount: 115
+    - type: resource
+      resource_key: vine
+      amount: 46
+
+  - level: 24
+    xp_required: 3000
+    rewards:
+    - type: coins
+      amount: 240
+    - type: resource
+      resource_key: branch
+      amount: 120
+    - type: resource
+      resource_key: vine
+      amount: 48
+
+  - level: 25
+    xp_required: 3250
+    rewards:
+    - type: coins
+      amount: 500
+    - type: diams
+      amount: 2
+
+  - level: 26
+    xp_required: 3510
+    rewards:
+    - type: coins
+      amount: 260
+    - type: resource
+      resource_key: branch
+      amount: 130
+    - type: resource
+      resource_key: vine
+      amount: 52
+
+  - level: 27
+    xp_required: 3780
+    rewards:
+    - type: coins
+      amount: 270
+    - type: resource
+      resource_key: branch
+      amount: 135
+    - type: resource
+      resource_key: vine
+      amount: 54
+
+  - level: 28
+    xp_required: 4060
+    rewards:
+    - type: coins
+      amount: 280
+    - type: resource
+      resource_key: branch
+      amount: 140
+    - type: resource
+      resource_key: vine
+      amount: 56
+
+  - level: 29
+    xp_required: 4350
+    rewards:
+    - type: coins
+      amount: 290
+    - type: resource
+      resource_key: branch
+      amount: 145
+    - type: resource
+      resource_key: vine
+      amount: 58
+
+  - level: 30
+    xp_required: 4650
+    rewards:
+    - type: coins
+      amount: 600
+    - type: diams
+      amount: 3
+
+  - level: 31
+    xp_required: 4960
+    rewards:
+    - type: coins
+      amount: 310
+    - type: resource
+      resource_key: branch
+      amount: 155
+    - type: resource
+      resource_key: vine
+      amount: 62
+
+  - level: 32
+    xp_required: 5280
+    rewards:
+    - type: coins
+      amount: 320
+    - type: resource
+      resource_key: branch
+      amount: 160
+    - type: resource
+      resource_key: vine
+      amount: 64
+
+  - level: 33
+    xp_required: 5610
+    rewards:
+    - type: coins
+      amount: 330
+    - type: resource
+      resource_key: branch
+      amount: 165
+    - type: resource
+      resource_key: vine
+      amount: 66
+
+  - level: 34
+    xp_required: 5950
+    rewards:
+    - type: coins
+      amount: 340
+    - type: resource
+      resource_key: branch
+      amount: 170
+    - type: resource
+      resource_key: vine
+      amount: 68
+
+  - level: 35
+    xp_required: 6300
+    rewards:
+    - type: coins
+      amount: 700
+    - type: diams
+      amount: 3
+
+  - level: 36
+    xp_required: 6660
+    rewards:
+    - type: coins
+      amount: 360
+    - type: resource
+      resource_key: branch
+      amount: 180
+    - type: resource
+      resource_key: vine
+      amount: 72
+
+  - level: 37
+    xp_required: 7030
+    rewards:
+    - type: coins
+      amount: 370
+    - type: resource
+      resource_key: branch
+      amount: 185
+    - type: resource
+      resource_key: vine
+      amount: 74
+
+  - level: 38
+    xp_required: 7410
+    rewards:
+    - type: coins
+      amount: 380
+    - type: resource
+      resource_key: branch
+      amount: 190
+    - type: resource
+      resource_key: vine
+      amount: 76
+
+  - level: 39
+    xp_required: 7800
+    rewards:
+    - type: coins
+      amount: 390
+    - type: resource
+      resource_key: branch
+      amount: 195
+    - type: resource
+      resource_key: vine
+      amount: 78
+
+  - level: 40
+    xp_required: 8200
+    rewards:
+    - type: coins
+      amount: 800
+    - type: diams
+      amount: 4
+
+  - level: 41
+    xp_required: 8610
+    rewards:
+    - type: coins
+      amount: 410
+    - type: resource
+      resource_key: branch
+      amount: 205
+    - type: resource
+      resource_key: vine
+      amount: 82
+
+  - level: 42
+    xp_required: 9030
+    rewards:
+    - type: coins
+      amount: 420
+    - type: resource
+      resource_key: branch
+      amount: 210
+    - type: resource
+      resource_key: vine
+      amount: 84
+
+  - level: 43
+    xp_required: 9460
+    rewards:
+    - type: coins
+      amount: 430
+    - type: resource
+      resource_key: branch
+      amount: 215
+    - type: resource
+      resource_key: vine
+      amount: 86
+
+  - level: 44
+    xp_required: 9900
+    rewards:
+    - type: coins
+      amount: 440
+    - type: resource
+      resource_key: branch
+      amount: 220
+    - type: resource
+      resource_key: vine
+      amount: 88
+
+  - level: 45
+    xp_required: 10350
+    rewards:
+    - type: coins
+      amount: 900
+    - type: diams
+      amount: 4
+
+  - level: 46
+    xp_required: 10810
+    rewards:
+    - type: coins
+      amount: 460
+    - type: resource
+      resource_key: branch
+      amount: 230
+    - type: resource
+      resource_key: vine
+      amount: 92
+
+  - level: 47
+    xp_required: 11280
+    rewards:
+    - type: coins
+      amount: 470
+    - type: resource
+      resource_key: branch
+      amount: 235
+    - type: resource
+      resource_key: vine
+      amount: 94
+
+  - level: 48
+    xp_required: 11760
+    rewards:
+    - type: coins
+      amount: 480
+    - type: resource
+      resource_key: branch
+      amount: 240
+    - type: resource
+      resource_key: vine
+      amount: 96
+
+  - level: 49
+    xp_required: 12250
+    rewards:
+    - type: coins
+      amount: 490
+    - type: resource
+      resource_key: branch
+      amount: 245
+    - type: resource
+      resource_key: vine
+      amount: 98
+
+  - level: 50
+    xp_required: 12750
+    rewards:
+    - type: coins
+      amount: 1000
+    - type: diams
+      amount: 5
+
+  - level: 51
+    xp_required: 13260
+    rewards:
+    - type: coins
+      amount: 510
+    - type: resource
+      resource_key: branch
+      amount: 255
+    - type: resource
+      resource_key: vine
+      amount: 102
+
+  - level: 52
+    xp_required: 13780
+    rewards:
+    - type: coins
+      amount: 520
+    - type: resource
+      resource_key: branch
+      amount: 260
+    - type: resource
+      resource_key: vine
+      amount: 104
+
+  - level: 53
+    xp_required: 14310
+    rewards:
+    - type: coins
+      amount: 530
+    - type: resource
+      resource_key: branch
+      amount: 265
+    - type: resource
+      resource_key: vine
+      amount: 106
+
+  - level: 54
+    xp_required: 14850
+    rewards:
+    - type: coins
+      amount: 540
+    - type: resource
+      resource_key: branch
+      amount: 270
+    - type: resource
+      resource_key: vine
+      amount: 108
+
+  - level: 55
+    xp_required: 15400
+    rewards:
+    - type: coins
+      amount: 1100
+    - type: diams
+      amount: 5
+
+  - level: 56
+    xp_required: 15960
+    rewards:
+    - type: coins
+      amount: 560
+    - type: resource
+      resource_key: branch
+      amount: 280
+    - type: resource
+      resource_key: vine
+      amount: 112
+
+  - level: 57
+    xp_required: 16530
+    rewards:
+    - type: coins
+      amount: 570
+    - type: resource
+      resource_key: branch
+      amount: 285
+    - type: resource
+      resource_key: vine
+      amount: 114
+
+  - level: 58
+    xp_required: 17110
+    rewards:
+    - type: coins
+      amount: 580
+    - type: resource
+      resource_key: branch
+      amount: 290
+    - type: resource
+      resource_key: vine
+      amount: 116
+
+  - level: 59
+    xp_required: 17700
+    rewards:
+    - type: coins
+      amount: 590
+    - type: resource
+      resource_key: branch
+      amount: 295
+    - type: resource
+      resource_key: vine
+      amount: 118
+
+  - level: 60
+    xp_required: 18300
+    rewards:
+    - type: coins
+      amount: 1200
+    - type: diams
+      amount: 6
+
+  - level: 61
+    xp_required: 18910
+    rewards:
+    - type: coins
+      amount: 610
+    - type: resource
+      resource_key: branch
+      amount: 305
+    - type: resource
+      resource_key: vine
+      amount: 122
+
+  - level: 62
+    xp_required: 19530
+    rewards:
+    - type: coins
+      amount: 620
+    - type: resource
+      resource_key: branch
+      amount: 310
+    - type: resource
+      resource_key: vine
+      amount: 124
+
+  - level: 63
+    xp_required: 20160
+    rewards:
+    - type: coins
+      amount: 630
+    - type: resource
+      resource_key: branch
+      amount: 315
+    - type: resource
+      resource_key: vine
+      amount: 126
+
+  - level: 64
+    xp_required: 20800
+    rewards:
+    - type: coins
+      amount: 640
+    - type: resource
+      resource_key: branch
+      amount: 320
+    - type: resource
+      resource_key: vine
+      amount: 128
+
+  - level: 65
+    xp_required: 21450
+    rewards:
+    - type: coins
+      amount: 1300
+    - type: diams
+      amount: 6
+
+  - level: 66
+    xp_required: 22110
+    rewards:
+    - type: coins
+      amount: 660
+    - type: resource
+      resource_key: branch
+      amount: 330
+    - type: resource
+      resource_key: vine
+      amount: 132
+
+  - level: 67
+    xp_required: 22780
+    rewards:
+    - type: coins
+      amount: 670
+    - type: resource
+      resource_key: branch
+      amount: 335
+    - type: resource
+      resource_key: vine
+      amount: 134
+
+  - level: 68
+    xp_required: 23460
+    rewards:
+    - type: coins
+      amount: 680
+    - type: resource
+      resource_key: branch
+      amount: 340
+    - type: resource
+      resource_key: vine
+      amount: 136
+
+  - level: 69
+    xp_required: 24150
+    rewards:
+    - type: coins
+      amount: 690
+    - type: resource
+      resource_key: branch
+      amount: 345
+    - type: resource
+      resource_key: vine
+      amount: 138
+
+  - level: 70
+    xp_required: 24850
+    rewards:
+    - type: coins
+      amount: 1400
+    - type: diams
+      amount: 7
+
+  - level: 71
+    xp_required: 25560
+    rewards:
+    - type: coins
+      amount: 710
+    - type: resource
+      resource_key: branch
+      amount: 355
+    - type: resource
+      resource_key: vine
+      amount: 142
+
+  - level: 72
+    xp_required: 26280
+    rewards:
+    - type: coins
+      amount: 720
+    - type: resource
+      resource_key: branch
+      amount: 360
+    - type: resource
+      resource_key: vine
+      amount: 144
+
+  - level: 73
+    xp_required: 27010
+    rewards:
+    - type: coins
+      amount: 730
+    - type: resource
+      resource_key: branch
+      amount: 365
+    - type: resource
+      resource_key: vine
+      amount: 146
+
+  - level: 74
+    xp_required: 27750
+    rewards:
+    - type: coins
+      amount: 740
+    - type: resource
+      resource_key: branch
+      amount: 370
+    - type: resource
+      resource_key: vine
+      amount: 148
+
+  - level: 75
+    xp_required: 28500
+    rewards:
+    - type: coins
+      amount: 1500
+    - type: diams
+      amount: 7
+
+  - level: 76
+    xp_required: 29260
+    rewards:
+    - type: coins
+      amount: 760
+    - type: resource
+      resource_key: branch
+      amount: 380
+    - type: resource
+      resource_key: vine
+      amount: 152
+
+  - level: 77
+    xp_required: 30030
+    rewards:
+    - type: coins
+      amount: 770
+    - type: resource
+      resource_key: branch
+      amount: 385
+    - type: resource
+      resource_key: vine
+      amount: 154
+
+  - level: 78
+    xp_required: 30810
+    rewards:
+    - type: coins
+      amount: 780
+    - type: resource
+      resource_key: branch
+      amount: 390
+    - type: resource
+      resource_key: vine
+      amount: 156
+
+  - level: 79
+    xp_required: 31600
+    rewards:
+    - type: coins
+      amount: 790
+    - type: resource
+      resource_key: branch
+      amount: 395
+    - type: resource
+      resource_key: vine
+      amount: 158
+
+  - level: 80
+    xp_required: 32400
+    rewards:
+    - type: coins
+      amount: 1600
+    - type: diams
+      amount: 8
+
+  - level: 81
+    xp_required: 33210
+    rewards:
+    - type: coins
+      amount: 810
+    - type: resource
+      resource_key: branch
+      amount: 405
+    - type: resource
+      resource_key: vine
+      amount: 162
+
+  - level: 82
+    xp_required: 34030
+    rewards:
+    - type: coins
+      amount: 820
+    - type: resource
+      resource_key: branch
+      amount: 410
+    - type: resource
+      resource_key: vine
+      amount: 164
+
+  - level: 83
+    xp_required: 34860
+    rewards:
+    - type: coins
+      amount: 830
+    - type: resource
+      resource_key: branch
+      amount: 415
+    - type: resource
+      resource_key: vine
+      amount: 166
+
+  - level: 84
+    xp_required: 35700
+    rewards:
+    - type: coins
+      amount: 840
+    - type: resource
+      resource_key: branch
+      amount: 420
+    - type: resource
+      resource_key: vine
+      amount: 168
+
+  - level: 85
+    xp_required: 36550
+    rewards:
+    - type: coins
+      amount: 1700
+    - type: diams
+      amount: 8
+
+  - level: 86
+    xp_required: 37410
+    rewards:
+    - type: coins
+      amount: 860
+    - type: resource
+      resource_key: branch
+      amount: 430
+    - type: resource
+      resource_key: vine
+      amount: 172
+
+  - level: 87
+    xp_required: 38280
+    rewards:
+    - type: coins
+      amount: 870
+    - type: resource
+      resource_key: branch
+      amount: 435
+    - type: resource
+      resource_key: vine
+      amount: 174
+
+  - level: 88
+    xp_required: 39160
+    rewards:
+    - type: coins
+      amount: 880
+    - type: resource
+      resource_key: branch
+      amount: 440
+    - type: resource
+      resource_key: vine
+      amount: 176
+
+  - level: 89
+    xp_required: 40050
+    rewards:
+    - type: coins
+      amount: 890
+    - type: resource
+      resource_key: branch
+      amount: 445
+    - type: resource
+      resource_key: vine
+      amount: 178
+
+  - level: 90
+    xp_required: 40950
+    rewards:
+    - type: coins
+      amount: 1800
+    - type: diams
+      amount: 9
+
+  - level: 91
+    xp_required: 41860
+    rewards:
+    - type: coins
+      amount: 910
+    - type: resource
+      resource_key: branch
+      amount: 455
+    - type: resource
+      resource_key: vine
+      amount: 182
+
+  - level: 92
+    xp_required: 42780
+    rewards:
+    - type: coins
+      amount: 920
+    - type: resource
+      resource_key: branch
+      amount: 460
+    - type: resource
+      resource_key: vine
+      amount: 184
+
+  - level: 93
+    xp_required: 43710
+    rewards:
+    - type: coins
+      amount: 930
+    - type: resource
+      resource_key: branch
+      amount: 465
+    - type: resource
+      resource_key: vine
+      amount: 186
+
+  - level: 94
+    xp_required: 44650
+    rewards:
+    - type: coins
+      amount: 940
+    - type: resource
+      resource_key: branch
+      amount: 470
+    - type: resource
+      resource_key: vine
+      amount: 188
+
+  - level: 95
+    xp_required: 45600
+    rewards:
+    - type: coins
+      amount: 1900
+    - type: diams
+      amount: 9
+
+  - level: 96
+    xp_required: 46560
+    rewards:
+    - type: coins
+      amount: 960
+    - type: resource
+      resource_key: branch
+      amount: 480
+    - type: resource
+      resource_key: vine
+      amount: 192
+
+  - level: 97
+    xp_required: 47530
+    rewards:
+    - type: coins
+      amount: 970
+    - type: resource
+      resource_key: branch
+      amount: 485
+    - type: resource
+      resource_key: vine
+      amount: 194
+
+  - level: 98
+    xp_required: 48510
+    rewards:
+    - type: coins
+      amount: 980
+    - type: resource
+      resource_key: branch
+      amount: 490
+    - type: resource
+      resource_key: vine
+      amount: 196
+
+  - level: 99
+    xp_required: 49500
+    rewards:
+    - type: coins
+      amount: 990
+    - type: resource
+      resource_key: branch
+      amount: 495
+    - type: resource
+      resource_key: vine
+      amount: 198
+
+  - level: 100
+    xp_required: 50500
+    rewards:
+    - type: diams
+      amount: 100
+    - type: coins
+      amount: 10000
