@@ -41,21 +41,36 @@
       <div class="gh-right">
        
         <div class="gh-currency gh-coins">
-          🪙 <span id="hud-coins">0</span>
+          <img
+            src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
+            alt="Coins"
+            class="hud-icon-small"
+          />
+          <span id="hud-coins">0</span>
         </div>
         <div class="gh-currency gh-diams">
-          💎 <span id="hud-diams">0</span>
+          <img
+            src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
+            alt="Diamants"
+            class="hud-icon-small"
+          />
+          <span id="hud-diams">0</span>
         </div>
         <!-- Daily Chest (icon HUD) -->
         <div class="hud-daily" id="hudDaily">
           <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
-            🎁
+            <img
+              src="{{ url_for('static', filename='assets/img/ui/chest.png') }}"
+              alt="Daily Chest"
+              class="hud-icon-img"
+            />
             <span id="dailyAlert" class="daily-alert-badge">!</span>
           </div>
           <div class="hud-daily-tooltip" id="dailyTooltip">
             Chargement...
           </div>
-        </div>        
+        </div>
+       
         <button class="gh-menu-btn" id="hud-menu-btn" type="button">☰</button>
       </div>
     </header>

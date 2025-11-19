@@ -184,7 +184,7 @@ function renderCraftIngredients(inventory) {
       const img = document.createElement("img");
       let src = iconPath;
       if (!iconPath.startsWith("/") && !iconPath.startsWith("http")) {
-        src = `/static/GAME_UI/img/${iconPath}`;
+        src = "/" + iconPath.replace(/^\/+/, "");
       }
       img.src = src;
       img.alt = labelText;
@@ -243,7 +243,7 @@ function renderCraftRecipes(recipes) {
       const img = document.createElement("img");
       let src = r.icon;
       if (!src.startsWith("/") && !src.startsWith("http")) {
-        src = `/static/GAME_UI/img/${src}`;
+        src = "/" + src.replace(/^\/+/, "");
       }
       img.src = src;
       iconWrap.appendChild(img);
@@ -333,7 +333,7 @@ function renderCraftSlots() {
 
         let src = def.icon;
         if (!src.startsWith("/") && !src.startsWith("http")) {
-          src = `/static/GAME_UI/img/${src}`;
+          src = "/" + src.replace(/^\/+/, "");
         }
 
         img.src = src;

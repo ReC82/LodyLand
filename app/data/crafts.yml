@@ -13,7 +13,7 @@ items:
     description_fr: "Un beau collier à offrir."
     description_en: "A beautiful necklace to offer."
 
-    icon: "items/pearl_necklace.png"
+    icon: "static/assets/img/items/pearl_necklace.png"
 
     stackable: false
     tradable: false
@@ -68,7 +68,7 @@ items:
     description_fr: "Une hache basique pour couper du bois."
     description_en: "A basic axe to chop wood."
 
-    icon: "tools/wooden_axe.png"
+    icon: "static/assets/img/items/tools/axe_wood.png"
 
     stackable: false
     tradable: true
@@ -110,51 +110,51 @@ items:
       craft_time_seconds: 5
       required_table_level: 1
 
-improvised_fishing_rod:
-  key: "tool_improvised_fishing_rod"
-  type: "tool"
-  category: "fishing"
+  improvised_fishing_rod:
+    key: "tool_improvised_fishing_rod"
+    type: "tool"
+    category: "fishing"
 
-  label_fr: "Canne à pêche de fortune"
-  label_en: "Improvised fishing rod"
+    label_fr: "Canne à pêche de fortune"
+    label_en: "Improvised fishing rod"
 
-  description_fr: "Une canne à pêche bricolée avec des branches et des lianes."
-  description_en: "A makeshift fishing rod made from branches and vines."
+    description_fr: "Une canne à pêche bricolée avec des branches et des lianes."
+    description_en: "A makeshift fishing rod made from branches and vines."
 
-  icon: "tools/improvised_fishing_rod.png"  # TODO: add icon
+    icon: "static/assets/img/items/tools/rod_basic.png"  # TODO: add icon
 
-  stackable: false
-  tradable: true
-  buyable: false
+    stackable: false
+    tradable: true
+    buyable: false
 
-  #unlock_condition:
-  #  type: "card"
-  #  key: "craft_base"
+    #unlock_condition:
+    #  type: "card"
+    #  key: "craft_base"
 
-  recipe:
-    craft_location: "craft_table"
-    kind: "shaped"
-    width: 3
-    height: 1
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
 
-    # b = branch
-    # v = vine
-    pattern:
-      - "bv."   # 1x branch + 1x vine on the first row
+      # b = branch
+      # v = vine
+      pattern:
+        - "bv."   # 1x branch + 1x vine on the first row
 
-    legend:
-      b:
-        type: "resource"
-        key: "branch"
-        quantity: 1
-      v:
-        type: "resource"
-        key: "vine"
-        quantity: 1
+      legend:
+        b:
+          type: "resource"
+          key: "branch"
+          quantity: 1
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
 
-    output_quantity: 1
-    craft_time_seconds: 5
-    required_table_level: 1
+      output_quantity: 1
+      craft_time_seconds: 5
+      required_table_level: 1
 
   rope:
     key: "item_rope"
@@ -167,7 +167,7 @@ improvised_fishing_rod:
     description_fr: "Une corde tressée à partir de lianes."
     description_en: "A rope braided from vines."
 
-    icon: "items/rope.png"  # TODO: add icon
+    icon: "static/assets/img/items/rope.png"  # TODO: add icon
 
     stackable: true
     tradable: true
@@ -204,7 +204,7 @@ improvised_fishing_rod:
     description_fr: "Une pelle rudimentaire faite de branches et de lianes."
     description_en: "A crude shovel made from branches and vines."
 
-    icon: "tools/improvised_shovel.png"  # TODO: add icon
+    icon: "static/assets/img/items/tools/shovel_basic.png"  # TODO: add icon
 
     stackable: false
     tradable: true

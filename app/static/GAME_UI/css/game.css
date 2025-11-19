@@ -104,6 +104,22 @@
   color: #38bdf8;
 }
 
+/* Generic HUD icons */
+.hud-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.hud-icon-small {
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
 .gh-menu-btn {
   border: none;
   border-radius: 999px;
@@ -302,19 +318,36 @@
 /* Petit badge rouge "!" */
 .daily-alert-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #dc2626;
-  color: white;
+  top: -4px;
+  right: -4px;
+
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  width: 15px;
-  height: 15px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #e11d48;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+
+  display: block;
+  pointer-events: none;
+
+  /* on cache le texte réel "!" du span pour éviter les décalages */
+  font-size: 0;
 }
+
+/* Le vrai "!" visible est ici */
+.daily-alert-badge::before {
+  content: "!";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-60%, -55%); /* centrage parfait */
+
+  font-size: 12px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+
 
 /* Infobulle */
 .hud-daily-tooltip {
@@ -335,6 +368,46 @@
 .hud-daily:hover .hud-daily-tooltip {
   display: block;
 }
+
+/* Daily chest: icon container */
+.hud-daily-icon {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Quand le coffre est prêt à être ouvert */
+.hud-daily-ready {
+  animation: chest-bounce 1.2s infinite ease-in-out,
+             chest-glow 1.2s infinite ease-in-out;
+}
+
+/* Petit saut du coffre */
+@keyframes chest-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Léger glow pour attirer l’œil */
+@keyframes chest-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0.0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9));
+  }
+}
+
 
 /* ===========================
    Daily Chest Modal

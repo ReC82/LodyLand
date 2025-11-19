@@ -4,7 +4,7 @@ forest:
   label_en: "Forest"
   starting_land: true           # donné dès l'inscription via la carte
   slots: 8                     # nombre d'emplacements cliquables
-
+  slot_icon: "static/assets/img/lands/forest_slot.png"  # icône pour les emplacements
   tools:
     hands:
       base_loot:
@@ -31,7 +31,7 @@ beach:
   label_en: "Beach"
   starting_land: false          # doit être débloqué via carte land_beach
   slots: 5
-
+  slot_icon: "static/assets/img/lands/beach_slot.png"  # icône pour les emplacements
   tools:
     hands:
       base_loot:
@@ -105,7 +105,7 @@ lake:
   label_en: "Lake"
   starting_land: false          # doit être débloqué via carte land_lake
   slots: 5
-
+  slot_icon: "static/assets/img/lands/lake_slot.png"  # icône pour les emplacements
   tools:
     hands:
       base_loot:

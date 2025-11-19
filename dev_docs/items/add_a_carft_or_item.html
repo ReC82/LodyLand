@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Documentation — Ajouter un item craftable</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f7f7fb;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  header {
+    background: #4a6fa5;
+    color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    color: #26416b;
+  }
+
+  h3 {
+    margin-top: 1.5rem;
+    color: #375a7f;
+  }
+
+  .container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  pre {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+
+  code {
+    background: #e8e8e8;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  ul {
+    margin-left: 1rem;
+  }
+
+  .box {
+    background: white;
+    padding: 1.2rem 1.4rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.09);
+    margin-bottom: 2rem;
+  }
+
+  .important {
+    background: #fff7d4;
+    border-left: 5px solid #ffcd00;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .tip {
+    background: #dff4ff;
+    border-left: 5px solid #52baff;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 5px;
+  }
+
+  .toc a {
+    text-decoration: none;
+    color: #375a7f;
+  }
+
+  .toc a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Guide complet : Ajouter un item craftable dans LodyLand</h1>
+</header>
+
+<div class="container">
+
+<div class="box toc">
+  <h2>📚 Table des matières</h2>
+  <ul>
+    <li><a href="#principes">0. Principe général du système de craft</a></li>
+    <li><a href="#id">1. Choisir les identifiants (slug / clés)</a></li>
+    <li><a href="#resources">2. Vérifier les ressources utilisées par la recette</a></li>
+    <li><a href="#craft-yml">3. Déclarer l’item dans <code>craft.yml</code></a></li>
+    <li><a href="#icon">4. Ajouter l’icône de l’item</a></li>
+    <li><a href="#reload">5. Redémarrer l’app & vérifier le chargement</a></li>
+    <li><a href="#api-test">6. Tester via l’API de craft</a></li>
+    <li><a href="#ui-test">7. Tester via l’UI (popup de craft)</a></li>
+    <li><a href="#exemples">8. Exemples complets (corde, canne à pêche, pelle)</a></li>
+    <li><a href="#tldr">9. TL;DR — Checklist rapide</a></li>
+  </ul>
+</div>
+
+<!-- ==================== SECTION 0 ==================== -->
+<div class="box" id="principes">
+<h2>0. 🧪 Principe général du système de craft</h2>
+
+<p>Un <strong>item craftable</strong> dans LodyLand est défini par :</p>
+
+<ul>
+  <li>Une entrée dans <code>app/data/craft.yml</code> (section <code>items:</code>).</li>
+  <li>Une <strong>recette</strong> : pattern + légende + localisation (table de craft, plus tard alchimie, etc.).</li>
+  <li>Une <strong>icône</strong> accessible côté frontend.</li>
+  <li>(Optionnel) Des stats d’outil (durabilité, bonus, …).</li>
+  <li>(Optionnel) Une condition de déblocage (carte, niveau, quête, ...).</li>
+</ul>
+
+<p>Ensuite :</p>
+<ul>
+  <li>Le backend charge le YAML → <code>CRAFT_DEFS</code>.</li>
+  <li><code>/api/craft/recipes</code> expose les recettes compatibles avec la table actuelle.</li>
+  <li>L’UI (popup de craft) :
+    <ul>
+      <li>Affiche les recettes via le bouton 📖.</li>
+      <li>Décode la recette en slots.</li>
+      <li>Permet de faire du drag &amp; drop des ingrédients dans la table.</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="important">
+Actuellement la <strong>table de craft de base</strong> gère une <strong>seule ligne de 3 cases</strong>.<br />
+Les recettes doivent donc rester sur un pattern de type <code>"xxx"</code> (width 3, height 1) pour être affichées correctement.
+</div>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<div class="box" id="id">
+<h2>1. 🔤 Choisir les identifiants de l’item</h2>
+
+<p>Pour chaque nouvel item, on définit au minimum :</p>
+
+<ul>
+  <li><code>key</code> : identifiant technique unique (stock, API, etc.).</li>
+  <li><code>label_fr</code> / <code>label_en</code> : textes affichés à l’écran.</li>
+  <li><code>type</code> : <code>item</code>, <code>tool</code>, <code>consumable</code>, ...</li>
+  <li><code>category</code> : sous-catégorie (ex: <code>fishing</code>, <code>shovel</code>, <code>material</code>).</li>
+</ul>
+
+<p>Exemples de clés cohérentes :</p>
+<ul>
+  <li><code>item_rope</code> → item “Corde”</li>
+  <li><code>tool_improvised_fishing_rod</code> → outil “Canne à pêche de fortune”</li>
+  <li><code>tool_improvised_shovel</code> → outil “Pelle de fortune”</li>
+</ul>
+
+<div class="tip">
+Garde une convention stable : <code>item_*</code> pour les items génériques, <code>tool_*</code> pour les outils, etc.  
+Ça simplifie la lecture du code et des sauvegardes plus tard.
+</div>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<div class="box" id="resources">
+<h2>2. 🌿 Vérifier les ressources utilisées par la recette</h2>
+
+<p>Avant d’écrire la recette, assure-toi que <strong>les ressources nécessaires existent</strong> déjà :</p>
+
+<ul>
+  <li>Dans la base (table des ressources).</li>
+  <li>Dans la réponse de <code>/api/state</code> (section <code>resources</code>).</li>
+</ul>
+
+<p>Par exemple, pour une recette utilisant <code>branch</code> et <code>vine</code> :</p>
+<ul>
+  <li>Le joueur doit pouvoir posséder des ressources <code>branch</code> et <code>vine</code>.</li>
+  <li>Dans le JSON de <code>/api/state</code>, tu dois voir quelque chose comme :</li>
+</ul>
+
+<pre>
+"inventory": [
+  { "resource": "branch", "qty": 42, ... },
+  { "resource": "vine", "qty": 17, ... }
+],
+"resources": [
+  { "key": "branch", "label": "Branche", "icon": "static/assets/img/resources/branch.png", ... },
+  { "key": "vine", "label": "Liane", "icon": "static/assets/img/resources/vine.png", ... }
+]
+</pre>
+
+<div class="important">
+Si une ressource n’existe pas (pas de <code>key</code> dans <code>resources</code>),  
+tu peux la créer dans ton système de ressources (<code>resources.yml</code> ou seed DB) avant de l’utiliser en craft.
+</div>
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<div class="box" id="craft-yml">
+<h2>3. 🧾 Déclarer l’item dans <code>app/data/craft.yml</code></h2>
+
+<p>Structure générale dans <code>craft.yml</code> :</p>
+
+<pre>
+items:
+  pearl_necklace:
+    key: "item_pearl_necklace"
+    ...
+  wooden_axe:
+    key: "tool_wooden_axe"
+    ...
+  # 👉 Ajouter les nouveaux items ici
+</pre>
+
+<p>Chaque entrée sous <code>items:</code> suit ce format de base :</p>
+
+<pre>
+  my_item_slug:
+    key: "item_or_tool_key"
+    type: "item"            # ou "tool", "consumable", ...
+    category: "category_name"
+
+    label_fr: "Nom en français"
+    label_en: "Name in English"
+
+    description_fr: "Description côté FR."
+    description_en: "Description on EN side."
+
+    icon: "static/assets/img/items/..."  # chemin vers l'icône
+
+    stackable: true
+    tradable: true
+    buyable: false
+
+    # Optionnel : condition de déblocage
+    # unlock_condition:
+    #   type: "card"
+    #   key: "craft_base"
+
+    recipe:
+      craft_location: "craft_table"    # pour l’instant uniquement "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
+
+      # pattern = 1 ligne de 3 caractères
+      # . = vide
+      # b = branch
+      # v = vine
+      pattern:
+        - "bvv"
+
+      legend:
+        b:
+          type: "resource"
+          key: "branch"
+          quantity: 1
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 5
+      required_table_level: 1
+</pre>
+
+<div class="important">
+Actuellement, l’UI de craft ne lit que la <strong>première ligne de pattern</strong> (max 3 cases).  
+Donc préfère des recettes de type <code>width: 3</code> / <code>height: 1</code> avec un seul <code>"xxx"</code>.
+</div>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="box" id="icon">
+<h2>4. 🎨 Ajouter l’icône de l’item</h2>
+
+<p>Pour l’icône :</p>
+
+<ul>
+  <li>Placer le fichier dans <code>app/static/assets/img/items/...</code></li>
+  <li>Utiliser ce chemin dans <code>craft.yml</code> :</li>
+</ul>
+
+<pre>
+icon: "static/assets/img/items/rope.png"
+</pre>
+
+<p>Le JS de craft se charge de le transformer en chemin absolu (<code>/static/...</code>) si nécessaire.  
+Tu peux aussi mettre directement :</p>
+
+<pre>
+icon: "/static/assets/img/items/rope.png"
+</pre>
+
+<div class="tip">
+Garde un sous-dossier par type si tu veux être organisé :
+<ul>
+  <li><code>static/assets/img/items/tools/wooden_axe.png</code></li>
+  <li><code>static/assets/img/items/tools/improvised_fishing_rod.png</code></li>
+  <li><code>static/assets/img/items/rope.png</code></li>
+</ul>
+</div>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<div class="box" id="reload">
+<h2>5. ♻️ Redémarrer l’app & vérifier le chargement</h2>
+
+<p>Une fois le YAML modifié et les icônes en place :</p>
+
+<ol>
+  <li>Arrête le serveur Flask (CTRL+C).</li>
+  <li>Relance <code>python run.py</code>.</li>
+  <li>Observe la console :</li>
+</ol>
+
+<pre>
+Loaded 5 craft item definitions from craft.yml.
+</pre>
+
+<p>Le nombre doit avoir augmenté après l’ajout du nouvel item.</p>
+
+<div class="important">
+Si tu restes bloqué à <code>Loaded 2 craft item definitions</code>,  
+c’est qu’il y a un <strong>problème de YAML</strong> (indentation, clé mal placée, etc.).  
+Dans ce cas, vérifier tout ce qui est sous <code>items:</code>.
+</div>
+</div>
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="box" id="api-test">
+<h2>6. 🔍 Tester la recette via l’API</h2>
+
+<p>Avant de passer par l’UI, tu peux vérifier que l’API de craft voit bien la recette :</p>
+
+<ul>
+  <li>Ouvre <code>http://127.0.0.1:5000/api/craft/recipes?location=craft_table</code> dans ton navigateur.</li>
+  <li>Tu dois voir <code>"recipes"</code> avec une entrée pour ton nouvel item :</li>
+</ul>
+
+<pre>
+{
+  "craft_location": "craft_table",
+  "craft_table_level": 1,
+  "recipes": [
+    {
+      "item_key": "item_rope",
+      "label_fr": "Corde",
+      "icon": "static/assets/img/items/rope.png",
+      "recipe": {
+        "pattern": ["vvv"],
+        "legend": { ... },
+        ...
+      }
+    },
+    ...
+  ]
+}
+</pre>
+
+<p>Tu peux aussi tester le craft via <code>curl</code> (avec un joueur connecté via cookie) :</p>
+
+<pre>
+curl -X POST http://127.0.0.1:5000/api/craft/perform ^
+  -H "Content-Type: application/json" ^
+  -d "{ \"item_key\": \"item_rope\", \"craft_location\": \"craft_table\", \"times\": 1 }"
+</pre>
+
+<div class="tip">
+En cas d’erreur <code>not_enough_resources</code>, la réponse inclut les ressources manquantes.  
+L’UI affiche aussi un message rouge avec la liste.
+</div>
+</div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="box" id="ui-test">
+<h2>7. 🧪 Tester le nouvel item via l’UI (popup Craft)</h2>
+
+<p>Une fois que l’API remonte bien la recette :</p>
+
+<ol>
+  <li>Ouvre le jeu dans le navigateur et connecte-toi avec un joueur.</li>
+  <li>Clique sur le bouton rond 🛠️ en bas à gauche pour ouvrir le <strong>popup de craft</strong>.</li>
+  <li>Vérifie :
+    <ul>
+      <li>Que tes ressources (ex: <code>Branche</code>, <code>Liane</code>) apparaissent à gauche.</li>
+      <li>Que l’icône et le nom sont corrects.</li>
+    </ul>
+  </li>
+  <li>Clique sur le bouton 📖 pour ouvrir la liste des <strong>recettes</strong>.</li>
+  <li>Trouve ta nouvelle recette (ex: “Corde”, “Canne à pêche de fortune”, “Pelle de fortune”).</li>
+  <li>Clique sur la recette :
+    <ul>
+      <li>La <strong>ligne de 3 slots</strong> affiche les ingrédients attendus (placeholders).</li>
+    </ul>
+  </li>
+  <li>Fais un drag & drop depuis les ingrédients (à gauche) vers les slots :
+    <ul>
+      <li>Si l’ingrédient est incorrect, le slot clignote en rouge.</li>
+      <li>Si tous les slots requis sont correctement remplis, le bouton <strong>Crafte</strong> devient actif.</li>
+    </ul>
+  </li>
+  <li>Choisis une quantité (champ “Quantité”) et clique sur Crafte :
+    <ul>
+      <li>En cas de succès : message vert “Craft réussi: xN …”.</li>
+      <li>L’inventaire de ressources est mis à jour.</li>
+    </ul>
+  </li>
+</ol>
+</div>
+
+<!-- ==================== SECTION 8 ==================== -->
+<div class="box" id="exemples">
+<h2>8. 🧩 Exemples complets</h2>
+
+<h3>8.1. Corde (3× liane)</h3>
+
+<pre>
+  rope:
+    key: "item_rope"
+    type: "item"
+    category: "material"
+
+    label_fr: "Corde"
+    label_en: "Rope"
+
+    description_fr: "Une corde tressée à partir de lianes."
+    description_en: "A rope braided from vines."
+
+    icon: "static/assets/img/items/rope.png"
+
+    stackable: true
+    tradable: true
+    buyable: false
+
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
+
+      # v = vine
+      pattern:
+        - "vvv"
+
+      legend:
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 3
+      required_table_level: 1
+</pre>
+
+<h3>8.2. Canne à pêche de fortune (1× branche + 1× liane)</h3>
+
+<pre>
+  improvised_fishing_rod:
+    key: "tool_improvised_fishing_rod"
+    type: "tool"
+    category: "fishing"
+
+    label_fr: "Canne à pêche de fortune"
+    label_en: "Improvised fishing rod"
+
+    description_fr: "Une canne à pêche bricolée avec des branches et des lianes."
+    description_en: "A makeshift fishing rod made from branches and vines."
+
+    icon: "static/assets/img/items/tools/improvised_fishing_rod.png"
+
+    stackable: false
+    tradable: true
+    buyable: false
+
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
+
+      # b = branch
+      # v = vine
+      pattern:
+        - "bv."   # 1x branch + 1x vine
+
+      legend:
+        b:
+          type: "resource"
+          key: "branch"
+          quantity: 1
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 5
+      required_table_level: 1
+</pre>
+
+<h3>8.3. Pelle de fortune (2× branches + 1× liane)</h3>
+
+<pre>
+  improvised_shovel:
+    key: "tool_improvised_shovel"
+    type: "tool"
+    category: "shovel"
+
+    label_fr: "Pelle de fortune"
+    label_en: "Improvised shovel"
+
+    description_fr: "Une pelle rudimentaire faite de branches et de lianes."
+    description_en: "A crude shovel made from branches and vines."
+
+    icon: "static/assets/img/items/tools/improvised_shovel.png"
+
+    stackable: false
+    tradable: true
+    buyable: false
+
+    recipe:
+      craft_location: "craft_table"
+      kind: "shaped"
+      width: 3
+      height: 1
+
+      # b = branch
+      # v = vine
+      pattern:
+        - "bbv"   # 2x branch + 1x vine
+
+      legend:
+        b:
+          type: "resource"
+          key: "branch"
+          quantity: 1
+        v:
+          type: "resource"
+          key: "vine"
+          quantity: 1
+
+      output_quantity: 1
+      craft_time_seconds: 5
+      required_table_level: 1
+</pre>
+</div>
+
+<!-- ==================== SECTION 9 ==================== -->
+<div class="box" id="tldr">
+<h2>9. 🧾 TL;DR — Checklist rapide</h2>
+
+<ul>
+  <li>✅ Choisir une <code>key</code> unique (<code>item_*</code>, <code>tool_*</code>, ...).</li>
+  <li>✅ Vérifier que les ressources (<code>branch</code>, <code>vine</code>, ...) existent.</li>
+  <li>✅ Ajouter l’entrée sous <code>items:</code> dans <code>app/data/craft.yml</code>.</li>
+  <li>✅ Utiliser un pattern compatible avec la table 3 cases : <code>width: 3</code>, <code>height: 1</code>.</li>
+  <li>✅ Placer l’icône dans <code>app/static/assets/img/items/...</code> et mettre le bon chemin.</li>
+  <li>✅ Redémarrer Flask → vérifier <code>Loaded X craft item definitions</code>.</li>
+  <li>✅ Vérifier <code>/api/craft/recipes?location=craft_table</code>.</li>
+  <li>✅ Tester dans l’UI : bouton 🛠️ → 📖 → drag & drop → Crafte.</li>
+</ul>
+</div>
+
+</div> <!-- container -->
+</body>
+</html>
