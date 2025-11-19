@@ -238,6 +238,7 @@ def land_beach():
         if not player:
             return redirect(url_for("frontend.home"))
 
+        # Vérifier que le joueur possède bien la carte d'accès à la plage
         has_beach = (
             session.query(PlayerCard)
             .filter(
@@ -247,14 +248,31 @@ def land_beach():
             )
             .first()
         )
-
         if not has_beach:
-            # plus tard on pourra afficher un message dans /lands
+            # On le renvoie sur l’écran de sélection des lands
             return redirect(url_for("frontend.lands_select"))
 
-        slots = get_land_slots("beach", default=6)
+        # Slots + coût du prochain slot pour CE joueur sur CE land
+        state = get_player_land_state(session, player.id, "beach")
 
-        return render_template("GAME_UI/lands/beach.html", slots=slots)
+        # Possède-t-il une carte "Beach Free Slot" ?
+        free_card_key = "land_beach_free_slot"
+        has_free_slot_card = (
+            session.query(PlayerCard)
+            .filter(
+                PlayerCard.player_id == player.id,
+                PlayerCard.card_key == free_card_key,
+                PlayerCard.qty > 0,
+            )
+            .count()
+            > 0
+        )
+
+        return render_template(
+            "GAME_UI/lands/beach.html",
+            state=state,
+            has_free_slot_card=has_free_slot_card,
+        )
     finally:
         session.close()
         

@@ -34,6 +34,9 @@ beach:
   starting_land: false          # doit être débloqué via carte land_beach
   slots: 5
   slot_icon: "static/assets/img/lands/beach_slot.png"  # icône pour les emplacements
+  additional_slot_base_cost_diams: 15   # coût en diams pour débloquer un emplacement supplémentaire
+  additional_slot_cost_multiplier: 1.6  # multiplicateur du coût pour chaque emplacement supplémentaire
+
   tools:
     hands:
       base_loot:
