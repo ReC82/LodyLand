@@ -8,6 +8,26 @@
 
 const SHOP_SELL_PRICE_PER_UNIT = 1; // pour l'instant 1 coin par ressource
 
+function formatPriceOption(price) {
+  // price = { coins, diams, resources: { key: qty } }
+  if (!price) return "Gratuit";
+
+  const parts = [];
+  const coins = price.coins || 0;
+  const diams = price.diams || 0;
+  const resCosts = price.resources || {};
+
+  if (coins) parts.push(`${coins} 🪙`);
+  if (diams) parts.push(`${diams} 💎`);
+
+  Object.entries(resCosts).forEach(([resKey, qty]) => {
+    parts.push(`${qty} ${resKey}`);
+  });
+
+  return parts.length ? parts.join(" + ") : "Gratuit";
+}
+
+
 async function loadShop() {
   const r = await http("GET", "/api/state");
   if (!r.ok) {
@@ -263,28 +283,41 @@ function renderCardShopList(cards) {
 
   const html = cards
     .map((card) => {
-      const priceCoins = card.price_coins || 0;
-      const priceDiams = card.price_diams || 0;
-
-      const priceParts = [];
-      if (priceCoins) priceParts.push(`${priceCoins} 🪙`);
-      if (priceDiams) priceParts.push(`${priceDiams} 💎`);
-      const priceText = priceParts.length ? priceParts.join(" + ") : "Gratuit";
-
+      const prices = card.prices || [];
+      const shopCfg = card.shop || {};
       const owned = card.owned_qty || 0;
-      const maxOwned = card.max_owned;
+      const maxOwned = shopCfg.max_owned;
 
-      // Règles basiques côté UI (le backend recalcule de toute façon)
+      // Sécurité : si aucun prix défini → une option "gratuite"
+      const effectivePrices = prices.length ? prices : [{}];
+
+      const hasMultiplePrices = effectivePrices.length > 1;
+      const firstPrice = effectivePrices[0];
+
+      const priceText = formatPriceOption(firstPrice);
+
       let canBuy = true;
       let btnLabel = "Acheter";
 
+      // On ne bloque que si tu as atteint le max_owned.
+      // Les vérifs de coins/diams/ressources sont faites par le backend.
       if (maxOwned !== null && maxOwned !== undefined && owned >= maxOwned) {
         canBuy = false;
         btnLabel = "Max atteint";
-      } else if (coins < priceCoins || diams < priceDiams) {
-        canBuy = false;
-        btnLabel = "Fonds insuffisants";
       }
+
+      const priceSelectHtml = hasMultiplePrices
+        ? `
+          <select class="shop-card-price-select">
+            ${effectivePrices
+              .map(
+                (p, idx) =>
+                  `<option value="${idx}">${formatPriceOption(p)}</option>`
+              )
+              .join("")}
+          </select>
+        `
+        : `<div class="shop-card-price">${priceText}</div>`;
 
       return `
         <div class="shop-card-row" data-card-key="${card.key}">
@@ -311,7 +344,7 @@ function renderCardShopList(cards) {
           </div>
 
           <div class="shop-card-side">
-            <div class="shop-card-price">${priceText}</div>
+            ${priceSelectHtml}
             <button
               class="shop-card-buy-btn"
               ${canBuy ? "" : "disabled"}
@@ -330,20 +363,32 @@ function renderCardShopList(cards) {
   container.querySelectorAll(".shop-card-row").forEach((row) => {
     const key = row.dataset.cardKey;
     const btn = row.querySelector(".shop-card-buy-btn");
+    const select = row.querySelector(".shop-card-price-select");
+
     if (!btn || !key || btn.disabled) return;
 
-    btn.addEventListener("click", () => buyCard(key));
+    btn.addEventListener("click", () => {
+      let priceIndex = 0;
+      if (select) {
+        priceIndex = parseInt(select.value, 10) || 0;
+      }
+      buyCard(key, priceIndex);
+    });
   });
 }
 
-async function buyCard(cardKey) {
+
+async function buyCard(cardKey, priceIndex = 0) {
   if (!cardKey) return;
 
   const confirmBuy = confirm("Acheter cette carte ?");
   if (!confirmBuy) return;
 
+  console.log("Buying card", cardKey, "with priceIndex", priceIndex);
+
   const r = await http("POST", "/api/cards/buy", {
     card_key: cardKey,
+    price_index: priceIndex,
     // pas besoin de playerId côté GAME_UI, le backend prend le cookie
   });
 
@@ -367,9 +412,7 @@ async function buyCard(cardKey) {
   const d = r.data;
   const c = d.card || {};
 
-  alert(
-    `Tu as acheté 1x "${c.label || c.key}".`
-  );
+  alert(`Tu as acheté 1x "${c.label || c.key}".`);
 
   // MAJ HUD à partir de la réponse
   if (d.player) {
@@ -384,6 +427,7 @@ async function buyCard(cardKey) {
   // Recharger la liste de cartes pour mettre à jour owned_qty / boutons
   await loadCardShop();
 }
+
 
 
 document.addEventListener("DOMContentLoaded", async () => {

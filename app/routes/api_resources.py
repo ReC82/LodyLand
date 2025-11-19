@@ -111,54 +111,268 @@ def _has_unlock_resource_card(session, player_id: int, resource_key: str) -> boo
     rows = q.all()
     return any(pc.qty > 0 for pc, cd in rows)
 
+def _get_xp_boost_cards(session, player_id: int):
+    """
+    Return list of XP boost configs:
+    [
+      {"qty":1, "type":"addition", "amount":0.10},
+      ...
+    ]
+    """
+    rows = (
+        session.query(PlayerCard, CardDef)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player_id,
+            CardDef.type == "xp_boost"
+        )
+        .all()
+    )
+
+    boosts = []
+    for pc, cd in rows:
+        gp = cd.gameplay or {}
+        xp_cfg = gp.get("xp")
+        if not xp_cfg:
+            continue
+
+        boosts.append({
+            "qty": pc.qty,
+            "type": xp_cfg.get("type", "addition"),
+            "amount": float(xp_cfg.get("amount", 0.0)),
+        })
+
+    return boosts
+
+def _get_cooldown_boost_cards(session, player_id: int, resource_key: str):
+    """
+    Returns cooldown boosts for this resource OR global ones.
+    """
+    rows = (
+        session.query(PlayerCard, CardDef)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(PlayerCard.player_id == player_id)
+        .filter(CardDef.type == "reduce_cooldown")
+        .all()
+    )
+
+    boosts = []
+    for pc, cd in rows:
+        gp = cd.gameplay or {}
+
+        # Resource-specific?
+        target = gp.get("target_resource")
+        if target not in (None, resource_key):
+            continue
+
+        cd_cfg = gp.get("cooldown")
+        if not cd_cfg:
+            continue
+
+        boosts.append({
+            "qty": pc.qty,
+            "type": cd_cfg.get("type", "reduction"),
+            "amount": float(cd_cfg.get("amount", 0.0)),
+        })
+
+    return boosts
+
+
 
 def _compute_collect_amount(session, player_id: int, resource_key: str) -> float:
     """
     Compute how many units of a resource are collected per click.
 
-    Rules:
-      - base_amount = 1.0
-      - each 'resource_boost' card for this resource gives +10%
+    Uses YAML values:
+      - addition: base * (1 + amount * qty)
+      - multiplier: base * (amount ** qty)
     """
-    base_amount = 1.0
-    n_boost = _count_cards(session, player_id, "resource_boost", resource_key)
-    multiplier = 1.0 + 0.1 * n_boost
-    return base_amount * multiplier
+
+    base = 1.0
+
+    boosts = _get_resource_boost_cards(session, player_id, resource_key)
+
+    value = base
+
+    for b in boosts:
+        qty = b["qty"]
+        amount = b["amount"]     # ex: 0.10
+        btype = b["type"]        # "addition" or "multiplier"
+
+        if btype == "addition":
+            # Example: +0.1 per card → qty=2 → base * (1 + 0.1*2)
+            value = value * (1 + amount * qty)
+
+        elif btype == "multiplier":
+            # Example: x1.5 per card → qty=2 → base * (1.5^2)
+            value = value * (amount ** qty)
+
+    return round(value, 4)
 
 
 def _compute_xp_gain(session, player_id: int, base_xp: int) -> float:
     """
-    Compute XP gain per collect.
-
-    Rules:
-      - base_xp from progression.XP_PER_COLLECT
-      - each 'boost_xp' card gives +10% XP globally
+    Compute XP gain per collect using YAML boost configs.
     """
-    n = _count_cards(session, player_id, "boost_xp", None)
-    multiplier = 1.0 + 0.1 * n
-    return base_xp * multiplier
+    xp = base_xp
 
+    boosts = _get_xp_boost_cards(session, player_id)
+
+    for b in boosts:
+        qty = b["qty"]
+        amount = b["amount"]
+        btype = b["type"]
+
+        if btype == "addition":
+            # +10% xp per card
+            xp = xp * (1 + amount * qty)
+
+        elif btype == "multiplier":
+            # x1.5 xp per card
+            xp = xp * (amount ** qty)
+
+    return round(xp, 4)
 
 def _compute_cooldown(session, player_id: int, resource_key: str, base_cooldown: float) -> float:
     """
-    Compute cooldown duration in seconds.
-
-    Rules:
-      - base_cooldown from ResourceDef.base_cooldown
-      - 'reduce_cooldown' cards:
-          * if target_resource = resource_key -> resource-specific
-          * if target_resource is NULL -> global
-        Each card gives -10% cooldown, min 10% of base.
+    Compute cooldown using YAML-based boost configs.
     """
-    n_res = _count_cards(session, player_id, "reduce_cooldown", resource_key)
-    n_global = _count_cards(session, player_id, "reduce_cooldown", None)
-    total = n_res + n_global
-    if total <= 0:
-        return float(base_cooldown)
+    cooldown = base_cooldown
 
-    # At least 10% of base cooldown
-    factor = max(0.1, 1.0 - 0.1 * total)
-    return float(base_cooldown) * factor
+    boosts = _get_cooldown_boost_cards(session, player_id, resource_key)
+
+    for b in boosts:
+        qty = b["qty"]
+        amount = b["amount"]    # 0.10 means 10%
+        btype = b["type"]
+
+        if btype == "reduction":
+            # Reduction per card: base * (1 - amount*qty)
+            cooldown = cooldown * max(0.1, (1 - amount * qty))
+
+        elif btype == "multiplier":
+            # Multiplicative: base * (amount ** qty)
+            cooldown = cooldown * (amount ** qty)
+
+    return round(cooldown, 4)
+
+def _compute_land_loot_multiplier(session, player_id: int, land_key: str, tool_key: str) -> float:
+    """
+    Compute a global loot multiplier for land collection.
+
+    Base = 1.0
+
+    For each boost:
+      - type == "addition":     value *= (1 + amount * qty)
+      - type == "multiplier":   value *= (amount ** qty)
+    """
+    value = 1.0
+
+    boosts = _get_land_loot_boost_cards(session, player_id, land_key, tool_key)
+
+    for b in boosts:
+        qty = b["qty"]
+        amount = b["amount"]
+        btype = b["type"]
+
+        if qty <= 0 or amount == 0:
+            continue
+
+        if btype == "addition":
+            value *= (1 + amount * qty)
+        elif btype == "multiplier":
+            value *= (amount ** qty)
+
+    return round(value, 4)
+
+
+def _get_land_loot_boost_cards(session, player_id: int, land_key: str, tool_key: str):
+    """
+    Return list of land loot boosts for this player, filtered by land/tool.
+
+    Expected YAML structure on CardDef.gameplay:
+
+      gameplay:
+        target_land: "forest" | null
+        target_tool: "hands" | null
+        loot:
+          type: "addition" | "multiplier"
+          amount: 0.20
+    """
+    rows = (
+        session.query(PlayerCard, CardDef)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player_id,
+            CardDef.type == "land_loot_boost",
+        )
+        .all()
+    )
+
+    boosts = []
+    for pc, cd in rows:
+        gp = cd.gameplay or {}
+
+        # Optional filters: land + tool
+        target_land = gp.get("target_land")
+        if target_land is not None and target_land != land_key:
+            continue
+
+        target_tool = gp.get("target_tool")
+        if target_tool is not None and target_tool != tool_key:
+            continue
+
+        loot_cfg = gp.get("loot")
+        if not loot_cfg:
+            continue
+
+        boosts.append({
+            "qty": pc.qty,
+            "type": loot_cfg.get("type", "addition"),
+            "amount": float(loot_cfg.get("amount", 0.0)),
+        })
+
+    return boosts
+
+
+def _get_resource_boost_cards(session, player_id: int, resource_key: str):
+    """
+    Return a list of (boost_type, amount) taken from CardDef.gameplay.boost.
+    
+    Only selects cards:
+      - type = "resource_boost"
+      - target_resource = resource_key
+    """
+    rows = (
+        session.query(PlayerCard, CardDef)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player_id,
+            CardDef.type == "resource_boost",
+        )
+        .filter(CardDef.gameplay != None)
+        .all()
+    )
+
+    boosts = []
+    for pc, cd in rows:
+        # we expect cd.gameplay = {"target_resource": "...", "boost": {...}}
+        gp = cd.gameplay or {}
+        if gp.get("target_resource") != resource_key:
+            continue
+
+        boost_cfg = gp.get("boost")
+        if not boost_cfg:
+            continue
+
+        boosts.append({
+            "qty": pc.qty,
+            "type": boost_cfg.get("type", "addition"),
+            "amount": float(boost_cfg.get("amount", 0.0)),
+        })
+
+    return boosts
+
 
 # -----------------------------------------------------------------
 # Resources listing (for UI + tests)
@@ -232,6 +446,9 @@ def collect():
 
             # Calcul du loot brut (sans boosts)
             raw_loot = _roll_land_loot(tool_cfg)  # {resource: base_qty}
+            
+            # Global land loot multiplier (cards "land_loot_boost")
+            land_loot_mult = _compute_land_loot_multiplier(s, p.id, land_key, tool_key)
 
             # Temps actuel (pour XP et cooldown client-side)
             now = datetime.now(timezone.utc)
@@ -251,7 +468,7 @@ def collect():
             for res_key, base_amount in raw_loot.items():
                 # quantité boostée par les cartes "resource_boost"
                 per_unit = _compute_collect_amount(s, p.id, res_key)
-                amount = base_amount * per_unit
+                amount = base_amount * per_unit * land_loot_mult
 
                 rs = (
                     s.query(ResourceStock)
