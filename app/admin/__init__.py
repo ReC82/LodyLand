@@ -14,6 +14,9 @@ from app.models import (
     ResourceDef,
 )
 
+from pathlib import Path
+import yaml
+
 # Blueprint for the admin panel
 admin_bp = Blueprint(
     "admin",
@@ -22,6 +25,67 @@ admin_bp = Blueprint(
     template_folder="templates",  # templates inside app/admin/templates
     static_folder="static",      # static inside app/admin/static
 )
+
+# -------------------------------------------------------------------
+# Cards YAML helpers
+# -------------------------------------------------------------------
+
+# On part du dossier app/ (parent de app/admin/) → app/data/cards.yml
+CARDS_YAML_PATH = Path(__file__).resolve().parents[1] / "data" / "cards.yml"
+
+
+def load_cards_yaml() -> dict:
+    """Charge cards.yml et retourne un dict {key: config_dict}.
+
+    - Si le YAML a la forme:
+        { "cards": [ {key: "...", ...}, {...} ] }
+      on le convertit en mapping par key.
+    - Si c'est déjà un mapping {key: {...}}, on le renvoie tel quel.
+    - Sinon on renvoie {}.
+    """
+    if not CARDS_YAML_PATH.exists():
+        return {}
+
+    with CARDS_YAML_PATH.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+
+    # Cas 1: ton format actuel: {"cards": [ {...}, {...}, ... ]}
+    if isinstance(data, dict) and isinstance(data.get("cards"), list):
+        mapping: dict[str, dict] = {}
+        for card in data["cards"]:
+            if not isinstance(card, dict):
+                continue
+            key = (card.get("key") or "").strip()
+            if not key:
+                continue
+            mapping[key] = card
+        return mapping
+
+    # Cas 2: déjà un mapping { "wood_boost_1": {...}, ... }
+    if isinstance(data, dict):
+        return data
+
+    # Fallback
+    return {}
+
+
+
+def save_cards_yaml(data: dict) -> None:
+    """Écrit tout le mapping de cartes dans cards.yml.
+
+    - Écrase le fichier
+    - Dump propre (clé triées, block style)
+    """
+    CARDS_YAML_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    with CARDS_YAML_PATH.open("w", encoding="utf-8") as f:
+        yaml.safe_dump(
+            data,
+            f,
+            allow_unicode=True,
+            sort_keys=True,
+            default_flow_style=False,
+        )
 
 def admin_required(view_func):
     """
@@ -133,3 +197,61 @@ def player_detail(player_id: int):
         )
     finally:
         session.close()
+
+@admin_bp.get("/cards")
+@admin_required
+def cards_list():
+    """Liste toutes les cartes issues de cards.yml + statut de synchro DB."""
+    # 1) Charger le YAML
+    yaml_data = load_cards_yaml()  # {key: cfg_dict}
+
+    # 2) Charger tous les CardDef en DB
+    session = SessionLocal()
+    try:
+        db_cards = session.query(CardDef).all()
+        db_by_key = {c.key: c for c in db_cards}
+    finally:
+        session.close()
+
+    # 3) Construire une vue simplifiée pour le template
+    cards_for_view: list[dict] = []
+
+    for key, cfg in sorted(yaml_data.items(), key=lambda item: item[0]):
+        if not isinstance(cfg, dict):
+            cfg = {}
+
+        label = (
+            cfg.get("label_fr")
+            or cfg.get("label_en")
+            or cfg.get("label")
+            or key
+        )
+        ctype = cfg.get("type", "?")
+        rarity = cfg.get("rarity", "-")
+        enabled = cfg.get("enabled", True)
+
+        in_db = key in db_by_key
+
+        cards_for_view.append(
+            {
+                "key": key,
+                "label": label,
+                "type": ctype,
+                "rarity": rarity,
+                "enabled": bool(enabled),
+                "in_db": in_db,
+            }
+        )
+
+    # 4) Détecter les cartes présentes en DB mais absentes du YAML
+    db_only_cards = [
+        c for c in db_cards
+        if c.key not in yaml_data
+    ]
+
+    return render_template(
+        "ADMIN_UI/cards_list.html",
+        cards=cards_for_view,
+        db_only_cards=db_only_cards,
+        yaml_path=str(CARDS_YAML_PATH),
+    )
