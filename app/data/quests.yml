@@ -1,0 +1,106 @@
+# config/quests.yml
+
+quest_templates:
+
+  gather_wood_small:
+    key: "qt_gather_wood_small"
+    quest_type: "daily"          # daily | weekly | bonus | event
+    category: "farming"
+    enabled: true
+
+    title:
+      fr: "Récolter du bois"
+      en: "Gather some wood"
+
+    description:
+      fr: "Va couper un peu de bois dans la forêt."
+      en: "Go cut some wood in the forest."
+
+    # Qui peut donner cette quête ?
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys:
+          - "res_wood_branch"
+        quantity_min: 10
+        quantity_max: 20
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 10
+      coins_max: 25
+      diams_min: 0
+      diams_max: 1
+
+  craft_rope:
+    key: "qt_craft_rope"
+    quest_type: "daily"
+    category: "crafting"
+    enabled: true
+
+    title:
+      fr: "Fabriquer des cordes"
+      en: "Craft some ropes"
+
+    description:
+      fr: "Apprends à crafter des cordes à partir de vignes."
+      en: "Learn to craft ropes from vines."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "craft_item"
+        item_keys:
+          - "item_rope"
+        quantity_min: 2
+        quantity_max: 4
+
+    reward_templates:
+      coins_min: 15
+      coins_max: 35
+      diams_min: 0
+      diams_max: 1
+
+  combo_craft_and_gather:
+    key: "qt_combo_craft_and_gather"
+    quest_type: "weekly"
+    category: "progression"
+    enabled: true
+
+    title:
+      fr: "Produire et récolter"
+      en: "Produce and gather"
+
+    description:
+      fr: "Montre que tu sais à la fois crafter et récolter."
+      en: "Show that you can both craft and gather."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "craft_item"
+        item_keys:
+          - "item_rope"
+        quantity_min: 1
+        quantity_max: 3
+
+      - kind: "collect_resource"
+        resource_keys:
+          - "res_vine"
+          - "res_wood_branch"
+        quantity_min: 15
+        quantity_max: 30
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 40
+      coins_max: 80
+      diams_min: 0
+      diams_max: 2
