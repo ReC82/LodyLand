@@ -637,3 +637,141 @@ def resources_list():
         db_only_resources=db_only_resources,
         yaml_path=str(RESOURCES_YAML_PATH),
     )
+
+@admin_bp.route("/resources/<res_key>/edit", methods=["GET", "POST"])
+@admin_required
+def resource_edit(res_key: str):
+    """Éditer une ressource dans resources.yml via son key."""
+    res_key = (res_key or "").strip()
+    if not res_key:
+        abort(404)
+
+    mapping = load_resources_yaml()
+    res_cfg = mapping.get(res_key)
+    if res_cfg is None or not isinstance(res_cfg, dict):
+        abort(404)
+
+    errors: list[str] = []
+    saved = False
+
+    # Petit helper pour pré-remplir le YAML dans le textarea
+    def dump_yaml_block(value) -> str:
+        if value is None:
+            return ""
+        try:
+            txt = yaml.safe_dump(
+                value,
+                allow_unicode=True,
+                sort_keys=False,
+                default_flow_style=False,
+                indent=2,
+            ).strip()
+        except Exception:
+            return ""
+        return txt
+
+    # Valeur par défaut pour unlock_rules (si tu en utilises)
+    unlock_rules_text_default = dump_yaml_block(res_cfg.get("unlock_rules"))
+
+    if request.method == "POST":
+        # Champs simples
+        label = (request.form.get("label") or "").strip()
+        description = (request.form.get("description") or "").strip()
+        icon = (request.form.get("icon") or "").strip()
+        unlock_min_level_str = (request.form.get("unlock_min_level") or "").strip()
+        base_cooldown_str = (request.form.get("base_cooldown") or "").strip()
+        base_sell_price_str = (request.form.get("base_sell_price") or "").strip()
+        enabled_str = request.form.get("enabled")  # "on" ou None
+
+        # Champ YAML avancé
+        unlock_rules_text = (request.form.get("unlock_rules") or "").strip()
+
+        # Validation basique
+        if not label:
+            errors.append("Le champ 'Label' est requis.")
+
+        # Conversion numérique
+        unlock_min_level = res_cfg.get("unlock_min_level", 0)
+        base_cooldown = res_cfg.get("base_cooldown", 0.0)
+        base_sell_price = res_cfg.get("base_sell_price", 0)
+
+        if unlock_min_level_str:
+            try:
+                unlock_min_level = int(unlock_min_level_str)
+            except ValueError:
+                errors.append("unlock_min_level doit être un entier.")
+
+        if base_cooldown_str:
+            try:
+                base_cooldown = float(base_cooldown_str)
+            except ValueError:
+                errors.append("base_cooldown doit être un nombre (float).")
+
+        if base_sell_price_str:
+            try:
+                base_sell_price = int(base_sell_price_str)
+            except ValueError:
+                errors.append("base_sell_price doit être un entier.")
+
+        # Parse YAML unlock_rules
+        parsed_unlock_rules = res_cfg.get("unlock_rules")
+
+        def parse_yaml_field(text: str, field_name: str):
+            if not text:
+                return None, None  # vide => supprime la clé
+            try:
+                val = yaml.safe_load(text)
+            except yaml.YAMLError as exc:
+                return None, f"YAML invalide dans '{field_name}': {exc}"
+            return val, None
+
+        val, err = parse_yaml_field(unlock_rules_text, "unlock_rules")
+        if err:
+            errors.append(err)
+        else:
+            parsed_unlock_rules = val
+
+        if not errors:
+            # Appliquer les changements
+            updated = dict(res_cfg)
+
+            updated["key"] = res_key
+            updated["label"] = label
+
+            if description:
+                updated["description"] = description
+            else:
+                updated.pop("description", None)
+
+            if icon:
+                updated["icon"] = icon
+            else:
+                updated.pop("icon", None)
+
+            updated["unlock_min_level"] = unlock_min_level
+            updated["base_cooldown"] = base_cooldown
+            updated["base_sell_price"] = base_sell_price
+            updated["enabled"] = bool(enabled_str)
+
+            # unlock_rules
+            if parsed_unlock_rules is not None:
+                updated["unlock_rules"] = parsed_unlock_rules
+            else:
+                updated.pop("unlock_rules", None)
+
+            # Sauvegarde
+            mapping[res_key] = updated
+            save_resources_yaml(mapping)
+
+            res_cfg = updated
+            saved = True
+            unlock_rules_text_default = dump_yaml_block(res_cfg.get("unlock_rules"))
+
+    return render_template(
+        "ADMIN_UI/resource_edit.html",
+        res_key=res_key,
+        res=res_cfg,
+        errors=errors,
+        saved=saved,
+        unlock_rules_text=unlock_rules_text_default,
+    )

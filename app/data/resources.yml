@@ -1,80 +1,81 @@
 resources:
-  - key: branch
-    label: "Branches"
-    base_cooldown: 5
-    base_sell_price: 1
-    unlock_min_level: 0
-    enabled: true
-    icon: "/static/assets/img/resources/branch.png"
-    description: "Une branche tombée d'un arbre."
-    unlock_description: "Toujours accessible (niveau 0)."
 
-  - key: vine
-    label: "Lianes"
-    base_cooldown: 5
-    base_sell_price: 2
-    unlock_min_level: 0
-    enabled: true
-    icon: "/static/assets/img/resources/vine.png"
-    description: "Des lianes qui serviront de ficelle pour fabriquer des objets."
-    unlock_description: "Trouvées parfois en fouillant la forêt."
+- key: branch
+  label: Branches
+  base_cooldown: 10.0
+  base_sell_price: 2
+  unlock_min_level: 0
+  enabled: true
+  icon: /static/assets/img/resources/branch.png
+  description: Une branche tombée d'un arbre.  Ca peut toujours être utile.
+  unlock_description: Toujours accessible (niveau 0).
 
-  - key: wood
-    label: "Bois"
-    base_cooldown: 10
-    base_sell_price: 2
-    unlock_min_level: 1
-    enabled: true
-    icon: "/static/assets/img/resources/palm_wood.png"
-    description: "Du bois de palmier, ressource de base pour construire et crafter."
-    unlock_description: "Récolté avec une hache dans la forêt."
+- key: pearl
+  label: Perle
+  base_cooldown: 60
+  base_sell_price: 20
+  unlock_min_level: 0
+  enabled: true
+  icon: /static/assets/img/resources/pearl.png
+  description: Une perle précieuse, très rare.
+  unlock_description: Découverte exceptionnellement dans les coquillages.
 
-  - key: stone
-    label: "Small Stone"
-    base_cooldown: 10
-    base_sell_price: 2
-    unlock_min_level: 2
-    enabled: true
-    icon: "/static/assets/img/resources/small_stone.png"
-    description: "De petites pierres, utiles pour la construction."
-    unlock_description: "Récolté avec à la main dans la forêt."   
+- key: sand
+  label: Sable
+  base_cooldown: 5
+  base_sell_price: 1
+  unlock_min_level: 0
+  enabled: true
+  icon: /static/assets/img/resources/sand.png
+  description: Du sable fin, trouvé sur la plage.
+  unlock_description: Toujours accessible sur la plage.
 
-  - key: sand
-    label: "Sable"
-    base_cooldown: 5
-    base_sell_price: 1
-    unlock_min_level: 0
-    enabled: true
-    icon: "/static/assets/img/resources/sand.png"
-    description: "Du sable fin, trouvé sur la plage."
-    unlock_description: "Toujours accessible sur la plage."
+- key: seashell
+  label: Coquillage
+  base_cooldown: 30
+  base_sell_price: 5
+  unlock_min_level: 0
+  enabled: true
+  icon: /static/assets/img/resources/seashell.png
+  description: Un coquillage rare trouvé dans le sable.
+  unlock_description: Trouvé très rarement en fouillant la plage.
 
-  - key: seashell
-    label: "Coquillage"
-    base_cooldown: 30
-    base_sell_price: 5
-    unlock_min_level: 0
-    enabled: true
-    icon: "/static/assets/img/resources/seashell.png"
-    description: "Un coquillage rare trouvé dans le sable."
-    unlock_description: "Trouvé très rarement en fouillant la plage."
+- key: starfish
+  label: Étoile de mer
+  base_cooldown: 30
+  base_sell_price: 8
+  unlock_min_level: 0
+  enabled: true
+  icon: /static/assets/img/resources/starfish.png
+  description: Une étoile de mer colorée.
+  unlock_description: Trouvée très rarement en fouillant la plage.
 
-  - key: starfish
-    label: "Étoile de mer"
-    base_cooldown: 30
-    base_sell_price: 8
-    unlock_min_level: 0
-    enabled: true
-    icon: "/static/assets/img/resources/starfish.png"
-    description: "Une étoile de mer colorée."
-    unlock_description: "Trouvée très rarement en fouillant la plage."
+- key: stone
+  label: Small Stone
+  base_cooldown: 10
+  base_sell_price: 2
+  unlock_min_level: 2
+  enabled: true
+  icon: /static/assets/img/resources/small_stone.png
+  description: De petites pierres, utiles pour la construction.
+  unlock_description: Récolté avec à la main dans la forêt.
 
-  - key: pearl
-    label: "Perle"
-    base_cooldown: 60
-    base_sell_price: 20
-    unlock_min_level: 0
-    enabled: true
-    icon: "/static/assets/img/resources/pearl.png"
-    description: "Une perle précieuse, très rare."
-    unlock_description: "Découverte exceptionnellement dans les coquillages."
+- key: vine
+  label: Lianes
+  base_cooldown: 5
+  base_sell_price: 2
+  unlock_min_level: 0
+  enabled: true
+  icon: /static/assets/img/resources/vine.png
+  description: Des lianes qui serviront de ficelle pour fabriquer des objets.
+  unlock_description: Trouvées parfois en fouillant la forêt.
+
+- key: wood
+  label: Bois
+  base_cooldown: 10
+  base_sell_price: 2
+  unlock_min_level: 1
+  enabled: true
+  icon: /static/assets/img/resources/palm_wood.png
+  description: Du bois de palmier, ressource de base pour construire et crafter.
+  unlock_description: Récolté avec une hache dans la forêt.
