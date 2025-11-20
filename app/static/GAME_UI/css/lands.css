@@ -237,3 +237,140 @@
   justify-content: center;
   font-size: 1.1rem;
 }
+
+/* ===========================
+   Village land layout
+   =========================== */
+
+.land-village {
+  /* Simple max width + centrage */
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Header du land (logo + titre) */
+.land-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.land-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* Grille des PNJ */
+.village-npc-grid {
+  /* 3 colonnes sur desktop, 1 colonne sur mobile */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Carte PNJ */
+.npc-card {
+  /* On laisse le padding au conteneur interne */
+}
+
+.npc-card-inner {
+  background: #020617;      /* dark navy */
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937; /* gris foncé */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Image PNJ */
+.npc-img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.75rem;
+  object-fit: contain;
+}
+
+/* Titre PNJ */
+.npc-title {
+  margin-bottom: 0.25rem;
+}
+
+/* Texte PNJ */
+.npc-text {
+  font-size: 0.9rem;
+  color: #9ca3af; /* gris clair */
+  margin-bottom: 0.75rem;
+}
+
+/* ===========================
+   Village - Quests screen
+   =========================== */
+
+.village-quests-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.village-quests-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .village-quests-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Generic card style for village quests */
+.vq-card {
+  background: #020617;              /* dark navy */
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937;        /* dark gray */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Lines for quest lists */
+.vq-quest-line,
+.vq-active-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #1f2937;
+}
+
+.vq-quest-line:last-child,
+.vq-active-line:last-child {
+  border-bottom: none;
+}
+
+.vq-active-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* ===============================
+   Village Quests – Text Fix
+   =============================== */
+
+.village-quests-wrapper,
+.village-quests-wrapper * {
+  color: #e5e7eb !important; /* texte gris clair lisible */
+}
+
+.vq-card p,
+.vq-card .text-muted,
+.vq-card small {
+  color: #cbd5e1 !important; /* encore plus clair */
+}
+
+.vq-card {
+  border-color: #334155;          /* bleu-gris plus clair */
+  background: #0f172a;            /* navy + clair = contraste idéal */
+}

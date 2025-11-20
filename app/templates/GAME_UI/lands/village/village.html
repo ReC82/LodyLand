@@ -1,0 +1,94 @@
+{% extends "game_base.html" %}
+
+{% block title %}Le Village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village">
+
+  <!-- Header du land -->
+  <header class="land-header mb-4">
+    <div class="land-header-main">
+      {% if land_logo %}
+        <img
+          src="{{ land_logo }}"
+          alt="Logo du Village"
+          class="land-logo me-2"
+        />
+      {% endif %}
+      <div>
+        <h1 class="h3 mb-1">
+          {{ land_label or "Le Village" }}
+        </h1>
+        <p class="text-muted mb-0">
+          Ici, pas de récolte. Juste des villageois, des quêtes, une boutique
+          d’objets rares et des échanges spéciaux.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Grille des PNJ -->
+  <div class="village-npc-grid">
+
+    <!-- PNJ Quêtes -->
+    <section class="npc-card">
+      <div class="npc-card-inner">
+        <img
+          src="/static/assets/img/npc/villager_quest.png"
+          alt="Donneur de quêtes"
+          class="npc-img"
+        />
+        <h2 class="h5 npc-title">Donneur de quêtes</h2>
+        <p class="npc-text">
+          Reçois ta quête quotidienne et des missions spéciales. Attention, tu ne peux
+          avoir qu’un nombre limité de quêtes actives.
+        </p>
+        <!-- Pour l'instant, ce lien pourra faire un 404 → c'est normal -->
+        <a href="/village/quests" class="btn btn-sm btn-primary">
+          Voir les quêtes
+        </a>
+      </div>
+    </section>
+
+    <!-- PNJ Boutique -->
+    <section class="npc-card">
+      <div class="npc-card-inner">
+        <img
+          src="/static/assets/img/npc/villager_shop.png"
+          alt="Boutiquier"
+          class="npc-img"
+        />
+        <h2 class="h5 npc-title">Boutique des raretés</h2>
+        <p class="npc-text">
+          Achète des objets limités dans le temps : boosts, cartes spéciales,
+          recettes… Les stocks et les offres changent régulièrement.
+        </p>
+        <a href="/village/shop" class="btn btn-sm btn-warning">
+          Voir la boutique
+        </a>
+      </div>
+    </section>
+
+    <!-- PNJ Trades -->
+    <section class="npc-card">
+      <div class="npc-card-inner">
+        <img
+          src="/static/assets/img/npc/villager_trader.png"
+          alt="Marchand d'échanges"
+          class="npc-img"
+        />
+        <h2 class="h5 npc-title">Marchand d’échanges</h2>
+        <p class="npc-text">
+          Échange certaines ressources contre des items rares ou des cartes uniques.
+          Certains trades sont limités par jour ou par rotation.
+        </p>
+        <a href="/village/trades" class="btn btn-sm btn-success">
+          Voir les échanges
+        </a>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}

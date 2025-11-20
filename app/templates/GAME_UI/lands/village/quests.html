@@ -1,0 +1,109 @@
+{% extends "game_base.html" %}
+
+{% block title %}Quêtes du Village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="village-quests-wrapper">
+
+  <!-- Header -->   
+  <header class="village-quests-header mb-4">
+    <h1 class="h3 mb-1">Quêtes du Village</h1>
+    <p class="text-muted mb-0">
+      Discute avec le donneur de quêtes pour recevoir ta quête quotidienne
+      et découvrir des missions spéciales.
+    </p>
+  </header>
+
+  <div class="village-quests-layout">
+
+    <!-- Colonne principale -->
+    <section class="village-quests-main">
+
+      <!-- Bloc : Quête quotidienne -->
+      <div class="vq-card mb-3">
+        <h2 class="h5 mb-2">Ta quête quotidienne</h2>
+
+        {% if daily_quest %}
+          <!-- Later: display real daily quest -->
+          <p><strong>{{ daily_quest.title }}</strong></p>
+          <p class="text-muted small mb-2">{{ daily_quest.description }}</p>
+          <p class="mb-2">
+            Objectif : {{ daily_quest.objective_text }}<br />
+            Récompense :
+            <span class="ui-icon ui-icon-coin"></span>
+            {{ daily_quest.reward_coins or 0 }}
+            {% if daily_quest.reward_diams %}
+              · <span class="ui-icon ui-icon-diam"></span>
+              {{ daily_quest.reward_diams }}
+            {% endif %}
+          </p>
+        {% else %}
+          <p class="text-muted mb-1">
+            Aucune quête quotidienne active pour le moment.
+          </p>
+          <p class="small text-muted mb-0">
+            Plus tard : tu pourras venir ici chaque jour pour accepter une nouvelle quête.
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Bloc : Quêtes disponibles au Village -->
+      <div class="vq-card mb-3">
+        <h2 class="h5 mb-2">Quêtes disponibles aujourd'hui</h2>
+
+        {% if available_quests %}
+          <ul class="list-unstyled mb-0">
+            {% for q in available_quests %}
+              <li class="vq-quest-line">
+                <div>
+                  <strong>{{ q.title }}</strong><br />
+                  <span class="text-muted small">{{ q.description }}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-primary" disabled>
+                  Accepter (WIP)
+                </button>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">
+            Pour l’instant, aucune quête spéciale n’est disponible. Cette section sera remplie
+            quand on branchera la logique des quêtes du Village.
+          </p>
+        {% endif %}
+      </div>
+
+    </section>
+
+    <!-- Colonne latérale : Quêtes actives -->
+    <aside class="village-quests-sidebar">
+      <div class="vq-card">
+        <h2 class="h6 mb-2">Tes quêtes actives</h2>
+
+        {% if active_quests %}
+          <ul class="list-unstyled mb-0 vq-active-list">
+            {% for q in active_quests %}
+              <li class="vq-active-line">
+                <div>
+                  <strong>{{ q.title }}</strong><br />
+                  <span class="text-muted small">
+                    Progression : {{ q.progress_current }}/{{ q.progress_target }}
+                  </span>
+                </div>
+                <!-- Later: maybe a button to abandon / track -->
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0 small">
+            Tu n’as encore aucune quête active. Plus tard, les quêtes journalières,
+            hebdomadaires et bonus apparaîtront ici.
+          </p>
+        {% endif %}
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+{% endblock %}

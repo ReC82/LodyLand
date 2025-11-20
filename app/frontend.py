@@ -351,9 +351,35 @@ def land_village():
         if not player:
             return redirect(url_for("frontend.home"))
         # Optionnel : check carte land_desert ici
-        return render_template("GAME_UI/lands/village.html")
+        return render_template("GAME_UI/lands/village/village.html")
     finally:
-        session.close()        
+        session.close()
+        
+@frontend_bp.get("/village/quests")
+def village_quests():
+    """Display the village quest NPC screen (daily + available quests)."""
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        # For now, we don't load real quests from DB.
+        # We'll just render a static UI that we'll wire later.
+        daily_quest = None
+        available_quests: list[dict] = []
+        active_quests: list[dict] = []
+
+        return render_template(
+            "GAME_UI/lands/village/quests.html",
+            player=player,
+            daily_quest=daily_quest,
+            available_quests=available_quests,
+            active_quests=active_quests,
+        )
+    finally:
+        session.close()
+     
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -488,4 +514,3 @@ def inventory_page():
         return render_template("GAME_UI/inventory.html")
     finally:
         session.close()
-
