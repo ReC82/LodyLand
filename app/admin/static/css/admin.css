@@ -1,0 +1,24 @@
+/* Basic admin panel styling */
+
+/* Give a slightly different background to the whole admin area */
+.admin-body {
+  background-color: #0b1120; /* dark navy */
+  color: #e5e7eb; /* light gray */
+}
+
+/* Cards should pop a bit */
+.admin-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
+}
+
+/* Make card titles stand out */
+.admin-card .card-title {
+  font-weight: 600;
+}
+
+/* Adjust card body background to be darker */
+.admin-card .card-body {
+  background: radial-gradient(circle at top, #111827, #020617);
+  color: #e5e7eb;
+}
