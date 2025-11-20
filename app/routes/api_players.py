@@ -272,16 +272,14 @@ def get_state():
         assign_daily_quest_if_needed(s, me, now=now)
         s.commit()
         # --- NEW: Load active quests ---------------------------------------
-        active_quests = (
+        quests = (
             s.query(PlayerQuest)
-            .filter(
-                PlayerQuest.player_id == me.id,
-                PlayerQuest.status == "active",
-            )
-            .order_by(PlayerQuest.id.asc())
+            .filter(PlayerQuest.player_id == me.id)
+            .filter(PlayerQuest.status.in_(["active", "completed"]))
+            .order_by(PlayerQuest.started_at.desc())
             .all()
         )
-        quests_payload = [serialize_quest(q) for q in active_quests]
+        quests_payload = [serialize_quest(q) for q in quests]
         # -------------------------------------------------------------------
         # ------------------------------
         # Tiles
