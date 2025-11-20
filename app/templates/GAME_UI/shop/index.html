@@ -10,35 +10,73 @@
     </p>
   </div>
 
-<div class="shop-tabs">
-  <button
-    class="shop-tab shop-tab-active"
-    id="shopTabSell"
-    data-tab="sell"
-  >
-    Vendre des ressources
-  </button>
-  <button
-    class="shop-tab"
-    id="shopTabCards"
-    data-tab="cards"
-  >
-    Acheter des cartes
-  </button>
-</div>
+  <div class="shop-tabs">
+    <button
+      class="shop-tab shop-tab-active"
+      id="shopTabSell"
+      data-tab="sell"
+    >
+      Vendre des ressources
+    </button>
+    <button
+      class="shop-tab"
+      id="shopTabItems"
+      data-tab="items"
+    >
+      Items & objets
+    </button>
+    <button
+      class="shop-tab"
+      id="shopTabCards"
+      data-tab="cards"
+    >
+      Acheter des cartes
+    </button>
+  </div>
 
 <div class="shop-content">
+  <!-- Onglet Vente -->
   <!-- Onglet Vente -->
   <section id="shopPanelSell" class="shop-panel shop-panel-active">
     <div class="shop-sell-info">
       <p class="mb-1">
-        ⚖️ Pour l'instant, chaque ressource vaut
-        <strong>1 coin par unité</strong>.
       </p>
     </div>
+
+    <!-- Toolbar de filtre / recherche -->
+    <div class="shop-toolbar">
+      <div class="shop-toolbar-left">
+        <label class="shop-filter-label">
+          Filtrer les ressources :
+          <input
+            id="shopSellFilter"
+            type="search"
+            class="shop-filter-input"
+            placeholder="Branches, pierre, poisson..."
+          />
+        </label>
+      </div>
+    </div>
+
     <div id="shopSellList" class="shop-sell-grid"></div>
     <div id="shopSellEmpty" class="shop-empty d-none">
       Tu n'as pas encore de ressources à vendre.
+    </div>
+  </section>
+
+
+  <!-- Onglet Items -->
+  <section id="shopPanelItems" class="shop-panel">
+    <div class="shop-sell-info">
+      <p class="mb-1">
+        🎒 Ici tu pourras gérer tes items & objets (prochainement).
+      </p>
+    </div>
+    <div id="shopItemsList" class="shop-items-grid">
+      <!-- On remplira en JS plus tard -->
+      <div class="shop-empty text-muted">
+        Pas encore d’items à afficher.
+      </div>
     </div>
   </section>
 

@@ -7,6 +7,9 @@
 */
 
 const SHOP_SELL_PRICE_PER_UNIT = 1; // pour l'instant 1 coin par ressource
+// State en mémoire pour le filtrage
+let SHOP_STATE_INVENTORY = [];
+let SHOP_STATE_DEFS_BY_KEY = {};
 
 function formatPriceOption(price) {
   // price = { coins, diams, resources: { key: qty } }
@@ -17,7 +20,7 @@ function formatPriceOption(price) {
   const diams = price.diams || 0;
   const resCosts = price.resources || {};
 
-  if (coins) parts.push(`${coins} 🪙`);
+  if (coins) parts.push(`${coins} coins`);
   if (diams) parts.push(`${diams} 💎`);
 
   Object.entries(resCosts).forEach(([resKey, qty]) => {
@@ -43,7 +46,10 @@ async function loadShop() {
     defsByKey[res.key] = res;
   });
 
-  renderSellTab(state.inventory || [], defsByKey);
+  SHOP_STATE_INVENTORY = state.inventory || [];
+  SHOP_STATE_DEFS_BY_KEY = defsByKey;
+
+  applyShopSellFilter();
 }
 
 function renderSellTab(inventory, defsByKey) {
@@ -63,46 +69,103 @@ function renderSellTab(inventory, defsByKey) {
     const def = defsByKey[item.resource] || {};
     const label = def.label || item.resource || "???";
     const icon = def.icon || null;
-    const unitPrice = def.base_sell_price ?? 1;
+    const unitPrice = def.base_sell_price ?? SHOP_SELL_PRICE_PER_UNIT;
+    const maxQty = item.qty || 0;
 
     const row = document.createElement("div");
     row.className = "shop-sell-row";
     row.dataset.resource = item.resource;
 
-    row.innerHTML = `
-      <div class="shop-sell-main">
-        <div class="shop-sell-icon">
-          ${
-            icon
-              ? `<img src="${icon}" alt="${label}" style="width:24px;height:24px;">`
-              : "📦"
-          }
+    row.innerHTML = ` 
+      <div class="shop-sell-header">
+        <div class="shop-sell-left">
+          <div class="shop-sell-icon-wrap">
+            ${
+              icon
+                ? `<img src="${icon}" alt="${label}" title="${label}">`
+                : `<span title="${label}">📦</span>`
+            }
+            <div class="shop-stock-badge">${maxQty}</div>
+          </div>
+          <div class="shop-sell-price">
+            <span class="shop-sell-unit-price">${unitPrice}</span>
+            <span class="ui-icon ui-icon-coin"></span>
+          </div>
         </div>
-        <div>
-          <div class="shop-sell-name">${label}</div>
-          <div class="shop-sell-sub">Tu en as ${item.qty}</div>
+
+        <div class="shop-sell-right">
+          <div class="shop-sell-qty-group">
+            <button type="button" class="shop-qty-btn shop-qty-minus">−</button>
+            <input
+              class="shop-sell-input"
+              type="number"
+              min="1"
+              max="${maxQty}"
+              value="1"
+            />
+            <button type="button" class="shop-qty-btn shop-qty-plus">+</button>
+            <button type="button" class="shop-qty-max">MAX</button>
+          </div>
         </div>
       </div>
-      <div class="shop-sell-controls">
-        <input class="shop-sell-input" type="number"
-               min="1" max="${item.qty}" value="1" />
-        <div class="shop-sell-price">
-          Prix : ${unitPrice} coin(s) / unité
+
+      <div class="shop-sell-bottom">
+        <div class="shop-sell-total">
+          Total :
+          <span class="shop-sell-total-value">${unitPrice}</span>
+          <span class="ui-icon ui-icon-coin"></span>
         </div>
-        <button class="shop-sell-btn">Vendre</button>
+        <button type="button" class="shop-sell-btn">Vendre</button>
       </div>
     `;
 
+
+
+
     const input = row.querySelector(".shop-sell-input");
-    const btn = row.querySelector(".shop-sell-btn");
-    btn.addEventListener("click", async () => {
+    const btnSell = row.querySelector(".shop-sell-btn");
+    const btnMinus = row.querySelector(".shop-qty-minus");
+    const btnPlus = row.querySelector(".shop-qty-plus");
+    const btnMax = row.querySelector(".shop-qty-max");
+    const totalEl = row.querySelector(".shop-sell-total-value");
+
+    const clampAndUpdate = () => {
+      let qty = parseInt(input.value, 10) || 1;
+      if (qty < 1) qty = 1;
+      if (qty > maxQty) qty = maxQty;
+      input.value = qty;
+      totalEl.textContent = qty * unitPrice;
+    };
+
+    input.addEventListener("input", clampAndUpdate);
+
+    btnMinus.addEventListener("click", () => {
+      input.value = (parseInt(input.value, 10) || 1) - 1;
+      clampAndUpdate();
+    });
+
+    btnPlus.addEventListener("click", () => {
+      input.value = (parseInt(input.value, 10) || 1) + 1;
+      clampAndUpdate();
+    });
+
+    btnMax.addEventListener("click", () => {
+      input.value = maxQty;
+      clampAndUpdate();
+    });
+
+    btnSell.addEventListener("click", async () => {
       const qty = parseInt(input.value, 10) || 0;
       await sellResource(item.resource, qty);
     });
 
+    // init du total
+    clampAndUpdate();
+
     container.appendChild(row);
   });
 }
+
 
 
 async function loadSellInventory() {
@@ -222,31 +285,54 @@ async function sellResource(resourceKey, amount) {
 
 function setupShopTabs() {
   const tabSell = $("shopTabSell");
+  const tabItems = $("shopTabItems");
   const tabCards = $("shopTabCards");
+
   const panelSell = $("shopPanelSell");
-  const panelCards = $("shopPanelCards")
+  const panelItems = $("shopPanelItems");
+  const panelCards = $("shopPanelCards");
 
   if (!tabSell || !panelSell) return;
 
-  tabSell.addEventListener("click", () => {
-    tabSell.classList.add("shop-tab-active");
-    if (tabCards) tabCards.classList.remove("shop-tab-active");
+  const activateTab = (target) => {
+    // onglets
+    [tabSell, tabItems, tabCards].forEach((t) => {
+      if (!t) return;
+      if (t === target) {
+        t.classList.add("shop-tab-active");
+      } else {
+        t.classList.remove("shop-tab-active");
+      }
+    });
 
-    panelSell.classList.add("shop-panel-active");
-    if (panelCards) panelCards.classList.remove("shop-panel-active");
-  });
+    // panels
+    [panelSell, panelItems, panelCards].forEach((p) => {
+      if (!p) return;
+      p.classList.remove("shop-panel-active");
+    });
+
+    if (target === tabSell && panelSell) panelSell.classList.add("shop-panel-active");
+    if (target === tabItems && panelItems) panelItems.classList.add("shop-panel-active");
+    if (target === tabCards && panelCards) panelCards.classList.add("shop-panel-active");
+  };
+
+  tabSell.addEventListener("click", () => activateTab(tabSell));
+
+  if (tabItems) {
+    tabItems.addEventListener("click", () => {
+      activateTab(tabItems);
+      // plus tard : loadItemShop() ici
+    });
+  }
 
   if (tabCards && panelCards) {
     tabCards.addEventListener("click", () => {
       if (tabCards.disabled) return;
-      tabCards.classList.add("shop-tab-active");
-      tabSell.classList.remove("shop-tab-active");
-
-      panelCards.classList.add("shop-panel-active");
-      panelSell.classList.remove("shop-panel-active");
+      activateTab(tabCards);
     });
   }
 }
+
 
 // Charge la liste des cartes depuis /api/cards et met à jour le HUD si besoin
 async function loadCardShop() {
@@ -428,12 +514,36 @@ async function buyCard(cardKey, priceIndex = 0) {
   await loadCardShop();
 }
 
+function applyShopSellFilter() {
+  const input = $("shopSellFilter");
+  const q = (input ? input.value : "").trim().toLowerCase();
 
+  let list = SHOP_STATE_INVENTORY.slice();
+
+  if (q) {
+    list = list.filter((item) => {
+      const def = SHOP_STATE_DEFS_BY_KEY[item.resource] || {};
+      const label = (def.label || item.resource || "").toLowerCase();
+      return label.includes(q);
+    });
+  }
+
+  renderSellTab(list, SHOP_STATE_DEFS_BY_KEY);
+}
+
+function setupShopFilters() {
+  const input = $("shopSellFilter");
+  if (!input) return;
+
+  input.addEventListener("input", () => {
+    applyShopSellFilter();
+  });
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   setupShopTabs();
- 
+  setupShopFilters();
   loadCardShop();
-  
+ 
   await loadShop();
 });

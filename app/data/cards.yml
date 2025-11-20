@@ -3,7 +3,7 @@ cards:
 - key: branch_cooldown_boost_1
   label: Booster cooldown Branches I
   description: -20% sur le cooldown des branches.
-  icon: /static/assets/img/cards/branch_cooldown_boost_1.png
+  icon: /static/assets/img/cards/default_card.png
   type: cooldown_boost
   categorie: boost
   rarity: common
@@ -158,7 +158,7 @@ cards:
   categorie: land
   label: Accès Montagne
   description: Débloque le land Montagne.
-  icon: /static/assets/img/cards/land_mountain.png
+  icon: /static/assets/img/cards/default_card.png
   type: land_access
   rarity: uncommon
   gameplay:
@@ -218,7 +218,7 @@ cards:
 - key: beach_free_slot
   label: Beach Free Slot
   description: Débloque un slot supplémentaire sur la Plage.
-  icon: /static/assets/img/cards/land_beach_free_slot.png
+  icon: /static/assets/img/cards/default_card.png
   type: land_slot
   rarity: uncommon
   gameplay:
@@ -232,7 +232,7 @@ cards:
 - key: forest_free_slot
   label: Forest Free Slot
   description: Unlock a free slot in the Forest land.
-  icon: /static/assets/img/cards/land_forest_free_slot.png
+  icon: /static/assets/img/cards/default_card.png
   type: land_slot
   rarity: uncommon
   gameplay:
@@ -242,7 +242,7 @@ cards:
 - key: lake_free_slot
   label: Lake Free Slot
   description: Débloque un emplacement supplémentaire sur le Lac.
-  icon: /static/assets/img/cards/land_lake_free_slot.png
+  icon: /static/assets/img/cards/default_card.png
   type: land_slot
   categorie: lands
   rarity: uncommon
@@ -259,7 +259,7 @@ cards:
   description: Ajoute 0.1 a la récolte d'anchois
   type: resource_boost
   rarity: common
-  icon: /static/assets/img/cards/anchovy_boost_1.png
+  icon: /static/assets/img/cards/default_card.png
   enabled: true
   gameplay:
     target_resource: anchovy
