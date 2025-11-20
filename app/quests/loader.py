@@ -14,8 +14,9 @@ QuestTemplate = Dict[str, Any]
 
 # ! Adjust if your project structure is different
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CONFIG_DIR = PROJECT_ROOT / "config"
-QUESTS_YAML_PATH = CONFIG_DIR / "quests.yml"
+APP_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = APP_DIR / "data"
+QUESTS_YAML_PATH = DATA_DIR / "quests.yml"
 
 
 def _build_default_templates() -> Dict[str, QuestTemplate]:
@@ -74,6 +75,7 @@ def load_quest_templates() -> Dict[str, QuestTemplate]:
 
     if not QUESTS_YAML_PATH.exists():
         print("quests.yml introuvable, utilisation des quêtes par défaut.")
+        print(f"Chemin recherché: {QUESTS_YAML_PATH}")
         QUEST_TEMPLATES = _build_default_templates()
         return QUEST_TEMPLATES
 

@@ -23,8 +23,11 @@ quest_templates:
 
     objective_templates:
       - kind: "collect_resource"
+        # IMPORTANT : ici on met les vraies clés de ResourceDef.key
+        # Tu peux décider si tu comptes les branches, le bois ou les deux.
         resource_keys:
-          - "res_wood_branch"
+          - "branch"
+          - "wood"
         quantity_min: 10
         quantity_max: 20
         ignore_boosts: true
@@ -46,7 +49,7 @@ quest_templates:
       en: "Craft some ropes"
 
     description:
-      fr: "Apprends à crafter des cordes à partir de vignes."
+      fr: "Apprends à crafter des cordes à partir de lianes."
       en: "Learn to craft ropes from vines."
 
     sources:
@@ -55,6 +58,7 @@ quest_templates:
 
     objective_templates:
       - kind: "craft_item"
+        # Ici on utilise bien la clé d'item du craft : item_rope
         item_keys:
           - "item_rope"
         quantity_min: 2
@@ -92,9 +96,11 @@ quest_templates:
         quantity_max: 3
 
       - kind: "collect_resource"
+        # Là aussi : vraies clés de resources.yml
         resource_keys:
-          - "res_vine"
-          - "res_wood_branch"
+          - "vine"
+          - "branch"
+          - "wood"
         quantity_min: 15
         quantity_max: 30
         ignore_boosts: true

@@ -15,6 +15,10 @@ from app.models import (
 )
 from app.progression import next_threshold
 from app.craft_defs import CRAFT_DEFS
+import datetime as dt
+
+from app.quests.service import assign_daily_quest_if_needed
+
 
 bp = Blueprint("players", __name__)
 
@@ -261,6 +265,11 @@ def get_state():
         me = _get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
+
+        # --- NEW: ensure daily quest is assigned for today ---
+        now = dt.datetime.utcnow()
+        assign_daily_quest_if_needed(s, me, now=now)
+        s.commit()
 
         # ------------------------------
         # Tiles

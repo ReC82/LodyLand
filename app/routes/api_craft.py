@@ -11,6 +11,7 @@ from flask import Blueprint, jsonify, request
 from app.craft_defs import CRAFT_DEFS
 from app.db import SessionLocal
 from app.models import Player, PlayerCard, ResourceDef, PlayerItem, ResourceStock  # adapte si les noms diffèrent
+from app.quests.service import on_item_crafted
 
 bp = Blueprint("craft", __name__)
 # ---------------------------------------------------------------------------
@@ -390,6 +391,14 @@ def perform_craft():
             session.add(pi)
         else:
             pi.quantity = int(pi.quantity) + output_qty
+            
+        # --- NEW: quest progression for craft_item ---
+        on_item_crafted(
+            session=session,
+            player=player,
+            item_key=item_cfg.get("key"),
+            quantity=output_qty,
+        )
 
         session.commit()
 
