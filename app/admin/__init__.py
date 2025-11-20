@@ -817,6 +817,128 @@ def resource_edit(res_key: str):
         saved=saved,
         unlock_rules_text=unlock_rules_text_default,
     )
+    
+@admin_bp.route("/resources/new", methods=["GET", "POST"])
+@admin_required
+def resource_create():
+    """Créer une nouvelle ressource dans resources.yml."""
+    mapping = load_resources_yaml()  # {key: cfg}
+    errors: list[str] = []
+    saved = False
+
+    # Valeurs par défaut pour GET / ou POST avec erreur
+    form_defaults = {
+        "key": "",
+        "label": "",
+        "description": "",
+        "icon": "",
+        "unlock_min_level": "0",
+        "base_cooldown": "10.0",
+        "base_sell_price": "1",
+        "enabled": True,
+    }
+
+    if request.method == "POST":
+        key = (request.form.get("key") or "").strip()
+        label = (request.form.get("label") or "").strip()
+        description = (request.form.get("description") or "").strip()
+        icon = (request.form.get("icon") or "").strip()
+        unlock_min_level_str = (request.form.get("unlock_min_level") or "").strip()
+        base_cooldown_str = (request.form.get("base_cooldown") or "").strip()
+        base_sell_price_str = (request.form.get("base_sell_price") or "").strip()
+        enabled_str = request.form.get("enabled")  # "on" ou None
+
+        # On garde ce que l'utilisateur a saisi
+        form_defaults.update(
+            {
+                "key": key,
+                "label": label,
+                "description": description,
+                "icon": icon,
+                "unlock_min_level": unlock_min_level_str or "0",
+                "base_cooldown": base_cooldown_str or "10.0",
+                "base_sell_price": base_sell_price_str or "1",
+                "enabled": bool(enabled_str),
+            }
+        )
+
+        # ---- Validation de la key ----
+        if not key:
+            errors.append("Le champ 'Key' est requis.")
+        else:
+            # On impose un format simple : minuscules, chiffres, underscore (wood, branch, magic_stone...)
+            if not re.match(r"^[a-z0-9_]+$", key):
+                errors.append(
+                    "La key doit contenir uniquement des lettres minuscules, "
+                    "chiffres et underscores (ex: wood, magic_stone)."
+                )
+            if key in mapping:
+                errors.append(f"Une ressource avec la key '{key}' existe déjà.")
+
+        if not label:
+            errors.append("Le champ 'Label' est requis.")
+
+        # ---- Conversion numérique ----
+        unlock_min_level = 0
+        base_cooldown = 10.0
+        base_sell_price = 1
+
+        if unlock_min_level_str:
+            try:
+                unlock_min_level = int(unlock_min_level_str)
+            except ValueError:
+                errors.append("unlock_min_level doit être un entier.")
+
+        if base_cooldown_str:
+            try:
+                base_cooldown = float(base_cooldown_str)
+            except ValueError:
+                errors.append("base_cooldown doit être un nombre (float).")
+
+        if base_sell_price_str:
+            try:
+                base_sell_price = int(base_sell_price_str)
+            except ValueError:
+                errors.append("base_sell_price doit être un entier.")
+
+        if not errors:
+            # ---- Construction de la config YAML minimale ----
+            cfg = dict(mapping.get(key) or {})
+
+            cfg["key"] = key
+            cfg["label"] = label
+
+            if description:
+                cfg["description"] = description
+            else:
+                cfg.pop("description", None)
+
+            # Si pas d'icon fournie, on met un chemin par défaut cohérent
+            cfg["icon"] = icon or f"/static/assets/img/resources/{key}.png"
+
+            cfg["unlock_min_level"] = unlock_min_level
+            cfg["base_cooldown"] = base_cooldown
+            cfg["base_sell_price"] = base_sell_price
+            cfg["enabled"] = bool(enabled_str)
+
+            # Pas d'unlock_rules par défaut (tu pourras en ajouter dans l'édition)
+            cfg.pop("unlock_rules", None)
+
+            mapping[key] = cfg
+            save_resources_yaml(mapping)
+            saved = True
+
+            # Redirection vers la fiche d'édition détaillée
+            return redirect(url_for("admin.resource_edit", res_key=key))
+
+    # GET initial ou POST avec erreurs
+    return render_template(
+        "ADMIN_UI/resource_create.html",
+        errors=errors,
+        form=form_defaults,
+        saved=saved,
+    )
+
 
 @admin_bp.get("/lands")
 @admin_required

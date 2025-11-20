@@ -1,5 +1,14 @@
 resources:
 
+- key: anchovy
+  label: Anchois
+  description: Une anchois ... morte, mais elle a l'air commestible.
+  icon: /static/assets/img/resources/anchovy.png
+  unlock_min_level: 2
+  base_cooldown: 40.0
+  base_sell_price: 5
+  enabled: true
+
 - key: branch
   label: Branches
   base_cooldown: 10.0

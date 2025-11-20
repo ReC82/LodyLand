@@ -12,10 +12,14 @@
     </div>
 
     <div>
-      <button class="btn btn-secondary btn-sm" disabled>
-        Ajouter une ressource (à venir)
-      </button>
+      <a
+        href="{{ url_for('admin.resource_create') }}"
+        class="btn btn-secondary btn-sm"
+      >
+        + Nouvelle ressource
+      </a>
     </div>
+
   </div>
 
   <div class="card admin-card mb-4">
