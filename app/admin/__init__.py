@@ -1044,10 +1044,7 @@ def land_create():
                 errors.append("multiplier doit être un nombre (float).")
 
         if not errors:
-            # ---- Construction de la config YAML minimale ----
-            # On conserve la logique :
-            #   slug → "forest"
-            #   key  → "land_forest" (utilisée par les cartes, etc.)
+            # ---- Construction de la config YAML minimale pour le land ----
             key_internal = f"land_{slug}"
 
             cfg = dict(mapping.get(slug) or {})
@@ -1057,7 +1054,6 @@ def land_create():
             cfg["starting_land"] = bool(starting_land_str)
             cfg["slots"] = slots
 
-            # Si pas d'icone donnée, on propose un chemin par défaut basé sur le slug
             cfg["slot_icon"] = (
                 slot_icon or f"static/assets/img/lands/{slug}_slot.png"
             )
@@ -1066,15 +1062,64 @@ def land_create():
             cfg["additional_slot_base_cost_diams"] = base_cost
             cfg["additional_slot_cost_multiplier"] = multiplier
 
-            # On n'impose pas 'tools' ici, tu pourras compléter via YAML ou plus tard via admin avancé
             cfg.setdefault("tools", {})
 
+            # Sauvegarde du land dans lands.yml
             mapping[slug] = cfg
             save_lands_yaml(mapping)
+
+            # ---- Création automatique de la carte d'accès land_<slug> ----
+            try:
+                from . import load_cards_yaml, save_cards_yaml  # si helpers dans ce même module
+            except ImportError:
+                # Si import circulaire, les helpers sont déjà dans ce fichier,
+                # donc on peut les appeler directement sans re-import.
+                pass
+
+            cards_mapping = load_cards_yaml()
+            card_key = key_internal  # ex: "land_mountain"
+
+            if card_key not in cards_mapping:
+                # On crée une carte d'accès minimale,
+                # que tu pourras affiner ensuite dans l'admin "Cartes".
+                card_label = f"Accès {label_fr or label_en or slug.capitalize()}"
+                card_description = (
+                    f"Débloque le land {label_fr or label_en or slug}."
+                )
+
+                card_cfg = {
+                    "key": card_key,
+                    "categorie": "land",
+                    "label": card_label,
+                    "description": card_description,
+                    "icon": f"/static/assets/img/cards/{card_key}.png",
+                    "type": "land_access",
+                    "rarity": "uncommon",
+                    "gameplay": {
+                        "target_land": slug
+                    },
+                    # Prix par défaut très simple : gratuit pour l'instant.
+                    # Tu pourras ajuster dans l'admin des cartes.
+                    "prices": [
+                        {"coins": 0}
+                    ],
+                    "shop": {
+                        "tradable": False,
+                        "giftable": True,
+                        "max_owned": 1,
+                        "enabled": True,
+                    },
+                    # "buy_rules": {}  # tu pourras en ajouter si besoin
+                }
+
+                cards_mapping[card_key] = card_cfg
+                save_cards_yaml(cards_mapping)
+
             saved = True
 
-            # On redirige directement vers l'écran d'édition détaillée
+            # Redirection vers l'écran d'édition détaillée du land
             return redirect(url_for("admin.land_edit", land_key=slug))
+
 
     # GET initial ou POST avec erreurs
     return render_template(

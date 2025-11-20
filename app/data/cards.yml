@@ -154,6 +154,23 @@ cards:
     max_owned: 1
     enabled: true
 
+- key: land_mountain
+  categorie: land
+  label: Accès Montagne
+  description: Débloque le land Montagne.
+  icon: /static/assets/img/cards/land_mountain.png
+  type: land_access
+  rarity: uncommon
+  gameplay:
+    target_land: mountain
+  prices:
+  - coins: 0
+  shop:
+    tradable: false
+    giftable: true
+    max_owned: 1
+    enabled: true
+
 - key: land_village
   categorie: land
   label: Accès Village
