@@ -1,5 +1,12 @@
 {% extends "game_base.html" %}
 
+{% block extra_css %}
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='GAME_UI/css/shop.css') }}"
+  />
+{% endblock %}
+
 {% block title %}Boutique — LodyLand{% endblock %}
 
 {% block content %}
@@ -35,7 +42,6 @@
   </div>
 
 <div class="shop-content">
-  <!-- Onglet Vente -->
   <!-- Onglet Vente -->
   <section id="shopPanelSell" class="shop-panel shop-panel-active">
     <div class="shop-sell-info">
@@ -80,10 +86,35 @@
     </div>
   </section>
 
-  <!-- Onglet Cartes -->
-  <section id="shopPanelCards" class="shop-panel">
-    <div id="shopCardsList"></div>
-  </section>
+<!-- Onglet Cartes -->
+<section id="shopPanelCards" class="shop-panel">
+  <div class="shop-toolbar">
+    <div class="shop-toolbar-left">
+      <label class="shop-filter-label">
+        Rechercher une carte :
+        <input
+          id="shopCardsFilter"
+          type="search"
+          class="shop-filter-input"
+          placeholder="Boost bois, slot forêt..."
+        />
+      </label>
+    </div>
+    <div class="shop-toolbar-right">
+      <select
+        id="shopCardsOwnedFilter"
+        class="shop-filter-input shop-filter-select"
+      >
+        <option value="">Toutes les cartes</option>
+        <option value="unowned">Pas encore possédées</option>
+        <option value="owned">Déjà possédées</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="shopCardsList"></div>
+</section>
+
 </div>
 {% endblock %}
 

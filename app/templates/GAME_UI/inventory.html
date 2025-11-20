@@ -1,5 +1,12 @@
 {% extends "game_base.html" %}
 
+{% block extra_css %}
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='GAME_UI/css/inventory.css') }}"
+  />
+{% endblock %}
+
 {% block title %}Inventaire — LodyLand{% endblock %}
 
 {% block content %}

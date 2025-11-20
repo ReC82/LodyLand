@@ -11,6 +11,8 @@ const SHOP_SELL_PRICE_PER_UNIT = 1; // pour l'instant 1 coin par ressource
 let SHOP_STATE_INVENTORY = [];
 let SHOP_STATE_DEFS_BY_KEY = {};
 
+let SHOP_STATE_CARDS_ALL = [];
+
 function formatPriceOption(price) {
   // price = { coins, diams, resources: { key: qty } }
   if (!price) return "Gratuit";
@@ -348,7 +350,8 @@ async function loadCardShop() {
 
   // On a déjà currentPlayer rempli par /api/me via game_app.js,
   // donc ici pas besoin de recharger le joueur.
-  renderCardShopList(cards);
+  SHOP_STATE_CARDS_ALL = cards;
+  applyCardFilters();
 }
 
 function renderCardShopList(cards) {
@@ -405,41 +408,45 @@ function renderCardShopList(cards) {
         `
         : `<div class="shop-card-price">${priceText}</div>`;
 
-      return `
-        <div class="shop-card-row" data-card-key="${card.key}">
-          <div class="shop-card-main">
-            <div class="shop-card-icon">
-              ${
-                card.icon
-                  ? `<img src="${card.icon}" alt="${card.label}" />`
-                  : "🃏"
-              }
-            </div>
-            <div class="shop-card-text">
-              <div class="shop-card-title">${card.label}</div>
-              <div class="shop-card-desc">${card.description || ""}</div>
-              <div class="shop-card-meta">
-                Type : ${card.type}
-                ${
-                  owned > 0
-                    ? ` • Tu en possèdes <strong>${owned}</strong>`
-                    : ""
-                }
+          return `
+            <div class="shop-card-row ${canBuy ? "" : "shop-card-row-disabled"}" data-card-key="${card.key}">
+              <div class="shop-card-main">
+                <div class="shop-card-icon">
+                  ${
+                    card.icon
+                      ? `<img src="${card.icon}" alt="${card.label}" />`
+                      : "🃏"
+                  }
+                  ${
+                    owned > 0
+                      ? `<div class="shop-card-owned-badge">x${owned}</div>`
+                      : ""
+                  }
+                </div>
+
+                <div class="shop-card-text">
+                  <div class="shop-card-header">
+                    <div class="shop-card-title">${card.label}</div>
+                    <div class="shop-card-type-pill">${card.type || "Carte"}</div>
+                  </div>
+                  <div class="shop-card-desc">
+                    ${card.description || ""}
+                  </div>
+                </div>
+              </div>
+
+              <div class="shop-card-side">
+                ${priceSelectHtml}
+                <button
+                  class="shop-card-buy-btn"
+                  ${canBuy ? "" : "disabled"}
+                >
+                  ${btnLabel}
+                </button>
               </div>
             </div>
-          </div>
+          `;
 
-          <div class="shop-card-side">
-            ${priceSelectHtml}
-            <button
-              class="shop-card-buy-btn"
-              ${canBuy ? "" : "disabled"}
-            >
-              ${btnLabel}
-            </button>
-          </div>
-        </div>
-      `;
     })
     .join("");
 
@@ -544,6 +551,56 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupShopTabs();
   setupShopFilters();
   loadCardShop();
- 
+  setupCardFilters();  
   await loadShop();
 });
+
+function applyCardFilters() {
+  const searchInput = $("shopCardsFilter");
+  const ownedSelect = $("shopCardsOwnedFilter");
+
+  const q = (searchInput?.value || "").trim().toLowerCase();
+  const ownedFilter = ownedSelect?.value || "";
+
+  let list = SHOP_STATE_CARDS_ALL.slice();
+
+  // Filtre texte : label, description, type
+  if (q) {
+    list = list.filter((card) => {
+      const label = (card.label || "").toLowerCase();
+      const desc = (card.description || "").toLowerCase();
+      const type = (card.type || "").toLowerCase();
+      return (
+        label.includes(q) ||
+        desc.includes(q) ||
+        type.includes(q)
+      );
+    });
+  }
+
+  // Filtre statut (possédée / non possédée)
+  if (ownedFilter === "owned") {
+    list = list.filter((c) => (c.owned_qty || 0) > 0);
+  } else if (ownedFilter === "unowned") {
+    list = list.filter((c) => (c.owned_qty || 0) === 0);
+  }
+
+  renderCardShopList(list);
+}
+
+function setupCardFilters() {
+  const searchInput = $("shopCardsFilter");
+  const ownedSelect = $("shopCardsOwnedFilter");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      applyCardFilters();
+    });
+  }
+
+  if (ownedSelect) {
+    ownedSelect.addEventListener("change", () => {
+      applyCardFilters();
+    });
+  }
+}
