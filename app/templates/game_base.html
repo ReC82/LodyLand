@@ -81,6 +81,12 @@
             Chargement...
           </div>
         </div>
+
+        <!-- Bouton Quêtes dans le HUD -->
+        <button id="btn-quests" class="gh-btn gh-btn-quests">
+          <span class="gh-btn-icon">📜</span>
+          <span class="gh-btn-label">Quêtes</span>
+        </button>
        
         <button class="gh-menu-btn" id="hud-menu-btn" type="button">☰</button>
       </div>
@@ -170,6 +176,23 @@
         </button>
       </div>
     </div>
+
+<!-- Quests Panel -->
+<div id="quests-panel" class="quests-panel hidden">
+  <div class="quests-panel-header">
+    <h2 class="quests-title">Quêtes</h2>
+    <button id="btn-quests-close" class="quests-close-btn">&times;</button>
+  </div>
+
+  <div class="quests-filters">
+    <button class="qfilter-btn qfilter-active" data-filter="running">En cours</button>
+    <button class="qfilter-btn" data-filter="completed">Terminées</button>
+  </div>
+
+  <div id="quests-list" class="quests-list">
+    <!-- rempli par JS -->
+  </div>
+</div>
 
     <!-- ===========================
         Craft Modal
@@ -272,6 +295,7 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/craft_app.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='GAME_UI/js/quests_app.js') }}"></script>
 
     {# Scripts spécifiques à certaines pages (shop, lands spéciaux, etc.) #}
     {% block extra_scripts %}{% endblock %}

@@ -938,6 +938,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupGameMenu();  
   setupDailyModal();
   refreshDailyStatus();
+  initQuestsUI()
   if (typeof initCraftUI === "function") {
     initCraftUI();
   }
