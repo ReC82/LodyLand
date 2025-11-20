@@ -1,0 +1,195 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Éditer carte {{ card_key }}{% endblock %}
+
+{% block content %}
+  <a
+    href="{{ url_for('admin.cards_list') }}"
+    class="btn btn-sm btn-admin-back mb-3"
+  >
+    ← Retour à la liste des cartes
+  </a>
+
+  <h1 class="h3 mb-3">
+    Éditer la carte <code>{{ card_key }}</code>
+  </h1>
+
+  {% if saved %}
+    <div class="alert alert-success py-2">
+      Modifications sauvegardées dans <code>cards.yml</code>.
+    </div>
+  {% endif %}
+
+  {% if errors %}
+    <div class="alert alert-danger py-2">
+      <ul class="mb-0">
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="card admin-card">
+    <div class="card-body">
+      <!-- Key (read-only) -->
+      <div class="mb-3">
+        <label class="form-label">Key (lecture seule)</label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          value="{{ card_key }}"
+          readonly
+        />
+      </div>
+
+      <!-- Label / Categorie -->
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label">Label</label>
+          <input
+            type="text"
+            name="label"
+            class="form-control form-control-sm"
+            value="{{ card.label or '' }}"
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Catégorie (ex: boost, land, ...)</label>
+          <input
+            type="text"
+            name="categorie"
+            class="form-control form-control-sm"
+            value="{{ card.categorie or '' }}"
+          />
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3 mt-3">
+        <label class="form-label">Description</label>
+        <textarea
+          name="description"
+          class="form-control form-control-sm"
+          rows="3"
+        >{{ card.description or '' }}</textarea>
+      </div>
+
+      <!-- Type / Rarity / Icon / Enabled -->
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Type</label>
+          <input
+            type="text"
+            name="type"
+            class="form-control form-control-sm"
+            value="{{ card.type or '' }}"
+            placeholder="ex: resource_boost, land_access..."
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Rareté</label>
+          <input
+            type="text"
+            name="rarity"
+            class="form-control form-control-sm"
+            value="{{ card.rarity or '' }}"
+            placeholder="common, uncommon, rare..."
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Icon (path)</label>
+          <input
+            type="text"
+            name="icon"
+            class="form-control form-control-sm"
+            value="{{ card.icon or '' }}"
+            placeholder="/static/assets/img/cards/..."
+          />
+        </div>
+        <div class="col-md-2 d-flex align-items-center">
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="enabled"
+              id="enabledCheck"
+              {% if card.enabled is not defined or card.enabled %}checked{% endif %}
+            />
+            <label class="form-check-label" for="enabledCheck">
+              Activée
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-secondary my-4" />
+
+      <!-- Advanced YAML fields -->
+      <h2 class="h5 mb-3">Paramètres avancés (YAML)</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Gameplay (dict YAML)</label>
+        <textarea
+          name="gameplay"
+          class="form-control form-control-sm font-monospace"
+          rows="5"
+          placeholder="# ex:
+# target_resource: wood
+# boost:
+#   type: addition
+#   amount: 0.1"
+        >{{ gameplay_text }}</textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Prices (liste YAML)</label>
+        <textarea
+          name="prices"
+          class="form-control form-control-sm font-monospace"
+          rows="5"
+          placeholder="# ex:
+# - coins: 50
+# - coins: 100
+#   diams: 2"
+        >{{ prices_text }}</textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Shop (dict YAML)</label>
+        <textarea
+          name="shop"
+          class="form-control form-control-sm font-monospace"
+          rows="5"
+          placeholder="# ex:
+# tradable: false
+# giftable: true
+# max_owned: 5
+# enabled: true"
+        >{{ shop_text }}</textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Buy rules (dict YAML)</label>
+        <textarea
+          name="buy_rules"
+          class="form-control form-control-sm font-monospace"
+          rows="5"
+          placeholder="# ex:
+# min_level: 5
+# require_cards:
+#   - some_other_card"
+        >{{ buy_rules_text }}</textarea>
+      </div>
+
+      <p class="text-muted mb-3">
+        Laisse un champ avancé vide pour supprimer la clé correspondante
+        dans le YAML.
+      </p>
+
+      <button type="submit" class="btn btn-primary">
+        Sauvegarder
+      </button>
+    </div>
+  </form>
+{% endblock %}

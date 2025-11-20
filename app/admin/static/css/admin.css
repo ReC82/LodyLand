@@ -59,3 +59,8 @@ body.admin-body .container {
   color: #020617;
 }
 
+/* Make advanced YAML textareas easier to read */
+textarea.font-monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+}

@@ -70,22 +70,66 @@ def load_cards_yaml() -> dict:
 
 
 
-def save_cards_yaml(data: dict) -> None:
-    """Écrit tout le mapping de cartes dans cards.yml.
+def save_cards_yaml(mapping: dict) -> None:
+    """Write the cards mapping back to cards.yml with a stable, readable layout.
 
-    - Écrase le fichier
-    - Dump propre (clé triées, block style)
+    Expected mapping:
+      { "wood_boost_1": {...}, "branch_boost_1": {...}, ... }
+
+    File format:
+      cards:
+        - key: wood_boost_1
+          ...
+        - key: branch_boost_1
+          ...
     """
     CARDS_YAML_PATH.parent.mkdir(parents=True, exist_ok=True)
 
+    # Build a list of card dicts, each containing its "key" field.
+    # We sort by (type, key) to keep a logical, stable order.
+    cards_list: list[dict] = []
+
+    def sort_key(item: tuple[str, dict]) -> tuple[str, str]:
+        k, cfg = item
+        if not isinstance(cfg, dict):
+            cfg = {}
+        ctype = (cfg.get("type") or "").lower()
+        return (ctype, k)
+
+    for key, card_cfg in sorted(mapping.items(), key=sort_key):
+        if not isinstance(card_cfg, dict):
+            card_cfg = {}
+
+        # Ensure "key" field is present and matches the mapping key
+        card_cfg = dict(card_cfg)  # shallow copy
+        card_cfg["key"] = key
+
+        cards_list.append(card_cfg)
+
+    wrapper = {"cards": cards_list}
+
+    # Dump once to a string so we can post-process for visual tweaks
+    yaml_str = yaml.safe_dump(
+        wrapper,
+        allow_unicode=True,
+        sort_keys=False,          # keep "cards" first
+        default_flow_style=False, # block style (multi-line)
+        indent=2,                 # 2 spaces indentation
+    )
+
+    # Add a blank line between each list item for readability:
+    #   - key: ...
+    # devient:
+    #   (blank line)
+    #   - key: ...
+    #
+    # This is a small cosmetic hack over PyYAML output.
+    yaml_str = yaml_str.replace("\n- ", "\n\n- ")
+
     with CARDS_YAML_PATH.open("w", encoding="utf-8") as f:
-        yaml.safe_dump(
-            data,
-            f,
-            allow_unicode=True,
-            sort_keys=True,
-            default_flow_style=False,
-        )
+        f.write(yaml_str)
+
+
 
 def admin_required(view_func):
     """
@@ -255,3 +299,193 @@ def cards_list():
         db_only_cards=db_only_cards,
         yaml_path=str(CARDS_YAML_PATH),
     )
+
+@admin_bp.route("/cards/<card_key>/edit", methods=["GET", "POST"])
+@admin_required
+def card_edit(card_key: str):
+    """Edit a single card from cards.yml by its key."""
+    card_key = (card_key or "").strip()
+    if not card_key:
+        abort(404)
+
+    # Load mapping {key: cfg}
+    mapping = load_cards_yaml()
+    card_cfg = mapping.get(card_key)
+    if card_cfg is None or not isinstance(card_cfg, dict):
+        abort(404)
+
+    errors: list[str] = []
+    saved = False
+
+    # Prepare default advanced YAML texts from current config (for GET)
+    def dump_yaml_block(value) -> str:
+        """Return a compact YAML block for textarea display."""
+        if value is None:
+            return ""
+        try:
+            txt = yaml.safe_dump(
+                value,
+                allow_unicode=True,
+                sort_keys=False,
+                default_flow_style=False,
+                indent=2,
+            ).strip()
+        except Exception:
+            return ""
+        return txt
+
+    # Defaults from current card config
+    gameplay_text_default = dump_yaml_block(card_cfg.get("gameplay"))
+    prices_text_default = dump_yaml_block(card_cfg.get("prices"))
+    shop_text_default = dump_yaml_block(card_cfg.get("shop"))
+    buy_rules_text_default = dump_yaml_block(card_cfg.get("buy_rules"))
+
+    # If POST, use form values (and re-validate)
+    if request.method == "POST":
+        # ----- Simple scalar fields -----
+        label = (request.form.get("label") or "").strip()
+        categorie = (request.form.get("categorie") or "").strip()
+        description = (request.form.get("description") or "").strip()
+        ctype = (request.form.get("type") or "").strip()
+        rarity = (request.form.get("rarity") or "").strip()
+        icon = (request.form.get("icon") or "").strip()
+        enabled_str = request.form.get("enabled")  # "on" or None
+
+        # ----- Advanced YAML text fields -----
+        gameplay_text = (request.form.get("gameplay") or "").strip()
+        prices_text = (request.form.get("prices") or "").strip()
+        shop_text = (request.form.get("shop") or "").strip()
+        buy_rules_text = (request.form.get("buy_rules") or "").strip()
+
+        # Basic required validation
+        if not label:
+            errors.append("Le champ 'Label' est requis.")
+        if not ctype:
+            errors.append("Le champ 'Type' est requis.")
+        # (Tu peux renforcer les règles ici si tu veux)
+
+        # ----- Parse advanced YAML blocks -----
+        parsed_gameplay = card_cfg.get("gameplay")
+        parsed_prices = card_cfg.get("prices")
+        parsed_shop = card_cfg.get("shop")
+        parsed_buy_rules = card_cfg.get("buy_rules")
+
+        def parse_yaml_field(text: str, field_name: str):
+            """Parse YAML from textarea, return (value, error_msg_or_None)."""
+            if not text:
+                return None, None  # empty => remove field
+            try:
+                val = yaml.safe_load(text)
+            except yaml.YAMLError as exc:
+                return None, f"YAML invalide dans '{field_name}': {exc}"
+            return val, None
+
+        # gameplay
+        val, err = parse_yaml_field(gameplay_text, "gameplay")
+        if err:
+            errors.append(err)
+        else:
+            parsed_gameplay = val
+
+        # prices
+        val, err = parse_yaml_field(prices_text, "prices")
+        if err:
+            errors.append(err)
+        else:
+            parsed_prices = val
+
+        # shop
+        val, err = parse_yaml_field(shop_text, "shop")
+        if err:
+            errors.append(err)
+        else:
+            parsed_shop = val
+
+        # buy_rules
+        val, err = parse_yaml_field(buy_rules_text, "buy_rules")
+        if err:
+            errors.append(err)
+        else:
+            parsed_buy_rules = val
+
+        if not errors:
+            # ----- Apply changes to card config -----
+            updated = dict(card_cfg)
+
+            # Scalar fields
+            updated["key"] = card_key
+            updated["label"] = label
+            if categorie:
+                updated["categorie"] = categorie
+            else:
+                updated.pop("categorie", None)
+
+            if description:
+                updated["description"] = description
+            else:
+                updated.pop("description", None)
+
+            if ctype:
+                updated["type"] = ctype
+            else:
+                updated.pop("type", None)
+
+            if rarity:
+                updated["rarity"] = rarity
+            else:
+                updated.pop("rarity", None)
+
+            if icon:
+                updated["icon"] = icon
+            else:
+                updated.pop("icon", None)
+
+            updated["enabled"] = bool(enabled_str)
+
+            # Advanced YAML fields: only keep if not None
+            if parsed_gameplay is not None:
+                updated["gameplay"] = parsed_gameplay
+            else:
+                updated.pop("gameplay", None)
+
+            if parsed_prices is not None:
+                updated["prices"] = parsed_prices
+            else:
+                updated.pop("prices", None)
+
+            if parsed_shop is not None:
+                updated["shop"] = parsed_shop
+            else:
+                updated.pop("shop", None)
+
+            if parsed_buy_rules is not None:
+                updated["buy_rules"] = parsed_buy_rules
+            else:
+                updated.pop("buy_rules", None)
+
+            # Save in mapping + file
+            mapping[card_key] = updated
+            save_cards_yaml(mapping)
+
+            card_cfg = updated
+            saved = True
+
+            # Après sauvegarde, on veut réafficher le YAML "propre"
+            gameplay_text_default = dump_yaml_block(card_cfg.get("gameplay"))
+            prices_text_default = dump_yaml_block(card_cfg.get("prices"))
+            shop_text_default = dump_yaml_block(card_cfg.get("shop"))
+            buy_rules_text_default = dump_yaml_block(card_cfg.get("buy_rules"))
+
+    # GET initial, ou POST avec erreurs / succès
+    return render_template(
+        "ADMIN_UI/card_edit.html",
+        card_key=card_key,
+        card=card_cfg,
+        errors=errors,
+        saved=saved,
+        gameplay_text=gameplay_text_default,
+        prices_text=prices_text_default,
+        shop_text=shop_text_default,
+        buy_rules_text=buy_rules_text_default,
+    )
+

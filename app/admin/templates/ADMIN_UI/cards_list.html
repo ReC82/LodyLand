@@ -62,12 +62,14 @@
               <span class="badge bg-warning text-dark">YAML only</span>
             {% endif %}
           </td>
-          <td class="text-end">
-            <!-- Future: lien vers page d'édition -->
-            <button class="btn btn-outline-light btn-sm" disabled>
-              Edit
-            </button>
-          </td>
+            <td class="text-end">
+            <a
+                href="{{ url_for('admin.card_edit', card_key=c.key) }}"
+                class="btn btn-outline-light btn-sm"
+            >
+                Edit
+            </a>
+            </td>
         </tr>
       {% endfor %}
     </tbody>
