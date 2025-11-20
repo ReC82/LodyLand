@@ -492,3 +492,36 @@ def debug_create_daily_quest_for_player(player_id: int, template_key: str) -> No
             f"[quests_debug] Created quest {quest.id} for player {player_id} "
             f"from template '{template_key}' with {len(quest.objectives)} objectives."
         )
+
+def serialize_quest(quest: PlayerQuest) -> dict:
+    """
+    Convert a PlayerQuest SQLAlchemy object into a clean JSON dict
+    suitable for frontend consumption.
+    """
+    return {
+        "id": quest.id,
+        "template_key": quest.template_key,
+        "quest_type": quest.quest_type,
+        "source": quest.source,
+        "title_fr": quest.title_fr,
+        "title_en": quest.title_en,
+        "description_fr": quest.description_fr,
+        "description_en": quest.description_en,
+        "status": quest.status,
+        "rewards": quest.rewards_json or {},
+
+        # Objectives = list
+        "objectives": [
+            {
+                "index": obj.index_in_quest,
+                "kind": obj.kind,
+                "resource_key": obj.resource_key,
+                "item_key": obj.item_key,
+                "current": obj.current_value,
+                "target": obj.target_value,
+                "ignore_boosts": obj.ignore_boosts,
+                "consecutive_required": obj.consecutive_required,
+            }
+            for obj in quest.objectives
+        ]
+    }
