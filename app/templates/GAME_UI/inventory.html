@@ -67,8 +67,21 @@
     <section id="invPanelCards" class="inv-panel">
       <div class="inv-toolbar">
         <div class="inv-toolbar-left">
+
           <label class="inv-filter-label">
-            Filtrer :
+            Type :
+            <select id="invCardTypeFilter" class="inv-filter-select">
+              <option value="all">Tous les types</option>
+              <option value="land_access">Lands</option>
+              <option value="boost">Boosts</option>
+              <option value="recipe">Recettes</option>
+              <option value="building">Bâtiments</option>
+              <!-- ajoute / adapte les valeurs selon tes card.type réels -->
+            </select>
+          </label>
+
+          <label class="inv-filter-label">
+            Rechercher :
             <input
               id="invCardFilter"
               type="text"
@@ -95,6 +108,7 @@
         Tu n'as pas encore de cartes.
       </div>
     </section>
+
   </div>
 </div>
 
