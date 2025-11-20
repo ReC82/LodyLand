@@ -1,0 +1,14 @@
+- key: forestry
+  label: Bûcheronnage
+  description: Maîtrise de la récolte du bois.
+  icon: /static/assets/img/skills/forestry.png
+
+- key: mining
+  label: Minage
+  description: Expertise dans l'extraction de ressources minérales.
+  icon: /static/assets/img/skills/mining.png
+
+- key: fishing
+  label: Pêche
+  description: Aptitude de pêche dans les lacs et rivières.
+  icon: /static/assets/img/skills/fishing.png

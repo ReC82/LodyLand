@@ -1,0 +1,48 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Levels{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Levels (levels.yml)</h1>
+    <a href="{{ url_for('admin.level_new') }}" class="btn btn-sm btn-success">
+      + Ajouter un niveau
+    </a>
+  </div>
+
+  <p class="text-muted">
+    Les niveaux sont chargés depuis <code>app/data/levels.yml</code>.
+  </p>
+
+  {% if not levels %}
+    <div class="alert alert-warning">
+      Aucun niveau défini pour l'instant dans <code>levels.yml</code>.
+    </div>
+  {% else %}
+    <table class="table table-sm table-dark table-striped align-middle">
+      <thead>
+        <tr>
+          <th style="width: 80px;">Level</th>
+          <th style="width: 140px;">XP requise</th>
+          <th>Récompenses (résumé)</th>
+          <th style="width: 120px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lvl in levels %}
+          <tr onclick="window.location='{{ url_for('admin.level_edit', level_no=lvl.level) }}'" style="cursor: pointer;">
+            <td>#{{ lvl.level }}</td>
+            <td>{{ lvl.xp_required }}</td>
+            <td>{{ lvl.summary }}</td>
+            <td>
+              <a href="{{ url_for('admin.level_edit', level_no=lvl.level) }}"
+                 class="btn btn-sm btn-outline-light">
+                Éditer
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
