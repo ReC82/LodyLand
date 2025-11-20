@@ -9,16 +9,28 @@
     window.LAND_NAME = "Lac";
   </script>
 
-  <div class="land-container lake-land">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <h1 class="h3 mb-0">🌊 Lac</h1>
-        <small class="text-muted">
-          {{ state.total_slots }} emplacements ({{ state.base_slots }} de base, {{ state.extra_slots }} bonus)
-          – Fouille avec les mains : poissons, algues, etc. (à définir).
-        </small>
+    <div class="land-container forest-land">
+    <div class="land-header d-flex justify-content-between align-items-center mb-3">
+      <div class="land-logo-block">
+        {% if land_logo %}
+          <img
+            src="{{ url_for('static', filename=land_logo.replace('static/', '')) }}"
+            alt="{{ land_label }}"
+            class="land-logo-img"
+          />
+        {% else %}
+          <h1 class="h3 mb-0">🌊 {{ land_label }}</h1>
+        {% endif %}
       </div>
-      <a href="{{ url_for('frontend.lands_select') }}" class="btn btn-outline-secondary btn-sm">⬅ Retour</a>
+
+      <!-- Bouton retour : flèche seule vers /lands -->
+      <a
+        href="{{ url_for('frontend.lands_select') }}"
+        class="btn btn-outline-secondary btn-sm land-back-btn"
+        aria-label="Retour à la sélection des lands"
+      >
+        ←
+      </a>
     </div>
 
     <!-- Grille des slots -->

@@ -353,7 +353,8 @@ cards:
 
 ##### SLOTS CARDS #####
 
-  - key: land_forest_free_slot
+  #- key: land_forest_free_slot
+  - key: forest_free_slot
     label: "Forest Free Slot"
     description: "Unlock a free slot in the Forest land."
     icon: "/static/assets/img/cards/land_forest_free_slot.png"
@@ -365,7 +366,7 @@ cards:
       slots: 1         # combien de slots gratuits on ajoute
 
   # Carte free slot pour la plage
-  - key: land_beach_free_slot
+  - key: beach_free_slot
     label: "Beach Free Slot"
     description: "Débloque un emplacement supplémentaire sur la Plage."
     icon: "/static/assets/img/cards/land_beach_free_slot.png"
@@ -378,7 +379,7 @@ cards:
     shop: {}
     enabled: true
 
-  - key: land_lake_free_slot
+  - key: lake_free_slot
     label: "Lake Free Slot"
     description: "Débloque un emplacement supplémentaire sur le Lac."
     icon: "/static/assets/img/cards/land_lake_free_slot.png"

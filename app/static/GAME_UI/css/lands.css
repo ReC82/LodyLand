@@ -212,3 +212,28 @@
 .loot-toast-name {
   opacity: 0.9;
 }
+
+/* Header des lands */
+.land-header {
+  margin-top: 8px;
+}
+
+/* Logo du land */
+.land-logo-img {
+  height: 250px;
+  max-width: 320px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Bouton retour : flèche ronde */
+.land-back-btn {
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}

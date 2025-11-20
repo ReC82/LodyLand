@@ -209,6 +209,11 @@ def land_forest():
         # État du land (base_slots, extra_slots, total_slots, next_cost, slot_icon, ...)
         state = get_player_land_state(session, player.id, "forest")
 
+        # Config du land (pour logo + label) depuis lands.yml
+        conf = get_land_def("forest") or {}
+        land_logo = conf.get("logo")  # "static/assets/img/lands/forest_logo.png"
+        land_label = conf.get("label_fr") or conf.get("label_en") or "Forêt"
+
         # Le joueur possède-t-il une carte free slot pour la forêt ?
         free_card_key = "land_forest_free_slot"
         has_free_slot_card = (
@@ -226,6 +231,8 @@ def land_forest():
             "GAME_UI/lands/forest.html",
             state=state,
             has_free_slot_card=has_free_slot_card,
+            land_logo=land_logo,
+            land_label=land_label,
         )
     finally:
         session.close()
@@ -254,6 +261,11 @@ def land_beach():
 
         # Slots + coût du prochain slot pour CE joueur sur CE land
         state = get_player_land_state(session, player.id, "beach")
+        
+                # Config du land (pour logo + label) depuis lands.yml
+        conf = get_land_def("beach") or {}
+        land_logo = conf.get("logo")  # "static/assets/img/lands/beach_logo.png"
+        land_label = conf.get("label_fr") or conf.get("label_en") or "Plage"
 
         # Possède-t-il une carte "Beach Free Slot" ?
         free_card_key = "land_beach_free_slot"
@@ -272,6 +284,8 @@ def land_beach():
             "GAME_UI/lands/beach.html",
             state=state,
             has_free_slot_card=has_free_slot_card,
+            land_logo=land_logo,
+            land_label=land_label,
         )
     finally:
         session.close()
@@ -299,6 +313,11 @@ def land_lake():
 
         # État du land (slots de base + bonus + coût prochain slot)
         state = get_player_land_state(session, player.id, "lake")
+        
+                # Config du land (pour logo + label) depuis lands.yml
+        conf = get_land_def("lake") or {}
+        land_logo = conf.get("logo")  # "static/assets/img/lands/lake_logo.png"
+        land_label = conf.get("label_fr") or conf.get("label_en") or "Lac"
 
         # Possède-t-il une carte Lake Free Slot ?
         free_card_key = "land_lake_free_slot"
@@ -317,6 +336,8 @@ def land_lake():
             "GAME_UI/lands/lake.html",
             state=state,
             has_free_slot_card=has_free_slot_card,
+            land_logo=land_logo,
+            land_label=land_label,
         )
     finally:
         session.close()
