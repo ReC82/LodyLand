@@ -1,10 +1,18 @@
 # app/admin/__init__.py
 from functools import wraps
 
-from flask import Blueprint, current_app, redirect, url_for, abort, render_template, request
+from flask import (
+    Blueprint, current_app, redirect, 
+    url_for, abort, render_template, request)
 from app.db import SessionLocal
 from app.auth import get_current_player
-from app.models import Player, PlayerCard, CardDef
+from app.models import (
+    Player,
+    PlayerCard,
+    CardDef,
+    ResourceStock,
+    ResourceDef,
+)
 
 # Blueprint for the admin panel
 admin_bp = Blueprint(
@@ -84,7 +92,7 @@ def players_list():
 @admin_required
 def player_detail(player_id: int):
     """
-    Show player details and unlocked cards.
+    Show player details, unlocked cards, and resource stocks.
     """
     session = SessionLocal()
     try:
@@ -93,8 +101,7 @@ def player_detail(player_id: int):
         if not player:
             abort(404)
 
-        # Load all PlayerCard rows for this player
-        # and join with CardDef to get label/icon/type
+        # Load all PlayerCard rows for this player + CardDef metadata
         cards = (
             session.query(PlayerCard, CardDef)
             .outerjoin(
@@ -106,11 +113,23 @@ def player_detail(player_id: int):
             .all()
         )
 
+        # Load resource stocks for this player + ResourceDef metadata
+        resources = (
+            session.query(ResourceStock, ResourceDef)
+            .outerjoin(
+                ResourceDef,
+                ResourceDef.key == ResourceStock.resource,
+            )
+            .filter(ResourceStock.player_id == player_id)
+            .order_by(ResourceDef.label.asc().nulls_last(), ResourceStock.resource.asc())
+            .all()
+        )
+
         return render_template(
             "ADMIN_UI/player_detail.html",
             player=player,
             cards=cards,
+            resources=resources,
         )
     finally:
         session.close()
-        

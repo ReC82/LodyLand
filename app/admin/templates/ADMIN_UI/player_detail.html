@@ -87,4 +87,29 @@
   {% if not cards %}
     <p class="text-muted">Aucune carte débloquée pour ce joueur.</p>
   {% endif %}
+
+  <h2 class="h4 mb-3 mt-4">Ressources du joueur</h2>
+
+  <table class="table table-sm table-dark table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Label</th>
+        <th>Quantité</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rs, rd in resources %}
+        <tr>
+          <td>{{ rs.resource }}</td>
+          <td>{{ rd.label if rd else "-" }}</td>
+          <td>{{ rs.qty }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not resources %}
+    <p class="text-muted">Aucune ressource enregistrée pour ce joueur.</p>
+  {% endif %}  
 {% endblock %}
