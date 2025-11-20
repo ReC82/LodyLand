@@ -1,0 +1,151 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Éditer land {{ land_key }}{% endblock %}
+
+{% block content %}
+  <a
+    href="{{ url_for('admin.lands_list') }}"
+    class="btn btn-sm btn-admin-back mb-3"
+  >
+    ← Retour à la liste des lands
+  </a>
+
+  <h1 class="h3 mb-3">
+    Éditer le land <code>{{ land_key }}</code>
+  </h1>
+
+  {% if saved %}
+    <div class="alert alert-success py-2">
+      Modifications sauvegardées dans <code>lands.yml</code>.
+    </div>
+  {% endif %}
+
+  {% if errors %}
+    <div class="alert alert-danger py-2">
+      <ul class="mb-0">
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="card admin-card">
+    <div class="card-body">
+      <!-- Slug (read-only) -->
+      <div class="mb-3">
+        <label class="form-label">Slug (lecture seule)</label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          value="{{ land_key }}"
+          readonly
+        />
+      </div>
+
+      <!-- Label FR / EN -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Label FR</label>
+          <input
+            type="text"
+            name="label_fr"
+            class="form-control form-control-sm"
+            value="{{ land.label_fr or '' }}"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Label EN</label>
+          <input
+            type="text"
+            name="label_en"
+            class="form-control form-control-sm"
+            value="{{ land.label_en or '' }}"
+          />
+        </div>
+      </div>
+
+      <!-- Starting land / Slots -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label">Slots (de base)</label>
+          <input
+            type="number"
+            name="slots"
+            class="form-control form-control-sm"
+            value="{{ land.slots or 0 }}"
+          />
+        </div>
+        <div class="col-md-3 d-flex align-items-center">
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="starting_land"
+              id="startingCheck"
+              {% if land.starting_land %}checked{% endif %}
+            />
+            <label class="form-check-label" for="startingCheck">
+              Starting land (donné à l'inscription)
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icones -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-6">
+          <label class="form-label">Slot icon (path)</label>
+          <input
+            type="text"
+            name="slot_icon"
+            class="form-control form-control-sm"
+            value="{{ land.slot_icon or '' }}"
+            placeholder="static/assets/img/lands/forest_slot.png"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Logo (path)</label>
+          <input
+            type="text"
+            name="logo"
+            class="form-control form-control-sm"
+            value="{{ land.logo or '' }}"
+            placeholder="static/assets/img/lands/forest_logo.png"
+          />
+        </div>
+      </div>
+
+      <!-- Cost + multiplier -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-4">
+          <label class="form-label">Base cost slot (diams)</label>
+          <input
+            type="number"
+            name="base_cost"
+            class="form-control form-control-sm"
+            value="{{ land.additional_slot_base_cost_diams or 0 }}"
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Cost multiplier</label>
+          <input
+            type="text"
+            name="multiplier"
+            class="form-control form-control-sm"
+            value="{{ land.additional_slot_cost_multiplier or 1 }}"
+          />
+        </div>
+      </div>
+
+      <p class="text-muted mt-3 mb-3">
+        Les paramètres avancés (section <code>tools:</code> et loot)
+        ne sont pas éditables ici et restent inchangés dans le YAML.
+      </p>
+
+      <button type="submit" class="btn btn-primary">
+        Sauvegarder
+      </button>
+    </div>
+  </form>
+{% endblock %}

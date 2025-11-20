@@ -1,0 +1,138 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Nouvelle carte{% endblock %}
+
+{% block content %}
+  <a
+    href="{{ url_for('admin.cards_list') }}"
+    class="btn btn-sm btn-admin-back mb-3"
+  >
+    ← Retour à la liste des cartes
+  </a>
+
+  <h1 class="h3 mb-3">
+    Créer une nouvelle carte
+  </h1>
+
+  {% if errors %}
+    <div class="alert alert-danger py-2">
+      <ul class="mb-0">
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="card admin-card">
+    <div class="card-body">
+      <!-- Key -->
+      <div class="mb-3">
+        <label class="form-label">
+          Key (identifiant interne)
+        </label>
+        <input
+          type="text"
+          name="key"
+          class="form-control form-control-sm"
+          value="{{ form.key }}"
+          placeholder="wood_boost_2, land_mountain, global_xp_boost_2..."
+        />
+        <div class="form-text">
+          Utilisé partout dans le jeu (YAML, DB, logique Python).
+        </div>
+      </div>
+
+      <!-- Categorie / Label -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Catégorie (ex: boost, land, chest...)</label>
+          <input
+            type="text"
+            name="categorie"
+            class="form-control form-control-sm"
+            value="{{ form.categorie }}"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Label</label>
+          <input
+            type="text"
+            name="label"
+            class="form-control form-control-sm"
+            value="{{ form.label }}"
+          />
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3 mt-3">
+        <label class="form-label">Description (optionnel)</label>
+        <textarea
+          name="description"
+          class="form-control form-control-sm"
+          rows="3"
+        >{{ form.description }}</textarea>
+      </div>
+
+      <!-- Type / Rarity / Icon / Enabled -->
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Type</label>
+          <input
+            type="text"
+            name="type"
+            class="form-control form-control-sm"
+            value="{{ form.type }}"
+            placeholder="resource_boost, land_access, xp_boost..."
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Rareté</label>
+          <input
+            type="text"
+            name="rarity"
+            class="form-control form-control-sm"
+            value="{{ form.rarity }}"
+            placeholder="common, uncommon, rare..."
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Icon (path)</label>
+          <input
+            type="text"
+            name="icon"
+            class="form-control form-control-sm"
+            value="{{ form.icon }}"
+            placeholder="/static/assets/img/cards/&lt;key&gt;.png"
+          />
+        </div>
+        <div class="col-md-2 d-flex align-items-center">
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="enabled"
+              id="enabledCheck"
+              {% if form.enabled %}checked{% endif %}
+            />
+            <label class="form-check-label" for="enabledCheck">
+              Activée
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-muted mt-3 mb-3">
+        Une configuration minimale sera créée (prix par défaut, shop activé).
+        Tu pourras ensuite éditer les champs avancés (<code>gameplay</code>,
+        <code>prices</code>, <code>shop</code>, <code>buy_rules</code>) dans
+        l'écran d'édition de la carte.
+      </p>
+
+      <button type="submit" class="btn btn-primary">
+        Créer la carte
+      </button>
+    </div>
+  </form>
+{% endblock %}

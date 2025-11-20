@@ -1,0 +1,135 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Nouvelle ressource{% endblock %}
+
+{% block content %}
+  <a
+    href="{{ url_for('admin.resources_list') }}"
+    class="btn btn-sm btn-admin-back mb-3"
+  >
+    ← Retour à la liste des ressources
+  </a>
+
+  <h1 class="h3 mb-3">
+    Créer une nouvelle ressource
+  </h1>
+
+  {% if errors %}
+    <div class="alert alert-danger py-2">
+      <ul class="mb-0">
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="card admin-card">
+    <div class="card-body">
+      <!-- Key -->
+      <div class="mb-3">
+        <label class="form-label">
+          Key (identifiant interne)
+        </label>
+        <input
+          type="text"
+          name="key"
+          class="form-control form-control-sm"
+          value="{{ form.key }}"
+          placeholder="wood, branch, magic_stone..."
+        />
+        <div class="form-text">
+          Utilisé dans tout le jeu (ex: <code>wood</code>, <code>branch</code>, ...).
+        </div>
+      </div>
+
+      <!-- Label / Description -->
+      <div class="mb-3">
+        <label class="form-label">Label</label>
+        <input
+          type="text"
+          name="label"
+          class="form-control form-control-sm"
+          value="{{ form.label }}"
+          placeholder="Bois, Branches magiques..."
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description (optionnel)</label>
+        <textarea
+          name="description"
+          class="form-control form-control-sm"
+          rows="3"
+        >{{ form.description }}</textarea>
+      </div>
+
+      <!-- Icon + paramètres de jeu -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Icon (path)</label>
+          <input
+            type="text"
+            name="icon"
+            class="form-control form-control-sm"
+            value="{{ form.icon }}"
+            placeholder="/static/assets/img/resources/&lt;key&gt;.png"
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Unlock min level</label>
+          <input
+            type="number"
+            name="unlock_min_level"
+            class="form-control form-control-sm"
+            value="{{ form.unlock_min_level }}"
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Base cooldown (sec)</label>
+          <input
+            type="text"
+            name="base_cooldown"
+            class="form-control form-control-sm"
+            value="{{ form.base_cooldown }}"
+          />
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label">Base sell price (coins)</label>
+          <input
+            type="number"
+            name="base_sell_price"
+            class="form-control form-control-sm"
+            value="{{ form.base_sell_price }}"
+          />
+        </div>
+        <div class="col-md-3 d-flex align-items-center">
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="enabled"
+              id="enabledCheck"
+              {% if form.enabled %}checked{% endif %}
+            />
+            <label class="form-check-label" for="enabledCheck">
+              Activée
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-muted mt-3 mb-3">
+        Après création, tu seras redirigé vers la fiche d'édition de la ressource
+        pour éventuellement ajouter des <code>unlock_rules</code> avancées.
+      </p>
+
+      <button type="submit" class="btn btn-primary">
+        Créer la ressource
+      </button>
+    </div>
+  </form>
+{% endblock %}

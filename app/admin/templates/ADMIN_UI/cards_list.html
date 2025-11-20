@@ -1,0 +1,102 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Cartes (YAML){% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h3 mb-1">Cartes (cards.yml)</h1>
+      <p class="text-muted mb-0">
+        Source YAML : <code>{{ yaml_path }}</code>
+      </p>
+    </div>
+
+    <!-- Bouton pour plus tard (création/édition) -->
+      <div>
+        <a
+          href="{{ url_for('admin.card_create') }}"
+          class="btn btn-secondary btn-sm"
+        >
+          + Nouvelle carte
+        </a>
+      </div>
+
+  </div>
+
+  <div class="card admin-card mb-4">
+    <div class="card-body py-2">
+      <p class="mb-1 text-muted">
+        Cette liste lit directement <code>cards.yml</code>.
+        La colonne <strong>DB</strong> indique si la carte existe aussi dans
+        <code>card_defs</code>.
+      </p>
+    </div>
+  </div>
+
+  <table class="table table-sm table-dark table-striped align-middle">
+    <thead>
+      <tr>
+        <th style="width: 20%;">Key</th>
+        <th style="width: 30%;">Label</th>
+        <th style="width: 15%;">Type</th>
+        <th style="width: 10%;">Rareté</th>
+        <th style="width: 10%;">Activée</th>
+        <th style="width: 10%;">DB</th>
+        <th style="width: 5%;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cards %}
+        <tr>
+          <td><code>{{ c.key }}</code></td>
+          <td>{{ c.label }}</td>
+          <td>{{ c.type }}</td>
+          <td>{{ c.rarity }}</td>
+          <td>
+            {% if c.enabled %}
+              <span class="badge bg-success">Oui</span>
+            {% else %}
+              <span class="badge bg-secondary">Non</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if c.in_db %}
+              <span class="badge bg-success">OK</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">YAML only</span>
+            {% endif %}
+          </td>
+            <td class="text-end">
+            <a
+                href="{{ url_for('admin.card_edit', card_key=c.key) }}"
+                class="btn btn-outline-light btn-sm"
+            >
+                Edit
+            </a>
+            </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not cards %}
+    <p class="text-muted">Aucune carte dans le fichier YAML.</p>
+  {% endif %}
+
+  {% if db_only_cards %}
+    <hr class="border-secondary" />
+    <h2 class="h5 mt-3">Cartes en DB mais absentes du YAML</h2>
+    <p class="text-muted">
+      Ces cartes existent dans <code>card_defs</code> mais pas dans
+      <code>cards.yml</code>.
+    </p>
+
+    <ul class="mb-0">
+      {% for c in db_only_cards %}
+        <li>
+          <code>{{ c.key }}</code> – {{ c.label or "?" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

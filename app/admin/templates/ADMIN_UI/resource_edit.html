@@ -1,0 +1,152 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Éditer ressource {{ res_key }}{% endblock %}
+
+{% block content %}
+  <a
+    href="{{ url_for('admin.resources_list') }}"
+    class="btn btn-sm btn-admin-back mb-3"
+  >
+    ← Retour à la liste des ressources
+  </a>
+
+  <h1 class="h3 mb-3">
+    Éditer la ressource <code>{{ res_key }}</code>
+  </h1>
+
+  {% if saved %}
+    <div class="alert alert-success py-2">
+      Modifications sauvegardées dans <code>resources.yml</code>.
+    </div>
+  {% endif %}
+
+  {% if errors %}
+    <div class="alert alert-danger py-2">
+      <ul class="mb-0">
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="card admin-card">
+    <div class="card-body">
+      <!-- Key (read-only) -->
+      <div class="mb-3">
+        <label class="form-label">Key (lecture seule)</label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          value="{{ res_key }}"
+          readonly
+        />
+      </div>
+
+      <!-- Label / Description -->
+      <div class="mb-3">
+        <label class="form-label">Label</label>
+        <input
+          type="text"
+          name="label"
+          class="form-control form-control-sm"
+          value="{{ res.label or '' }}"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description (optionnel)</label>
+        <textarea
+          name="description"
+          class="form-control form-control-sm"
+          rows="3"
+        >{{ res.description or '' }}</textarea>
+      </div>
+
+      <!-- Icon / unlock_min_level / base_cooldown / base_sell_price / enabled -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Icon (path)</label>
+          <input
+            type="text"
+            name="icon"
+            class="form-control form-control-sm"
+            value="{{ res.icon or '' }}"
+            placeholder="/static/assets/img/resources/..."
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Unlock min level</label>
+          <input
+            type="number"
+            name="unlock_min_level"
+            class="form-control form-control-sm"
+            value="{{ res.unlock_min_level or 0 }}"
+          />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Base cooldown (sec)</label>
+          <input
+            type="text"
+            name="base_cooldown"
+            class="form-control form-control-sm"
+            value="{{ res.base_cooldown or 0 }}"
+          />
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label">Base sell price (coins)</label>
+          <input
+            type="number"
+            name="base_sell_price"
+            class="form-control form-control-sm"
+            value="{{ res.base_sell_price or 0 }}"
+          />
+        </div>
+        <div class="col-md-3 d-flex align-items-center">
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="enabled"
+              id="enabledCheck"
+              {% if res.enabled is not defined or res.enabled %}checked{% endif %}
+            />
+            <label class="form-check-label" for="enabledCheck">
+              Activée
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-secondary my-4" />
+
+      <!-- unlock_rules YAML -->
+      <h2 class="h5 mb-3">Règles de déblocage (unlock_rules - YAML)</h2>
+
+      <div class="mb-3">
+        <label class="form-label">unlock_rules (dict YAML)</label>
+        <textarea
+          name="unlock_rules"
+          class="form-control form-control-sm font-monospace"
+          rows="6"
+          placeholder="# ex:
+# min_level: 5
+# require_cards:
+#   - land_forest"
+        >{{ unlock_rules_text }}</textarea>
+      </div>
+
+      <p class="text-muted mb-3">
+        Laisse <strong>unlock_rules</strong> vide pour supprimer cette clé
+        dans le YAML.
+      </p>
+
+      <button type="submit" class="btn btn-primary">
+        Sauvegarder
+      </button>
+    </div>
+  </form>
+{% endblock %}

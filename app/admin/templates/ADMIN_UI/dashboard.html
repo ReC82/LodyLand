@@ -1,0 +1,68 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin LodyLand - Dashboard{% endblock %}
+
+{% block content %}
+<!-- UPDATE players SET is_admin = 1 WHERE id = 1; -->
+  <h1 class="h3 mb-4">Admin LodyLand</h1>
+
+  <div class="row g-3">
+
+    <div class="col-md-6 col-lg-4">
+    <div class="card admin-card">
+        <div class="card-body">
+        <h2 class="h5 card-title">Joueurs</h2>
+        <p class="card-text">
+            Liste de tous les joueurs, niveaux et infos de base.
+        </p>
+        <a href="{{ url_for('admin.players_list') }}" class="btn btn-sm btn-primary">
+            Voir les joueurs
+        </a>
+        </div>
+    </div>
+    </div>
+
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card admin-card">
+        <div class="card-body">
+          <h2 class="h5 card-title">Cartes (YAML)</h2>
+          <p class="card-text">
+            Visualiser et éditer les cartes du jeu.
+          </p>
+          <a href="{{ url_for('admin.cards_list') }}" class="btn btn-sm btn-primary">
+            Voir les cartes
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card admin-card">
+        <div class="card-body">
+          <h2 class="h5 card-title">Ressources (YAML)</h2>
+          <p class="card-text">
+            Gestion des ressources et de leurs paramètres.
+          </p>
+          <a href="{{ url_for('admin.resources_list') }}" class="btn btn-sm btn-primary">
+            Voir les ressources
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card admin-card">
+        <div class="card-body">
+          <h2 class="h5 card-title">Lands (YAML)</h2>
+          <p class="card-text">
+            Configuration des lands, slots, coûts, etc.
+          </p>
+          <a href="{{ url_for('admin.lands_list') }}" class="btn btn-sm btn-primary">
+            Voir les lands
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

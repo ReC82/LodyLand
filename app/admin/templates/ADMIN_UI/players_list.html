@@ -1,0 +1,61 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin LodyLand - Joueurs{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Joueurs</h1>
+
+    <form class="d-flex" method="get">
+      <input
+        type="text"
+        name="q"
+        class="form-control form-control-sm me-2"
+        placeholder="Rechercher par nom..."
+        value="{{ search }}"
+      />
+      <button class="btn btn-sm btn-primary" type="submit">
+        Rechercher
+      </button>
+    </form>
+  </div>
+
+  <table class="table table-sm table-dark table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Nom</th>
+        <th scope="col">Niveau</th>
+        <th scope="col">Coins</th>
+        <th scope="col">Diams</th>
+        <th scope="col">Admin</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in players %}
+        <tr
+          class="clickable-row"
+          onclick="window.location='{{ url_for('admin.player_detail', player_id=p.id) }}'"
+          style="cursor:pointer;"
+        >
+          <td>{{ p.id }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.level }}</td>
+          <td>{{ p.coins }}</td>
+          <td>{{ p.diams }}</td>
+          <td>
+            {% if p.is_admin %}
+              <span class="badge bg-success">Oui</span>
+            {% else %}
+              <span class="badge bg-secondary">Non</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not players %}
+    <p class="text-muted">Aucun joueur trouvé.</p>
+  {% endif %}
+{% endblock %}

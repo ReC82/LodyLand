@@ -1,0 +1,66 @@
+/* Basic admin panel styling */
+
+/* Give a slightly different background to the whole admin area */
+.admin-body {
+  background-color: #0b1120; /* dark navy */
+  color: #e5e7eb; /* light gray */
+}
+
+/* Cards should pop a bit */
+.admin-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
+}
+
+/* Make card titles stand out */
+.admin-card .card-title {
+  font-weight: 600;
+}
+
+/* Adjust card body background to be darker */
+.admin-card .card-body {
+  background: radial-gradient(circle at top, #111827, #020617);
+  color: #e5e7eb;
+}
+
+/* highlight clickable rows */
+.clickable-row:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Force all backgrounds in admin panel to be dark */
+body.admin-body, 
+body.admin-body .container {
+  background-color: #0b1120 !important;
+  color: #e5e7eb !important;
+}
+
+/* Make default buttons readable on dark background */
+.btn-outline-light {
+  border-color: #e5e7eb;
+  color: #e5e7eb;
+}
+
+.btn-outline-light:hover {
+  background-color: #e5e7eb;
+  color: #0b1120;
+}
+
+/* Strong, always-visible back button for admin pages */
+.btn-admin-back {
+  background-color: #f97316;  /* orange bien visible */
+  color: #0b1120;             /* texte foncé */
+  border: none;
+  font-weight: 600;
+}
+
+.btn-admin-back:hover {
+  background-color: #fb923c;  /* un peu plus clair au hover */
+  color: #020617;
+}
+
+/* Make advanced YAML textareas easier to read */
+textarea.font-monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+}

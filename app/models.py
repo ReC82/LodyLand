@@ -37,12 +37,13 @@ class Player(Base):
     daily_streak: Mapped[int] = mapped_column(Integer, default=0)
     best_streak: Mapped[int] = mapped_column(Integer, default=0)
 
-    # 🔥 AJOUT À FAIRE ICI :
     account: Mapped["Account"] = relationship(
         "Account",
         back_populates="player",
         uselist=False
     )
+    
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 class Account(Base):
     __tablename__ = "accounts"
 
