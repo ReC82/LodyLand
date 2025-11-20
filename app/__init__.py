@@ -8,8 +8,14 @@ from .frontend import frontend_bp
 from .progression import LEVELS
 from .craft_defs import load_craft_defs
 
+from app.admin import admin_bp
+
 def create_app() -> Flask:
     app = Flask(__name__)
+    
+    # ===== Admin Panel activé en dev =====
+    app.config["ADMIN_ENABLED"] = True
+    # =====================================    
 
     init_db()
     seed_cards_from_yaml()
@@ -20,6 +26,9 @@ def create_app() -> Flask:
 
     
     app.register_blueprint(frontend_bp)
+    
+    # Admin panel
+    app.register_blueprint(admin_bp)    
 
     @app.get("/")
     def index():
