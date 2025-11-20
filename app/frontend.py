@@ -488,17 +488,4 @@ def inventory_page():
         return render_template("GAME_UI/inventory.html")
     finally:
         session.close()
-        
-@frontend_bp.get("/land/village")
-def land_village():
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
-
-        return render_template(
-            "GAME_UI/lands/village.html",
-        )
-    finally:
-        session.close()        
+               
