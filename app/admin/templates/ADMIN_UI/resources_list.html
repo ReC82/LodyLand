@@ -1,0 +1,96 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Ressources (YAML){% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h3 mb-1">Ressources (resources.yml)</h1>
+      <p class="text-muted mb-0">
+        Source YAML : <code>{{ yaml_path }}</code>
+      </p>
+    </div>
+
+    <div>
+      <button class="btn btn-secondary btn-sm" disabled>
+        Ajouter une ressource (à venir)
+      </button>
+    </div>
+  </div>
+
+  <div class="card admin-card mb-4">
+    <div class="card-body py-2">
+      <p class="mb-1 text-muted">
+        Cette liste lit directement <code>resources.yml</code>.
+        La colonne <strong>DB</strong> indique si la ressource existe aussi
+        dans <code>resource_defs</code>.
+      </p>
+    </div>
+  </div>
+
+  <table class="table table-sm table-dark table-striped align-middle">
+    <thead>
+      <tr>
+        <th style="width: 15%;">Key</th>
+        <th style="width: 25%;">Label</th>
+        <th style="width: 10%;">Min level</th>
+        <th style="width: 15%;">Cooldown base</th>
+        <th style="width: 15%;">Prix de vente</th>
+        <th style="width: 10%;">Activée</th>
+        <th style="width: 5%;">DB</th>
+        <th style="width: 5%;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in resources %}
+        <tr>
+          <td><code>{{ r.key }}</code></td>
+          <td>{{ r.label }}</td>
+          <td>{{ r.unlock_min_level }}</td>
+          <td>{{ r.base_cooldown }}</td>
+          <td>{{ r.base_sell_price }}</td>
+          <td>
+            {% if r.enabled %}
+              <span class="badge bg-success">Oui</span>
+            {% else %}
+              <span class="badge bg-secondary">Non</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.in_db %}
+              <span class="badge bg-success">OK</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">YAML only</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <button class="btn btn-outline-light btn-sm" disabled>
+              Edit
+            </button>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not resources %}
+    <p class="text-muted">Aucune ressource dans le fichier YAML.</p>
+  {% endif %}
+
+  {% if db_only_resources %}
+    <hr class="border-secondary" />
+    <h2 class="h5 mt-3">Ressources en DB mais absentes du YAML</h2>
+    <p class="text-muted">
+      Ces ressources existent dans <code>resource_defs</code> mais pas dans
+      <code>resources.yml</code>.
+    </p>
+
+    <ul class="mb-0">
+      {% for r in db_only_resources %}
+        <li>
+          <code>{{ r.key }}</code> – {{ r.label or "?" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

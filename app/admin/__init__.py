@@ -27,6 +27,103 @@ admin_bp = Blueprint(
 )
 
 # -------------------------------------------------------------------
+# Resources YAML helpers
+# -------------------------------------------------------------------
+
+RESOURCES_YAML_PATH = Path(__file__).resolve().parents[1] / "data" / "resources.yml"
+
+
+def load_resources_yaml() -> dict:
+    """
+    Charge resources.yml et retourne un dict {key: config_dict}.
+
+    Formats supportés :
+    1) format liste (recommandé) :
+       resources:
+         - key: wood
+           label: "Bois"
+           ...
+         - key: stone
+           ...
+
+    2) format mapping :
+       wood:
+         label: "Bois"
+         ...
+       stone:
+         ...
+
+    Dans les deux cas, on renvoie un mapping {key: cfg}.
+    """
+    if not RESOURCES_YAML_PATH.exists():
+        return {}
+
+    with RESOURCES_YAML_PATH.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+
+    # Cas 1 : { "resources": [ {...}, {...}, ... ] }
+    if isinstance(data, dict) and isinstance(data.get("resources"), list):
+        mapping: dict[str, dict] = {}
+        for res in data["resources"]:
+            if not isinstance(res, dict):
+                continue
+            key = (res.get("key") or "").strip()
+            if not key:
+                continue
+            mapping[key] = res
+        return mapping
+
+    # Cas 2 : déjà un mapping { "wood": {...}, ... }
+    if isinstance(data, dict):
+        return data
+
+    return {}
+
+
+def save_resources_yaml(mapping: dict) -> None:
+    """
+    Écrit le mapping dans resources.yml avec un layout propre.
+
+    mapping attendu :
+      { "wood": {...}, "stone": {...}, ... }
+
+    Format fichier :
+      resources:
+        - key: wood
+          ...
+        - key: stone
+          ...
+    """
+    RESOURCES_YAML_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # Tri par key pour garder un ordre stable
+    resources_list: list[dict] = []
+    for key in sorted(mapping.keys()):
+        cfg = mapping[key] or {}
+        if not isinstance(cfg, dict):
+            cfg = {}
+        cfg = dict(cfg)  # shallow copy
+        cfg["key"] = key
+        resources_list.append(cfg)
+
+    wrapper = {"resources": resources_list}
+
+    yaml_str = yaml.safe_dump(
+        wrapper,
+        allow_unicode=True,
+        sort_keys=False,
+        default_flow_style=False,
+        indent=2,
+    )
+
+    # Petite aération visuelle : ligne vide avant chaque élément de liste
+    yaml_str = yaml_str.replace("\n- ", "\n\n- ")
+
+    with RESOURCES_YAML_PATH.open("w", encoding="utf-8") as f:
+        f.write(yaml_str)
+
+
+# -------------------------------------------------------------------
 # Cards YAML helpers
 # -------------------------------------------------------------------
 
@@ -489,3 +586,54 @@ def card_edit(card_key: str):
         buy_rules_text=buy_rules_text_default,
     )
 
+@admin_bp.get("/resources")
+@admin_required
+def resources_list():
+    """
+    Liste toutes les ressources depuis resources.yml + statut de synchro DB.
+    """
+    yaml_data = load_resources_yaml()  # {key: cfg}
+
+    session = SessionLocal()
+    try:
+        db_resources = session.query(ResourceDef).all()
+        db_by_key = {r.key: r for r in db_resources}
+    finally:
+        session.close()
+
+    resources_for_view: list[dict] = []
+
+    for key, cfg in sorted(yaml_data.items(), key=lambda item: item[0]):
+        if not isinstance(cfg, dict):
+            cfg = {}
+
+        label = (cfg.get("label") or key).strip()
+        icon = (cfg.get("icon") or "").strip()
+        unlock_min_level = cfg.get("unlock_min_level", 0)
+        base_cooldown = cfg.get("base_cooldown", 0.0)
+        base_sell_price = cfg.get("base_sell_price", 0)
+        enabled = cfg.get("enabled", True)
+
+        in_db = key in db_by_key
+
+        resources_for_view.append(
+            {
+                "key": key,
+                "label": label,
+                "icon": icon,
+                "unlock_min_level": unlock_min_level,
+                "base_cooldown": base_cooldown,
+                "base_sell_price": base_sell_price,
+                "enabled": bool(enabled),
+                "in_db": in_db,
+            }
+        )
+
+    db_only_resources = [r for r in db_resources if r.key not in yaml_data]
+
+    return render_template(
+        "ADMIN_UI/resources_list.html",
+        resources=resources_for_view,
+        db_only_resources=db_only_resources,
+        yaml_path=str(RESOURCES_YAML_PATH),
+    )
