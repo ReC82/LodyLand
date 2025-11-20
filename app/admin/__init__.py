@@ -27,6 +27,81 @@ admin_bp = Blueprint(
     static_folder="static",      # static inside app/admin/static
 )
 
+# ============================
+# Levels YAML helpers
+# ============================
+
+def _levels_yaml_path() -> Path:
+    """Return the absolute path to app/data/levels.yml."""
+    # current_app.root_path = dossier "app/"
+    return Path(current_app.root_path) / "data" / "levels.yml"
+
+
+def load_levels_yaml() -> list[dict]:
+    """
+    Load levels from app/data/levels.yml.
+
+    Expected format:
+    levels:
+      - level: 1
+        xp_required: 10
+        rewards:
+          - type: coins
+            amount: 20
+      - level: 2
+        xp_required: 30
+        rewards: [...]
+    """
+    path = _levels_yaml_path()
+    if not path.exists():
+        return []
+
+    with path.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+
+    levels = data.get("levels")
+    if isinstance(levels, list):
+        # We keep as-is but we might sort when saving.
+        return levels
+    return []
+
+
+def save_levels_yaml(levels: list[dict]) -> None:
+    """
+    Save levels list back to app/data/levels.yml.
+
+    We:
+    - Wrap in a top-level "levels:" key
+    - Sort by level ascending
+    - Keep keys order (no sort_keys)
+    """
+    # Ensure sorted by "level"
+    def _lvl_num(l: dict) -> int:
+        try:
+            return int(l.get("level") or 0)
+        except Exception:
+            return 0
+
+    levels_sorted = sorted(levels, key=_lvl_num)
+
+    payload = {
+        "levels": levels_sorted,
+    }
+
+    path = _levels_yaml_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w", encoding="utf-8") as f:
+        yaml.safe_dump(
+            payload,
+            f,
+            sort_keys=False,
+            allow_unicode=True,
+            default_flow_style=False,
+            indent=2,
+        )
+
+
 # -------------------------------------------------------------------
 # Lands YAML helpers
 # -------------------------------------------------------------------
@@ -1369,4 +1444,253 @@ def land_create():
         errors=errors,
         form=form_defaults,
         saved=saved,
+    )
+
+# ============================
+# Admin - Levels
+# ============================
+
+@admin_bp.get("/levels")
+@admin_required
+def levels_list():
+    """
+    List all levels from levels.yml (sorted by level).
+    """
+    levels = load_levels_yaml()
+
+    # Petit résumé textuel des rewards pour l'affichage
+    def summarize_rewards(rewards: list | None) -> str:
+        # Build a short human-readable summary: "20 coins, 1 diams, card land_beach, ..."
+        if not rewards:
+            return "Aucune récompense"
+
+        parts: list[str] = []
+        for r in rewards:
+            if not isinstance(r, dict):
+                continue
+            r_type = r.get("type")
+            if r_type == "coins":
+                parts.append(f"{r.get('amount', 0)} coins")
+            elif r_type == "diams":
+                parts.append(f"{r.get('amount', 0)} diams")
+            elif r_type == "card":
+                parts.append(f"card: {r.get('card_key')}")
+            elif r_type == "resource":
+                parts.append(
+                    f"{r.get('amount', 0)} x {r.get('resource_key')}"
+                )
+            else:
+                parts.append(r_type or "reward")
+
+        return ", ".join(parts) or "Aucune récompense"
+
+    # On enrichit chaque niveau avec un champ summary pour le template
+    enriched_levels: list[dict] = []
+    for lvl in levels:
+        copy = dict(lvl)
+        copy["summary"] = summarize_rewards(copy.get("rewards") or [])
+        enriched_levels.append(copy)
+
+    return render_template(
+        "ADMIN_UI/levels_list.html",
+        levels=enriched_levels,
+    )
+
+
+@admin_bp.route("/levels/new", methods=["GET", "POST"])
+@admin_required
+def level_new():
+    """
+    Create a new level in levels.yml.
+    """
+    levels = load_levels_yaml()
+    error: str | None = None
+
+    # Proposer par défaut "max_level + 1"
+    next_level = 1
+    if levels:
+        try:
+            next_level = max(int(l.get("level") or 0) for l in levels) + 1
+        except Exception:
+            next_level = 1
+
+    if request.method == "POST":
+        # --- Lecture des champs du formulaire ---
+        level_str = (request.form.get("level") or "").strip()
+        xp_str = (request.form.get("xp_required") or "").strip()
+        rewards_yaml_str = (request.form.get("rewards_yaml") or "").strip()
+
+        # Validation niveau
+        try:
+            level_num = int(level_str)
+        except ValueError:
+            error = "Le champ 'Level' doit être un entier."
+        else:
+            # Vérifier doublon
+            for lvl in levels:
+                if int(lvl.get("level") or 0) == level_num:
+                    error = f"Le niveau {level_num} existe déjà."
+                    break
+
+        # Validation xp_required
+        xp_required = 0
+        if not error:
+            try:
+                xp_required = int(xp_str)
+            except ValueError:
+                error = "Le champ 'XP requise' doit être un entier."
+
+        # Validation rewards (YAML list)
+        rewards: list = []
+        if not error and rewards_yaml_str:
+            try:
+                parsed = yaml.safe_load(rewards_yaml_str)
+                if parsed is None:
+                    rewards = []
+                elif isinstance(parsed, list):
+                    rewards = parsed
+                else:
+                    error = "Les récompenses doivent être une liste YAML (commençant par '-')."
+            except Exception as e:  # noqa: F841
+                error = "YAML invalide pour les récompenses."
+
+        if not error:
+            # Création du nouveau niveau
+            new_level = {
+                "level": level_num,
+                "xp_required": xp_required,
+                "rewards": rewards,
+            }
+            levels.append(new_level)
+            save_levels_yaml(levels)
+            return redirect(url_for("admin.levels_list"))
+
+        # En cas d'erreur, on retombe en dessous et on ré-affiche le form
+
+    # GET ou POST avec erreur
+    # Valeurs par défaut
+    initial_level = next_level
+    initial_xp = 0
+    initial_rewards_yaml = "- type: coins\n  amount: 0\n"
+
+    if request.method == "POST":
+        # On réinjecte ce que l'utilisateur a saisi
+        initial_level = request.form.get("level") or initial_level
+        initial_xp = request.form.get("xp_required") or initial_xp
+        initial_rewards_yaml = request.form.get("rewards_yaml") or initial_rewards_yaml
+
+    return render_template(
+        "ADMIN_UI/level_edit.html",
+        mode="new",
+        error=error,
+        level_number=initial_level,
+        xp_required=initial_xp,
+        rewards_yaml=initial_rewards_yaml,
+    )
+
+@admin_bp.route("/levels/<int:level_no>", methods=["GET", "POST"])
+@admin_required
+def level_edit(level_no: int):
+    """
+    Edit an existing level in levels.yml.
+    """
+    levels = load_levels_yaml()
+    error: str | None = None
+
+    # Chercher le niveau
+    level_data = None
+    for lvl in levels:
+        try:
+            if int(lvl.get("level") or 0) == level_no:
+                level_data = lvl
+                break
+        except Exception:
+            continue
+
+    if not level_data:
+        abort(404)
+
+    # Valeurs initiales pour le formulaire
+    initial_level = level_data.get("level", level_no)
+    initial_xp = level_data.get("xp_required", 0)
+    initial_rewards_yaml = ""
+    if level_data.get("rewards") is not None:
+        try:
+            initial_rewards_yaml = yaml.safe_dump(
+                level_data["rewards"],
+                sort_keys=False,
+                allow_unicode=True,
+                default_flow_style=False,
+                indent=2,
+            )
+        except Exception:
+            initial_rewards_yaml = ""
+
+    if request.method == "POST":
+        level_str = (request.form.get("level") or "").strip()
+        xp_str = (request.form.get("xp_required") or "").strip()
+        rewards_yaml_str = (request.form.get("rewards_yaml") or "").strip()
+
+        # Validation level (on autorise changement du numéro, mais sans doublon)
+        try:
+            new_level_num = int(level_str)
+        except ValueError:
+            error = "Le champ 'Level' doit être un entier."
+            new_level_num = initial_level
+        else:
+            # Vérifier si le numéro change et s'il n'est pas déjà utilisé
+            if new_level_num != level_no:
+                for lvl in levels:
+                    if int(lvl.get("level") or 0) == new_level_num:
+                        error = f"Le niveau {new_level_num} existe déjà."
+                        break
+
+        # Validation xp_required
+        xp_required = initial_xp
+        if not error:
+            try:
+                xp_required = int(xp_str)
+            except ValueError:
+                error = "Le champ 'XP requise' doit être un entier."
+
+        # Validation rewards (YAML list)
+        rewards: list = level_data.get("rewards") or []
+        if not error:
+            if rewards_yaml_str.strip():
+                try:
+                    parsed = yaml.safe_load(rewards_yaml_str)
+                    if parsed is None:
+                        rewards = []
+                    elif isinstance(parsed, list):
+                        rewards = parsed
+                    else:
+                        error = "Les récompenses doivent être une liste YAML (commençant par '-')."
+                except Exception as e:  # noqa: F841
+                    error = "YAML invalide pour les récompenses."
+            else:
+                rewards = []
+
+        if not error:
+            # Mise à jour de l'entrée
+            level_data["level"] = new_level_num
+            level_data["xp_required"] = xp_required
+            level_data["rewards"] = rewards
+
+            save_levels_yaml(levels)
+            # On redirige vers la liste
+            return redirect(url_for("admin.levels_list"))
+
+        # Sinon, on laissera la vue retomber sur le render_template avec error
+
+        initial_level = level_str or initial_level
+        initial_xp = xp_str or initial_xp
+        initial_rewards_yaml = rewards_yaml_str or initial_rewards_yaml
+
+    return render_template(
+        "ADMIN_UI/level_edit.html",
+        mode="edit",
+        error=error,
+        level_number=initial_level,
+        xp_required=initial_xp,
+        rewards_yaml=initial_rewards_yaml,
     )

@@ -58,6 +58,28 @@ cave:
   additional_slot_base_cost_diams: 10
   additional_slot_cost_multiplier: 1.5
   tools: {}
+desert:
+  key: land_desert
+  label_fr: Desert
+  label_en: Desert
+  starting_land: false
+  slots: 8
+  slot_icon: static/assets/img/lands/desert_slot.png
+  logo: static/assets/img/lands/desert_logo.png
+  additional_slot_base_cost_diams: 10
+  additional_slot_cost_multiplier: 1.5
+  tools: {}
+farm:
+  key: land_farm
+  label_fr: Ferme
+  label_en: Farm
+  starting_land: false
+  slots: 10
+  slot_icon: static/assets/img/lands/farm_slot.png
+  logo: static/assets/img/lands/farm_logo.png
+  additional_slot_base_cost_diams: 10
+  additional_slot_cost_multiplier: 1.5
+  tools: {}
 forest:
   key: land_forest
   label_fr: Forêt
@@ -111,7 +133,7 @@ lake:
       - resource: anchovy
         min: 1
         max: 1
-        chance: 0.5        
+        chance: 0.5
       extra_loot: []
     rod:
       base_loot:
@@ -124,7 +146,6 @@ lake:
         min: 1
         max: 1
         chance: 0.001
-               
 mountain:
   key: land_mountain
   label_fr: Montagne

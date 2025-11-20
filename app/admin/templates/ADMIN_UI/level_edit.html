@@ -1,0 +1,87 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}
+  {% if mode == "new" %}Admin - Nouveau level{% else %}Admin - Level {{ level_number }}{% endif %}
+{% endblock %}
+
+{% block content %}
+  <a href="{{ url_for('admin.levels_list') }}" class="btn btn-outline-light mb-3">
+    ← Retour à la liste des levels
+  </a>
+
+  <h1 class="h3 mb-3">
+    {% if mode == "new" %}
+      Nouveau level
+    {% else %}
+      Édition du level #{{ level_number }}
+    {% endif %}
+  </h1>
+
+  {% if error %}
+    <div class="alert alert-danger">
+      {{ error }}
+    </div>
+  {% endif %}
+
+  <form method="post" class="mb-4">
+
+    <div class="mb-3">
+      <label class="form-label">Level (entier)</label>
+      <input
+        type="number"
+        name="level"
+        class="form-control"
+        value="{{ level_number }}"
+        min="1"
+        required
+      />
+      <div class="form-text">
+        Numéro du niveau (1, 2, 3, ...). Un niveau doit être unique.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">XP requise</label>
+      <input
+        type="number"
+        name="xp_required"
+        class="form-control"
+        value="{{ xp_required }}"
+        min="0"
+        required
+      />
+      <div class="form-text">
+        XP totale nécessaire pour atteindre ce niveau.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Récompenses (YAML)</label>
+      <textarea
+        name="rewards_yaml"
+        rows="10"
+        class="form-control font-monospace"
+        spellcheck="false"
+      >{{ rewards_yaml }}</textarea>
+      <div class="form-text">
+        Liste YAML de récompenses. Exemples :
+        <pre class="mt-2 mb-0"><code>- type: coins
+  amount: 20
+
+- type: diams
+  amount: 1
+
+- type: card
+  card_key: land_beach
+
+- type: resource
+  resource_key: branch
+  amount: 50</code></pre>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      Enregistrer
+    </button>
+  </form>
+{% endblock %}
