@@ -11,10 +11,15 @@ from app.models import (
     ResourceDef,
     PlayerCard,
     CardDef,
-    PlayerItem,        # NEW
+    PlayerItem, 
+    PlayerQuest
 )
 from app.progression import next_threshold
 from app.craft_defs import CRAFT_DEFS
+import datetime as dt
+
+from app.quests.service import assign_daily_quest_if_needed, serialize_quest
+
 
 bp = Blueprint("players", __name__)
 
@@ -262,6 +267,20 @@ def get_state():
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
+        # --- NEW: ensure daily quest is assigned for today ---
+        now = dt.datetime.utcnow()
+        assign_daily_quest_if_needed(s, me, now=now)
+        s.commit()
+        # --- NEW: Load active quests ---------------------------------------
+        quests = (
+            s.query(PlayerQuest)
+            .filter(PlayerQuest.player_id == me.id)
+            .filter(PlayerQuest.status.in_(["active", "completed"]))
+            .order_by(PlayerQuest.started_at.desc())
+            .all()
+        )
+        quests_payload = [serialize_quest(q) for q in quests]
+        # -------------------------------------------------------------------
         # ------------------------------
         # Tiles
         # ------------------------------
@@ -416,6 +435,8 @@ def get_state():
             
             "items": items_payload,
             "craft": craft_payload,
+            
+            "quests": quests_payload, 
         }), 200
 
         

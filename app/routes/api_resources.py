@@ -14,6 +14,8 @@ from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
 from app.lands import get_land_def
 
+from app.quests.service import on_resource_collected
+
 bp = Blueprint("resources", __name__)
 
 # -----------------------------------------------------------------
@@ -487,6 +489,16 @@ def collect():
                         "final_amount": round(amount, 2),
                     }
                 )
+                
+                # --- NEW: quest progression for collect_resource (land mode) ---
+                # base_amount is the pre-boost amount, which we want for quests.
+                on_resource_collected(
+                    session=s,
+                    player=p,
+                    resource_key=res_key,
+                    base_amount=int(base_amount),
+                )
+                # ----------------------------------------------------------------
 
             # Cooldown "virtuel" pour le client (pour l'instant pas stocké par slot)
             # On prend la première resource de base_loot comme référence
@@ -590,6 +602,17 @@ def collect():
             amount = _compute_collect_amount(s, t.player_id, t.resource)
             new_qty = (rs.qty or 0.0) + amount
             rs.qty = round(new_qty, 2)
+            
+            # --- NEW: quest progression for collect_resource (tile mode) ---
+            # One tile collect = base_amount 1 for quest purposes.
+            if p:
+                on_resource_collected(
+                    session=s,
+                    player=p,
+                    resource_key=t.resource,
+                    base_amount=1,
+                )
+            # ----------------------------------------------------------------
 
         s.commit()
         return jsonify(

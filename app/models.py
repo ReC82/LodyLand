@@ -170,4 +170,82 @@ class PlayerLandSlots(Base):
 
     __table_args__ = (
         UniqueConstraint("player_id", "land_key", name="uix_player_land_slots"),
-    )    
+    )
+    
+# =============================================================================
+# Quest System Models (PlayerQuest, PlayerQuestObjective)
+# =============================================================================
+
+class PlayerQuest(Base):
+    __tablename__ = "player_quests"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), index=True, nullable=False)
+
+    # Quest template key from quests.yml
+    template_key: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # daily | weekly | bonus | event
+    quest_type: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    # Source of assignment (auto_daily, villager_x, event_x)
+    source: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    # Localized quest title & description (snapshot)
+    title_fr: Mapped[str] = mapped_column(String(255), nullable=False)
+    title_en: Mapped[str] = mapped_column(String(255), nullable=False)
+    description_fr: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description_en: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # active, completed, failed, expired
+    status: Mapped[str] = mapped_column(String(20), default="active", nullable=False)
+
+    started_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+    expires_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # Rewards snapshot (coins, diams, cards, items...)
+    rewards_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    # Objectives associated with this quest
+    objectives = relationship(
+        "PlayerQuestObjective",
+        back_populates="quest",
+        cascade="all, delete-orphan"
+    )
+
+
+class PlayerQuestObjective(Base):
+    __tablename__ = "player_quest_objectives"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    player_quest_id: Mapped[int] = mapped_column(
+        ForeignKey("player_quests.id"), index=True, nullable=False
+    )
+
+    # Order of the objective inside quest
+    index_in_quest: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # collect_resource / craft_item / open_daily_chest / complete_quests...
+    kind: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    # Optional fields depending on the kind
+    resource_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    item_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Progression
+    target_value: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    current_value: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Ignore boosts when counting resource collection
+    ignore_boosts: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # For streak-based quests (daily chest in a row)
+    consecutive_required: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Additional parameters (JSON)
+    extra_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    # Back link to the parent quest
+    quest = relationship("PlayerQuest", back_populates="objectives")

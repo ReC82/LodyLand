@@ -7,6 +7,7 @@ from .routes import register_routes
 from .frontend import frontend_bp
 from .progression import LEVELS
 from .craft_defs import load_craft_defs
+from app.quests.loader import load_quest_templates
 
 from app.admin import admin_bp
 
@@ -22,6 +23,7 @@ def create_app() -> Flask:
     ensure_resources_seeded()
     reseed_resources()
     load_craft_defs()
+    load_quest_templates()
     register_routes(app)
 
     
