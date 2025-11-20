@@ -6,19 +6,21 @@
   <h1 class="h3 mb-4">Admin LodyLand</h1>
 
   <div class="row g-3">
+
     <div class="col-md-6 col-lg-4">
-      <div class="card admin-card">
+    <div class="card admin-card">
         <div class="card-body">
-          <h2 class="h5 card-title">Joueurs</h2>
-          <p class="card-text">
-            Liste de tous les joueurs, niveaux, et détails.
-          </p>
-          <a href="#" class="btn btn-sm btn-primary disabled">
-            Bientôt disponible
-          </a>
+        <h2 class="h5 card-title">Joueurs</h2>
+        <p class="card-text">
+            Liste de tous les joueurs, niveaux et infos de base.
+        </p>
+        <a href="{{ url_for('admin.players_list') }}" class="btn btn-sm btn-primary">
+            Voir les joueurs
+        </a>
         </div>
-      </div>
     </div>
+    </div>
+
 
     <div class="col-md-6 col-lg-4">
       <div class="card admin-card">
