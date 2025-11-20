@@ -1,5 +1,12 @@
 {% extends "game_base.html" %}
 
+{% block extra_css %}
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='GAME_UI/css/shop.css') }}"
+  />
+{% endblock %}
+
 {% block title %}Boutique — LodyLand{% endblock %}
 
 {% block content %}
@@ -10,42 +17,104 @@
     </p>
   </div>
 
-<div class="shop-tabs">
-  <button
-    class="shop-tab shop-tab-active"
-    id="shopTabSell"
-    data-tab="sell"
-  >
-    Vendre des ressources
-  </button>
-  <button
-    class="shop-tab"
-    id="shopTabCards"
-    data-tab="cards"
-  >
-    Acheter des cartes
-  </button>
-</div>
+  <div class="shop-tabs">
+    <button
+      class="shop-tab shop-tab-active"
+      id="shopTabSell"
+      data-tab="sell"
+    >
+      Vendre des ressources
+    </button>
+    <button
+      class="shop-tab"
+      id="shopTabItems"
+      data-tab="items"
+    >
+      Items & objets
+    </button>
+    <button
+      class="shop-tab"
+      id="shopTabCards"
+      data-tab="cards"
+    >
+      Acheter des cartes
+    </button>
+  </div>
 
 <div class="shop-content">
   <!-- Onglet Vente -->
   <section id="shopPanelSell" class="shop-panel shop-panel-active">
     <div class="shop-sell-info">
       <p class="mb-1">
-        ⚖️ Pour l'instant, chaque ressource vaut
-        <strong>1 coin par unité</strong>.
       </p>
     </div>
+
+    <!-- Toolbar de filtre / recherche -->
+    <div class="shop-toolbar">
+      <div class="shop-toolbar-left">
+        <label class="shop-filter-label">
+          Filtrer les ressources :
+          <input
+            id="shopSellFilter"
+            type="search"
+            class="shop-filter-input"
+            placeholder="Branches, pierre, poisson..."
+          />
+        </label>
+      </div>
+    </div>
+
     <div id="shopSellList" class="shop-sell-grid"></div>
     <div id="shopSellEmpty" class="shop-empty d-none">
       Tu n'as pas encore de ressources à vendre.
     </div>
   </section>
 
-  <!-- Onglet Cartes -->
-  <section id="shopPanelCards" class="shop-panel">
-    <div id="shopCardsList"></div>
+
+  <!-- Onglet Items -->
+  <section id="shopPanelItems" class="shop-panel">
+    <div class="shop-sell-info">
+      <p class="mb-1">
+        🎒 Ici tu pourras gérer tes items & objets (prochainement).
+      </p>
+    </div>
+    <div id="shopItemsList" class="shop-items-grid">
+      <!-- On remplira en JS plus tard -->
+      <div class="shop-empty text-muted">
+        Pas encore d’items à afficher.
+      </div>
+    </div>
   </section>
+
+<!-- Onglet Cartes -->
+<section id="shopPanelCards" class="shop-panel">
+  <div class="shop-toolbar">
+    <div class="shop-toolbar-left">
+      <label class="shop-filter-label">
+        Rechercher une carte :
+        <input
+          id="shopCardsFilter"
+          type="search"
+          class="shop-filter-input"
+          placeholder="Boost bois, slot forêt..."
+        />
+      </label>
+    </div>
+    <div class="shop-toolbar-right">
+      <select
+        id="shopCardsOwnedFilter"
+        class="shop-filter-input shop-filter-select"
+      >
+        <option value="">Toutes les cartes</option>
+        <option value="unowned">Pas encore possédées</option>
+        <option value="owned">Déjà possédées</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="shopCardsList"></div>
+</section>
+
 </div>
 {% endblock %}
 

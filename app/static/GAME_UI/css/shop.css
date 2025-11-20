@@ -1,0 +1,503 @@
+/* ===========================
+   Shop page
+   =========================== */
+
+.shop-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.shop-header {
+  margin-bottom: 1rem;
+}
+
+.shop-tabs {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 999px;
+  padding: 0.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  margin-bottom: 1rem;
+}
+
+.shop-tab {
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.shop-tab-active {
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  font-weight: 600;
+}
+
+.shop-tab[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shop-content {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 1rem 1.1rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.shop-sell-info {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  margin-bottom: 0.8rem;
+}
+
+.shop-sell-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.8rem;
+}
+
+.shop-sell-item {
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 14px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.shop-sell-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shop-sell-icon {
+  font-size: 1.4rem;
+}
+
+.shop-sell-name {
+  font-weight: 600;
+}
+
+.shop-sell-qty {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.shop-sell-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.shop-sell-footer input[type="number"] {
+  width: 70px;
+  font-size: 0.85rem;
+}
+
+.shop-sell-price {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  flex: 1;
+}
+
+.shop-sell-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  cursor: pointer;
+}
+
+.shop-sell-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shop-empty {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.d-none {
+  display: none !important;
+}
+
+.shop-panel {
+  display: none;
+}
+
+.shop-panel-active {
+  display: block;
+}
+
+/* ===========================
+   Shop - Cartes
+   =========================== */
+
+.shop-card-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(10, 15, 30, 0.9);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  margin-bottom: 0.8rem;
+}
+
+/* Colonne gauche : icône + texte */
+.shop-card-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+/* Icône de carte + badge "owned" */
+.shop-card-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shop-card-icon img {
+  max-width: 72px;
+  max-height: 72px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Badge nombre possédé (x3, x5, ...) */
+.shop-card-owned-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.95);
+  color: #022c22;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Texte de la carte */
+.shop-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.shop-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.shop-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.shop-card-type-pill {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  background: rgba(30, 64, 175, 0.5);
+  color: #c7d2fe;
+}
+
+.shop-card-desc {
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
+/* Colonne droite : prix + bouton */
+.shop-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+/* Prix (une seule option) */
+.shop-card-price {
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  font-size: 0.82rem;
+  color: #e5e7eb;
+}
+
+/* Select quand il y a plusieurs prix */
+.shop-card-price-select {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  font-size: 0.82rem;
+}
+
+/* Bouton acheter */
+.shop-card-buy-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  cursor: pointer;
+}
+
+.shop-card-buy-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.shop-card-buy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* État désactivé visuel (max atteint, pas achetable, etc.) */
+.shop-card-row-disabled {
+  opacity: 0.6;
+}
+
+/* Toolbar / filtre boutique */
+.shop-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.shop-filter-label {
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
+.shop-filter-input {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+  font-size: 0.82rem;
+}
+
+.shop-filter-input:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+/* Carte de vente de ressource (version compacte en colonne) */
+/* Container principal (on garde la colonne : header + bottom) */
+.shop-sell-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(30, 64, 175, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Ligne du haut : gauche = icône+prix, droite = quantité */
+.shop-sell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Bloc gauche : icône + badge + prix juste en dessous */
+.shop-sell-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.shop-sell-icon-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shop-sell-icon-wrap img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.shop-stock-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.9);
+  color: #022c22;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Prix unitaire sous l’icône */
+.shop-sell-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  color: #e5e7eb;
+}
+
+.shop-sell-unit-price {
+  font-weight: 600;
+}
+
+/* Bloc droit : quantité alignée sur l’icône */
+.shop-sell-right {
+  display: flex;
+  align-items: center;
+}
+
+.shop-sell-qty-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.shop-qty-btn,
+.shop-qty-max {
+  border: none;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+}
+
+.shop-qty-btn:hover,
+.shop-qty-max:hover {
+  background: rgba(30, 64, 175, 0.9);
+}
+
+.shop-qty-max {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+/* Input quantité : petit + sans flèches */
+.shop-sell-input {
+  width: 48px;
+  padding: 0.15rem 0.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.shop-sell-input::-webkit-outer-spin-button,
+.shop-sell-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.shop-sell-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.shop-sell-input:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+/* Bas de carte : total + bouton centré */
+.shop-sell-bottom {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.shop-sell-total {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+.shop-sell-total-value {
+  font-weight: 700;
+  color: #facc15;
+}
+
+.shop-sell-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  color: #022c22;
+  cursor: pointer;
+}
+.shop-sell-btn:hover {
+  filter: brightness(1.05);
+}
+.shop-sell-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* Panel items (grille) — simple pour l’instant */
+.shop-items-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+.shop-toolbar-right {
+  margin-left: auto;
+}
+
+/* Select dans les toolbars de filtre */
+.shop-filter-select {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.82rem;
+  padding: 0.25rem 0.7rem;
+}

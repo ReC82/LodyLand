@@ -17,6 +17,8 @@
       href="{{ url_for('static', filename='GAME_UI/css/game.css') }}"
     />
 
+    {% block extra_css %}{% endblock %}
+
     <!-- CSS spécifique aux lands -->
     <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
 

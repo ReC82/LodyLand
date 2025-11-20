@@ -1,6 +1,42 @@
-/* ===========================
-   Global game layout + HUD
-   =========================== */
+/* ============================================================
+   SECTION 01 — UI ICONS (GLOBAL)
+   ============================================================ */
+
+.ui-icon {
+  display: inline-block;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+/* Coin icon (utilisé partout pour les coins) */
+.ui-icon-coin {
+  width: 16px;   /* ajuste si tu veux plus grand */
+  height: 16px;
+  background-image: url("/static/assets/img/ui/coins.png");
+}
+
+.ui-icon-diam {
+  width: 16px;
+  height: 16px;
+  background-image: url("/static/assets/img/ui/diams.png");
+}
+
+.ui-icon-xp {
+  width: 16px;
+  height: 16px;
+  background-image: url("/static/assets/img/ui/xp.png");
+}
+
+/* =================== END SECTION 01 — UI ICONS ============= */
+
+
+/* ============================================================
+   SECTION 02 — LAYOUT GLOBAL + HUD + LOGO
+   ============================================================ */
+
+/* --- Body / fond global --- */
 
 .game-body {
   margin: 0;
@@ -9,15 +45,21 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* --- Header HUD (XP, coins, menu) + intégration du logo --- */
+
 .game-header {
+  position: relative;
+  height: 72px;              /* hauteur de la barre HUD */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1rem;
   background: radial-gradient(circle at top, #1d283a, #020617);
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  overflow: visible;         /* pour laisser dépasser le logo */
 }
 
+/* Colonnes HUD */
 .gh-left,
 .gh-center,
 .gh-right {
@@ -26,16 +68,28 @@
   gap: 0.5rem;
 }
 
-/* --- Left: logo + land name --- */
-
-.gh-logo {
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  color: #a5b4fc;
+/* Bloc de gauche (texte / land name), avec espace réservé pour le logo */
+.gh-left {
+  position: relative;
+  padding-left: 180px;       /* espace réservé pour le logo */
 }
 
+/* Logo LodyLand absolu, superposé sur le header */
+.gh-logo {
+  position: absolute;
+  left: 0;                   /* ajuster la position horizontale si besoin */
+  top: 50%;                  /* base sur le centre vertical du header */
+  transform: translateY(-20%); /* le fait légèrement déborder vers le bas */
+  pointer-events: none;      /* le logo ne capte pas les clics */
+}
+
+.gh-logo-img {
+  height: 256px;             /* ajuste selon le rendu */
+  width: auto;
+  display: block;
+}
+
+/* Land name pill */
 .gh-land {
   font-size: 0.85rem;
   padding: 0.2rem 0.5rem;
@@ -79,7 +133,7 @@
   margin-top: 0.2rem;
 }
 
-/* --- Right: currencies + menu --- */
+/* --- Right: currencies + bouton menu --- */
 
 .gh-right {
   gap: 0.75rem;
@@ -104,7 +158,7 @@
   color: #38bdf8;
 }
 
-/* Generic HUD icons */
+/* Icônes HUD */
 .hud-icon-img {
   width: 32px;
   height: 32px;
@@ -120,6 +174,7 @@
   vertical-align: middle;
 }
 
+/* Bouton menu HUD */
 .gh-menu-btn {
   border: none;
   border-radius: 999px;
@@ -134,68 +189,18 @@
   background: rgba(30, 64, 175, 0.9);
 }
 
-/* Main game area */
+/* --- Zone principale du jeu --- */
+
 .game-main {
   padding: 0.75rem;
 }
 
-/* ===========================
-   Lands: layout commun
-   =========================== */
+/* =================== END SECTION 02 — LAYOUT + HUD ========= */
 
-.land-container {
-  max-width: 900px;
-  margin: 1.5rem auto;
-}
 
-/* grille 3x2 pour les slots */
-.slot-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.slot-tile {
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 16px;
-  padding: 1.5rem;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-.slot-tile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-}
-
-.slot-index {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #777;
-}
-
-.slot-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 0.25rem;
-}
-
-.slot-status {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.slot-icon {
-  font-size: 2rem;
-}
-
-/* ===========================
-   Game menu (profil / lands / logout)
-   =========================== */
+/* ============================================================
+   SECTION 03 — GAME MENU (profil / lands / logout)
+   ============================================================ */
 
 .game-menu {
   position: fixed;
@@ -283,12 +288,15 @@
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
-  color: #fff;           /* à adapter à ton thème */
+  color: #fff;
 }
 
-/* ===========================
-   Daily Chest HUD
-   =========================== */
+/* =================== END SECTION 03 — GAME MENU ============ */
+
+
+/* ============================================================
+   SECTION 04 — DAILY CHEST (HUD + TOOLTIP)
+   ============================================================ */
 
 .hud-daily {
   position: relative;
@@ -297,12 +305,19 @@
   margin: 0 0.5rem;
 }
 
+/* Icône de coffre dans le HUD */
 .hud-daily-icon {
   cursor: pointer;
   font-size: 1.3rem;
   position: relative;
   transition: transform 0.1s ease;
   user-select: none;
+
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hud-daily-icon:hover {
@@ -334,22 +349,18 @@
   font-size: 0;
 }
 
-/* Le vrai "!" visible est ici */
 .daily-alert-badge::before {
   content: "!";
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-60%, -55%); /* centrage parfait */
-
+  transform: translate(-60%, -55%);
   font-size: 12px;
   font-weight: 900;
   color: #ffffff;
 }
 
-
-
-/* Infobulle */
+/* Infobulle du daily */
 .hud-daily-tooltip {
   position: absolute;
   top: 28px;
@@ -369,23 +380,12 @@
   display: block;
 }
 
-/* Daily chest: icon container */
-.hud-daily-icon {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Quand le coffre est prêt à être ouvert */
+/* Coffre prêt : animation */
 .hud-daily-ready {
   animation: chest-bounce 1.2s infinite ease-in-out,
              chest-glow 1.2s infinite ease-in-out;
 }
 
-/* Petit saut du coffre */
 @keyframes chest-bounce {
   0%, 20%, 50%, 80%, 100% {
     transform: translateY(0);
@@ -398,7 +398,6 @@
   }
 }
 
-/* Léger glow pour attirer l’œil */
 @keyframes chest-glow {
   0%, 100% {
     filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0.0));
@@ -408,10 +407,12 @@
   }
 }
 
+/* =================== END SECTION 04 — DAILY CHEST HUD ====== */
 
-/* ===========================
-   Daily Chest Modal
-   =========================== */
+
+/* ============================================================
+   SECTION 05 — DAILY CHEST MODAL
+   ============================================================ */
 
 .daily-modal {
   position: fixed;
@@ -444,8 +445,6 @@
   max-width: 90vw;
   text-align: center;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-
-  /* animation when opening */
   animation: dailyModalPop 0.38s ease-out;
 }
 
@@ -491,7 +490,6 @@
   filter: brightness(1.05);
 }
 
-/* pop-in + légère translation */
 @keyframes dailyModalPop {
   0% {
     transform: scale(0.7) translateY(20px);
@@ -507,7 +505,6 @@
   }
 }
 
-/* petite animation sur l'icône */
 @keyframes dailyIconBounce {
   0% {
     transform: translateY(-8px) scale(0.9);
@@ -520,9 +517,65 @@
   }
 }
 
-/* ===========================
-   Land Selector (/lands)
-   =========================== */
+/* =================== END SECTION 05 — DAILY MODAL ========= */
+
+
+/* ============================================================
+   SECTION 06 — LANDS (LAYOUT + SELECTOR)
+   ============================================================ */
+
+/* Layout commun d’un land (ex: /land/forest) */
+.land-container {
+  max-width: 900px;
+  margin: 1.5rem auto;
+}
+
+/* Grille 3x2 pour les slots */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.slot-tile {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.slot-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.slot-index {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+}
+
+.slot-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.slot-status {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.slot-icon {
+  font-size: 2rem;
+}
+
+/* --- Land selector (/lands) --- */
 
 .land-select-container {
   max-width: 960px;
@@ -620,413 +673,13 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* =================== END SECTION 06 — LANDS =============== */
 
-/* ===========================
-   Shop page
-   =========================== */
 
-.shop-container {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
+/* ============================================================
+   SECTION 07 — LEVEL UP MODAL
+   ============================================================ */
 
-.shop-header {
-  margin-bottom: 1rem;
-}
-
-.shop-tabs {
-  display: inline-flex;
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 999px;
-  padding: 0.2rem;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  margin-bottom: 1rem;
-}
-
-.shop-tab {
-  border: none;
-  background: transparent;
-  color: #e5e7eb;
-  font-size: 0.9rem;
-  padding: 0.25rem 0.9rem;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.shop-tab-active {
-  background: linear-gradient(to right, #22c55e, #16a34a);
-  color: #022c22;
-  font-weight: 600;
-}
-
-.shop-tab[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.shop-content {
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  padding: 1rem 1.1rem;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-}
-
-.shop-sell-info {
-  font-size: 0.9rem;
-  color: #e5e7eb;
-  margin-bottom: 0.8rem;
-}
-
-.shop-sell-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 0.8rem;
-}
-
-.shop-sell-item {
-  background: rgba(15, 23, 42, 0.8);
-  border-radius: 14px;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.shop-sell-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.shop-sell-icon {
-  font-size: 1.4rem;
-}
-
-.shop-sell-name {
-  font-weight: 600;
-}
-
-.shop-sell-qty {
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-.shop-sell-footer {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.2rem;
-}
-
-.shop-sell-footer input[type="number"] {
-  width: 70px;
-  font-size: 0.85rem;
-}
-
-.shop-sell-price {
-  font-size: 0.85rem;
-  color: #e5e7eb;
-  flex: 1;
-}
-
-.shop-sell-button {
-  border: none;
-  border-radius: 999px;
-  padding: 0.25rem 0.7rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  background: linear-gradient(to right, #22c55e, #16a34a);
-  color: #022c22;
-  cursor: pointer;
-}
-
-.shop-sell-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.shop-empty {
-  font-size: 0.9rem;
-  color: #9ca3af;
-  text-align: center;
-  padding: 1rem 0;
-}
-
-.d-none {
-  display: none !important;
-}
-
-.shop-panel {
-  display: none;
-}
-
-.shop-panel-active {
-  display: block;
-}
-
-/* ---------------------------------------------------------- */
-/* Shop – cartes                                              */
-/* ---------------------------------------------------------- */
-
-/* Une ligne de carte dans l'onglet "Acheter des cartes" */
-.shop-card-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1rem 1.25rem;
-  border-radius: 16px;
-  background: rgba(10, 15, 30, 0.8);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  margin-bottom: 0.75rem;
-}
-
-/* Zone icône (à gauche) */
-.shop-card-icon {
-  width: 80px;            /* zone "carrée" fixe */
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* L'image de la carte en elle-même */
-.shop-card-icon img {
-  max-width: 72px;        /* limite stricte */
-  max-height: 72px;
-  display: block;
-  object-fit: contain;    /* garde les proportions */
-  border-radius: 12px;    /* petit arrondi sympa */
-}
-
-/* Texte principal de la carte */
-.shop-card-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-/* Colonne droite (prix + bouton) */
-.shop-card-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-
-/* ------------------------------------------------------------------
-   INVENTAIRE (GAME_UI)
-------------------------------------------------------------------- */
-
-.inv-container {
-  max-width: 1100px;
-  margin: 2.5rem auto;
-  padding: 2rem 2.5rem;
-  border-radius: 24px;
-  background: rgba(15, 23, 42, 0.9); /* proche de la boutique */
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
-  color: #e5e7eb;
-}
-
-.inv-header {
-  margin-bottom: 1.5rem;
-}
-
-.inv-header .text-muted {
-  color: #9ca3af !important;
-}
-
-/* Onglets (même logique que la boutique) */
-
-.inv-tabs {
-  display: inline-flex;
-  padding: 0.25rem;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  margin-bottom: 1.5rem;
-}
-
-.inv-tab {
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  padding: 0.45rem 1.4rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
-}
-
-.inv-tab:hover {
-  color: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-.inv-tab-active {
-  background: #16a34a; /* vert coins */
-  color: #041015;
-}
-
-/* Panels */
-
-.inv-content {
-  margin-top: 0.5rem;
-}
-
-.inv-panel {
-  display: none;
-}
-
-.inv-panel-active {
-  display: block;
-}
-
-/* Toolbar + filtres */
-
-.inv-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.inv-filter-label {
-  font-size: 0.82rem;
-  color: #9ca3af;
-}
-
-.inv-filter-input {
-  margin-left: 0.5rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.8);
-  color: #e5e7eb;
-  font-size: 0.82rem;
-}
-
-.inv-filter-input:focus {
-  outline: none;
-  border-color: #22c55e;
-}
-
-.inv-toolbar-btn {
-  border-radius: 999px;
-  border: none;
-  padding: 0.4rem 1.2rem;
-  font-size: 0.85rem;
-  background: #22c55e;
-  color: #041015;
-  cursor: pointer;
-  font-weight: 500;
-  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.35);
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
-}
-
-.inv-toolbar-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.45);
-  background: #16a34a;
-}
-
-/* Listes */
-
-.inv-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.inv-empty {
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-  color: #9ca3af;
-}
-
-/* Cartes (ressources & cartes) */
-
-.inv-card-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.9rem 1.1rem;
-  border-radius: 18px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(30, 64, 175, 0.35);
-}
-
-.inv-card-main {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.inv-card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 30%, #fef9c3, #f97316);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.inv-card-icon img {
-  display: block;
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-}
-
-.inv-card-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.inv-card-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #e5e7eb;
-}
-
-.inv-card-sub {
-  font-size: 0.78rem;
-  color: #9ca3af;
-}
-
-.inv-card-desc {
-  margin-top: 0.15rem;
-  font-size: 0.78rem;
-  color: #cbd5f5;
-}
-
-.inv-card-side {
-  text-align: right;
-  min-width: 80px;
-}
-
-.inv-card-qty-label {
-  font-size: 0.76rem;
-  color: #9ca3af;
-}
-
-.inv-card-qty-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #22c55e;
-}
-
-/* Level Up modal rewards layout */
 .levelup-modal-rewards {
   margin-top: 1rem;
   display: flex;
@@ -1054,31 +707,23 @@
   text-align: center;
 }
 
-/* ============================
-   Level Up Modal — Card reward
-   ============================ */
-
+/* Carte en reward : respecter 1024x1536 */
 .levelup-reward-card {
-  width: 180px;           /* largeur fixe en px (ajuste à ton goût) */
-  aspect-ratio: 1024 / 1536; /* 👈 respecte parfaitement le format carte */
-  object-fit: contain;       /* aucune déformation */
-  border-radius: 12px;       /* jolie bordure */
+  width: 180px;
+  aspect-ratio: 1024 / 1536;
+  object-fit: contain;
+  border-radius: 12px;
   box-shadow: 0 0 12px rgba(0,0,0,0.4);
-  image-rendering: auto;     /* pas de pixel-art pour les cartes */
+  image-rendering: auto;
   margin-bottom: 0.5rem;
 }
 
-/* Icônes normales (coins, resources...) */
-.levelup-reward-icon {
-  width: 48px;
-  height: 48px;
-  image-rendering: pixelated;
-  margin-bottom: 0.25rem;
-}
+/* =================== END SECTION 07 — LEVEL UP ============ */
 
-/* ===========================
-   Craft Modal
-   =========================== */
+
+/* ============================================================
+   SECTION 08 — CRAFT MODAL (+ BOUTON FLOTTANT)
+   ============================================================ */
 
 .craft-modal {
   position: fixed;
@@ -1139,9 +784,10 @@
   color: #f87171;
 }
 
+/* Layout interne : recettes + grille + détails */
 .craft-modal-body {
   display: grid;
-  grid-template-columns: 1.4fr 1.2fr; /* 2 colonnes: ingrédients + table */
+  grid-template-columns: 1.4fr 1.2fr;
   gap: 16px;
   flex: 1;
   min-height: 260px;
@@ -1153,7 +799,14 @@
   margin-bottom: 8px;
 }
 
-/* Left: recipes list */
+/* Panel gauche : recettes */
+.craft-left-panel {
+  position: relative;
+  overflow-y: auto;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  padding-right: 12px;
+}
+
 .craft-recipes-panel {
   overflow-y: auto;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
@@ -1203,7 +856,7 @@
   object-fit: contain;
 }
 
-/* Center: craft grid */
+/* Panel centre : grille de craft */
 .craft-grid-panel {
   display: flex;
   flex-direction: column;
@@ -1232,6 +885,19 @@
   color: #6b7280;
 }
 
+.craft-slot-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.craft-slot-placeholder {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.1rem;
+}
+
 .craft-perform-btn {
   margin-top: 4px;
   padding: 8px 10px;
@@ -1254,7 +920,78 @@
   color: #fca5a5;
 }
 
-/* Bouton flottant Craft en bas à gauche */
+.craft-success-msg {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #bbf7d0;
+}
+
+/* Panel ingrédients (droite) */
+.craft-ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.craft-ingredient-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  font-size: 0.85rem;
+  color: #e5e7eb;
+}
+
+.craft-ingredient-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.craft-ingredient-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.9);
+  flex-shrink: 0;
+}
+
+.craft-ingredient-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.craft-ingredient-qty {
+  font-size: 0.8rem;
+  color: #a5b4fc;
+}
+
+/* Sélecteur de quantité */
+.craft-quantity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.craft-quantity-row input {
+  width: 70px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+}
+
+/* Bouton flottant "Craft" */
 .craft-fab-btn {
   position: fixed;
   left: 16px;
@@ -1306,127 +1043,4 @@
   background: rgba(30, 64, 175, 0.9);
 }
 
-.craft-left-panel {
-  position: relative;
-  overflow-y: auto;
-  border-right: 1px solid rgba(148, 163, 184, 0.2);
-  padding-right: 12px;
-}
-
-.craft-ingredients-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.craft-ingredient-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 8px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.8);
-  font-size: 0.85rem;
-  color: #e5e7eb;
-}
-
-.craft-ingredient-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.craft-ingredient-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: rgba(15, 23, 42, 0.9);
-  flex-shrink: 0;
-}
-
-.craft-ingredient-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.craft-ingredient-qty {
-  font-size: 0.8rem;
-  color: #a5b4fc;
-}
-
-.craft-quantity-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-  margin-bottom: 4px;
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-.craft-quantity-row input {
-  width: 70px;
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
-  font-size: 0.8rem;
-}
-
-.craft-success-msg {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  color: #bbf7d0;
-}
-
-.craft-slot-img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.craft-slot-placeholder {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  text-align: center;
-  line-height: 1.1rem;
-}
-
-
-/* ===========================
-LOGO
-=========================== */
-/* Header : hauteur fixe, contenu centré */
-.game-header {
-  position: relative;
-  height: 72px;              /* hauteur de la barre HUD */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  overflow: visible;         /* pour laisser dépasser le logo */
-}
-
-/* Bloc de gauche (texte "Forêt", etc.) */
-.gh-left {
-  position: relative;
-  padding-left: 180px;       /* espace réservé pour le logo */
-}
-
-/* Logo absolu, superposé sur la barre */
-.gh-logo {
-  position: absolute;
-  left: 0px;                /* décale le logo vers la droite */
-  top: 50%;                  /* base sur le centre vertical du header */
-  transform: translateY(-20%); /* le fait légèrement déborder vers le bas */
-  pointer-events: none;      /* le logo ne capte pas les clics */
-}
-
-/* Taille du logo */
-.gh-logo-img {
-  height: 256px;              /* tu peux ajuster (80–110) selon le rendu */
-  width: auto;
-  display: block;
-}
+/* =================== END SECTION 08 — CRAFT =============== */

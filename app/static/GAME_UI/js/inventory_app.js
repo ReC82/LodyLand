@@ -41,33 +41,41 @@ function renderResourceList(filterText = "") {
     const label = def.label || item.resource || "???";
     const icon = def.icon || null;
     const qty = item.qty ?? item.quantity ?? 0;
+    const description = def.description || "Pas de description disponible.";
+    const baseSellPrice = def.base_sell_price ?? null;
 
     const row = document.createElement("div");
-    row.className = "inv-card-row";
+    // Tile-style + tooltip
+    row.className = "inv-resource-item inv-tooltip";
 
     row.innerHTML = `
-      <div class="inv-card-main">
-        <div class="inv-card-icon">
+      <div class="inv-resource-icon-wrapper">
+        ${
+          icon
+            ? `<img src="${icon}" alt="${label}" />`
+            : `<div class="inv-resource-placeholder">📦</div>`
+        }
+        <span class="inv-resource-qty-badge">${qty}</span>
+      </div>
+
+      <div class="inv-tooltip-content">
+        <div class="inv-tooltip-title">${label}</div>
+        <div class="inv-tooltip-sub">${item.resource}</div>
+        <div class="inv-tooltip-body">
+          ${description}
           ${
-            icon
-              ? `<img src="${icon}" alt="${label}" />`
-              : "📦"
+            baseSellPrice != null
+              ? `<div class="inv-tooltip-extra">Valeur de base : ${baseSellPrice} coins</div>`
+              : ""
           }
         </div>
-        <div class="inv-card-text">
-          <div class="inv-card-title">${label}</div>
-          <div class="inv-card-sub">${item.resource}</div>
-        </div>
-      </div>
-      <div class="inv-card-side">
-        <div class="inv-card-qty-label">Quantité</div>
-        <div class="inv-card-qty-value">${qty}</div>
       </div>
     `;
 
     listEl.appendChild(row);
   });
 }
+
 
 function renderCardList(filterText = "") {
   const listEl = $("invCardsList");
@@ -76,21 +84,35 @@ function renderCardList(filterText = "") {
 
   const term = (filterText || "").toLowerCase().trim();
 
-  // On ne garde que les cartes possédées
+  // Current type filter from dropdown
+  const typeSelect = $("invCardTypeFilter");
+  const typeFilter = typeSelect ? (typeSelect.value || "all").toLowerCase() : "all";
+
+  // Only owned cards
   const owned = invCards.filter((c) => (c.owned_qty || 0) > 0);
 
   const items = owned.filter((card) => {
-    if (!term) return true;
     const label = (card.label || "").toLowerCase();
     const desc = (card.description || "").toLowerCase();
     const type = (card.type || "").toLowerCase();
     const key = (card.key || "").toLowerCase();
-    return (
-      label.includes(term) ||
-      desc.includes(term) ||
-      type.includes(term) ||
-      key.includes(term)
-    );
+
+    // Text search
+    if (term) {
+      const matchText =
+        label.includes(term) ||
+        desc.includes(term) ||
+        type.includes(term) ||
+        key.includes(term);
+      if (!matchText) return false;
+    }
+
+    // Type filter (if not "all")
+    if (typeFilter !== "all" && type !== typeFilter) {
+      return false;
+    }
+
+    return true;
   });
 
   listEl.innerHTML = "";
@@ -105,43 +127,42 @@ function renderCardList(filterText = "") {
     const qty = card.owned_qty || 0;
 
     const row = document.createElement("div");
-    row.className = "inv-card-row";
+    // Grid tile + tooltip
+    row.className = "inv-card-tile inv-tooltip";
 
     row.innerHTML = `
-      <div class="inv-card-main">
-        <div class="inv-card-icon">
+      <div class="inv-card-image-wrapper">
+        ${
+          icon
+            ? `<img src="${icon}" alt="${card.label || card.key}" />`
+            : `<div class="inv-card-placeholder">🃏</div>`
+        }
+        <span class="inv-card-qty-badge">x${qty}</span>
+      </div>
+      <div class="inv-card-name">${card.label || card.key}</div>
+
+      <div class="inv-tooltip-content">
+        <div class="inv-tooltip-title">${card.label || card.key}</div>
+        <div class="inv-tooltip-sub">
+          Type : ${card.type || "?"}
           ${
-            icon
-              ? `<img src="${icon}" alt="${card.label || card.key}" />`
-              : "🃏"
-          }
-        </div>
-        <div class="inv-card-text">
-          <div class="inv-card-title">${card.label || card.key}</div>
-          <div class="inv-card-sub">
-            Type : ${card.type || "?"}
-            ${
-              card.target_resource
-                ? ` • Cible : ${card.target_resource}`
-                : ""
-            }
-          </div>
-          ${
-            card.description
-              ? `<div class="inv-card-desc">${card.description}</div>`
+            card.target_resource
+              ? ` • Cible : ${card.target_resource}`
               : ""
           }
         </div>
-      </div>
-      <div class="inv-card-side">
-        <div class="inv-card-qty-label">Possédées</div>
-        <div class="inv-card-qty-value">${qty}</div>
+        ${
+          card.description
+            ? `<div class="inv-tooltip-body">${card.description}</div>`
+            : ""
+        }
       </div>
     `;
 
     listEl.appendChild(row);
   });
 }
+
 
 // ---------------------------------------------------------------------------
 // Tabs + filtres
@@ -173,18 +194,29 @@ function setupInventoryTabs() {
 function setupFilters() {
   const resFilter = $("invResourceFilter");
   const cardFilter = $("invCardFilter");
+  const cardTypeFilter = $("invCardTypeFilter");
 
   if (resFilter) {
     resFilter.addEventListener("input", () => {
       renderResourceList(resFilter.value);
     });
   }
+
   if (cardFilter) {
     cardFilter.addEventListener("input", () => {
       renderCardList(cardFilter.value);
     });
   }
+
+  if (cardTypeFilter) {
+    // When type changes, we re-render with current text filter
+    cardTypeFilter.addEventListener("change", () => {
+      const textTerm = cardFilter ? cardFilter.value : "";
+      renderCardList(textTerm);
+    });
+  }
 }
+
 
 // ---------------------------------------------------------------------------
 // Chargement des données

@@ -2,6 +2,24 @@
 // Game menu (profil / lands / shop / quests / logout)
 // ---------------------------------------------------------------------------
 
+// Format ISO string -> DD/MM/YYYY à HH:MM
+function formatIso(isoString) {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+
+  // Format FR
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+
+  return `${day}/${month}/${year} à ${hours}:${minutes}`;
+}
+
+
+
 function setupGameMenu() {
   const btn = document.getElementById("hud-menu-btn");
   const menu = document.getElementById("game-menu");
@@ -142,9 +160,10 @@ async function claimDaily() {
       const msg = err.error || "daily_failed";
 
       if (r.status === 409 && err.next_at) {
+        const formatted = formatIso(err.next_at);
         tooltip.innerHTML =
           "Déjà ouvert aujourd'hui.<br>" +
-          `<small>Prochain coffre: ${err.next_at}</small>`;
+          `<small>Prochain coffre: <br>${formatted}</small>`;
       } else {
         tooltip.textContent =
           `Impossible d'ouvrir le coffre (${r.status}) : ${msg}`;
@@ -208,9 +227,10 @@ async function refreshDailyStatus() {
   html += `<div>Streak actuel : <b>${d.streak?.current ?? 0}</b></div>`;
   html += `<div>Meilleur streak : <b>${d.streak?.best ?? 0}</b></div>`;
 
-  if (!d.eligible && d.next_reset) {
-    html += `<div style="margin-top:4px;">Prochain coffre :<br><b>${d.next_reset}</b></div>`;
-  }
+    if (!d.eligible && d.next_reset) {
+      const formatted = formatIso(d.next_reset);
+      html += `<div style="margin-top:4px;">Prochain coffre :<br><b>${formatted}</b></div>`;
+    }
 
   tooltip.innerHTML = html;
 }
