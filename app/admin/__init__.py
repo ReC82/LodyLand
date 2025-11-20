@@ -438,6 +438,126 @@ def cards_list():
         db_only_cards=db_only_cards,
         yaml_path=str(CARDS_YAML_PATH),
     )
+    
+@admin_bp.route("/cards/new", methods=["GET", "POST"])
+@admin_required
+def card_create():
+    """Créer une nouvelle carte dans cards.yml."""
+    mapping = load_cards_yaml()  # {key: cfg}
+    errors: list[str] = []
+    saved = False
+
+    # Valeurs par défaut pour GET ou POST avec erreurs
+    form_defaults = {
+        "key": "",
+        "categorie": "",
+        "label": "",
+        "description": "",
+        "icon": "",
+        "type": "",
+        "rarity": "common",
+        "enabled": True,
+    }
+
+    if request.method == "POST":
+        key = (request.form.get("key") or "").strip()
+        categorie = (request.form.get("categorie") or "").strip()
+        label = (request.form.get("label") or "").strip()
+        description = (request.form.get("description") or "").strip()
+        icon = (request.form.get("icon") or "").strip()
+        ctype = (request.form.get("type") or "").strip()
+        rarity = (request.form.get("rarity") or "").strip() or "common"
+        enabled_str = request.form.get("enabled")  # "on" ou None
+
+        # On garde les valeurs saisies pour ré-affichage en cas d'erreur
+        form_defaults.update(
+            {
+                "key": key,
+                "categorie": categorie,
+                "label": label,
+                "description": description,
+                "icon": icon,
+                "type": ctype,
+                "rarity": rarity,
+                "enabled": bool(enabled_str),
+            }
+        )
+
+        # ---- Validation de base ----
+        if not key:
+            errors.append("Le champ 'Key' est requis.")
+        else:
+            # même logique que pour les ressources : lettres minuscule, chiffres, underscore
+            if not re.match(r"^[a-z0-9_]+$", key):
+                errors.append(
+                    "La key doit contenir uniquement des lettres minuscules, "
+                    "chiffres et underscores (ex: wood_boost_1, land_forest)."
+                )
+            if key in mapping:
+                errors.append(f"Une carte avec la key '{key}' existe déjà.")
+
+        if not label:
+            errors.append("Le champ 'Label' est requis.")
+
+        if not ctype:
+            errors.append("Le champ 'Type' est requis (ex: land_access, resource_boost...).")
+
+        if not errors:
+            # ---- Construction de la config YAML minimale pour la carte ----
+            cfg = dict(mapping.get(key) or {})
+
+            cfg["key"] = key
+            cfg["label"] = label
+
+            if categorie:
+                cfg["categorie"] = categorie
+            else:
+                cfg.pop("categorie", None)
+
+            if description:
+                cfg["description"] = description
+            else:
+                cfg.pop("description", None)
+
+            cfg["type"] = ctype
+            cfg["rarity"] = rarity
+
+            # Icone par défaut si vide
+            cfg["icon"] = icon or f"/static/assets/img/cards/{key}.png"
+
+            cfg["enabled"] = bool(enabled_str)
+
+            # Champs avancés : on met un squelette très simple.
+            # Tu pourras les modifier dans l'édition détaillée (card_edit).
+            cfg.setdefault("gameplay", {})
+            cfg.setdefault("prices", [{"coins": 0}])
+            cfg.setdefault(
+                "shop",
+                {
+                    "tradable": False,
+                    "giftable": True,
+                    "max_owned": 1,
+                    "enabled": True,
+                },
+            )
+            # Pas de buy_rules par défaut
+            cfg.pop("buy_rules", None)
+
+            mapping[key] = cfg
+            save_cards_yaml(mapping)
+            saved = True
+
+            # Redirection vers l'écran d'édition détaillée de la carte
+            return redirect(url_for("admin.card_edit", card_key=key))
+
+    # GET initial ou POST avec erreurs
+    return render_template(
+        "ADMIN_UI/card_create.html",
+        errors=errors,
+        form=form_defaults,
+        saved=saved,
+    )
+    
 
 @admin_bp.route("/cards/<card_key>/edit", methods=["GET", "POST"])
 @admin_required

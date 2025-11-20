@@ -100,7 +100,7 @@ cards:
   type: land_access
   rarity: uncommon
   gameplay:
-    target_land: lake
+    target_land: farm
   prices:
   - coins: 500
   buy_rules: null
@@ -144,7 +144,7 @@ cards:
   gameplay:
     target_land: lake
   prices:
-  - coins: 500
+  - coins: 200
   buy_rules: null
   shop:
     tradable: false
@@ -252,6 +252,27 @@ cards:
   prices: []
   shop: {}
   enabled: true
+
+- key: anchovy_boost_1
+  label: Anchois +0.1
+  categorie: boost
+  description: Ajoute 0.1 a la récolte d'anchois
+  type: resource_boost
+  rarity: common
+  icon: /static/assets/img/cards/anchovy_boost_1.png
+  enabled: true
+  gameplay:
+    target_resource: anchovy
+    boost:
+      type: addition
+      amount: 0.2
+  prices:
+  - coins: 100
+  shop:
+    tradable: false
+    giftable: true
+    max_owned: 1
+    enabled: true
 
 - key: branch_boost_1
   categorie: boost

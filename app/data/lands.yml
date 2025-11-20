@@ -108,6 +108,10 @@ lake:
         min: 1
         max: 1
         chance: 1.0
+      - resource: anchovy
+        min: 1
+        max: 1
+        chance: 0.5        
       extra_loot: []
     rod:
       base_loot:
@@ -120,6 +124,7 @@ lake:
         min: 1
         max: 1
         chance: 0.001
+               
 mountain:
   key: land_mountain
   label_fr: Montagne

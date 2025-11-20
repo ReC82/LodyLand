@@ -12,11 +12,15 @@
     </div>
 
     <!-- Bouton pour plus tard (création/édition) -->
-    <div>
-      <button class="btn btn-secondary btn-sm" disabled>
-        Ajouter une carte (à venir)
-      </button>
-    </div>
+      <div>
+        <a
+          href="{{ url_for('admin.card_create') }}"
+          class="btn btn-secondary btn-sm"
+        >
+          + Nouvelle carte
+        </a>
+      </div>
+
   </div>
 
   <div class="card admin-card mb-4">
