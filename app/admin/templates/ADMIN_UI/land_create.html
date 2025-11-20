@@ -1,0 +1,152 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Nouveau land{% endblock %}
+
+{% block content %}
+  <a
+    href="{{ url_for('admin.lands_list') }}"
+    class="btn btn-sm btn-admin-back mb-3"
+  >
+    ← Retour à la liste des lands
+  </a>
+
+  <h1 class="h3 mb-3">
+    Créer un nouveau land
+  </h1>
+
+  {% if errors %}
+    <div class="alert alert-danger py-2">
+      <ul class="mb-0">
+        {% for e in errors %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="card admin-card">
+    <div class="card-body">
+      <!-- Slug -->
+      <div class="mb-3">
+        <label class="form-label">
+          Slug (identifiant interne)
+        </label>
+        <input
+          type="text"
+          name="slug"
+          class="form-control form-control-sm"
+          value="{{ form.slug }}"
+          placeholder="forest2, mountain, village_mid..."
+        />
+        <div class="form-text">
+          Utilisé comme clé YAML (ex: <code>forest</code> → entrée <code>forest:</code>
+          dans <code>lands.yml</code> et key interne <code>land_forest</code>).
+        </div>
+      </div>
+
+      <!-- Labels -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Label FR</label>
+          <input
+            type="text"
+            name="label_fr"
+            class="form-control form-control-sm"
+            value="{{ form.label_fr }}"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Label EN</label>
+          <input
+            type="text"
+            name="label_en"
+            class="form-control form-control-sm"
+            value="{{ form.label_en }}"
+          />
+        </div>
+      </div>
+
+      <!-- Starting / Slots -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label">Slots de base</label>
+          <input
+            type="number"
+            name="slots"
+            class="form-control form-control-sm"
+            value="{{ form.slots }}"
+          />
+        </div>
+        <div class="col-md-4 d-flex align-items-center">
+          <div class="form-check mt-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="starting_land"
+              id="startingCheck"
+              {% if form.starting_land %}checked{% endif %}
+            />
+            <label class="form-check-label" for="startingCheck">
+              Starting land (donné à l'inscription)
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icones -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-6">
+          <label class="form-label">Slot icon (path)</label>
+          <input
+            type="text"
+            name="slot_icon"
+            class="form-control form-control-sm"
+            value="{{ form.slot_icon }}"
+            placeholder="static/assets/img/lands/&lt;slug&gt;_slot.png"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Logo (path)</label>
+          <input
+            type="text"
+            name="logo"
+            class="form-control form-control-sm"
+            value="{{ form.logo }}"
+            placeholder="static/assets/img/lands/&lt;slug&gt;_logo.png"
+          />
+        </div>
+      </div>
+
+      <!-- Coût slots -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-4">
+          <label class="form-label">Base cost slot (diams)</label>
+          <input
+            type="number"
+            name="base_cost"
+            class="form-control form-control-sm"
+            value="{{ form.base_cost }}"
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Cost multiplier</label>
+          <input
+            type="text"
+            name="multiplier"
+            class="form-control form-control-sm"
+            value="{{ form.multiplier }}"
+          />
+        </div>
+      </div>
+
+      <p class="text-muted mt-3 mb-3">
+        Après création, tu seras redirigé vers la fiche d'édition du land
+        pour affiner les paramètres (loot, outils, etc.) dans le YAML.
+      </p>
+
+      <button type="submit" class="btn btn-primary">
+        Créer le land
+      </button>
+    </div>
+  </form>
+{% endblock %}

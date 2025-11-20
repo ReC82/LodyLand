@@ -1,141 +1,147 @@
-forest:
-  key: "land_forest"
-  label_fr: "Forêt"
-  label_en: "Forest"
-  starting_land: true           # donné dès l'inscription via la carte
-  slots: 8                     # nombre d'emplacements cliquables
-  slot_icon: "static/assets/img/lands/forest_slot.png"  # icône pour les emplacements
-  logo: "static/assets/img/lands/forest_logo.png"  # logo du land
-  additional_slot_base_cost_diams: 10   # coût en diams pour débloquer un emplacement supplémentaire
-  additional_slot_cost_multiplier: 1.5  # multiplicateur du coût pour chaque emplacement supplémentaire   
-  tools:
-    hands:
-      base_loot:
-        - resource: "branch"
-          min: 1
-          max: 1
-          chance: 1.0           # 100% → tu as toujours au moins 1 branche
-      extra_loot:
-        - resource: "vine"
-          min: 1
-          max: 1
-          chance: 0.10
-        - resource: "stone"
-          min: 1
-          max: 1
-          chance: 0.05                # 5% → pierre en bonus
-    axe:
-      base_loot:
-        - resource: "wood"
-          min: 1
-          max: 1
-          chance: 1.0           # 100% → si tu utilises la hache, tu chopes du bois
-      extra_loot: []            # on pourra rajouter des bonus plus tard
-
 beach:
-  key: "land_beach"
-  label_fr: "Plage"
-  label_en: "Beach"
-  starting_land: false          # doit être débloqué via carte land_beach
+  key: land_beach
+  label_fr: Plage
+  label_en: Beach
+  starting_land: false
   slots: 5
-  slot_icon: "static/assets/img/lands/beach_slot.png"  # icône pour les emplacements
-  logo: "static/assets/img/lands/beach_logo.png"  # logo du land
-  additional_slot_base_cost_diams: 15   # coût en diams pour débloquer un emplacement supplémentaire
-  additional_slot_cost_multiplier: 1.6  # multiplicateur du coût pour chaque emplacement supplémentaire
-
+  slot_icon: static/assets/img/lands/beach_slot.png
+  logo: static/assets/img/lands/beach_logo.png
+  additional_slot_base_cost_diams: 15
+  additional_slot_cost_multiplier: 1.6
   tools:
     hands:
       base_loot:
-        - resource: "sand"
-          min: 1
-          max: 1
-          chance: 1.0           # 100% → sable
+      - resource: sand
+        min: 1
+        max: 1
+        chance: 1.0
       extra_loot:
-        - resource: "seashell"  # coquillage
-          min: 1
-          max: 1
-          chance: 0.0001        # 0.01% de chance
-        - resource: "starfish"  # étoile de mer
-          min: 1
-          max: 1
-          chance: 0.0001        # 0.01%
-        - resource: "pearl"     # perle
-          min: 1
-          max: 1
-          chance: 0.0001        # 0.01%
+      - resource: seashell
+        min: 1
+        max: 1
+        chance: 0.0001
+      - resource: starfish
+        min: 1
+        max: 1
+        chance: 0.0001
+      - resource: pearl
+        min: 1
+        max: 1
+        chance: 0.0001
     shovel:
       base_loot:
-        - resource: "sand"
-          min: 1
-          max: 2
-          chance: 1.0           # avec la pelle, tu peux gagner un peu plus de sable
+      - resource: sand
+        min: 1
+        max: 2
+        chance: 1.0
       extra_loot:
-        - resource: "seashell"
-          min: 1
-          max: 1
-          chance: 0.001         # 0.1% — on ajustera plus tard si tu veux
-        - resource: "starfish"
-          min: 1
-          max: 1
-          chance: 0.001
-        - resource: "pearl"
-          min: 1
-          max: 1
-          chance: 0.001
-
-village:
-  key: "land_village"
-  label_fr: "Village"
-  label_en: "Village"
-  starting_land: true           # donné dès l'inscription via la carte
-  slots: 0                    # nombre d'emplacements cliquables
-
+      - resource: seashell
+        min: 1
+        max: 1
+        chance: 0.001
+      - resource: starfish
+        min: 1
+        max: 1
+        chance: 0.001
+      - resource: pearl
+        min: 1
+        max: 1
+        chance: 0.001
+cave:
+  key: land_cave
+  label_fr: Grotte
+  label_en: Cave
+  starting_land: false
+  slots: 3
+  slot_icon: static/assets/img/lands/cave_slot.png
+  logo: static/assets/img/lands/cave_logo.png
+  additional_slot_base_cost_diams: 10
+  additional_slot_cost_multiplier: 1.5
+  tools: {}
+forest:
+  key: land_forest
+  label_fr: Forêt
+  label_en: Forest
+  starting_land: true
+  slots: 8
+  slot_icon: static/assets/img/lands/forest_slot.png
+  logo: static/assets/img/lands/forest_logo.png
+  additional_slot_base_cost_diams: 10
+  additional_slot_cost_multiplier: 1.5
   tools:
     hands:
       base_loot:
-        - resource: "branch"
-          min: 1
-          max: 1
-          chance: 1.0           # 100% → tu as toujours au moins 1 branche
+      - resource: branch
+        min: 1
+        max: 1
+        chance: 1.0
       extra_loot:
-        - resource: "vine"
-          min: 1
-          max: 1
-          chance: 0.10          # 10% → liane en bonus
+      - resource: vine
+        min: 1
+        max: 1
+        chance: 0.1
+      - resource: stone
+        min: 1
+        max: 1
+        chance: 0.05
     axe:
       base_loot:
-        - resource: "wood"
-          min: 1
-          max: 1
-          chance: 1.0           # 100% → si tu utilises la hache, tu chopes du bois
-      extra_loot: []            # on pourra rajouter des bonus plus tard          
-
+      - resource: wood
+        min: 1
+        max: 1
+        chance: 1.0
+      extra_loot: []
 lake:
-  key: "land_lake"
-  label_fr: "Lac"
-  label_en: "Lake"
-  starting_land: false          # doit être débloqué via carte land_lake
+  key: land_lake
+  label_fr: Lac
+  label_en: Lake
+  starting_land: false
   slots: 5
-  slot_icon: "static/assets/img/lands/lake_slot.png"  # icône pour les emplacements
-  logo: "static/assets/img/lands/lake_logo.png"  # logo du land
-  additional_slot_base_cost_diams: 15   # coût en diams pour débloquer un emplacement supplémentaire
-  additional_slot_cost_multiplier: 1.6 
+  slot_icon: static/assets/img/lands/lake_slot.png
+  logo: static/assets/img/lands/lake_logo.png
+  additional_slot_base_cost_diams: 15
+  additional_slot_cost_multiplier: 1.6
   tools:
     hands:
       base_loot:
-        - resource: "water_lily"  # nénuphar
-          min: 1
-          max: 1
-          chance: 1.0           
+      - resource: water_lily
+        min: 1
+        max: 1
+        chance: 1.0
       extra_loot: []
     rod:
       base_loot:
-        - resource: "sand"
-          min: 1
-          max: 2
-          chance: 1.0           # avec la pelle, tu peux gagner un peu plus de sable
+      - resource: sand
+        min: 1
+        max: 2
+        chance: 1.0
       extra_loot:
-        - resource: "seashell"
-          min: 1
-          max: 1
-          chance: 0.001         # 0.1% — on ajustera plus tard si tu veux
+      - resource: seashell
+        min: 1
+        max: 1
+        chance: 0.001
+village:
+  key: land_village
+  label_fr: Village
+  label_en: Village
+  starting_land: true
+  slots: 0
+  tools:
+    hands:
+      base_loot:
+      - resource: branch
+        min: 1
+        max: 1
+        chance: 1.0
+      extra_loot:
+      - resource: vine
+        min: 1
+        max: 1
+        chance: 0.1
+    axe:
+      base_loot:
+      - resource: wood
+        min: 1
+        max: 1
+        chance: 1.0
+      extra_loot: []

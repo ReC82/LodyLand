@@ -1,5 +1,6 @@
 # app/admin/__init__.py
 from functools import wraps
+import re
 
 from flask import (
     Blueprint, current_app, redirect, 
@@ -954,5 +955,131 @@ def land_edit(land_key: str):
         land_key=land_key,
         land=land_cfg,
         errors=errors,
+        saved=saved,
+    )
+
+@admin_bp.route("/lands/new", methods=["GET", "POST"])
+@admin_required
+def land_create():
+    """Créer un nouveau land dans lands.yml à partir d'un slug."""
+    mapping = load_lands_yaml()  # {slug: cfg}
+    errors: list[str] = []
+    saved = False
+
+    # Valeurs par défaut pour le GET / ou en cas d'erreur POST
+    form_defaults = {
+        "slug": "",
+        "label_fr": "",
+        "label_en": "",
+        "starting_land": False,
+        "slots": "8",
+        "slot_icon": "",
+        "logo": "",
+        "base_cost": "10",
+        "multiplier": "1.5",
+    }
+
+    if request.method == "POST":
+        slug = (request.form.get("slug") or "").strip()
+        label_fr = (request.form.get("label_fr") or "").strip()
+        label_en = (request.form.get("label_en") or "").strip()
+        starting_land_str = request.form.get("starting_land")
+        slots_str = (request.form.get("slots") or "").strip()
+        slot_icon = (request.form.get("slot_icon") or "").strip()
+        logo = (request.form.get("logo") or "").strip()
+        base_cost_str = (request.form.get("base_cost") or "").strip()
+        multiplier_str = (request.form.get("multiplier") or "").strip()
+
+        # On garde ce que l'utilisateur vient d'encoder pour ré-affichage en cas d'erreur
+        form_defaults.update(
+            {
+                "slug": slug,
+                "label_fr": label_fr,
+                "label_en": label_en,
+                "starting_land": bool(starting_land_str),
+                "slots": slots_str or "8",
+                "slot_icon": slot_icon,
+                "logo": logo,
+                "base_cost": base_cost_str or "10",
+                "multiplier": multiplier_str or "1.5",
+            }
+        )
+
+        # ---- Validation slug ----
+        if not slug:
+            errors.append("Le champ 'Slug' est requis.")
+        else:
+            # slug en minuscules, lettres, chiffres, underscore
+            if not re.match(r"^[a-z0-9_]+$", slug):
+                errors.append(
+                    "Le slug doit contenir uniquement des lettres minuscules, "
+                    "chiffres et underscores (ex: forest, desert_2)."
+                )
+            if slug in mapping:
+                errors.append(f"Un land avec le slug '{slug}' existe déjà.")
+
+        # Au moins un label
+        if not label_fr and not label_en:
+            errors.append("Au moins un label (FR ou EN) est requis.")
+
+        # ---- Conversion des valeurs numériques ----
+        slots = 8
+        base_cost = 10
+        multiplier = 1.5
+
+        if slots_str:
+            try:
+                slots = int(slots_str)
+            except ValueError:
+                errors.append("slots doit être un entier.")
+        if base_cost_str:
+            try:
+                base_cost = int(base_cost_str)
+            except ValueError:
+                errors.append("base_cost doit être un entier (diams).")
+        if multiplier_str:
+            try:
+                multiplier = float(multiplier_str)
+            except ValueError:
+                errors.append("multiplier doit être un nombre (float).")
+
+        if not errors:
+            # ---- Construction de la config YAML minimale ----
+            # On conserve la logique :
+            #   slug → "forest"
+            #   key  → "land_forest" (utilisée par les cartes, etc.)
+            key_internal = f"land_{slug}"
+
+            cfg = dict(mapping.get(slug) or {})
+            cfg["key"] = key_internal
+            cfg["label_fr"] = label_fr or label_en
+            cfg["label_en"] = label_en or label_fr
+            cfg["starting_land"] = bool(starting_land_str)
+            cfg["slots"] = slots
+
+            # Si pas d'icone donnée, on propose un chemin par défaut basé sur le slug
+            cfg["slot_icon"] = (
+                slot_icon or f"static/assets/img/lands/{slug}_slot.png"
+            )
+            cfg["logo"] = logo or f"static/assets/img/lands/{slug}_logo.png"
+
+            cfg["additional_slot_base_cost_diams"] = base_cost
+            cfg["additional_slot_cost_multiplier"] = multiplier
+
+            # On n'impose pas 'tools' ici, tu pourras compléter via YAML ou plus tard via admin avancé
+            cfg.setdefault("tools", {})
+
+            mapping[slug] = cfg
+            save_lands_yaml(mapping)
+            saved = True
+
+            # On redirige directement vers l'écran d'édition détaillée
+            return redirect(url_for("admin.land_edit", land_key=slug))
+
+    # GET initial ou POST avec erreurs
+    return render_template(
+        "ADMIN_UI/land_create.html",
+        errors=errors,
+        form=form_defaults,
         saved=saved,
     )
