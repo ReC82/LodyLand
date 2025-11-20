@@ -488,4 +488,3 @@ def inventory_page():
         return render_template("GAME_UI/inventory.html")
     finally:
         session.close()
-               
