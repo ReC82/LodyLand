@@ -27,6 +27,47 @@ admin_bp = Blueprint(
 )
 
 # -------------------------------------------------------------------
+# Lands YAML helpers
+# -------------------------------------------------------------------
+
+LANDS_YAML_PATH = Path(__file__).resolve().parents[1] / "data" / "lands.yml"
+
+
+def load_lands_yaml() -> dict:
+    """Load lands.yml and return a mapping {slug: config_dict}."""
+    if not LANDS_YAML_PATH.exists():
+        return {}
+
+    with LANDS_YAML_PATH.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+
+    # Ton format actuel est déjà { "forest": {...}, "beach": {...}, ... }
+    if isinstance(data, dict):
+        return data
+
+    return {}
+
+
+def save_lands_yaml(mapping: dict) -> None:
+    """Write mapping {slug: config_dict} back to lands.yml with a clean layout."""
+    LANDS_YAML_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # On garde juste l’ordre trié par slug pour rester stable visuellement
+    ordered = {slug: mapping[slug] for slug in sorted(mapping.keys())}
+
+    yaml_str = yaml.safe_dump(
+        ordered,
+        allow_unicode=True,
+        sort_keys=False,
+        default_flow_style=False,
+        indent=2,
+    )
+
+    with LANDS_YAML_PATH.open("w", encoding="utf-8") as f:
+        f.write(yaml_str)
+
+
+# -------------------------------------------------------------------
 # Resources YAML helpers
 # -------------------------------------------------------------------
 
@@ -774,4 +815,144 @@ def resource_edit(res_key: str):
         errors=errors,
         saved=saved,
         unlock_rules_text=unlock_rules_text_default,
+    )
+
+@admin_bp.get("/lands")
+@admin_required
+def lands_list():
+    """
+    Liste toutes les lands depuis lands.yml (YAML only).
+    """
+    yaml_data = load_lands_yaml()  # {slug: cfg}
+
+    lands_for_view: list[dict] = []
+
+    for slug, cfg in sorted(yaml_data.items(), key=lambda item: item[0]):
+        if not isinstance(cfg, dict):
+            cfg = {}
+
+        label_fr = (cfg.get("label_fr") or "").strip()
+        label_en = (cfg.get("label_en") or "").strip()
+        starting_land = bool(cfg.get("starting_land", False))
+        slots = cfg.get("slots", 0)
+        slot_icon = (cfg.get("slot_icon") or "").strip()
+        logo = (cfg.get("logo") or "").strip()
+        base_cost = cfg.get("additional_slot_base_cost_diams", 0)
+        multiplier = cfg.get("additional_slot_cost_multiplier", 1.0)
+
+        lands_for_view.append(
+            {
+                "slug": slug,  # "forest", "beach", ...
+                "label_fr": label_fr,
+                "label_en": label_en,
+                "starting_land": starting_land,
+                "slots": slots,
+                "slot_icon": slot_icon,
+                "logo": logo,
+                "base_cost": base_cost,
+                "multiplier": multiplier,
+            }
+        )
+
+    return render_template(
+        "ADMIN_UI/lands_list.html",
+        lands=lands_for_view,
+        yaml_path=str(LANDS_YAML_PATH),
+    )
+
+@admin_bp.route("/lands/<land_key>/edit", methods=["GET", "POST"])
+@admin_required
+def land_edit(land_key: str):
+    """Edit a land entry in lands.yml by its slug (forest, beach, ...)."""
+    land_key = (land_key or "").strip()
+    if not land_key:
+        abort(404)
+
+    mapping = load_lands_yaml()
+    land_cfg = mapping.get(land_key)
+    if land_cfg is None or not isinstance(land_cfg, dict):
+        abort(404)
+
+    errors: list[str] = []
+    saved = False
+
+    if request.method == "POST":
+        label_fr = (request.form.get("label_fr") or "").strip()
+        label_en = (request.form.get("label_en") or "").strip()
+        starting_land_str = request.form.get("starting_land")  # "on" ou None
+        slots_str = (request.form.get("slots") or "").strip()
+        slot_icon = (request.form.get("slot_icon") or "").strip()
+        logo = (request.form.get("logo") or "").strip()
+        base_cost_str = (request.form.get("base_cost") or "").strip()
+        multiplier_str = (request.form.get("multiplier") or "").strip()
+
+        if not label_fr and not label_en:
+            errors.append("Au moins un label (FR ou EN) est requis.")
+
+        slots = land_cfg.get("slots", 0)
+        base_cost = land_cfg.get("additional_slot_base_cost_diams", 0)
+        multiplier = land_cfg.get("additional_slot_cost_multiplier", 1.0)
+
+        if slots_str:
+            try:
+                slots = int(slots_str)
+            except ValueError:
+                errors.append("slots doit être un entier.")
+
+        if base_cost_str:
+            try:
+                base_cost = int(base_cost_str)
+            except ValueError:
+                errors.append("additional_slot_base_cost_diams doit être un entier.")
+
+        if multiplier_str:
+            try:
+                multiplier = float(multiplier_str)
+            except ValueError:
+                errors.append("additional_slot_cost_multiplier doit être un nombre (float).")
+
+        if not errors:
+            updated = dict(land_cfg)  # copy existing config
+
+            # ⚠️ On ne touche PAS à updated["key"] (ex: "land_forest")
+            # on ne la remplace pas par le slug !
+
+            if label_fr:
+                updated["label_fr"] = label_fr
+            else:
+                updated.pop("label_fr", None)
+
+            if label_en:
+                updated["label_en"] = label_en
+            else:
+                updated.pop("label_en", None)
+
+            updated["starting_land"] = bool(starting_land_str)
+            updated["slots"] = slots
+
+            if slot_icon:
+                updated["slot_icon"] = slot_icon
+            else:
+                updated.pop("slot_icon", None)
+
+            if logo:
+                updated["logo"] = logo
+            else:
+                updated.pop("logo", None)
+
+            updated["additional_slot_base_cost_diams"] = base_cost
+            updated["additional_slot_cost_multiplier"] = multiplier
+
+            mapping[land_key] = updated
+            save_lands_yaml(mapping)
+
+            land_cfg = updated
+            saved = True
+
+    return render_template(
+        "ADMIN_UI/land_edit.html",
+        land_key=land_key,
+        land=land_cfg,
+        errors=errors,
+        saved=saved,
     )

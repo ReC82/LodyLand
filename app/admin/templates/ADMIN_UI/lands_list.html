@@ -1,0 +1,76 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Lands (YAML){% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h3 mb-1">Lands (lands.yml)</h1>
+      <p class="text-muted mb-0">
+        Source YAML : <code>{{ yaml_path }}</code>
+      </p>
+    </div>
+
+    <div>
+      <button class="btn btn-secondary btn-sm" disabled>
+        Ajouter un land (à venir)
+      </button>
+    </div>
+  </div>
+
+  <div class="card admin-card mb-4">
+    <div class="card-body py-2">
+      <p class="mb-1 text-muted">
+        Cette liste lit directement <code>lands.yml</code> (YAML only).
+        Les slots bonus par joueur sont gérés séparément dans
+        <code>player_land_slots</code>, pas ici.
+      </p>
+    </div>
+  </div>
+
+  <table class="table table-sm table-dark table-striped align-middle">
+    <thead>
+      <tr>
+        <th style="width: 12%;">Slug</th>
+        <th style="width: 20%;">Label FR</th>
+        <th style="width: 20%;">Label EN</th>
+        <th style="width: 8%;">Starting</th>
+        <th style="width: 8%;">Slots</th>
+        <th style="width: 12%;">Base cost 💎</th>
+        <th style="width: 10%;">Multiplier</th>
+        <th style="width: 10%;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in lands %}
+        <tr>
+          <td><code>{{ l.slug }}</code></td>
+          <td>{{ l.label_fr }}</td>
+          <td>{{ l.label_en }}</td>
+          <td>
+            {% if l.starting_land %}
+              <span class="badge bg-success">Oui</span>
+            {% else %}
+              <span class="badge bg-secondary">Non</span>
+            {% endif %}
+          </td>
+          <td>{{ l.slots }}</td>
+          <td>{{ l.base_cost }}</td>
+          <td>{{ l.multiplier }}</td>
+          <td class="text-end">
+            <a
+              href="{{ url_for('admin.land_edit', land_key=l.slug) }}"
+              class="btn btn-outline-light btn-sm"
+            >
+              Edit
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not lands %}
+    <p class="text-muted">Aucun land dans le fichier YAML.</p>
+  {% endif %}
+{% endblock %}
