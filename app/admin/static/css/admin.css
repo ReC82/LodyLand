@@ -22,3 +22,40 @@
   background: radial-gradient(circle at top, #111827, #020617);
   color: #e5e7eb;
 }
+
+/* highlight clickable rows */
+.clickable-row:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Force all backgrounds in admin panel to be dark */
+body.admin-body, 
+body.admin-body .container {
+  background-color: #0b1120 !important;
+  color: #e5e7eb !important;
+}
+
+/* Make default buttons readable on dark background */
+.btn-outline-light {
+  border-color: #e5e7eb;
+  color: #e5e7eb;
+}
+
+.btn-outline-light:hover {
+  background-color: #e5e7eb;
+  color: #0b1120;
+}
+
+/* Strong, always-visible back button for admin pages */
+.btn-admin-back {
+  background-color: #f97316;  /* orange bien visible */
+  color: #0b1120;             /* texte foncé */
+  border: none;
+  font-weight: 600;
+}
+
+.btn-admin-back:hover {
+  background-color: #fb923c;  /* un peu plus clair au hover */
+  color: #020617;
+}
+

@@ -33,7 +33,11 @@
     </thead>
     <tbody>
       {% for p in players %}
-        <tr>
+        <tr
+          class="clickable-row"
+          onclick="window.location='{{ url_for('admin.player_detail', player_id=p.id) }}'"
+          style="cursor:pointer;"
+        >
           <td>{{ p.id }}</td>
           <td>{{ p.name }}</td>
           <td>{{ p.level }}</td>

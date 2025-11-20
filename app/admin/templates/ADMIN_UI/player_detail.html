@@ -1,0 +1,90 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Admin - Joueur {{ player.name }}{% endblock %}
+
+{% block content %}
+    <a
+        href="{{ url_for('admin.players_list') }}"
+        class="btn btn-sm btn-admin-back mb-3"
+    >
+        ← Retour à la liste des joueurs
+    </a>
+
+  <h1 class="h3 mb-3">
+    Joueur #{{ player.id }} – {{ player.name }}
+  </h1>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card admin-card">
+        <div class="card-body">
+          <h2 class="h5 card-title">Infos générales</h2>
+          <ul class="mb-0">
+            <li><strong>ID :</strong> {{ player.id }}</li>
+            <li><strong>Nom :</strong> {{ player.name }}</li>
+            <li><strong>Niveau :</strong> {{ player.level }}</li>
+            <li><strong>XP :</strong> {{ player.xp }}</li>
+            <li><strong>Coins :</strong> {{ player.coins }}</li>
+            <li><strong>Diams :</strong> {{ player.diams }}</li>
+            <li>
+              <strong>Admin :</strong>
+              {% if player.is_admin %}
+                <span class="badge bg-success">Oui</span>
+              {% else %}
+                <span class="badge bg-secondary">Non</span>
+              {% endif %}
+            </li>
+            <li><strong>Daily streak :</strong> {{ player.daily_streak }}</li>
+            <li><strong>Best streak :</strong> {{ player.best_streak }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tu pourras mettre d'autres infos plus tard dans une autre carte -->
+    <div class="col-md-6">
+      <div class="card admin-card">
+        <div class="card-body">
+          <h2 class="h5 card-title">Notes & Debug</h2>
+          <p class="mb-0 text-muted">
+            Ici on pourra ajouter plus tard :
+          </p>
+          <ul class="mb-0 text-muted">
+            <li>Dernier daily chest ouvert</li>
+            <li>Historique de quêtes</li>
+            <li>Logs de debug spécifiques</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="h4 mb-3">Cartes débloquées</h2>
+
+  <table class="table table-sm table-dark table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Label</th>
+        <th>Type</th>
+        <th>Rareté</th>
+        <th>Quantité</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pc, cd in cards %}
+        <tr>
+          <td>{{ pc.card_key }}</td>
+          <td>{{ cd.label if cd else "?" }}</td>
+          <td>{{ cd.type if cd else "?" }}</td>
+          <td>{{ cd.rarity if cd else "-" }}</td>
+          <td>{{ pc.qty }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not cards %}
+    <p class="text-muted">Aucune carte débloquée pour ce joueur.</p>
+  {% endif %}
+{% endblock %}

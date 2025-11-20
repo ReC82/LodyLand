@@ -4,7 +4,7 @@ from functools import wraps
 from flask import Blueprint, current_app, redirect, url_for, abort, render_template, request
 from app.db import SessionLocal
 from app.auth import get_current_player
-from app.models import Player
+from app.models import Player, PlayerCard, CardDef
 
 # Blueprint for the admin panel
 admin_bp = Blueprint(
@@ -79,3 +79,38 @@ def players_list():
         )
     finally:
         session.close()
+        
+@admin_bp.get("/players/<int:player_id>")
+@admin_required
+def player_detail(player_id: int):
+    """
+    Show player details and unlocked cards.
+    """
+    session = SessionLocal()
+    try:
+        # Load player
+        player = session.get(Player, player_id)
+        if not player:
+            abort(404)
+
+        # Load all PlayerCard rows for this player
+        # and join with CardDef to get label/icon/type
+        cards = (
+            session.query(PlayerCard, CardDef)
+            .outerjoin(
+                CardDef,
+                CardDef.key == PlayerCard.card_key,
+            )
+            .filter(PlayerCard.player_id == player_id)
+            .order_by(CardDef.label.asc().nulls_last(), PlayerCard.card_key.asc())
+            .all()
+        )
+
+        return render_template(
+            "ADMIN_UI/player_detail.html",
+            player=player,
+            cards=cards,
+        )
+    finally:
+        session.close()
+        
