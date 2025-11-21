@@ -15,6 +15,10 @@ from .models import Player, Account, PlayerCard, CardDef
 from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
 
+import datetime as dt
+from .village_shop import get_active_village_offers
+
+
 from pathlib import Path
 import yaml
 
@@ -382,46 +386,64 @@ def village_quests():
 
 @frontend_bp.get("/village/shop")
 def village_shop():
-    """Display the special village shop with limited items (UI only for now)."""
+    """Display the special village shop with limited items, loaded from YAML."""
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # For now, we use static demo items.
-        # Later this will be loaded from YAML / DB with rotations.
-        shop_items: list[dict] = [
-            {
-                "key": "demo_boost_forest_x2",
-                "label": "Boost Forêt x2 (DEMO)",
-                "description": "Double temporairement tes gains de ressources en Forêt.",
-                "rarity": "rare",
-                "price_coins": 250,
-                "price_diams": 0,
-                "stock": 3,
-            },
-            {
-                "key": "demo_card_lake_free_slot",
-                "label": "Carte: Emplacement Lac +1 (DEMO)",
-                "description": "Ajoute un emplacement de récolte sur le Lac.",
-                "rarity": "epic",
-                "price_coins": 0,
-                "price_diams": 5,
-                "stock": 1,
-            },
-            {
-                "key": "demo_recipe_rope",
-                "label": "Recette: Corde (DEMO)",
-                "description": "Débloque la recette de fabrication de corde.",
-                "rarity": "uncommon",
-                "price_coins": 120,
-                "price_diams": 0,
-                "stock": 999,  # 'Illimité' côté UI
-            },
-        ]
+        # 1) Lire les offres actives du YAML pour la date du jour
+        today = dt.date.today()
+        offers = get_active_village_offers(today)
 
-        shop_rotation_label = "Rotation de démonstration (UI only)"
+        # 2) Adapter les offres au format attendu par le template
+        shop_items: list[dict] = []
+        for o in offers:
+            price = o.get("price") or {}
+            res_price = price.get("resources") or {}
+
+            shop_items.append(
+                {
+                    "key": o.get("key"),
+                    "card_key": o.get("card_key"),
+                    "villager": o.get("villager"),
+                    "label": o.get("label_fr") or o.get("label_en") or o.get("card_key"),
+                    "description": o.get("description_fr") or o.get("description_en") or "",
+                    "rarity": o.get("rarity"),
+                    "price_coins": price.get("coins", 0) or 0,
+                    "price_diams": price.get("diams", 0) or 0,
+                    "price_resources": res_price,
+                    "stock": o.get("stock_global"),
+                }
+            )
+
+        # 3) Générer un badge "Rotation du X au Y"
+        if offers:
+            try:
+                start_dates = [
+                    dt.date.fromisoformat(o["start_date"])
+                    for o in offers
+                    if o.get("start_date")
+                ]
+                end_dates = [
+                    dt.date.fromisoformat(o["end_date"])
+                    for o in offers
+                    if o.get("end_date")
+                ]
+                if start_dates and end_dates:
+                    start_min = min(start_dates)
+                    end_max = max(end_dates)
+                    shop_rotation_label = (
+                        f"Rotation du {start_min.strftime('%d/%m/%Y')} "
+                        f"au {end_max.strftime('%d/%m/%Y')}"
+                    )
+                else:
+                    shop_rotation_label = "Rotation en cours"
+            except Exception:
+                shop_rotation_label = "Rotation en cours"
+        else:
+            shop_rotation_label = "Aucune offre active"
 
         return render_template(
             "GAME_UI/lands/village/shop.html",
@@ -430,7 +452,8 @@ def village_shop():
             shop_rotation_label=shop_rotation_label,
         )
     finally:
-        session.close()    
+        session.close()
+
         
 @frontend_bp.get("/village/trades")
 def village_trades():

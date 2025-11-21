@@ -39,7 +39,7 @@ offers:
   - key: "village_card_lake_slot_2025w45"
     enabled: true
     start_date: "2025-11-09"
-    end_date: "2025-11-12"
+    end_date: "2025-11-30"
     villager: "Jo"
 
     label_fr: "Carte: Emplacement Lac +1"
