@@ -379,7 +379,58 @@ def village_quests():
         )
     finally:
         session.close()
-     
+
+@frontend_bp.get("/village/shop")
+def village_shop():
+    """Display the special village shop with limited items (UI only for now)."""
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        # For now, we use static demo items.
+        # Later this will be loaded from YAML / DB with rotations.
+        shop_items: list[dict] = [
+            {
+                "key": "demo_boost_forest_x2",
+                "label": "Boost Forêt x2 (DEMO)",
+                "description": "Double temporairement tes gains de ressources en Forêt.",
+                "rarity": "rare",
+                "price_coins": 250,
+                "price_diams": 0,
+                "stock": 3,
+            },
+            {
+                "key": "demo_card_lake_free_slot",
+                "label": "Carte: Emplacement Lac +1 (DEMO)",
+                "description": "Ajoute un emplacement de récolte sur le Lac.",
+                "rarity": "epic",
+                "price_coins": 0,
+                "price_diams": 5,
+                "stock": 1,
+            },
+            {
+                "key": "demo_recipe_rope",
+                "label": "Recette: Corde (DEMO)",
+                "description": "Débloque la recette de fabrication de corde.",
+                "rarity": "uncommon",
+                "price_coins": 120,
+                "price_diams": 0,
+                "stock": 999,  # 'Illimité' côté UI
+            },
+        ]
+
+        shop_rotation_label = "Rotation de démonstration (UI only)"
+
+        return render_template(
+            "GAME_UI/lands/village/shop.html",
+            player=player,
+            shop_items=shop_items,
+            shop_rotation_label=shop_rotation_label,
+        )
+    finally:
+        session.close()    
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
 def register():
