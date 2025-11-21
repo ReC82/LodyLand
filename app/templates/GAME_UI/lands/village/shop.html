@@ -1,0 +1,134 @@
+{% extends "game_base.html" %}
+
+{% block title %}Boutique du Village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="village-shop-wrapper">
+
+  <!-- Header -->
+  <header class="village-shop-header mb-4">
+    <h1 class="h3 mb-1">Boutique du Village</h1>
+    <p class="text-muted mb-0">
+      Ici, tu trouveras des objets spéciaux, en stock limité ou disponibles
+      seulement pendant une courte période.
+    </p>
+  </header>
+
+  <div class="village-shop-layout">
+
+    <!-- Colonne principale : liste d'items -->
+    <section class="village-shop-main">
+      <div class="vs-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Objets en vitrine</h2>
+          {% if shop_rotation_label %}
+            <span class="badge bg-secondary">
+              {{ shop_rotation_label }}
+            </span>
+          {% endif %}
+        </div>
+
+        {% if shop_items %}
+          <div class="village-shop-grid">
+            {% for item in shop_items %}
+              <article class="vs-item-card">
+
+                <!-- Placeholder icon: plus tard on utilisera item.icon -->
+                <div class="vs-item-icon">
+                  <!-- Could be an <img> later -->
+                  <span class="vs-item-initial">
+                    {{ item.label[:1] }}
+                  </span>
+                </div>
+
+                <div class="vs-item-body">
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h3 class="h6 mb-0">{{ item.label }}</h3>
+                    {% if item.rarity %}
+                      <span class="vs-rarity vs-rarity-{{ item.rarity }}">
+                        {{ item.rarity|capitalize }}
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  {% if item.description %}
+                    <p class="vs-item-desc text-muted small mb-2">
+                      {{ item.description }}
+                    </p>
+                  {% endif %}
+
+                  <div class="vs-item-meta d-flex justify-content-between align-items-center">
+                    <div class="vs-item-price small">
+                      {% set coins = item.price_coins or 0 %}
+                      {% set diams = item.price_diams or 0 %}
+
+                      {% if coins == 0 and diams == 0 %}
+                        <span class="badge bg-success">Gratuit</span>
+                      {% else %}
+                        {% if coins %}
+                          <span class="me-2">
+                            <span class="ui-icon ui-icon-coin"></span>
+                            {{ coins }}
+                          </span>
+                        {% endif %}
+                        {% if diams %}
+                          <span>
+                            <span class="ui-icon ui-icon-diam"></span>
+                            {{ diams }}
+                          </span>
+                        {% endif %}
+                      {% endif %}
+                    </div>
+
+                    <div class="vs-item-stock small text-muted">
+                      {% if item.stock is not none and item.stock < 999 %}
+                        Stock: {{ item.stock }}
+                      {% else %}
+                        Stock: Illimité
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="mt-2 text-end">
+                    <button class="btn btn-sm btn-outline-primary" disabled>
+                      Acheter (WIP)
+                    </button>
+                  </div>
+                </div>
+
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">
+            Aucun objet en vente pour le moment. Plus tard, cette boutique proposera
+            une rotation d'objets rares à ne pas rater.
+          </p>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Colonne latérale : infos rotation -->
+    <aside class="village-shop-sidebar">
+      <div class="vs-card">
+        <h2 class="h6 mb-2">Comment fonctionne cette boutique ?</h2>
+        <p class="text-muted small mb-2">
+          À terme, cette boutique proposera une sélection d'objets rares.
+          Chaque objet aura :
+        </p>
+        <ul class="small text-muted mb-2">
+          <li>un stock limité ou illimité,</li>
+          <li>un coût en coins, en diams ou en ressources,</li>
+          <li>une durée de disponibilité (rotation).</li>
+        </ul>
+        <p class="text-muted small mb-0">
+          Pour l’instant, l’écran est en mode démonstration (UI only) pour
+          préparer la vraie logique d’achats et de rotations.
+        </p>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+{% endblock %}
