@@ -1,0 +1,122 @@
+{% extends "game_base.html" %}
+
+{% block title %}Échanges du Village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="village-trades-wrapper">
+
+  <!-- Header -->
+  <header class="village-trades-header mb-4">
+    <h1 class="h3 mb-1">Échanges du Village</h1>
+    <p class="text-muted mb-0">
+      Ici, tu peux échanger certaines ressources contre des objets rares ou des cartes spéciales.
+      Certains échanges sont limités par jour ou par rotation.
+    </p>
+  </header>
+
+  <div class="village-trades-layout">
+
+    <!-- Colonne principale : liste des trades -->
+    <section class="village-trades-main">
+      <div class="vt-card">
+        <h2 class="h5 mb-3">Offres d'échange disponibles</h2>
+
+        {% if trade_offers %}
+          <div class="village-trades-list">
+            {% for t in trade_offers %}
+              <article class="vt-trade-row">
+
+                <!-- Colonne "donner" -->
+                <div class="vt-side vt-give">
+                  <div class="vt-side-title small text-uppercase mb-1">
+                    Tu donnes
+                  </div>
+                  <ul class="list-unstyled mb-0 small">
+                    {% for res_key, qty in t.give.items() %}
+                      <li>
+                        <strong>{{ qty }}</strong> ×
+                        <span class="vt-token">{{ res_key }}</span>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+
+                <!-- Flèche -->
+                <div class="vt-arrow">
+                  ⟶
+                </div>
+
+                <!-- Colonne "recevoir" -->
+                <div class="vt-side vt-receive">
+                  <div class="vt-side-title small text-uppercase mb-1">
+                    Tu reçois
+                  </div>
+                  <ul class="list-unstyled mb-1 small">
+                    {% for item_key, qty in t.receive.items() %}
+                      <li>
+                        <strong>{{ qty }}</strong> ×
+                        <span class="vt-token">{{ item_key }}</span>
+                      </li>
+                    {% endfor %}
+                  </ul>
+
+                  {% if t.description %}
+                    <p class="text-muted small mb-1">
+                      {{ t.description }}
+                    </p>
+                  {% endif %}
+
+                  <p class="vt-limit small text-muted mb-0">
+                    {% if t.limit_per_day %}
+                      Limite : {{ t.limit_per_day }} fois par jour.
+                    {% elif t.limit_per_rotation %}
+                      Limite : {{ t.limit_per_rotation }} fois par rotation.
+                    {% else %}
+                      Limite : illimitée (pour l’instant).
+                    {% endif %}
+                  </p>
+                </div>
+
+                <!-- Bouton -->
+                <div class="vt-action">
+                  <button class="btn btn-sm btn-outline-success" disabled>
+                    Échanger (WIP)
+                  </button>
+                </div>
+
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">
+            Aucun échange disponible pour le moment. Plus tard, cette zone proposera
+            des échanges variés en fonction de la progression du joueur.
+          </p>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Colonne latérale : explications -->
+    <aside class="village-trades-sidebar">
+      <div class="vt-card">
+        <h2 class="h6 mb-2">Comment fonctionnent les échanges ?</h2>
+        <p class="text-muted small mb-2">
+          Les villageois proposent des échanges basés sur les ressources que tu as récoltées
+          dans les différents lands (Forêt, Lac, Plage, etc.).
+        </p>
+        <ul class="small text-muted mb-2">
+          <li>Certains échanges sont limités par jour.</li>
+          <li>D’autres sont limités par rotation (ex: une fois par semaine).</li>
+          <li>Les offres disponibles pourront dépendre de ton niveau ou de tes cartes.</li>
+        </ul>
+        <p class="text-muted small mb-0">
+          Pour l’instant, cet écran est en mode démonstration (UI only). Les vrais échanges
+          seront branchés sur la base de données plus tard.
+        </p>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -431,6 +431,55 @@ def village_shop():
         )
     finally:
         session.close()    
+        
+@frontend_bp.get("/village/trades")
+def village_trades():
+    """Display the village trading NPC screen (UI only for now)."""
+    session = SessionLocal()
+    try:
+        player = get_current_player(session)
+        if not player:
+            return redirect(url_for("frontend.home"))
+
+        # Demo trades only for UI; real data will come from YAML/DB later.
+        trade_offers: list[dict] = [
+            {
+                "key": "demo_trade_wood_to_rope",
+                "label": "Bois contre corde (DEMO)",
+                "description": "Échange quelques branches contre une corde utile pour le craft.",
+                "give": {"branch": 5},
+                "receive": {"item_rope": 1},
+                "limit_per_day": 3,
+                "limit_per_rotation": None,
+            },
+            {
+                "key": "demo_trade_mushroom_to_card",
+                "label": "Champignons contre carte Forêt (DEMO)",
+                "description": "Échange beaucoup de champignons contre une carte slot supplémentaire en Forêt.",
+                "give": {"mushroom": 20},
+                "receive": {"card_forest_free_slot": 1},
+                "limit_per_day": 1,
+                "limit_per_rotation": None,
+            },
+            {
+                "key": "demo_trade_pearl_to_boost",
+                "label": "Perles contre Boost Lac (DEMO)",
+                "description": "Échange des perles rares contre un boost spécial au Lac.",
+                "give": {"pearl": 3},
+                "receive": {"boost_lake_x2": 1},
+                "limit_per_day": None,
+                "limit_per_rotation": 1,
+            },
+        ]
+
+        return render_template(
+            "GAME_UI/lands/village/trades.html",
+            player=player,
+            trade_offers=trade_offers,
+        )
+    finally:
+        session.close()
+        
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
 def register():
