@@ -126,3 +126,7 @@
 
 </div>
 {% endblock %}
+{% block extra_scripts %}
+  <!-- Village Shop purchase logic -->
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_trades.js') }}"></script>
+{% endblock %}
