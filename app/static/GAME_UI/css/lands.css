@@ -593,3 +593,72 @@
 .vt-limit {
   margin-top: 0.25rem;
 }
+
+/* Carte item du shop : 2 colonnes (villager + item) */
+.vs-item-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr); /* gauche = portrait, droite = texte */
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Colonne gauche : portrait + nom */
+.vs-item-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+
+/* Bulle autour du portrait */
+.vs-item-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 0.5rem;            /* coins arrondis mais pas cercle complet */
+  border: 1px solid #4b5563;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Portrait carré (5px radius) */
+.vs-item-portrait {
+  width: 60px;
+  height: 60px;
+  border-radius: 5px;               /* comme tu veux */
+  object-fit: cover;
+  display: block;
+}
+
+/* Nom du villageois sous le portrait */
+.vs-villager-name {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #e5e7eb;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.vs-item-limit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fbbf24; /* jaune lisible */
+}
+
+/* Titre de section par villageois */
+.vs-villager-title {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+/* Séparateur entre blocs de villageois */
+.vs-villager-separator {
+  border: none;
+  border-top: 1px solid #1f2937;
+  margin: 1.5rem 0 0.5rem;
+}

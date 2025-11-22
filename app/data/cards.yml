@@ -1,9 +1,9 @@
 cards:
 
-- key: branch_cooldown_boost_1
+- key: boost_branch_cooldown_1
   label: Booster cooldown Branches I
   description: -20% sur le cooldown des branches.
-  icon: /static/assets/img/cards/default_card.png
+  icon: /static/assets/img/cards/boost_cooldown_global_10pc_rare_1
   type: cooldown_boost
   categorie: boost
   rarity: common
@@ -27,6 +27,7 @@ cards:
     giftable: true
     quantity: 0
     purchase_limit: null
+  enabled: true
 
 - key: land_beach
   categorie: land
@@ -127,6 +128,7 @@ cards:
   buy_rules: null
   shop:
     tradable: false
+    show_in_main_shop: false
     giftable: true
     quantity: 0
     purchase_limit: null
@@ -134,7 +136,7 @@ cards:
     enabled: true
 
 - key: land_lake
-  categorie: lake
+  categorie: land
   label: Accès Lac
   description: Débloque le land Lac
   icon: /static/assets/img/cards/land_lake.png
@@ -186,6 +188,7 @@ cards:
   shop:
     tradable: false
     giftable: true
+    show_in_main_shop: false
     quantity: 0
     purchase_limit: null
     max_owned: 1
@@ -225,7 +228,9 @@ cards:
     land: beach
     slots: 1
   prices: []
-  shop: {}
+  shop:
+    show_in_main_shop: false
+    show_in_village_shop: false
   enabled: true
   label_fr: Free Slot For The Beach Land
 
@@ -238,6 +243,11 @@ cards:
   gameplay:
     land: forest
     slots: 1
+  shop:
+    show_in_main_shop: false
+    show_in_village_shop: false
+  prices: []
+  enabled: true
 
 - key: lake_free_slot
   label: Lake Free Slot
@@ -250,7 +260,9 @@ cards:
     land: lake
     slots: 1
   prices: []
-  shop: {}
+  shop:
+    show_in_main_shop: false
+    show_in_village_shop: false
   enabled: true
 
 - key: anchovy_boost_1
@@ -270,6 +282,8 @@ cards:
   - coins: 100
   shop:
     tradable: false
+    show_in_village_shop: true
+    show_in_main_shop: false
     giftable: true
     max_owned: 1
     enabled: true
@@ -352,7 +366,36 @@ cards:
   shop:
     enabled: true
     max_owned: 1
+    show_in_main_shop: false
+    show_in_village_shop: true
     tradable: false
     giftable: true
     quantity: 0
     purchase_limit: null
+
+- key: xp_boost_global_x2_1
+  categorie: boost
+  label: Boost XP Global x2
+  description: Double l'XP gagnée sur toutes les actions.
+  icon: /static/assets/img/cards/boost_xp_x2_unique_1.png
+  type: xp_boost
+  rarity: rare
+  gameplay:
+    target_land: null
+    target_tool: null
+    loot:
+      type: multiplicator
+      amount: 2
+  prices:
+  - coins: 20000
+  - diams: 100
+  buy_rules: null
+  shop:
+    tradable: true
+    giftable: false
+    quantity: 1
+    purchase_limit: null
+    max_owned: 1
+    enabled: true
+    show_in_main_shop: false
+    show_in_village_shop: true

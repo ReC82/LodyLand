@@ -393,66 +393,117 @@ def village_shop():
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # 1) Lire les offres actives du YAML pour la date du jour
         today = dt.date.today()
         offers = get_active_village_offers(today)
 
-        # 2) Adapter les offres au format attendu par le template
         shop_items: list[dict] = []
+
         for o in offers:
-            price = o.get("price") or {}
-            res_price = price.get("resources") or {}
+            if o.get("item_type") != "card":
+                # For now we only support card offers
+                continue
+
+            card_key = o.get("item_key")
+            if not card_key:
+                continue
+
+            cd = (
+                session.query(CardDef)
+                .filter(CardDef.key == card_key, CardDef.enabled == True)
+                .first()
+            )
+            if not cd:
+                continue
+
+            # Take first price from card definition
+            prices = cd.prices or []
+            price_cfg = (prices[0] or {}) if prices else {}
+            coins_cost = int(price_cfg.get("coins", 0) or 0)
+            diams_cost = int(price_cfg.get("diams", 0) or 0)
+            res_costs = price_cfg.get("resources") or {}
+            
+            # --- combien le joueur en possède déjà ?
+            owned_row = (
+                session.query(PlayerCard)
+                .filter_by(player_id=player.id, card_key=cd.key)
+                .first()
+            )
+            owned_qty = owned_row.qty if owned_row else 0
+            
+            # --- règles de limite d'achat ---
+            shop_cfg = cd.shop or {}
+            limit_per_player = o.get("limit_per_player")
+            max_owned = shop_cfg.get("max_owned")
+
+            reasons: list[str] = []            
+            
+            # Limite spécifique à l'offre du village
+            if limit_per_player is not None and owned_qty >= limit_per_player:
+                reasons.append(
+                    f"Tu as déjà acheté cette offre ({owned_qty}/{limit_per_player})."
+                )
+                
+            # Limite globale de la carte
+            if max_owned is not None and owned_qty >= max_owned:
+                reasons.append(
+                    "Tu as déjà atteint le nombre maximum pour cette carte."
+                )
+                
+            # Monnaie
+            if player.coins < coins_cost:
+                reasons.append("Tu n'as pas assez de coins.")
+            if player.diams < diams_cost:
+                reasons.append("Tu n'as pas assez de diams.")
+
+            # (plus tard on pourra ajouter les ressources dans reasons)
+
+            can_buy = len(reasons) == 0
+            cant_buy_reason = reasons[0] if reasons else ""                                                    
+
+            # Format end date for UI
+            end_str = o.get("end_date")
+            end_date_fmt = None
+            if end_str:
+                try:
+                    end_date = dt.date.fromisoformat(end_str)
+                    end_date_fmt = end_date.strftime("%d/%m/%Y")
+                except Exception:
+                    end_date_fmt = None
 
             shop_items.append(
                 {
-                    "key": o.get("key"),
-                    "card_key": o.get("card_key"),
+                    "offer_key": o.get("key"),
                     "villager": o.get("villager"),
-                    "label": o.get("label_fr") or o.get("label_en") or o.get("card_key"),
-                    "description": o.get("description_fr") or o.get("description_en") or "",
-                    "rarity": o.get("rarity"),
-                    "price_coins": price.get("coins", 0) or 0,
-                    "price_diams": price.get("diams", 0) or 0,
-                    "price_resources": res_price,
+                    "label": cd.label,
+                    "description": cd.description,
+                    "rarity": cd.rarity,
+                    "price_coins": coins_cost,
+                    "price_diams": diams_cost,
+                    "price_resources": res_costs,
                     "stock": o.get("stock_global"),
+                    "limit_until": end_date_fmt,
+
+                    # NEW
+                    "owned_qty": owned_qty,
+                    "can_buy": can_buy,
+                    "cant_buy_reason": cant_buy_reason,                    
+                    
                 }
             )
 
-        # 3) Générer un badge "Rotation du X au Y"
-        if offers:
-            try:
-                start_dates = [
-                    dt.date.fromisoformat(o["start_date"])
-                    for o in offers
-                    if o.get("start_date")
-                ]
-                end_dates = [
-                    dt.date.fromisoformat(o["end_date"])
-                    for o in offers
-                    if o.get("end_date")
-                ]
-                if start_dates and end_dates:
-                    start_min = min(start_dates)
-                    end_max = max(end_dates)
-                    shop_rotation_label = (
-                        f"Rotation du {start_min.strftime('%d/%m/%Y')} "
-                        f"au {end_max.strftime('%d/%m/%Y')}"
-                    )
-                else:
-                    shop_rotation_label = "Rotation en cours"
-            except Exception:
-                shop_rotation_label = "Rotation en cours"
-        else:
-            shop_rotation_label = "Aucune offre active"
+        # Group by villager, then label
+        shop_items.sort(
+            key=lambda it: ((it.get("villager") or ""), it.get("label") or "")
+        )
 
         return render_template(
             "GAME_UI/lands/village/shop.html",
             player=player,
             shop_items=shop_items,
-            shop_rotation_label=shop_rotation_label,
         )
     finally:
         session.close()
+
 
         
 @frontend_bp.get("/village/trades")

@@ -20,86 +20,135 @@
     <section class="village-shop-main">
       <div class="vs-card mb-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <h2 class="h5 mb-0">Objets en vitrine</h2>
-          {% if shop_rotation_label %}
-            <span class="badge bg-secondary">
-              {{ shop_rotation_label }}
-            </span>
-          {% endif %}
+        <h2 class="h5 mb-0">Objets en vitrine</h2>
         </div>
 
         {% if shop_items %}
-          <div class="village-shop-grid">
-            {% for item in shop_items %}
-              <article class="vs-item-card">
+        <div class="village-shop-grid">
+            {% set group = namespace(current_villager = None) %}
 
-                <!-- Placeholder icon: plus tard on utilisera item.icon -->
+            {% for item in shop_items %}
+
+            {# --- Nouveau villageois ? On ajoute un titre de section --- #}
+            {% if item.villager != group.current_villager %}
+                {% if not loop.first %}
+                <hr class="vs-villager-separator" />
+                {% endif %}
+                <h3 class="vs-villager-title">
+                Offres de {{ item.villager }}
+                </h3>
+                {% set group.current_villager = item.villager %}
+            {% endif %}
+
+            <article class="vs-item-card">
+
+                <!-- Colonne gauche : portrait + nom -->
+                <div class="vs-item-left">
                 <div class="vs-item-icon">
-                  <!-- Could be an <img> later -->
-                  <span class="vs-item-initial">
-                    {{ item.label[:1] }}
-                  </span>
+                    {% if item.villager %}
+                    {% set villager_img = "/static/assets/img/pnj/villagers/" ~ item.villager ~ ".png" %}
+                    <img
+                        src="{{ villager_img }}"
+                        alt="Portrait de {{ item.villager }}"
+                        class="vs-item-portrait"
+                    />
+                    {% else %}
+                    <span class="vs-item-initial">
+                        {{ item.label[:1] }}
+                    </span>
+                    {% endif %}
                 </div>
 
+                {% if item.villager %}
+                    <div class="vs-villager-name">
+                    {{ item.villager }}
+                    </div>
+                {% endif %}
+                </div>
+
+                <!-- Colonne droite : infos de l'item -->
                 <div class="vs-item-body">
-                  <div class="d-flex justify-content-between align-items-start mb-1">
+                <div class="d-flex justify-content-between align-items-start mb-1">
                     <h3 class="h6 mb-0">{{ item.label }}</h3>
                     {% if item.rarity %}
-                      <span class="vs-rarity vs-rarity-{{ item.rarity }}">
+                    <span class="vs-rarity vs-rarity-{{ item.rarity }}">
                         {{ item.rarity|capitalize }}
-                      </span>
+                    </span>
                     {% endif %}
-                  </div>
+                </div>
 
-                  {% if item.description %}
-                    <p class="vs-item-desc text-muted small mb-2">
-                      {{ item.description }}
-                    </p>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  {% if item.owned_qty and item.owned_qty > 0 %}
+                    <span class="badge bg-success">Déjà possédée</span>
                   {% endif %}
 
-                  <div class="vs-item-meta d-flex justify-content-between align-items-center">
-                    <div class="vs-item-price small">
-                      {% set coins = item.price_coins or 0 %}
-                      {% set diams = item.price_diams or 0 %}
+                  {% if item.limit_until %}
+                    <span class="badge bg-dark">
+                      ⏳ jusqu’au {{ item.limit_until }}
+                    </span>
+                  {% endif %}
+                </div>                
 
-                      {% if coins == 0 and diams == 0 %}
+                {% if item.description %}
+                    <p class="vs-item-desc text-muted small mb-2">
+                    {{ item.description }}
+                    </p>
+                {% endif %}
+
+                <div class="vs-item-meta d-flex justify-content-between align-items-center">
+                    <div class="vs-item-price small">
+                    {% set coins = item.price_coins or 0 %}
+                    {% set diams = item.price_diams or 0 %}
+
+                    {% if coins == 0 and diams == 0 %}
                         <span class="badge bg-success">Gratuit</span>
-                      {% else %}
+                    {% else %}
                         {% if coins %}
-                          <span class="me-2">
+                        <span class="me-2">
                             <span class="ui-icon ui-icon-coin"></span>
                             {{ coins }}
-                          </span>
+                        </span>
                         {% endif %}
                         {% if diams %}
-                          <span>
+                        <span>
                             <span class="ui-icon ui-icon-diam"></span>
                             {{ diams }}
-                          </span>
+                        </span>
                         {% endif %}
-                      {% endif %}
+                    {% endif %}
                     </div>
 
                     <div class="vs-item-stock small text-muted">
-                      {% if item.stock is not none and item.stock < 999 %}
+                    {% if item.stock is not none and item.stock < 999 %}
                         Stock: {{ item.stock }}
-                      {% else %}
+                    {% else %}
                         Stock: Illimité
-                      {% endif %}
+                    {% endif %}
                     </div>
-                  </div>
-
-                  <div class="mt-2 text-end">
-                    <button class="btn btn-sm btn-outline-primary" disabled>
-                      Acheter (WIP)
-                    </button>
-                  </div>
                 </div>
 
-              </article>
+                <div class="mt-2 text-end">
+                  <button
+                    class="btn btn-sm {% if item.can_buy %}btn-outline-primary vs-buy-btn{% else %}btn-outline-secondary{% endif %}"
+                    data-offer-key="{{ item.offer_key }}"
+                    {% if not item.can_buy %}disabled="disabled"{% endif %}
+                    {% if item.cant_buy_reason %}title="{{ item.cant_buy_reason }}"{% endif %}
+                  >
+                    {% if item.can_buy %}
+                      Acheter
+                    {% else %}
+                      Impossible
+                    {% endif %}
+                  </button>
+                </div>
+
+
+            </article>
+
             {% endfor %}
-          </div>
+        </div>
         {% else %}
+
           <p class="text-muted mb-0">
             Aucun objet en vente pour le moment. Plus tard, cette boutique proposera
             une rotation d'objets rares à ne pas rater.
@@ -131,4 +180,8 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_shop.js') }}"></script>
 {% endblock %}

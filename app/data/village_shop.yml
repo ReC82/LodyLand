@@ -9,51 +9,33 @@ offers:
 
     # Période de disponibilité (inclusif)
     start_date: "2025-11-05"
-    end_date: "2025-11-15"
+    end_date: "2025-11-21"
 
     # Qui vend ? (voir plus tard: "auto" pour un choix déterministe)
     villager: "Anna"   # ou "auto"
 
-    # Texte affiché
-    label_fr: "Boost Forêt x2"
-    label_en: "Forest Boost x2"
-    description_fr: "Double temporairement tes gains de ressources en Forêt."
-    description_en: "Temporarily doubles your forest resource gains."
-
     # Ce que c’est vraiment (pour la logique)
     item_type: "card"
-    card_key: "boost_forest_x2"
+    item_key: "global_xp_boost_1"
 
     # Limites
     stock_global: 10        # null = illimité
     limit_per_player: 1     # null = pas de limite
 
-    # Coût (combinaison coins / diams / res)
-    price:
-      coins: 250
-      diams: 0
-      resources:
-        branch: 5
-        mushroom: 10
-
   - key: "village_card_lake_slot_2025w45"
     enabled: true
+
+    # période de disponibilité (inclusif)
     start_date: "2025-11-09"
     end_date: "2025-11-30"
+
+    # quel villageois vend cette offre ?
     villager: "Jo"
 
-    label_fr: "Carte: Emplacement Lac +1"
-    label_en: "Card: Lake slot +1"
-    description_fr: "Ajoute un emplacement de récolte sur le Lac."
-    description_en: "Adds one harvesting slot on the Lake."
+    # ce que l'offre vend réellement
+    item_type: "card"              # plus tard : "item", "recipe", etc.
+    item_key: "anchovy_boost_1"  # si item_type = "card", on va chercher dans cards.yml
 
-    item_type: "card"
-    card_key: "land_lake_free_slot"
-
-    stock_global: 2
-    limit_per_player: 1
-
-    price:
-      coins: 0
-      diams: 5
-      resources: {}
+    # limites
+    stock_global: 2        # (pas encore géré globalement, on le fera plus tard)
+    limit_per_player: 1    # limite par joueur

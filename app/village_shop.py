@@ -1,3 +1,4 @@
+# app/village_shop.py
 from __future__ import annotations
 
 from pathlib import Path
@@ -5,25 +6,19 @@ from functools import lru_cache
 import datetime as dt
 import yaml
 
-# Base directory for data files (same style as lands.yml)
 DATA_DIR = Path(__file__).resolve().parent / "data"
 VILLAGE_SHOP_FILE = DATA_DIR / "village_shop.yml"
 
 
 @lru_cache(maxsize=1)
 def _load_village_shop_raw() -> dict:
-    """
-    Load the raw YAML config for the village shop.
-    Result is cached to avoid re-reading the file on every request.
-    """
+    """Load the raw YAML config for the village shop (cached)."""
     if not VILLAGE_SHOP_FILE.exists():
-        # Fail-safe: if file missing, return empty structure
         return {"offers": []}
 
     with VILLAGE_SHOP_FILE.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
 
-    # Ensure offers is always a list
     if "offers" not in data or data["offers"] is None:
         data["offers"] = []
 
@@ -31,13 +26,9 @@ def _load_village_shop_raw() -> dict:
 
 
 def get_all_village_offers() -> list[dict]:
-    """
-    Return all village offers as defined in the YAML file.
-    No date / enabled filtering is applied here.
-    """
+    """Return all village offers as defined in the YAML file (no filtering)."""
     data = _load_village_shop_raw()
     offers = data.get("offers", []) or []
-    # Return a shallow copy to avoid accidental in-place modifications
     return list(offers)
 
 
@@ -60,14 +51,12 @@ def get_active_village_offers(today: dt.date | None = None) -> list[dict]:
         start_str = offer.get("start_date")
         end_str = offer.get("end_date")
         if not start_str or not end_str:
-            # If dates are missing, we skip the offer for safety
             continue
 
         try:
             start = dt.date.fromisoformat(start_str)
             end = dt.date.fromisoformat(end_str)
         except ValueError:
-            # Invalid date format -> skip
             continue
 
         if start <= today <= end:
@@ -76,16 +65,25 @@ def get_active_village_offers(today: dt.date | None = None) -> list[dict]:
     return active
 
 
-def get_village_excluded_card_keys(today: dt.date | None = None) -> set[str]:
+def get_village_excluded_card_keys(now: dt.datetime | None = None) -> set[str]:
     """
-    Return the set of card_key that are currently sold in the village shop.
+    Return all card keys that are currently sold in the village shop.
 
-    This can be used to exclude these keys from the 'normal' shop so that
-    unique items only appear in one place at a time.
+    These keys must be hidden from the main shop.
+    Only offers with item_type == "card" are considered.
     """
+    if now is None:
+        now = dt.datetime.now(dt.timezone.utc)
+
+    active_offers = get_active_village_offers(today=now.date())
     excluded: set[str] = set()
-    for offer in get_active_village_offers(today):
-        card_key = offer.get("card_key")
+
+    for offer in active_offers:
+        if offer.get("item_type") != "card":
+            continue
+
+        card_key = offer.get("item_key")
         if card_key:
             excluded.add(card_key)
+
     return excluded

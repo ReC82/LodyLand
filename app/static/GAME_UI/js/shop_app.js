@@ -339,7 +339,7 @@ function setupShopTabs() {
 // Charge la liste des cartes depuis /api/cards et met à jour le HUD si besoin
 async function loadCardShop() {
   console.log("Loading card shop...");
-  const r = await http("GET", "/api/cards");
+  const r = await http("GET", "/api/cards?context=shop");
   if (!r.ok) {
     alert("Impossible de charger les cartes.");
     console.error("Card shop error:", r);
