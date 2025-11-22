@@ -1,8 +1,11 @@
 {% extends "game_base.html" %}
 
 {% block extra_css %}
+  <!-- Global land styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  <!-- Shared Village layout (NPC grid, land header) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+  <!-- Village quests styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/quests.css') }}">
 {% endblock %}
 
@@ -11,7 +14,9 @@
 {% block content %}
 <div class="village-quests-wrapper">
 
-  <!-- Header -->   
+  <!-- ============================================================
+       Page Header
+       ============================================================ -->
   <header class="village-quests-header mb-4">
     <h1 class="h3 mb-1">Quêtes du Village</h1>
     <p class="text-muted mb-0">
@@ -20,29 +25,38 @@
     </p>
   </header>
 
+
+  <!-- ============================================================
+       Layout : left = daily/special quests, right = active quests
+       ============================================================ -->
   <div class="village-quests-layout">
 
-    <!-- Colonne principale -->
+    <!-- ============================================================
+         LEFT COLUMN — Daily Quest + Available Quests
+         ============================================================ -->
     <section class="village-quests-main">
 
-      <!-- Bloc : Quête quotidienne -->
+      <!-- Daily Quest Block -->
       <div class="vq-card mb-3">
         <h2 class="h5 mb-2">Ta quête quotidienne</h2>
 
         {% if daily_quest %}
-          <!-- Later: display real daily quest -->
+          <!-- Currently only placeholders (UI only) -->
           <p><strong>{{ daily_quest.title }}</strong></p>
           <p class="text-muted small mb-2">{{ daily_quest.description }}</p>
+
           <p class="mb-2">
             Objectif : {{ daily_quest.objective_text }}<br />
             Récompense :
             <span class="ui-icon ui-icon-coin"></span>
             {{ daily_quest.reward_coins or 0 }}
+
             {% if daily_quest.reward_diams %}
               · <span class="ui-icon ui-icon-diam"></span>
               {{ daily_quest.reward_diams }}
             {% endif %}
           </p>
+
         {% else %}
           <p class="text-muted mb-1">
             Aucune quête quotidienne active pour le moment.
@@ -53,7 +67,8 @@
         {% endif %}
       </div>
 
-      <!-- Bloc : Quêtes disponibles au Village -->
+
+      <!-- Available Special Quests -->
       <div class="vq-card mb-3">
         <h2 class="h5 mb-2">Quêtes disponibles aujourd'hui</h2>
 
@@ -65,23 +80,29 @@
                   <strong>{{ q.title }}</strong><br />
                   <span class="text-muted small">{{ q.description }}</span>
                 </div>
+
+                <!-- Later: accepting quests -->
                 <button class="btn btn-sm btn-outline-primary" disabled>
                   Accepter (WIP)
                 </button>
               </li>
             {% endfor %}
           </ul>
+
         {% else %}
           <p class="text-muted mb-0">
-            Pour l’instant, aucune quête spéciale n’est disponible. Cette section sera remplie
-            quand on branchera la logique des quêtes du Village.
+            Pour l’instant, aucune quête spéciale n’est disponible.
+            Cette section sera remplie lorsque la logique des quêtes du Village sera activée.
           </p>
         {% endif %}
       </div>
 
     </section>
 
-    <!-- Colonne latérale : Quêtes actives -->
+
+    <!-- ============================================================
+         RIGHT COLUMN — Active Quests
+         ============================================================ -->
     <aside class="village-quests-sidebar">
       <div class="vq-card">
         <h2 class="h6 mb-2">Tes quêtes actives</h2>
@@ -96,25 +117,27 @@
                     Progression : {{ q.progress_current }}/{{ q.progress_target }}
                   </span>
                 </div>
-                <!-- Later: maybe a button to abandon / track -->
+                <!-- Later: abandon / track -->
               </li>
             {% endfor %}
           </ul>
+
         {% else %}
           <p class="text-muted mb-0 small">
-            Tu n’as encore aucune quête active. Plus tard, les quêtes journalières,
-            hebdomadaires et bonus apparaîtront ici.
+            Tu n’as encore aucune quête active. Les quêtes journalières,
+            hebdomadaires et bonus apparaîtront ici plus tard.
           </p>
         {% endif %}
       </div>
     </aside>
 
-  </div>
+  </div><!-- /layout -->
 
-</div>
+</div><!-- /wrapper -->
 {% endblock %}
 
+
 {% block extra_scripts %}
-  <!-- Village Shop purchase logic -->
+  <!-- Village quests logic (UI only for now) -->
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_quests.js') }}"></script>
 {% endblock %}
