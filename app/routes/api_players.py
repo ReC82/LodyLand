@@ -19,6 +19,8 @@ from app.craft_defs import CRAFT_DEFS
 import datetime as dt
 
 from app.quests.service import assign_daily_quest_if_needed, serialize_quest
+from app.services.cards import serialize_card_def
+
 
 
 bp = Blueprint("players", __name__)
@@ -339,9 +341,8 @@ def get_state():
         ]
 
         # ------------------------------
-        # Cards (NEW)
+        # Cards (NEW) – via service
         # ------------------------------
-        # 1) all enabled card defs
         card_defs = (
             s.query(CardDef)
             .filter_by(enabled=True)
@@ -349,7 +350,6 @@ def get_state():
             .all()
         )
 
-        # 2) owned qty indexed by card_key
         owned_rows = (
             s.query(PlayerCard)
             .filter_by(player_id=me.id)
@@ -357,26 +357,18 @@ def get_state():
         )
         owned_map = {pc.card_key: pc.qty for pc in owned_rows}
 
+        # Ici, le contexte est plutôt "inventory" pour le /state global
         cards_payload = []
         for cd in card_defs:
-            cards_payload.append({
-                "key": cd.key,
-                "label": cd.label,
-                "description": cd.description,
-                "icon": cd.icon,
+            owned_qty = owned_map.get(cd.key, 0)
+            cards_payload.append(
+                serialize_card_def(
+                    cd,
+                    owned_qty=owned_qty,
+                    context="inventory",
+                )
+            )
 
-                "categorie": cd.categorie,
-                "rarity": cd.rarity,
-                "type": cd.type,
-
-                "gameplay": cd.gameplay or {},
-                "prices": cd.prices or [],
-                "shop": cd.shop or {},
-                "buy_rules": cd.buy_rules or {},
-
-                "enabled": cd.enabled,
-                "owned_qty": owned_map.get(cd.key, 0),
-            })
 
         # ------------------------------
         # Items craftés (PlayerItem)

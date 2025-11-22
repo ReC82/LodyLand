@@ -1,0 +1,563 @@
+cards:
+  # ============================================================
+  # LAND ACCESS CARDS
+  # Cartes qui débloquent de nouveaux lands
+  # type: land_access
+  # categorie: land
+  # ============================================================
+
+  - key: land_forest
+    categorie: land
+    label: Accès Forêt
+    description: Débloque le land Forêt.
+    icon: /static/assets/img/cards/land_forest.png
+    default_resource_icon: /static/assets/img/lands/forest_slot.png
+    type: land_access
+    rarity: common
+    gameplay:
+      target_land: forest
+    prices:
+      - coins: 0
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_beach
+    categorie: land
+    label: Accès Plage
+    description: Débloque le land Plage.
+    icon: /static/assets/img/cards/land_beach.png
+    default_resource_icon: /static/assets/img/lands/beach_slot.png
+    type: land_access
+    rarity: uncommon
+    gameplay:
+      target_land: beach
+    prices:
+      - coins: 500
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_lake
+    categorie: land
+    label: Accès Lac
+    description: Débloque le land Lac
+    icon: /static/assets/img/cards/land_lake.png
+    default_resource_icon: /static/assets/img/lands/lake_slot.png
+    type: land_access
+    rarity: uncommon
+    gameplay:
+      target_land: lake
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_farm
+    categorie: land
+    label: Accès Ferme
+    description: Débloque le land Ferme
+    icon: /static/assets/img/cards/land_farm.png
+    default_resource_icon: /static/assets/img/lands/farm_slot.png
+    type: land_access
+    rarity: uncommon
+    gameplay:
+      target_land: farm
+    prices:
+      - coins: 500
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_cave
+    categorie: land
+    label: Accès Grottes
+    description: Débloque le land Grottes
+    icon: /static/assets/img/cards/land_cave.png
+    default_resource_icon: /static/assets/img/lands/cave_slot.png
+    type: land_access
+    rarity: uncommon
+    gameplay:
+      target_land: lake
+    prices:
+      - coins: 500
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_desert
+    categorie: land
+    label: Accès Désert
+    description: Débloque le land Désert
+    icon: /static/assets/img/cards/land_desert.png
+    default_resource_icon: /static/assets/img/lands/desert_slot.png
+    type: land_access
+    rarity: uncommon
+    gameplay:
+      target_land: lake
+    prices:
+      - coins: 500
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_mountain
+    categorie: land
+    label: Accès Montagne
+    description: Débloque le land Montagne.
+    icon: /static/assets/img/cards/default_card.png
+    default_resource_icon: null
+    type: land_access
+    rarity: uncommon
+    gameplay:
+      target_land: mountain
+    prices:
+      - coins: 0
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: land_village
+    categorie: land
+    label: Accès Village
+    description: Un petit village où tu pourras commercer, accepter des quêtes, etc.
+    icon: /static/assets/img/cards/land_village.png
+    default_resource_icon: null
+    type: land_access
+    rarity: rare
+    gameplay:
+      target_land: village
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  # ============================================================
+  # LAND SLOT CARDS
+  # Cartes qui ajoutent des slots sur un land
+  # type: land_slot
+  # categorie: land
+  # ============================================================
+
+  - key: beach_free_slot
+    categorie: land
+    label: Beach Free Slot
+    description: Débloque un slot supplémentaire sur la Plage.
+    icon: /static/assets/img/cards/default_card.png
+    default_resource_icon: null
+    type: land_slot
+    rarity: uncommon
+    gameplay:
+      land: beach
+      slots: 1
+    prices:
+      - coins: 0
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    label_fr: Free Slot For The Beach Land
+    enabled: true
+
+  - key: forest_free_slot
+    categorie: land
+    label: Forest Free Slot
+    description: Unlock a free slot in the Forest land.
+    icon: /static/assets/img/cards/default_card.png
+    default_resource_icon: null
+    type: land_slot
+    rarity: uncommon
+    gameplay:
+      land: forest
+      slots: 1
+    prices:
+      - coins: 0
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: lake_free_slot
+    categorie: land
+    label: Lake Free Slot
+    description: Débloque un emplacement supplémentaire sur le Lac.
+    icon: /static/assets/img/cards/default_card.png
+    default_resource_icon: null
+    type: land_slot
+    rarity: uncommon
+    gameplay:
+      land: lake
+      slots: 1
+    prices:
+      - coins: 0
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  # ============================================================
+  # COOLDOWN BOOST CARDS
+  # Réduction de cooldown sur une ressource
+  # type: cooldown_boost
+  # categorie: boost
+  # ============================================================
+
+  - key: boost_branch_cooldown_1
+    categorie: boost
+    label: Booster cooldown Branches I
+    description: -20% sur le cooldown des branches.
+    icon: /static/assets/img/cards/boost_cooldown_global_10pc_rare_1
+    default_resource_icon: null
+    type: cooldown_boost
+    rarity: common
+    gameplay:
+      cooldown_boost:
+        resource_key: branch
+        mode: multiplier
+        amount: 0.8
+    prices:
+      - coins: 100
+        diams: 0
+        resources:
+          branch: 100
+      - coins: 0
+        diams: 3
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 3
+    enabled: true
+
+  # ============================================================
+  # RESOURCE BOOST CARDS
+  # Boost sur la quantité récoltée d’une ressource
+  # type: resource_boost
+  # categorie: boost
+  # ============================================================
+
+  - key: anchovy_boost_1
+    categorie: boost
+    label: Anchois +0.1
+    description: Ajoute 0.1 a la récolte d'anchois
+    icon: /static/assets/img/cards/default_card.png
+    default_resource_icon: null
+    type: resource_boost
+    rarity: common
+    gameplay:
+      target_resource: anchovy
+      boost:
+        type: addition
+        amount: 0.2
+    prices:
+      - coins: 100
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: branch_boost_1
+    categorie: boost
+    label: Booster Branches I
+    description: +0.2 de branches récoltées.
+    icon: /static/assets/img/cards/branch_boost_1.png
+    default_resource_icon: null
+    type: resource_boost
+    rarity: common
+    gameplay:
+      target_resource: branch
+      boost:
+        type: addition
+        amount: 0.2
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+      - coins: 0
+        diams: 10
+        resources: {}
+      - coins: 100
+        diams: 0
+        resources:
+          branch: 100
+      - coins: 0
+        diams: 5
+        resources:
+          branch: 100
+      - coins: 0
+        diams: 0
+        resources:
+          branch: 100
+          vine: 50
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 5
+    enabled: true
+
+  - key: wood_boost_1
+    categorie: boost
+    label: Booster Bois I
+    description: +10% de bois récolté sur les tuiles Wood.
+    icon: /static/assets/img/cards/wood_boost_1.png
+    default_resource_icon: null
+    type: resource_boost
+    rarity: common
+    gameplay:
+      target_resource: wood
+      boost:
+        type: addition
+        amount: 0.1
+    prices:
+      - coins: 50
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 5
+    enabled: true
+
+  # ============================================================
+  # LAND LOOT BOOST CARDS
+  # Boost du loot sur un land
+  # type: land_loot_boost
+  # categorie: boost
+  # ============================================================
+
+  - key: forest_loot_boost_1
+    categorie: boost
+    label: Butin Forêt I
+    description: +20% de loot dans la Forêt.
+    icon: /static/assets/img/cards/forest_loot_boost_1.png
+    default_resource_icon: null
+    type: land_loot_boost
+    rarity: uncommon
+    gameplay:
+      target_land: forest
+      target_tool: null
+      loot:
+        type: addition
+        amount: 0.2
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+      quantity: 0
+      purchase_limit: null
+      max_owned: 5
+    enabled: true
+
+  # ============================================================
+  # XP BOOST CARDS
+  # Boost d’XP global
+  # type: xp_boost
+  # categorie: boost
+  # ============================================================
+
+  - key: global_xp_boost_1
+    categorie: boost
+    label: Booster XP I
+    description: +10% d'XP gagnée sur toutes les actions.
+    icon: /static/assets/img/cards/global_xp_boost_1.png
+    default_resource_icon: null
+    type: xp_boost
+    rarity: uncommon
+    gameplay:
+      xp_boost:
+        mode: multiplier
+        amount: 1.1
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+      - coins: 50
+        diams: 2
+        resources:
+          branch: 50
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: true
+      quantity: 0
+      purchase_limit: null
+      max_owned: 1
+    enabled: true
+
+  - key: xp_boost_global_x2_1
+    categorie: boost
+    label: Boost XP Global x2
+    description: Double l'XP gagnée sur toutes les actions.
+    icon: /static/assets/img/cards/boost_xp_x2_unique_1.png
+    default_resource_icon: null
+    type: xp_boost
+    rarity: rare
+    gameplay:
+      target_land: null
+      target_tool: null
+      loot:
+        type: multiplicator
+        amount: 2
+    prices:
+      - coins: 20000
+        diams: 0
+        resources: {}
+      - coins: 0
+        diams: 100
+        resources: {}
+    buy_rules: null
+    shop:
+      enabled: true
+      tradable: true
+      giftable: false
+      show_in_main_shop: false
+      show_in_village_shop: true
+      quantity: 1
+      purchase_limit: null
+      max_owned: 1
+    enabled: true

@@ -1,5 +1,9 @@
 {% extends "game_base.html" %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/lands.css') }}">
+{% endblock %}
+
 {% block title %}Land – Plage{% endblock %}
 {% block body_class %}game-body beach-body{% endblock %}
 
@@ -84,6 +88,9 @@
       <!-- Toasts de loot -->
     <div id="loot-toasts" class="loot-toasts"></div>
     
-  <!-- JS spécifique à la Plage -->
+{% endblock %}
+
+{% block extra_scripts %}
+  <!-- Village Shop purchase logic -->
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/beach_app.js') }}"></script>
 {% endblock %}

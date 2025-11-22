@@ -16,13 +16,19 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///game.db")
 engine = create_engine(DATABASE_URL, echo=False, future=True)
 
 # Session factory (no autocommit, no autoflush)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False, future=True)
+SessionLocal = sessionmaker(
+    bind=engine,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False,
+    future=True,
+)
+
 
 class Base(DeclarativeBase):
     """Declarative base for ORM models."""
     pass
 
-SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 def init_db():
     """Create all tables if they don't exist."""

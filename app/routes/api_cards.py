@@ -4,12 +4,10 @@ from app.db import SessionLocal
 from app.models import Player, CardDef, PlayerCard, ResourceStock, PlayerLandSlots
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
-from app.services.cards import set_player_card_qty
+from app.services.cards import set_player_card_qty, serialize_card_def
 from app.lands import get_player_land_state
 
-from app.village_shop import get_village_excluded_card_keys
-# 🔽 ajoute cette ligne :
-from app.village_shop import get_active_village_offers
+from app.village_shop import get_village_excluded_card_keys, get_active_village_offers
 import datetime as dt
 
 bp = Blueprint("cards", __name__)
@@ -88,27 +86,17 @@ def list_cards():
         )
         owned_map = {pc.card_key: pc.qty for pc in owned_rows}
 
-        # 4. Construction du JSON
+        # 4. Construction du JSON (via le service)
         out = []
         for cd in visible_defs:
-            out.append({
-                "key": cd.key,
-                "label": cd.label,
-                "description": cd.description,
-                "icon": cd.icon,
-
-                "categorie": cd.categorie,
-                "rarity": cd.rarity,
-                "type": cd.type,
-
-                "gameplay": cd.gameplay or {},
-                "prices": cd.prices or [],
-                "shop": cd.shop or {},
-                "buy_rules": cd.buy_rules or {},
-
-                "enabled": cd.enabled,
-                "owned_qty": owned_map.get(cd.key, 0),
-            })
+            owned_qty = owned_map.get(cd.key, 0)
+            out.append(
+                serialize_card_def(
+                    cd,
+                    owned_qty=owned_qty,
+                    context=context,  # "inventory" ou "shop"
+                )
+            )
 
         return jsonify(out)
 
@@ -136,32 +124,47 @@ def buy_card():
     if price_index is None:
         return jsonify({"error": "price_index_required"}), 400
 
+    try:
+        price_index = int(price_index)
+    except (TypeError, ValueError):
+        return jsonify({"error": "price_index_must_be_int"}), 400
+
     with SessionLocal() as s:
+        # Resolve player (explicit playerId or cookie)
         p = _resolve_player(s, data)
         if not p:
             return jsonify({"error": "player_required"}), 400
 
+        # Load card definition
         cd = s.query(CardDef).filter_by(key=card_key, enabled=True).first()
         if not cd:
             return jsonify({"error": "card_not_found_or_disabled"}), 404
 
-        shop = cd.shop or {}
-        prices = cd.prices or []
+        # --- Shop configuration (new schema) ---
+        shop_cfg = cd.shop or {}
 
-        # --- Validate price index ---
+        # Prices are stored inside shop.prices (list of price options)
+        prices = shop_cfg.get("prices") or []
+        if not prices:
+            return jsonify({"error": "no_price_defined_for_card"}), 500
+
+        # Validate price index
         if price_index < 0 or price_index >= len(prices):
             return jsonify({"error": "invalid_price_index"}), 400
 
-        price_cfg = prices[price_index]
+        price_cfg = prices[price_index] or {}
 
-        # --- Check buy rules ---
-        ok, info = check_unlock_rules(p, cd.buy_rules)
+        # --- Buy rules / unlock rules ---
+        # buy_rules can be stored in shop.buy_rules or in cd.unlock_rules
+        buy_rules = shop_cfg.get("buy_rules") or cd.unlock_rules or {}
+
+        ok, info = check_unlock_rules(p, buy_rules)
         if not ok:
             payload = {"error": info.get("reason", "buy_rules_not_met")}
             payload.update(info)
             return jsonify(payload), 403
 
-        # --- Max owned ---
+        # --- Current owned quantity ---
         owned = (
             s.query(PlayerCard)
             .filter_by(player_id=p.id, card_key=cd.key)
@@ -169,38 +172,51 @@ def buy_card():
         )
         current_qty = owned.qty if owned else 0
 
-        max_owned = shop.get("max_owned")
+        # --- Max owned (card_max_owned or shop.max_owned) ---
+        max_owned = shop_cfg.get("max_owned")
+        if max_owned is None:
+            max_owned = cd.card_max_owned
+
         if max_owned is not None and current_qty >= max_owned:
             return jsonify({
                 "error": "max_owned_reached",
                 "max_owned": max_owned,
-                "owned_qty": current_qty
+                "owned_qty": current_qty,
             }), 400
 
-        # --- Quantity (global stock) ---
-        quantity = shop.get("quantity", 0)
-        if quantity > 0:
-            # We must ensure this card still has stock
+        # --- Global quantity / stock (card_quantity or shop.quantity) ---
+        # If quantity is None or 0 => no global stock limit
+        quantity = shop_cfg.get("quantity")
+        if quantity is None:
+            quantity = cd.card_quantity
+
+        if quantity is not None and quantity > 0:
+            # Remaining stock for this card (global, not per player)
             remaining = quantity - current_qty
             if remaining <= 0:
                 return jsonify({"error": "sold_out"}), 400
 
         # --- Purchase limit (date) ---
-        purchase_limit = shop.get("purchase_limit")
+        # Can be in shop.purchase_limit or cd.card_purchase_limit_quantity
+        purchase_limit = shop_cfg.get("purchase_limit") or cd.card_purchase_limit_quantity
         if purchase_limit:
             import datetime
             from datetime import timezone
 
-            limit_dt = datetime.datetime.fromisoformat(purchase_limit)
-            now = datetime.datetime.now(timezone.utc)
+            try:
+                limit_dt = datetime.datetime.fromisoformat(purchase_limit)
+            except ValueError:
+                # Invalid date format in data: treat as expired or ignore?
+                return jsonify({"error": "invalid_purchase_limit_format"}), 500
 
+            now = datetime.datetime.now(timezone.utc)
             if now > limit_dt:
                 return jsonify({"error": "purchase_expired"}), 400
 
         # --- Validate payment option ---
-        coins_cost = price_cfg.get("coins", 0)
-        diams_cost = price_cfg.get("diams", 0)
-        res_costs = price_cfg.get("resources", {})
+        coins_cost = int(price_cfg.get("coins", 0) or 0)
+        diams_cost = int(price_cfg.get("diams", 0) or 0)
+        res_costs = price_cfg.get("resources") or {}
 
         # Coins
         if p.coins < coins_cost:
@@ -221,14 +237,13 @@ def buy_card():
                 return jsonify({
                     "error": "not_enough_resource",
                     "resource": res_key,
-                    "required": needed
+                    "required": needed,
                 }), 400
 
         # --- Deduct costs ---
         p.coins -= coins_cost
         p.diams -= diams_cost
 
-        # Deduct resources
         for res_key, needed in res_costs.items():
             stock = (
                 s.query(ResourceStock)
@@ -246,17 +261,20 @@ def buy_card():
             owned.qty += 1
             new_qty = owned.qty
 
+        # Optionally update global card_quantity if you want
+        # (e.g. decrement cd.card_quantity if you store actual stock at def level)
+        # For now we keep it as "static template" and ignore global decrement.
+
         s.commit()
         s.refresh(p)
         s.refresh(owned)
 
+        # Use serialize_card_def to keep API shape consistent
+        card_payload = serialize_card_def(cd, owned_qty=new_qty, context="inventory")
+
         return jsonify({
             "ok": True,
-            "card": {
-                "key": cd.key,
-                "label": cd.label,
-                "categorie": cd.categorie,
-            },
+            "card": card_payload,
             "owned_qty": new_qty,
             "player": {
                 "id": p.id,
@@ -264,6 +282,7 @@ def buy_card():
                 "diams": p.diams,
             }
         })
+
 
 @bp.post("/village/shop/buy")
 def buy_village_offer():
@@ -283,12 +302,12 @@ def buy_village_offer():
     today = dt.date.today()
 
     with SessionLocal() as s:
-        # 1) Résoudre le player via cookie / session
+        # 1) Resolve player via cookie / session
         p = get_current_player(s)
         if not p:
             return jsonify({"error": "player_required"}), 400
 
-        # 2) Récupérer l'offre active correspondante
+        # 2) Find matching active offer
         active_offers = get_active_village_offers(today=today)
         offer = next((o for o in active_offers if o.get("key") == offer_key), None)
         if not offer:
@@ -303,7 +322,7 @@ def buy_village_offer():
         if not item_key:
             return jsonify({"error": "offer_missing_item_key"}), 500
 
-        # 3) CardDef associée
+        # 3) Associated CardDef
         cd = (
             s.query(CardDef)
             .filter_by(key=item_key, enabled=True)
@@ -314,7 +333,7 @@ def buy_village_offer():
 
         shop_cfg = cd.shop or {}
 
-        # 4) owned qty
+        # 4) Owned quantity
         owned = (
             s.query(PlayerCard)
             .filter_by(player_id=p.id, card_key=cd.key)
@@ -331,8 +350,11 @@ def buy_village_offer():
                 "owned_qty": current_qty,
             }), 400
 
-        # 4.b) max_owned (cards.yml → shop.max_owned)
+        # 4.b) max_owned (cards.yml → shop.max_owned or card_max_owned)
         max_owned = shop_cfg.get("max_owned")
+        if max_owned is None:
+            max_owned = cd.card_max_owned
+
         if max_owned is not None and current_qty >= max_owned:
             return jsonify({
                 "error": "max_owned_reached",
@@ -340,8 +362,8 @@ def buy_village_offer():
                 "owned_qty": current_qty,
             }), 400
 
-        # 5) Prix depuis CardDef
-        prices = cd.prices or []
+        # 5) Price from CardDef.shop.prices (we take the first option for now)
+        prices = shop_cfg.get("prices") or []
         if not prices:
             return jsonify({"error": "no_price_defined_for_card"}), 500
 
@@ -350,14 +372,14 @@ def buy_village_offer():
         diams_cost = int(price_cfg.get("diams", 0) or 0)
         res_costs: dict = price_cfg.get("resources") or {}
 
-        # 6) Vérifier monnaie
+        # 6) Check currencies
         if p.coins < coins_cost:
             return jsonify({"error": "not_enough_coins"}), 400
 
         if p.diams < diams_cost:
             return jsonify({"error": "not_enough_diams"}), 400
 
-        # 6.b) Vérifier ressources
+        # 6.b) Check resources
         for res_key, needed in res_costs.items():
             stock = (
                 s.query(ResourceStock)
@@ -371,7 +393,7 @@ def buy_village_offer():
                     "required": needed,
                 }), 400
 
-        # 7) Débiter
+        # 7) Deduct costs
         p.coins -= coins_cost
         p.diams -= diams_cost
 
@@ -383,7 +405,7 @@ def buy_village_offer():
             )
             stock.qty -= needed
 
-        # 8) Ajouter la carte
+        # 8) Add card
         if owned is None:
             owned = PlayerCard(player_id=p.id, card_key=cd.key, qty=1)
             s.add(owned)
@@ -396,15 +418,14 @@ def buy_village_offer():
         s.refresh(p)
         s.refresh(owned)
 
+        # Same shape as buy_card, but with offer_key
+        card_payload = serialize_card_def(cd, owned_qty=new_qty, context="inventory")
+
         return jsonify(
             {
                 "ok": True,
                 "offer_key": offer_key,
-                "card": {
-                    "key": cd.key,
-                    "label": cd.label,
-                    "categorie": cd.categorie,
-                },
+                "card": card_payload,
                 "owned_qty": new_qty,
                 "player": {
                     "id": p.id,
@@ -413,7 +434,6 @@ def buy_village_offer():
                 },
             }
         ), 200
-
 
         
 @bp.post("/dev/set_card_qty")
