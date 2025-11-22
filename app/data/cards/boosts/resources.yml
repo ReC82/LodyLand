@@ -1,0 +1,67 @@
+# =====================================================================
+# BOOST: RESOURCE BOOST CARDS
+# Cards that increase harvest amount for a specific resource.
+# card_type: resource_boost
+# categorie: boost
+# =====================================================================
+
+cards:
+  - key: branch_boost_1
+    label: "Booster Branches I"
+    description: "+0.2 de branches récoltées."
+    icon: "/static/assets/img/cards/branch_boost_1.png"
+    type: resource_boost
+    categorie: boost
+    rarity: common
+    enabled: true
+
+    gameplay:
+      target_resource: branch
+      boost:
+        type: addition      # addition | multiplier
+        amount: 0.2
+
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+      - coins: 100
+        diams: 0
+        resources:
+          branch: 100
+
+    shop:
+      enabled: true
+      max_owned: 5
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false
+
+  - key: wood_boost_1
+    label: "Booster Bois I"
+    description: "+10% de bois récolté."
+    icon: "/static/assets/img/cards/wood_boost_1.png"
+    type: resource_boost
+    categorie: boost
+    rarity: common
+    enabled: true
+
+    gameplay:
+      target_resource: wood
+      boost:
+        type: addition
+        amount: 0.1
+
+    prices:
+      - coins: 50
+        diams: 0
+        resources: {}
+
+    shop:
+      enabled: true
+      max_owned: 5
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false

@@ -1,0 +1,31 @@
+# =====================================================================
+# LAND ACCESS CARDS
+# card_type: land_access
+# categorie: land
+# =====================================================================
+
+cards:
+  - key: land_beach
+    label: "Accès Plage"
+    description: "Débloque le Land Plage."
+    icon: "/static/assets/img/cards/land_beach.png"
+    type: land_access
+    categorie: land
+    rarity: uncommon
+    enabled: true
+
+    gameplay:
+      target_land: beach
+
+    prices:
+      - coins: 500
+        diams: 0
+        resources: {}
+
+    shop:
+      enabled: true
+      max_owned: 1
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false

@@ -1,0 +1,29 @@
+# =====================================================================
+# LAND SLOT CARDS
+# Add extra slots on lands.
+# card_type: land_slot
+# categorie: land
+# =====================================================================
+
+cards:
+  - key: forest_free_slot
+    label: "Forest Free Slot"
+    description: "Adds +1 slot to Forest."
+    icon: "/static/assets/img/cards/default_card.png"
+    type: land_slot
+    categorie: land
+    rarity: uncommon
+    enabled: true
+
+    gameplay:
+      land: forest
+      slots: 1
+
+    prices: []
+    shop:
+      enabled: true
+      max_owned: 1
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false

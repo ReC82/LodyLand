@@ -1,0 +1,35 @@
+# =====================================================================
+# BOOST: LAND LOOT CARDS
+# card_type: land_loot_boost
+# categorie: boost
+# =====================================================================
+
+cards:
+  - key: forest_loot_boost_1
+    label: "Butin Forêt I"
+    description: "+20% loot on Forest land."
+    icon: "/static/assets/img/cards/forest_loot_boost_1.png"
+    type: land_loot_boost
+    categorie: boost
+    rarity: uncommon
+    enabled: true
+
+    gameplay:
+      target_land: forest
+      target_tool: null
+      loot:
+        type: addition
+        amount: 0.2
+
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+
+    shop:
+      enabled: true
+      max_owned: 5
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: false

@@ -1,0 +1,67 @@
+# =====================================================================
+# BOOST: XP BOOST CARDS
+# card_type: xp_boost
+# categorie: boost
+# =====================================================================
+
+cards:
+  - key: global_xp_boost_1
+    label: "Booster XP I"
+    description: "+10% XP on all actions."
+    icon: "/static/assets/img/cards/global_xp_boost_1.png"
+    type: xp_boost
+    categorie: boost
+    rarity: uncommon
+    enabled: true
+
+    gameplay:
+      xp:
+        type: multiplier
+        amount: 1.1
+
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+      - coins: 50
+        diams: 2
+        resources:
+          branch: 50
+
+    shop:
+      enabled: true
+      max_owned: 1
+      tradable: false
+      giftable: true
+      show_in_main_shop: false
+      show_in_village_shop: true
+
+  - key: xp_boost_global_x2_1
+    label: "Boost XP Global x2"
+    description: "Double XP on everything."
+    icon: "/static/assets/img/cards/boost_xp_x2_unique_1.png"
+    type: xp_boost
+    categorie: boost
+    rarity: rare
+    enabled: true
+
+    gameplay:
+      xp:
+        type: multiplicator
+        amount: 2
+
+    prices:
+      - coins: 20000
+        diams: 0
+        resources: {}
+      - coins: 0
+        diams: 100
+        resources: {}
+
+    shop:
+      enabled: true
+      max_owned: 1
+      tradable: true
+      giftable: false
+      show_in_main_shop: false
+      show_in_village_shop: true

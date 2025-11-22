@@ -1,0 +1,23 @@
+# =====================================================================
+# STARTER PACKS
+# These cards are not purchasable; they are given at start.
+# categorie: pack
+# =====================================================================
+
+cards:
+  - key: pack_starter_boost
+    label: "Starter Pack"
+    description: "A starter pack containing basic boosts."
+    type: pack
+    categorie: pack
+    enabled: true
+    rarity: common
+
+    gameplay:
+      contents:
+        - card: branch_boost_1
+        - card: wood_boost_1
+
+    prices: []
+    shop:
+      enabled: false
