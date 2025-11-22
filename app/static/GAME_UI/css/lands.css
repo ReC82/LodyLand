@@ -662,3 +662,41 @@
   border-top: 1px solid #1f2937;
   margin: 1.5rem 0 0.5rem;
 }
+
+/* Wrapper autour du bouton "Impossible" pour afficher un tooltip custom */
+.vs-buy-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+/* Pas de tooltip si pas de data-tooltip */
+.vs-buy-wrapper-disabled[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  bottom: 115%;
+  max-width: 260px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  border-radius: 0.5rem;
+
+  background: #020617;        /* fond sombre */
+  color: #e5e7eb;             /* texte clair */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+
+  white-space: normal;
+  z-index: 40;
+}
+
+/* Petite flèche du tooltip */
+.vs-buy-wrapper-disabled[data-tooltip]:hover::before {
+  content: "";
+  position: absolute;
+  right: 16px;
+  bottom: 105%;
+
+  border-width: 6px;
+  border-style: solid;
+  border-color: #020617 transparent transparent transparent;
+}

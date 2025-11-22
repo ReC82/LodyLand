@@ -128,19 +128,30 @@
                 </div>
 
                 <div class="mt-2 text-end">
-                  <button
-                    class="btn btn-sm {% if item.can_buy %}btn-outline-primary vs-buy-btn{% else %}btn-outline-secondary{% endif %}"
-                    data-offer-key="{{ item.offer_key }}"
-                    {% if not item.can_buy %}disabled="disabled"{% endif %}
-                    {% if item.cant_buy_reason %}title="{{ item.cant_buy_reason }}"{% endif %}
-                  >
-                    {% if item.can_buy %}
+                  {% if item.can_buy %}
+                    <button
+                      class="btn btn-sm btn-outline-primary vs-buy-btn"
+                      data-offer-key="{{ item.offer_key }}"
+                    >
                       Acheter
-                    {% else %}
-                      Impossible
-                    {% endif %}
-                  </button>
+                    </button>
+                  {% else %}
+                    <div
+                      class="vs-buy-wrapper vs-buy-wrapper-disabled"
+                      {% if item.cant_buy_reason %}
+                        data-tooltip="{{ item.cant_buy_reason }}"
+                      {% endif %}
+                    >
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        disabled="disabled"
+                      >
+                        Impossible
+                      </button>
+                    </div>
+                  {% endif %}
                 </div>
+
 
 
             </article>
