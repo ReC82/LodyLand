@@ -1,0 +1,68 @@
+/* ============================================================
+   VILLAGE LAND — General layout & NPC cards
+   Shared by all village-related features (quests, shop, trades)
+   ============================================================ */
+
+/* Main container for the Village land page */
+.land-village {
+  /* Simple max width + centered content */
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Header for the village land (logo + title + intro) */
+.land-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Small logo icon for the village */
+.land-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* Grid of NPC cards (quests, shop, trades) */
+.village-npc-grid {
+  /* 3 columns on desktop, 1 column on small screens */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* NPC card container */
+.npc-card {
+  /* Keeping layout flexible, inner content is styled below */
+}
+
+/* Inner card visual for a single NPC */
+.npc-card-inner {
+  background: #020617;             /* dark navy */
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937;       /* dark gray */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* NPC portrait image */
+.npc-img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.75rem;
+  object-fit: contain;
+}
+
+/* NPC title / role (e.g. Quests, Shop, Trades) */
+.npc-title {
+  margin-bottom: 0.25rem;
+}
+
+/* NPC short description text */
+.npc-text {
+  font-size: 0.9rem;
+  color: #9ca3af;                  /* light gray */
+  margin-bottom: 0.75rem;
+}

@@ -1,0 +1,235 @@
+/* ============================================================
+   VILLAGE SHOP — Layout and item cards
+   ============================================================ */
+
+/* Main wrapper for the village shop page */
+.village-shop-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Two-column layout:
+   - left: items in the shop
+   - right: explanatory sidebar */
+.village-shop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .village-shop-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Generic card container for shop sections */
+.vs-card {
+  background: #020617;              /* dark navy */
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937;        /* dark gray */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Grid for all shop items (one column list) */
+.village-shop-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+/* ============================================================
+   Shop Item Card — Layout
+   ============================================================ */
+
+/* Item card: left side = villager portrait, right side = item info */
+.vs-item-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr); /* portrait / text */
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Left column: villager portrait + name */
+.vs-item-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+
+/* Bubble around the portrait */
+.vs-item-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 0.5rem;            /* slightly rounded corners */
+  border: 1px solid #4b5563;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Villager portrait: square with small radius */
+.vs-item-portrait {
+  width: 60px;
+  height: 60px;
+  border-radius: 5px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Fallback initial (when no portrait is available) */
+.vs-item-initial {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #e5e7eb;
+}
+
+/* Villager name under the portrait */
+.vs-villager-name {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #e5e7eb;
+  text-align: center;
+  opacity: 0.9;
+}
+
+/* Right side container for text (title, description, price, etc.) */
+.vs-item-body {
+  /* Text content is handled in the template and other rules below */
+}
+
+/* Short description text */
+.vs-item-desc {
+  line-height: 1.3;
+}
+
+/* Bottom line with price + stock */
+.vs-item-meta {
+  font-size: 0.8rem;
+}
+
+/* Force readable text on dark background within the shop wrapper */
+.village-shop-wrapper,
+.village-shop-wrapper * {
+  color: #e5e7eb;
+}
+
+/* Override generic .text-muted to be more readable on shop screens.
+   Note: this only applies when this CSS is loaded. */
+.game-body .text-muted {
+  color: #b0b8c5 !important;   /* light gray, better contrast */
+}
+
+
+/* ============================================================
+   Rarity Badges
+   ============================================================ */
+
+.vs-rarity {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+/* Basic rarity colors (can be refined later) */
+.vs-rarity-common {
+  background: #111827;
+  color: #e5e7eb;
+}
+
+.vs-rarity-uncommon {
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+.vs-rarity-rare {
+  background: #1d4ed8;
+  color: #bfdbfe;
+}
+
+.vs-rarity-epic {
+  background: #6d28d9;
+  color: #e9d5ff;
+}
+
+.vs-rarity-legendary {
+  background: #92400e;
+  color: #fed7aa;
+}
+
+
+/* ============================================================
+   Section titles per villager
+   ============================================================ */
+
+/* Title above each villager group (e.g. "Offres de Jo") */
+.vs-villager-title {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+/* Separator line between villager sections */
+.vs-villager-separator {
+  border: none;
+  border-top: 1px solid #1f2937;
+  margin: 1.5rem 0 0.5rem;
+}
+
+/* Small text style for "limited until" label (if used separately) */
+.vs-item-limit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fbbf24; /* readable yellow on dark background */
+}
+
+
+/* ============================================================
+   Disabled Buy Button Tooltip
+   ============================================================ */
+
+/* Wrapper around the "Impossible" button to display a custom tooltip */
+.vs-buy-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+/* Show tooltip only when data-tooltip is set */
+.vs-buy-wrapper-disabled[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  bottom: 115%;
+  max-width: 260px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  border-radius: 0.5rem;
+
+  background: #020617;        /* dark background */
+  color: #e5e7eb;             /* light text */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+
+  white-space: normal;
+  z-index: 40;
+}
+
+/* Small arrow for the tooltip */
+.vs-buy-wrapper-disabled[data-tooltip]:hover::before {
+  content: "";
+  position: absolute;
+  right: 16px;
+  bottom: 105%;
+
+  border-width: 6px;
+  border-style: solid;
+  border-color: #020617 transparent transparent transparent;
+}

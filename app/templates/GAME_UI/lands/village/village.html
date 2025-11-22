@@ -1,5 +1,10 @@
 {% extends "game_base.html" %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+{% endblock %}
+
 {% block title %}Le Village — LodyLand{% endblock %}
 
 {% block content %}
