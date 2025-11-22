@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LodyLand — Cards Definition Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-alt: #101626;
+      --card-bg: #131a2e;
+      --border: #232b3f;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56,189,248,0.08);
+      --accent-strong: #0ea5e9;
+      --danger: #f97373;
+      --code-bg: #020617;
+      --code-border: #1f2937;
+      --mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 2.5rem 1rem;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #000 100%);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, var(--card-bg), #020617);
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,0.2);
+      box-shadow:
+        0 22px 40px rgba(15,23,42,0.85),
+        0 0 0 1px rgba(15,23,42,0.9);
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(12px);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1.5rem 0.75rem;
+      }
+      .card {
+        padding: 1.75rem 1.4rem;
+      }
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      color: #f9fafb;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin: 0 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h1 .badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 0.1rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--muted);
+      background: radial-gradient(circle at top left, rgba(248,250,252,0.08), transparent);
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      margin-top: 2rem;
+      margin-bottom: 0.7rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(148,163,184,0.22);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin-top: 1.4rem;
+      margin-bottom: 0.4rem;
+    }
+
+    p {
+      margin-top: 0.2rem;
+      margin-bottom: 0.7rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .lead {
+      font-size: 0.98rem;
+      color: #e5e7eb;
+      max-width: 70ch;
+    }
+
+    .tagline {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      padding: 0.15rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.45);
+      color: #cbd5f5;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.14), transparent);
+    }
+
+    .pill--soft {
+      background: rgba(15,23,42,0.8);
+      border-color: rgba(75,85,99,0.7);
+      color: var(--muted);
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 1.75rem;
+      margin: 1.4rem 0 1.6rem;
+    }
+
+    @media (max-width: 840px) {
+      .grid-two {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .panel {
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.32);
+      background: radial-gradient(circle at top left, rgba(15,118,230,0.18), rgba(15,23,42,0.96));
+      padding: 1rem 1.1rem;
+      font-size: 0.9rem;
+    }
+
+    .panel--subtle {
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.94), rgba(15,23,42,1));
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #dbeafe;
+      margin-bottom: 0.5rem;
+    }
+
+    ul {
+      padding-left: 1.1rem;
+    }
+
+    li {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      background: rgba(15,23,42,0.9);
+      border-radius: 4px;
+      padding: 0.12rem 0.3rem;
+      border: 1px solid rgba(30,64,175,0.7);
+      color: #e0f2fe;
+    }
+
+    pre {
+      margin: 0.7rem 0 0.9rem;
+      padding: 0.8rem 0.9rem;
+      border-radius: 10px;
+      background: linear-gradient(145deg, var(--code-bg), #020617);
+      border: 1px solid rgba(30,64,175,0.8);
+      box-shadow:
+        0 0 0 1px rgba(15,23,42,0.8),
+        0 18px 35px rgba(15,23,42,0.95);
+      overflow-x: auto;
+    }
+
+    pre code {
+      border: none;
+      padding: 0;
+      background: transparent;
+      color: #e5e7eb;
+    }
+
+    .code-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .kbd-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-top: 0.3rem;
+    }
+
+    .kbd {
+      padding: 0.1rem 0.45rem;
+      border-radius: 6px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.86);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: #e5e7eb;
+      box-shadow: 0 1px 0 rgba(248,250,252,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0 1.4rem;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 0.45rem 0.55rem;
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+
+    th {
+      background: rgba(15,23,42,0.9);
+      font-weight: 600;
+      text-align: left;
+      color: #e5e7eb;
+    }
+
+    td {
+      background: rgba(15,23,42,0.8);
+      color: var(--muted);
+    }
+
+    .note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding: 0.5rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.8);
+      border: 1px dashed rgba(148,163,184,0.5);
+      margin: 0.6rem 0 1rem;
+    }
+
+    .section-anchor {
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="card">
+      <header>
+        <div class="tagline">LodyLand — Game Data</div>
+        <h1>
+          Cards Definition Guide
+          <span class="badge">app/data/cards</span>
+        </h1>
+        <p class="lead">
+          This document explains how to structure, organize and create card definitions for LodyLand.
+          Cards are split across multiple YAML files and folders for long‑term maintainability (200+ cards).
+        </p>
+        <div class="pill-row">
+          <span class="pill">YAML based</span>
+          <span class="pill pill--soft">Multi-file loader</span>
+          <span class="pill pill--soft">Future proof</span>
+        </div>
+      </header>
+
+      <section>
+        <h2>1. Folder Structure</h2>
+        <p>
+          All card definitions live under <code>app/data/cards/</code>.  
+          Files are grouped by theme (boosts, lands, packs, debug, etc.).
+        </p>
+
+<pre><code>cards/
+├── boosts/
+│   ├── resources.yml       # resource_boost cards
+│   ├── xp.yml              # xp_boost cards
+│   ├── cooldown.yml        # cooldown_boost cards
+│   └── land_loot.yml       # land_loot_boost cards
+│
+├── lands/
+│   ├── access.yml          # cards that unlock lands
+│   ├── slots.yml           # extra land slots
+│   └── specials.yml        # future special land cards
+│
+├── packs/
+│   ├── starters.yml        # starter packs
+│   └── events.yml          # limited-time event packs
+│
+├── debug/
+│   └── test_cards.yml      # test cards (never in production)
+│
+└── _README.md              # this file
+</code></pre>
+
+        <p class="note">
+          The game’s loader walks all <code>.yml</code> files recursively.  
+          You are free to add new folders and files (for tools, events, skills, etc.) —
+          they will be picked up automatically.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. How to Add a New Card</h2>
+        <div class="grid-two">
+          <div>
+            <p>To create a new card:</p>
+            <ol>
+              <li>Pick the right file (e.g. <code>boosts/resources.yml</code> for resource boosts).</li>
+              <li>Go to the <code>cards:</code> list in that file.</li>
+              <li>Add a new <code>- key: ...</code> block using the standard structure below.</li>
+            </ol>
+          </div>
+          <div class="panel panel--subtle">
+            <div class="panel-title">Example</div>
+            <p>Adding a new wood boost card:</p>
+<pre><code>cards:
+  - key: wood_boost_2
+    ...</code></pre>
+          </div>
+        </div>
+
+        <h3>2.1 Standard Card Structure</h3>
+        <p>Every card must follow this structure:</p>
+
+<pre><code>- key: my_card_key
+  enabled: true
+  label: "Human readable name"
+  description: "Human readable description"
+  icon: "/static/path/to/icon.png"
+
+  type: resource_boost           # gameplay type
+  categorie: boost               # for UI grouping
+  rarity: common                 # basic | common | uncommon | rare | epic | legendary
+
+  gameplay:
+    target_resource: branch
+    boost:
+      type: addition             # addition | multiplier
+      amount: 0.1
+
+  prices:
+    - coins: 100
+      diams: 0
+      resources: {}
+
+  buy_rules: null                # reserved for future conditions (level, quests, ...)
+
+  shop:
+    enabled: true
+    tradable: false
+    giftable: true
+    quantity: 0
+    purchase_limit: null
+    max_owned: 5
+    show_in_main_shop: false
+    show_in_village_shop: true
+</code></pre>
+      </section>
+
+      <section>
+        <h2>3. Card Types</h2>
+        <p>Supported <code>type</code> values and their meaning:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>resource_boost</code></td>
+              <td>Increase amount collected for a specific resource.</td>
+            </tr>
+            <tr>
+              <td><code>cooldown_boost</code></td>
+              <td>Reduce cooldown for a specific resource.</td>
+            </tr>
+            <tr>
+              <td><code>xp_boost</code></td>
+              <td>Increase XP gains on collect actions.</td>
+            </tr>
+            <tr>
+              <td><code>land_access</code></td>
+              <td>Unlock an entire land (forest, lake, beach, etc.).</td>
+            </tr>
+            <tr>
+              <td><code>land_slot</code></td>
+              <td>Grant extra slots on a specific land.</td>
+            </tr>
+            <tr>
+              <td><code>land_loot_boost</code></td>
+              <td>Increase loot across a land, possibly for given tools.</td>
+            </tr>
+            <tr>
+              <td><code>pack</code></td>
+              <td>Bundle of cards or items (starter packs, event rewards, etc.).</td>
+            </tr>
+            <tr>
+              <td><em>custom</em></td>
+              <td>You may add new custom types if gameplay logic supports them.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>4. Gameplay Examples</h2>
+
+        <h3>4.1 Resource Boost</h3>
+<pre><code>gameplay:
+  target_resource: wood
+  boost:
+    type: addition
+    amount: 0.2          # +20% wood per collect</code></pre>
+
+        <h3>4.2 Cooldown Boost</h3>
+<pre><code>gameplay:
+  cooldown:
+    resource_key: branch
+    type: multiplier
+    amount: 0.8          # cooldown * 0.8 = -20%</code></pre>
+
+        <h3>4.3 XP Boost</h3>
+<pre><code>gameplay:
+  xp:
+    type: multiplier
+    amount: 1.1          # +10% XP on all actions</code></pre>
+
+        <h3>4.4 Land Access</h3>
+<pre><code>gameplay:
+  target_land: beach     # unlocks the beach land</code></pre>
+
+        <h3>4.5 Land Slot</h3>
+<pre><code>gameplay:
+  land: forest
+  slots: 1               # +1 extra slot on Forest</code></pre>
+
+        <h3>4.6 Land Loot Boost</h3>
+<pre><code>gameplay:
+  target_land: forest
+  loot:
+    type: addition
+    amount: 0.2          # +20% loot in Forest</code></pre>
+      </section>
+
+      <section>
+        <h2>5. Prices</h2>
+        <p>
+          A card can have one or several pricing options.  
+          The player can buy using <strong>any one</strong> of the listed options.
+        </p>
+
+<pre><code>prices:
+  - coins: 100
+    diams: 0
+    resources: {}
+  - coins: 0
+    diams: 5
+    resources:
+      branch: 50
+</code></pre>
+      </section>
+
+      <section>
+        <h2>6. Shop Behaviour</h2>
+        <p>Shop configuration controls where and how the card is offered to players.</p>
+
+<pre><code>shop:
+  enabled: true
+  tradable: false
+  giftable: true
+  quantity: 0
+  purchase_limit: null
+  max_owned: 1
+  show_in_main_shop: false
+  show_in_village_shop: true
+</code></pre>
+
+        <ul>
+          <li><code>enabled</code>: card can appear in shops / rewards.</li>
+          <li><code>show_in_main_shop</code>: visible in the main in-game shop.</li>
+          <li><code>show_in_village_shop</code>: visible in the village shop only.</li>
+          <li><code>tradable</code>: can be traded/sold between players.</li>
+          <li><code>max_owned</code>: maximum copies a player is allowed to own.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. Validation Rules</h2>
+        <p>
+          A new card is considered valid if:
+        </p>
+        <ul>
+          <li><code>key</code> is unique across all files.</li>
+          <li><code>label</code>, <code>description</code> and <code>icon</code> are present.</li>
+          <li><code>type</code>, <code>categorie</code> and <code>rarity</code> are provided.</li>
+          <li><code>gameplay</code> matches the card type.</li>
+          <li><code>prices</code> is a list (can be empty).</li>
+          <li><code>shop</code> exists (enabled or disabled).</li>
+        </ul>
+
+        <p class="note">
+          A dedicated validation step can be added in the loader (e.g. in
+          <code>seed_cards_from_yaml()</code>) to enforce these rules and
+          fail fast if something is missing.
+        </p>
+      </section>
+
+      <section>
+        <h2>8. Test Cards</h2>
+        <p>
+          Any file inside <code>cards/debug/</code> is loaded but reserved for
+          experiments and development.
+        </p>
+
+<pre><code>cards/debug/test_cards.yml</code></pre>
+
+        <p class="note">
+          Use this file for temporary or debug cards that you do not want to
+          ship in production builds.
+        </p>
+      </section>
+
+      <section>
+        <h2>9. Extending the System</h2>
+        <p>
+          To add a new group of cards (for example: tools, skills, recipes),
+          simply create a new folder and YAML file:
+        </p>
+
+<pre><code>cards/
+  tools/
+    crafting.yml</code></pre>
+
+        <p>
+          As long as the file has a <code>cards:</code> list and each entry
+          respects the standard structure, the global loader will include it.
+        </p>
+      </section>
+
+      <footer style="margin-top: 2rem; font-size: 0.8rem; color: var(--muted);">
+        LodyLand cards data — maintained by the game dev team.  
+        Refer to <code>normalize_cards_yaml.py</code>, <code>seed_cards_from_yaml()</code>
+        and API routes (<code>api_shop.py</code>, <code>api_cards.py</code>) for implementation details.
+      </footer>
+    </article>
+  </main>
+</body>
+</html>
