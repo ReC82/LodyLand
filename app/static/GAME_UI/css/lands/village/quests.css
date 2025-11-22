@@ -1,0 +1,75 @@
+/* ============================================================
+   VILLAGE QUESTS — Layout and quest cards
+   ============================================================ */
+
+/* Main wrapper for the village quests screen */
+.village-quests-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Two-column layout:
+   - left: quest lists / active quests
+   - right: details / hints / rewards */
+.village-quests-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .village-quests-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Generic card style used on village quests screen */
+.vq-card {
+  background: #020617;              /* dark navy */
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937;        /* dark gray */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Lines for quest lists and active quest list */
+.vq-quest-line,
+.vq-active-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #1f2937;
+}
+
+.vq-quest-line:last-child,
+.vq-active-line:last-child {
+  border-bottom: none;
+}
+
+/* Scrollable active quest list area */
+.vq-active-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Force readable text color in quests area */
+.village-quests-wrapper,
+.village-quests-wrapper * {
+  color: #e5e7eb !important; /* light gray text */
+}
+
+/* Better readability for descriptive text inside quest cards */
+.vq-card p,
+.vq-card .text-muted,
+.vq-card small {
+  color: #cbd5e1 !important; /* even lighter gray */
+}
+
+/* Slightly clearer border and background for quest cards */
+.vq-card {
+  border-color: #334155;          /* blue-gray */
+  background: #0f172a;            /* dark navy with better contrast */
+}

@@ -1,0 +1,109 @@
+/* ============================================================
+   VILLAGE TRADES — Layout and trade rows
+   ============================================================ */
+
+/* Main wrapper for the village trades screen */
+.village-trades-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Two-column layout:
+   - left: list of trades
+   - right: info / details / tips */
+.village-trades-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .village-trades-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Generic card used on trades screen */
+.vt-card {
+  background: #020617;              /* dark navy */
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937;        /* dark gray */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Container for the list of trades */
+.village-trades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Single trade row: left side = "give", right side = "receive" */
+.vt-trade-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #020617;
+  border: 1px dashed #1f2937;
+}
+
+/* Mobile: stacked layout */
+@media (max-width: 768px) {
+  .vt-trade-row {
+    grid-template-columns: minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .vt-arrow {
+    justify-content: center;
+  }
+
+  .vt-action {
+    justify-content: flex-end;
+  }
+}
+
+/* Side container for "give" or "receive" information */
+.vt-side {
+  /* Intentional: flex column managed from HTML */
+}
+
+/* Subtitle for each side (e.g. "Give", "Receive") */
+.vt-side-title {
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+/* Arrow "→" between the two sides */
+.vt-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+/* Rightmost cell with the action button */
+.vt-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Token-like badge to display resource/item keys */
+.vt-token {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+}
+
+/* Small text indicating per-player limits or similar info */
+.vt-limit {
+  margin-top: 0.25rem;
+}

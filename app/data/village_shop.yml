@@ -1,0 +1,41 @@
+# app/data/village_shop.yml
+# Village shop rotation config
+
+villagers_dir: "static/assets/img/pnj/villagers"
+
+offers:
+  - key: "village_boost_forest_x2_2025w45"
+    enabled: true
+
+    # Période de disponibilité (inclusif)
+    start_date: "2025-11-05"
+    end_date: "2025-11-21"
+
+    # Qui vend ? (voir plus tard: "auto" pour un choix déterministe)
+    villager: "Anna"   # ou "auto"
+
+    # Ce que c’est vraiment (pour la logique)
+    item_type: "card"
+    item_key: "global_xp_boost_1"
+
+    # Limites
+    stock_global: 10        # null = illimité
+    limit_per_player: 1     # null = pas de limite
+
+  - key: "village_card_lake_slot_2025w45"
+    enabled: true
+
+    # période de disponibilité (inclusif)
+    start_date: "2025-11-09"
+    end_date: "2025-11-30"
+
+    # quel villageois vend cette offre ?
+    villager: "Jo"
+
+    # ce que l'offre vend réellement
+    item_type: "card"              # plus tard : "item", "recipe", etc.
+    item_key: "anchovy_boost_1"  # si item_type = "card", on va chercher dans cards.yml
+
+    # limites
+    stock_global: 2        # (pas encore géré globalement, on le fera plus tard)
+    limit_per_player: 1    # limite par joueur

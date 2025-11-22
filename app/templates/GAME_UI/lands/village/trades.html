@@ -1,5 +1,11 @@
 {% extends "game_base.html" %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/trades.css') }}">
+{% endblock %}
+
 {% block title %}Échanges du Village — LodyLand{% endblock %}
 
 {% block content %}

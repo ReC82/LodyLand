@@ -15,6 +15,10 @@ from .models import Player, Account, PlayerCard, CardDef
 from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
 
+import datetime as dt
+from .village_shop import get_active_village_offers
+
+
 from pathlib import Path
 import yaml
 
@@ -382,55 +386,125 @@ def village_quests():
 
 @frontend_bp.get("/village/shop")
 def village_shop():
-    """Display the special village shop with limited items (UI only for now)."""
+    """Display the special village shop with limited items, loaded from YAML."""
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # For now, we use static demo items.
-        # Later this will be loaded from YAML / DB with rotations.
-        shop_items: list[dict] = [
-            {
-                "key": "demo_boost_forest_x2",
-                "label": "Boost Forêt x2 (DEMO)",
-                "description": "Double temporairement tes gains de ressources en Forêt.",
-                "rarity": "rare",
-                "price_coins": 250,
-                "price_diams": 0,
-                "stock": 3,
-            },
-            {
-                "key": "demo_card_lake_free_slot",
-                "label": "Carte: Emplacement Lac +1 (DEMO)",
-                "description": "Ajoute un emplacement de récolte sur le Lac.",
-                "rarity": "epic",
-                "price_coins": 0,
-                "price_diams": 5,
-                "stock": 1,
-            },
-            {
-                "key": "demo_recipe_rope",
-                "label": "Recette: Corde (DEMO)",
-                "description": "Débloque la recette de fabrication de corde.",
-                "rarity": "uncommon",
-                "price_coins": 120,
-                "price_diams": 0,
-                "stock": 999,  # 'Illimité' côté UI
-            },
-        ]
+        today = dt.date.today()
+        offers = get_active_village_offers(today)
 
-        shop_rotation_label = "Rotation de démonstration (UI only)"
+        shop_items: list[dict] = []
+
+        for o in offers:
+            if o.get("item_type") != "card":
+                # For now we only support card offers
+                continue
+
+            card_key = o.get("item_key")
+            if not card_key:
+                continue
+
+            cd = (
+                session.query(CardDef)
+                .filter(CardDef.key == card_key, CardDef.enabled == True)
+                .first()
+            )
+            if not cd:
+                continue
+
+            # Take first price from card definition
+            prices = cd.prices or []
+            price_cfg = (prices[0] or {}) if prices else {}
+            coins_cost = int(price_cfg.get("coins", 0) or 0)
+            diams_cost = int(price_cfg.get("diams", 0) or 0)
+            res_costs = price_cfg.get("resources") or {}
+            
+            # --- combien le joueur en possède déjà ?
+            owned_row = (
+                session.query(PlayerCard)
+                .filter_by(player_id=player.id, card_key=cd.key)
+                .first()
+            )
+            owned_qty = owned_row.qty if owned_row else 0
+            
+            # --- règles de limite d'achat ---
+            shop_cfg = cd.shop or {}
+            limit_per_player = o.get("limit_per_player")
+            max_owned = shop_cfg.get("max_owned")
+
+            reasons: list[str] = []            
+            
+            # Limite spécifique à l'offre du village
+            if limit_per_player is not None and owned_qty >= limit_per_player:
+                reasons.append(
+                    f"Tu as déjà acheté cette offre ({owned_qty}/{limit_per_player})."
+                )
+                
+            # Limite globale de la carte
+            if max_owned is not None and owned_qty >= max_owned:
+                reasons.append(
+                    "Tu as déjà atteint le nombre maximum pour cette carte."
+                )
+                
+            # Monnaie
+            if player.coins < coins_cost:
+                reasons.append("Tu n'as pas assez de coins.")
+            if player.diams < diams_cost:
+                reasons.append("Tu n'as pas assez de diams.")
+
+            # (plus tard on pourra ajouter les ressources dans reasons)
+
+            can_buy = len(reasons) == 0
+            cant_buy_reason = reasons[0] if reasons else ""                                                    
+
+            # Format end date for UI
+            end_str = o.get("end_date")
+            end_date_fmt = None
+            if end_str:
+                try:
+                    end_date = dt.date.fromisoformat(end_str)
+                    end_date_fmt = end_date.strftime("%d/%m/%Y")
+                except Exception:
+                    end_date_fmt = None
+
+            shop_items.append(
+                {
+                    "offer_key": o.get("key"),
+                    "villager": o.get("villager"),
+                    "label": cd.label,
+                    "description": cd.description,
+                    "rarity": cd.rarity,
+                    "price_coins": coins_cost,
+                    "price_diams": diams_cost,
+                    "price_resources": res_costs,
+                    "stock": o.get("stock_global"),
+                    "limit_until": end_date_fmt,
+
+                    # NEW
+                    "owned_qty": owned_qty,
+                    "can_buy": can_buy,
+                    "cant_buy_reason": cant_buy_reason,                    
+                    
+                }
+            )
+
+        # Group by villager, then label
+        shop_items.sort(
+            key=lambda it: ((it.get("villager") or ""), it.get("label") or "")
+        )
 
         return render_template(
             "GAME_UI/lands/village/shop.html",
             player=player,
             shop_items=shop_items,
-            shop_rotation_label=shop_rotation_label,
         )
     finally:
-        session.close()    
+        session.close()
+
+
         
 @frontend_bp.get("/village/trades")
 def village_trades():
