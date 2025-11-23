@@ -13,7 +13,7 @@ from app.admin import admin_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    
+    # dans create_app(), après register_routes(app)
     # ===== Admin Panel activé en dev =====
     app.config["ADMIN_ENABLED"] = True
     # =====================================    
@@ -57,5 +57,8 @@ def create_app() -> Flask:
             return jsonify({"ok": True, "inserted": n})
         except Exception as e:
             return jsonify({"ok": False, "error": str(e)}), 500
+
+    print("=== URL MAP ===")
+    print(app.url_map)
 
     return app
