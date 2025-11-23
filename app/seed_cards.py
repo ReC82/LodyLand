@@ -1,6 +1,6 @@
 # =============================================================================
 # File: seed_cards.py
-# Purpose: Load cards.yml (new format) → populate card_defs table
+# Purpose: Load cards.yml (new card_* format) → populate card_defs table
 # =============================================================================
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ from pathlib import Path
 
 from app.db import SessionLocal
 from app.models import CardDef
-
 
 CARDS_FILE = Path("app/data/cards.yml")
 
@@ -29,39 +28,37 @@ def seed_cards_from_yaml() -> None:
         return
 
     with SessionLocal() as s:
+        # En dev, on efface tout et on recrée proprement
+        s.query(CardDef).delete()
+        s.commit()
+
         for cfg in cards:
             key = cfg["key"]
 
-            # Delete existing row (dev reset)
-            existing = s.query(CardDef).filter_by(key=key).first()
-            if existing:
-                s.delete(existing)
-                s.commit()
-
             cd = CardDef(
                 key=key,
-                label=cfg["label"],
-                description=cfg.get("description"),
-                icon=cfg.get("icon"),
-
-                type=cfg.get("type", "").strip() or "generic",
-
-                target_resource=cfg.get("target_resource"),
-                target_building=cfg.get("target_building"),
-
-                max_owned=cfg.get("max_owned"),
                 enabled=cfg.get("enabled", True),
-                unlock_rules=cfg.get("unlock_rules"),
 
-                categorie=cfg.get("categorie"),
-                rarity=cfg.get("rarity"),
+                card_type=cfg.get("card_type"),
+                card_category=cfg.get("card_category"),
+                card_tags=cfg.get("card_tags"),
 
-                gameplay=cfg.get("gameplay"),
-                prices=cfg.get("prices"),
+                card_label=cfg.get("card_label"),
+                card_description=cfg.get("card_description"),
+                card_image=cfg.get("card_image"),
+                card_rarity=cfg.get("card_rarity"),
+
+                card_gameplay=cfg.get("card_gameplay"),
                 shop=cfg.get("shop"),
-                buy_rules=cfg.get("buy_rules"),
-            )
 
+                tradable=cfg.get("tradable", False),
+                giftable=cfg.get("giftable", True),
+                card_quantity=cfg.get("card_quantity", 0),
+                card_purchase_limit_quantity=cfg.get("card_purchase_limit_quantity"),
+                card_max_owned=cfg.get("card_max_owned"),
+
+                unlock_rules=cfg.get("unlock_rules"),
+            )
             s.add(cd)
             s.commit()
 

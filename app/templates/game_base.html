@@ -19,9 +19,6 @@
 
     {% block extra_css %}{% endblock %}
 
-    <!-- CSS spécifique aux lands -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
-
   </head>
   <body class="{% block body_class %}game-body{% endblock %}">
     <!-- HUD joueur -->
@@ -292,7 +289,6 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/craft_app.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='GAME_UI/js/quests_app.js') }}"></script>
 
     {# Scripts spécifiques à certaines pages (shop, lands spéciaux, etc.) #}
     {% block extra_scripts %}{% endblock %}

@@ -5,8 +5,8 @@
 from __future__ import annotations
 
 from sqlalchemy.orm import Session
-from app.models import PlayerCard
-
+from app.models import PlayerCard, CardDef
+from typing import Any
 
 def set_player_card_qty(
     session: Session,
@@ -69,3 +69,58 @@ def give_player_card(
         pc.qty += qty
 
     return pc
+
+def serialize_card_def(cd: CardDef, owned_qty: int = 0, context: str = "inventory") -> dict[str, Any]:
+    """
+    Adapter between the new CardDef model (card_*) and the legacy API shape.
+
+    Returns a dict with the fields expected by the frontend today:
+      - key, label, description, icon
+      - categorie, rarity, type
+      - gameplay, prices, shop, buy_rules
+      - owned_qty
+    """
+    shop_cfg = cd.shop or {}
+
+    # prices are stored inside shop in new schema
+    prices = shop_cfg.get("prices") or []
+
+    # buy_rules can live in shop or as unlock_rules
+    buy_rules = shop_cfg.get("buy_rules") or cd.unlock_rules or {}
+
+    # Rebuild a "legacy-like" shop block
+    legacy_shop = {
+        "show_in_main_shop": shop_cfg.get("show_in_main_shop", False),
+        "show_in_village_shop": shop_cfg.get("show_in_village_shop", False),
+        "buy_rules": buy_rules,
+        "tradable": cd.tradable,
+        "giftable": cd.giftable,
+        "quantity": cd.card_quantity,
+        "purchase_limit": cd.card_purchase_limit_quantity,
+        "max_owned": cd.card_max_owned,
+    }
+
+    return {
+        # Identité
+        "key": cd.key,
+
+        # Affichage (compat avec ancien front)
+        "label": cd.card_label,
+        "description": cd.card_description,
+        "icon": cd.card_image,
+
+        # Métadonnées
+        "categorie": cd.card_category,
+        "rarity": cd.card_rarity,
+        "type": cd.card_type,
+
+        # Gameplay & shop
+        "gameplay": cd.card_gameplay or {},
+        "prices": prices,
+        "shop": legacy_shop,
+        "buy_rules": buy_rules,
+
+        # Flags
+        "enabled": cd.enabled,
+        "owned_qty": owned_qty,
+    }

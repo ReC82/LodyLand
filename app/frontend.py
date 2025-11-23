@@ -1,4 +1,12 @@
 # app/frontend.py
+"""
+Frontend routes for LodyLand:
+- Public pages (home, login, register)
+- Lands selection and individual land pages
+- Shop pages (main shop + village shop)
+- Inventory page
+"""
+
 from flask import (
     Blueprint,
     render_template,
@@ -18,13 +26,15 @@ from .lands import get_land_def, get_player_land_state
 import datetime as dt
 from .village_shop import get_active_village_offers
 
-
 from pathlib import Path
 import yaml
 
 frontend_bp = Blueprint("frontend", __name__)
 
-# ----------------- Helpers validation -----------------
+# ---------------------------------------------------------------------------
+# Helpers: validation
+# ---------------------------------------------------------------------------
+
 
 def validate_email(email: str) -> bool:
     """Very basic email format validation."""
@@ -37,10 +47,11 @@ def validate_email(email: str) -> bool:
 def validate_password(password: str) -> list[str]:
     """
     Validate password complexity.
-    Règles simples pour commencer :
-    - min 8 caractères
-    - au moins 1 chiffre
-    - au moins 1 lettre
+
+    Simple rules for now:
+    - minimum 8 characters
+    - at least 1 digit
+    - at least 1 letter
     """
     errors: list[str] = []
     if len(password) < 8:
@@ -51,17 +62,22 @@ def validate_password(password: str) -> list[str]:
         errors.append("Le mot de passe doit contenir au moins une lettre.")
     return errors
 
-# ----------------- Lands config helper -----------------
+
+# ---------------------------------------------------------------------------
+# Lands config helper
+# ---------------------------------------------------------------------------
+
 
 def get_land_slots(slug: str, default: int = 6) -> int:
     """
-    Retourne le nombre de slots pour un land donné à partir de lands.yml.
-    slug : "forest", "beach", "village", ...
-    default : valeur de secours si la config est absente ou invalide.
+    Return the number of slots for a given land based on lands.yml.
+
+    slug: "forest", "beach", "village", ...
+    default: fallback value if config is missing or invalid.
     """
-    conf = get_land_def(slug)  # lit app/data/lands.yml via lands.py
+    conf = get_land_def(slug)  # reads app/data/lands.yml via lands.py
     if not isinstance(conf, dict):
-        # Land inconnu -> valeur par défaut
+        # Unknown land → use default value
         return default
 
     try:
@@ -70,9 +86,18 @@ def get_land_slots(slug: str, default: int = 6) -> int:
         return default
 
 
+# ---------------------------------------------------------------------------
+# Home / Play / Shop
+# ---------------------------------------------------------------------------
+
+
 @frontend_bp.route("/")
 def home():
-    """Page d'accueil publique. Si le joueur est connecté, on le redirige vers la forêt."""
+    """
+    Public home page.
+
+    If the player is already logged in (cookie present), redirect to forest land.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
@@ -80,7 +105,7 @@ def home():
         session.close()
 
     if player is not None:
-        # Joueur déjà connecté → on l'envoie sur la forêt
+        # Player already logged in → send to forest land
         return redirect(url_for("frontend.land_forest"))
 
     return render_template("home.html")
@@ -88,31 +113,44 @@ def home():
 
 @frontend_bp.get("/play")
 def play_redirect():
-    """Compatibilité : /play redirige vers /."""
+    """Compatibility route: /play simply redirects to home."""
     return redirect(url_for("frontend.home"))
+
 
 @frontend_bp.route("/shop")
 def shop():
-    """Page boutique joueur (vente ressources + achat cartes)."""
+    """Main shop page (resource selling + card shop)."""
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
     finally:
-        session.close()        
-    # Pour le moment, la page sera majoritairement pilotée par JS
+        session.close()
+    # For now, the page is mostly driven by JS
     return render_template("GAME_UI/shop/index.html")
+
+
+# ---------------------------------------------------------------------------
+# Lands selection + individual lands
+# ---------------------------------------------------------------------------
+
 
 @frontend_bp.get("/lands")
 def lands_select():
+    """
+    Land selection screen.
+
+    Shows all available land access cards (land_*) and which ones are unlocked
+    for the current player.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # 1) Cartes d'accès land_* possédées par le joueur
+        # 1) Land access cards owned by the player (keys like "land_forest")
         owned_land_rows = (
             session.query(PlayerCard.card_key)
             .filter(
@@ -124,7 +162,7 @@ def lands_select():
         )
         owned_keys = {key for (key,) in owned_land_rows}
 
-        # 2) Tous les CardDef de type land_* (activés)
+        # 2) All enabled CardDef with key starting by land_*
         land_cards = (
             session.query(CardDef)
             .filter(CardDef.key.like("land_%"), CardDef.enabled == True)
@@ -133,11 +171,16 @@ def lands_select():
         )
 
         def make_price_text(cd: CardDef | None) -> str:
+            """
+            Build a human-readable price string for a land card.
+
+            Uses the first price option from cd.shop["prices"] if present.
+            """
             if not cd:
                 return ""
 
-            # New multi-price format: we only display the first option for now.
-            prices = cd.prices or []
+            shop_cfg = cd.shop or {}
+            prices = shop_cfg.get("prices") or []
             if not prices:
                 return "Gratuit"
 
@@ -162,12 +205,12 @@ def lands_select():
 
             return " + ".join(parts)
 
-        # Optionnel : petit mapping d’emoji par land (juste cosmétique)
+        # Optional: small emoji mapping per land (purely cosmetic)
         EMOJI_BY_SLUG = {
             "forest": "🌲",
             "beach": "🏝️",
             "village": "🏘️",
-            # "desert": "🏜️", etc. quand tu en ajoutes
+            # "desert": "🏜️", etc. when you add more
         }
 
         lands: list[dict] = []
@@ -175,7 +218,7 @@ def lands_select():
             # key = "land_forest" -> slug = "forest"
             slug = cd.key[len("land_") :]
 
-            # On tente de trouver la route frontend.land_<slug>
+            # Try to resolve frontend.land_<slug> route
             endpoint = f"frontend.land_{slug}"
             try:
                 land_url = url_for(endpoint)
@@ -187,9 +230,9 @@ def lands_select():
             lands.append(
                 {
                     "key": slug,
-                    "title": cd.label or slug.capitalize(),
+                    "title": cd.card_label or slug.capitalize(),
                     "emoji": EMOJI_BY_SLUG.get(slug, "❓"),
-                    "desc": cd.description or "",
+                    "desc": cd.card_description or "",
                     "url": land_url,
                     "has_route": has_route,
                     "unlocked": cd.key in owned_keys,
@@ -202,23 +245,29 @@ def lands_select():
 
     return render_template("GAME_UI/lands/select.html", lands=lands)
 
+
 @frontend_bp.get("/land/forest")
 def land_forest():
+    """
+    Forest land page.
+
+    Renders slots state for the player + free slot card usage info.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # État du land (base_slots, extra_slots, total_slots, next_cost, slot_icon, ...)
+        # Land state (base_slots, extra_slots, total_slots, next_cost, slot_icon, ...)
         state = get_player_land_state(session, player.id, "forest")
 
-        # Config du land (pour logo + label) depuis lands.yml
+        # Land config (logo + label) from lands.yml
         conf = get_land_def("forest") or {}
-        land_logo = conf.get("logo")  # "static/assets/img/lands/forest_logo.png"
+        land_logo = conf.get("logo")  # e.g. "static/assets/img/lands/forest_logo.png"
         land_label = conf.get("label_fr") or conf.get("label_en") or "Forêt"
 
-        # Le joueur possède-t-il une carte free slot pour la forêt ?
+        # Does the player have a "Forest Free Slot" card?
         free_card_key = "land_forest_free_slot"
         has_free_slot_card = (
             session.query(PlayerCard)
@@ -241,15 +290,21 @@ def land_forest():
     finally:
         session.close()
 
+
 @frontend_bp.get("/land/beach")
 def land_beach():
+    """
+    Beach land page.
+
+    Requires the player to own the land_beach card, otherwise redirects to /lands.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # Vérifier que le joueur possède bien la carte d'accès à la plage
+        # Check that player owns the beach access card
         has_beach = (
             session.query(PlayerCard)
             .filter(
@@ -260,18 +315,18 @@ def land_beach():
             .first()
         )
         if not has_beach:
-            # On le renvoie sur l’écran de sélection des lands
+            # Redirect to lands selection
             return redirect(url_for("frontend.lands_select"))
 
-        # Slots + coût du prochain slot pour CE joueur sur CE land
+        # Land state (slots + cost of next slot for this player on this land)
         state = get_player_land_state(session, player.id, "beach")
-        
-                # Config du land (pour logo + label) depuis lands.yml
+
+        # Land config (logo + label) from lands.yml
         conf = get_land_def("beach") or {}
-        land_logo = conf.get("logo")  # "static/assets/img/lands/beach_logo.png"
+        land_logo = conf.get("logo")  # e.g. "static/assets/img/lands/beach_logo.png"
         land_label = conf.get("label_fr") or conf.get("label_en") or "Plage"
 
-        # Possède-t-il une carte "Beach Free Slot" ?
+        # Does the player have a "Beach Free Slot" card?
         free_card_key = "land_beach_free_slot"
         has_free_slot_card = (
             session.query(PlayerCard)
@@ -293,16 +348,22 @@ def land_beach():
         )
     finally:
         session.close()
-        
+
+
 @frontend_bp.get("/land/lake")
 def land_lake():
+    """
+    Lake land page.
+
+    Requires the player to own the land_lake card, otherwise redirects to /lands.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # Vérifier la carte d'accès au lac
+        # Check that player owns the lake access card
         has_lake = (
             session.query(PlayerCard)
             .filter(
@@ -315,15 +376,15 @@ def land_lake():
         if not has_lake:
             return redirect(url_for("frontend.lands_select"))
 
-        # État du land (slots de base + bonus + coût prochain slot)
+        # Land state (base slots + bonuses + next slot cost)
         state = get_player_land_state(session, player.id, "lake")
-        
-                # Config du land (pour logo + label) depuis lands.yml
+
+        # Land config (logo + label) from lands.yml
         conf = get_land_def("lake") or {}
-        land_logo = conf.get("logo")  # "static/assets/img/lands/lake_logo.png"
+        land_logo = conf.get("logo")  # e.g. "static/assets/img/lands/lake_logo.png"
         land_label = conf.get("label_fr") or conf.get("label_en") or "Lac"
 
-        # Possède-t-il une carte Lake Free Slot ?
+        # Does the player have a "Lake Free Slot" card?
         free_card_key = "land_lake_free_slot"
         has_free_slot_card = (
             session.query(PlayerCard)
@@ -345,20 +406,31 @@ def land_lake():
         )
     finally:
         session.close()
-        
-        
+
+
 @frontend_bp.get("/land/village")
 def land_village():
+    """
+    Village land page.
+
+    For now, no specific card check; later we can require land_village card.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
         if not player:
             return redirect(url_for("frontend.home"))
-        # Optionnel : check carte land_desert ici
+        # Optional: later, check for land_village card here.
         return render_template("GAME_UI/lands/village/village.html")
     finally:
         session.close()
-        
+
+
+# ---------------------------------------------------------------------------
+# Village: quests / shop / trades
+# ---------------------------------------------------------------------------
+
+
 @frontend_bp.get("/village/quests")
 def village_quests():
     """Display the village quest NPC screen (daily + available quests)."""
@@ -384,9 +456,14 @@ def village_quests():
     finally:
         session.close()
 
+
 @frontend_bp.get("/village/shop")
 def village_shop():
-    """Display the special village shop with limited items, loaded from YAML."""
+    """
+    Display the special village shop with limited items, loaded from YAML.
+
+    This uses village_shop.yml to find active offers, then links them to CardDef.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
@@ -415,50 +492,51 @@ def village_shop():
             if not cd:
                 continue
 
-            # Take first price from card definition
-            prices = cd.prices or []
+            # Shop configuration from card definition
+            shop_cfg = cd.shop or {}
+
+            # Take first price from card definition (shop.prices)
+            prices = shop_cfg.get("prices") or []
             price_cfg = (prices[0] or {}) if prices else {}
             coins_cost = int(price_cfg.get("coins", 0) or 0)
             diams_cost = int(price_cfg.get("diams", 0) or 0)
             res_costs = price_cfg.get("resources") or {}
-            
-            # --- combien le joueur en possède déjà ?
+
+            # How many does the player already own?
             owned_row = (
                 session.query(PlayerCard)
                 .filter_by(player_id=player.id, card_key=cd.key)
                 .first()
             )
             owned_qty = owned_row.qty if owned_row else 0
-            
-            # --- règles de limite d'achat ---
-            shop_cfg = cd.shop or {}
+
+            # Purchase limits
             limit_per_player = o.get("limit_per_player")
             max_owned = shop_cfg.get("max_owned")
+            can_buy_reasons: list[str] = []
 
-            reasons: list[str] = []            
-            
-            # Limite spécifique à l'offre du village
+            # Limit specific to the village offer
             if limit_per_player is not None and owned_qty >= limit_per_player:
-                reasons.append(
+                can_buy_reasons.append(
                     f"Tu as déjà acheté cette offre ({owned_qty}/{limit_per_player})."
                 )
-                
-            # Limite globale de la carte
+
+            # Global card max_owned
             if max_owned is not None and owned_qty >= max_owned:
-                reasons.append(
+                can_buy_reasons.append(
                     "Tu as déjà atteint le nombre maximum pour cette carte."
                 )
-                
-            # Monnaie
+
+            # Currency checks
             if player.coins < coins_cost:
-                reasons.append("Tu n'as pas assez de coins.")
+                can_buy_reasons.append("Tu n'as pas assez de coins.")
             if player.diams < diams_cost:
-                reasons.append("Tu n'as pas assez de diams.")
+                can_buy_reasons.append("Tu n'as pas assez de diams.")
 
-            # (plus tard on pourra ajouter les ressources dans reasons)
+            # (later we can also check resource costs in reasons)
 
-            can_buy = len(reasons) == 0
-            cant_buy_reason = reasons[0] if reasons else ""                                                    
+            can_buy = len(can_buy_reasons) == 0
+            cant_buy_reason = can_buy_reasons[0] if can_buy_reasons else ""
 
             # Format end date for UI
             end_str = o.get("end_date")
@@ -474,20 +552,17 @@ def village_shop():
                 {
                     "offer_key": o.get("key"),
                     "villager": o.get("villager"),
-                    "label": cd.label,
-                    "description": cd.description,
-                    "rarity": cd.rarity,
+                    "label": cd.card_label,
+                    "description": cd.card_description,
+                    "rarity": cd.card_rarity,
                     "price_coins": coins_cost,
                     "price_diams": diams_cost,
                     "price_resources": res_costs,
                     "stock": o.get("stock_global"),
                     "limit_until": end_date_fmt,
-
-                    # NEW
                     "owned_qty": owned_qty,
                     "can_buy": can_buy,
-                    "cant_buy_reason": cant_buy_reason,                    
-                    
+                    "cant_buy_reason": cant_buy_reason,
                 }
             )
 
@@ -505,10 +580,13 @@ def village_shop():
         session.close()
 
 
-        
 @frontend_bp.get("/village/trades")
 def village_trades():
-    """Display the village trading NPC screen (UI only for now)."""
+    """
+    Display the village trading NPC screen.
+
+    For now this is demo-only data for the UI; real data will come from YAML/DB.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)
@@ -553,13 +631,22 @@ def village_trades():
         )
     finally:
         session.close()
-        
+
+
+# ---------------------------------------------------------------------------
+# Auth: register / login / logout
+# ---------------------------------------------------------------------------
+
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
 def register():
-    """Inscription : email + mot de passe + confirmation. Crée un Account + Player."""
+    """
+    Registration: email + password + confirmation.
+
+    Creates an Account + Player, and gives starting land card(s).
+    """
     if request.method == "GET":
-        # Affiche juste le formulaire
+        # Just display the form
         return render_template("GAME_UI/auth/register.html", errors=[])
 
     # POST
@@ -579,23 +666,27 @@ def register():
 
     session = SessionLocal()
     try:
-        # Vérifier si email déjà utilisé
+        # Check if email is already used
         existing = session.query(Account).filter_by(email=email).first()
         if existing:
             errors.append("Un compte existe déjà avec cette adresse email.")
 
         if errors:
-            # Réafficher le formulaire avec erreurs
-            return render_template("GAME_UI/auth/register.html", errors=errors, email=email)
+            # Redisplay form with errors
+            return render_template(
+                "GAME_UI/auth/register.html",
+                errors=errors,
+                email=email,
+            )
 
-        # Créer le Player (profil en jeu)
-        # Pour l'instant on utilise l'email tronqué comme "name"
+        # Create Player (in-game profile)
+        # For now we use the truncated email as the 'name'
         player_name = email[:50] or "SansNom"
         player = Player(name=player_name)
         session.add(player)
-        session.flush()  # pour avoir player.id
+        session.flush()  # to get player.id
 
-        # Créer l'Account
+        # Create Account
         account = Account(
             email=email,
             password_hash=generate_password_hash(password),
@@ -603,11 +694,12 @@ def register():
         )
         session.add(account)
 
+        # Ensure starting land card(s)
         _ensure_starting_land_card(session, player)
 
         session.commit()
 
-        # Préparer la réponse + cookie player_id
+        # Prepare response + player_id cookie
         resp = make_response(redirect(url_for("frontend.land_forest")))
         resp.set_cookie(
             "player_id",
@@ -620,9 +712,14 @@ def register():
     finally:
         session.close()
 
+
 @frontend_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Connexion par email + mot de passe. Charge l'Account et son Player."""
+    """
+    Login via email + password.
+
+    Loads the Account and its associated Player, then sets a cookie.
+    """
     if request.method == "GET":
         return render_template("GAME_UI/auth/login.html", errors=[])
 
@@ -641,16 +738,24 @@ def login():
             errors.append("Email ou mot de passe incorrect.")
 
         if errors:
-            return render_template("GAME_UI/auth/login.html", errors=errors, email=email)
+            return render_template(
+                "GAME_UI/auth/login.html",
+                errors=errors,
+                email=email,
+            )
 
-        # Récupérer le player associé
+        # Fetch associated player
         player = account.player
         if not player:
-            # cas théorique : account sans player
+            # Theoretical case: account without player
             errors.append("Aucun profil joueur associé à ce compte.")
-            return render_template("GAME_UI/auth/login.html", errors=errors, email=email)
+            return render_template(
+                "GAME_UI/auth/login.html",
+                errors=errors,
+                email=email,
+            )
 
-        # OK → cookie + redirection vers la forêt
+        # OK → set cookie + redirect to forest land
         resp = make_response(redirect(url_for("frontend.land_forest")))
         resp.set_cookie(
             "player_id",
@@ -663,22 +768,33 @@ def login():
     finally:
         session.close()
 
+
 @frontend_bp.route("/logout")
 def logout():
-    """Simple logout: clear player_id cookie and redirect to home."""
+    """
+    Simple logout: clear player_id cookie and redirect to home.
+    """
     resp = make_response(redirect(url_for("frontend.home")))
     resp.set_cookie(
         "player_id",
         "",
         httponly=True,
         samesite="Lax",
-        max_age=0,           # expire immédiatement
+        max_age=0,  # expire immediately
     )
     return resp
 
+
+# ---------------------------------------------------------------------------
+# Inventory page
+# ---------------------------------------------------------------------------
+
+
 @frontend_bp.get("/inventory")
 def inventory_page():
-    """Page Inventaire (ressources + cartes), nécessite d'être connecté."""
+    """
+    Inventory page (resources + cards), requires the player to be logged in.
+    """
     session = SessionLocal()
     try:
         player = get_current_player(session)

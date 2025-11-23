@@ -102,40 +102,29 @@ class CardDef(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     key: Mapped[str] = mapped_column(String, unique=True, index=True)
-    label: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    icon: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    # Core type used everywhere in the code:
-    # "resource_boost", "land_access", "xp_boost", "reduce_cooldown",
-    # "land_loot_boost", "unlock_resource", ...
-    type: Mapped[str] = mapped_column(String, nullable=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    # Legacy target fields – still handy for some logic if you want:
-    target_resource: Mapped[str | None] = mapped_column(String, nullable=True)
-    target_building: Mapped[str | None] = mapped_column(String, nullable=True)
-    # target_land: you can add later if needed
+    card_type: Mapped[str] = mapped_column(String, nullable=False)
+    card_category: Mapped[str | None] = mapped_column(String, nullable=True)
+    card_tags: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
-    # Legacy prices are removed from the model on purpose:
-    # price_coins / price_diams are now inside `prices` JSON.
-    # max_owned is still useful, so we keep it.
-    max_owned: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    card_label: Mapped[str] = mapped_column(String, nullable=False)
+    card_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    card_image: Mapped[str | None] = mapped_column(String, nullable=True)
+    card_rarity: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    # Enabled / unlock_rules remain
-    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    card_gameplay: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    shop: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    tradable: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    giftable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    card_quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    card_purchase_limit_quantity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    card_max_owned: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-    # New fields for the refactor
-    categorie: Mapped[str | None] = mapped_column(String, nullable=True)
-    rarity: Mapped[str | None] = mapped_column(String, nullable=True)
-
-    # Free gameplay config, read by resource / xp / cooldown / land loot logic
-    gameplay: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-
-    # Multi-prices, shop config, and buy rules – all JSON blobs
-    prices: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    shop: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    buy_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 class PlayerCard(Base):
     __tablename__ = "player_cards"

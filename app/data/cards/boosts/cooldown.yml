@@ -1,0 +1,38 @@
+# =====================================================================
+# BOOST: COOLDOWN REDUCTION CARDS
+# card_type: cooldown_boost
+# categorie: boost
+# =====================================================================
+
+- key: boost_branch_cooldown_1
+  enabled: true
+  card_type: cooldown_boost
+  card_category: boost
+  card_tags:
+  - branch
+  card_label: Booster cooldown Branches I
+  card_description: -20% sur le cooldown des branches.
+  card_image: /static/assets/img/cards/boost_cooldown_global_10pc_rare_1
+  card_rarity: common
+  card_gameplay:
+    cooldown_boost:
+      resource_key: branch
+      mode: multiplier
+      amount: 0.8
+  shop:
+    prices:
+    - coins: 100
+      diams: 0
+      resources:
+        branch: 100
+    - coins: 0
+      diams: 3
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 3
