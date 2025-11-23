@@ -1,211 +1,338 @@
 """
 normalize_cards_yaml.py
 
-Utility to migrate/normalize LodyLand cards YAML to the new schema:
-- card_type / card_category / card_tags
-- card_* fields (label, description, image, rarity, gameplay)
-- shop structure (prices + flags)
-- root-level tradable / giftable / quantity / limits
+Strict validator + merger for LodyLand cards.
+
+Goals:
+  - Load ALL .yml fragments in app/data/cards/
+  - Validate each card strictly (required fields)
+  - If ANY structural issue is found → STOP and print clear errors
+  - If all cards are valid → write merged cards.yml
+
+Extras:
+  - Empty files (or files with only comments) are ignored.
+  - For each card, we check that card_image exists on disk (under app/static/...).
+    * If missing → warning + added to missing_card_images.txt
 """
 
+from __future__ import annotations
+
 import yaml
-from copy import deepcopy
 from pathlib import Path
+from typing import Any, Dict, List, Tuple
 from collections import defaultdict
 
-# Adjust this path if needed
-CARDS_PATH = Path("cards.yml")  # ou Path("cards.yml")
+# Root where fragment YAML files live
+CARDS_ROOT = Path("app/data/cards")
+# Final merged file
+OUTPUT_FILE = Path("app/data/cards.yml")
+# Where to write missing images report
+MISSING_IMAGES_FILE = CARDS_ROOT / "missing_card_images.txt"
+
+# Root of the project (for resolving /static/ paths)
+PROJECT_ROOT = Path("app")  # on part du principe que tu lances depuis la racine du projet
 
 
-def load_cards():
-    """Load current cards.yml and return the list of cards."""
-    with CARDS_PATH.open("r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    return data.get("cards", [])
+# ---------------------------------------------------------------------------
+# REQUIRED FIELDS (strict)
+# ---------------------------------------------------------------------------
+
+REQUIRED_FIELDS = [
+    "key",
+    "enabled",
+    "card_type",
+    "card_category",
+    "card_tags",
+    "card_label",
+    "card_description",
+    "card_image",
+    "card_rarity",
+    "card_gameplay",
+    "shop",
+    "tradable",
+    "giftable",
+    "card_quantity",
+    "card_purchase_limit_quantity",
+    "card_max_owned",
+]
+
+# Shop fields required inside shop:
+REQUIRED_SHOP_FIELDS = [
+    "prices",
+    "show_in_main_shop",
+    "show_in_village_shop",
+    "buy_rules",
+]
 
 
-def infer_category(card_type: str) -> str | None:
-    """Infer card_category from card_type."""
-    if card_type in ("land_access", "land_slot"):
-        return "land"
-    if card_type in ("resource_boost", "cooldown_boost", "xp_boost", "land_loot_boost"):
-        return "boost"
-    return None
+# ---------------------------------------------------------------------------
+# Loading YAML fragments
+# ---------------------------------------------------------------------------
+
+def load_fragment_cards(path: Path) -> List[Dict[str, Any]]:
+    """
+    Load YAML file and extract a list of card definitions.
+
+    Supports:
+      - Format A: [ {...}, {...} ]
+      - Format B: { cards: [ {...} ] }
+
+    Special:
+      - Empty file or file with only comments → returns [] (ignored).
+    """
+    text = path.read_text(encoding="utf-8")
+
+    try:
+        data = yaml.safe_load(text)
+    except Exception as e:
+        raise ValueError(f"❌ ERROR in YAML syntax: {path}\n{e}")
+
+    # Empty file or only comments → ignore
+    if data is None:
+        return []
+
+    # Format B: { "cards": [ ... ] }
+    if isinstance(data, dict):
+        raw_cards = data.get("cards")
+        if raw_cards is None:
+            # Dict sans clé "cards" → on considère qu'il n'y a pas de cartes
+            return []
+        if not isinstance(raw_cards, list):
+            raise ValueError(
+                f"❌ Invalid file structure in {path}: 'cards:' must contain a list"
+            )
+        return [c for c in raw_cards if isinstance(c, dict)]
+
+    # Format A: [ {...}, {...} ]
+    if isinstance(data, list):
+        return [c for c in data if isinstance(c, dict)]
+
+    # Unknown structure → vraie erreur
+    raise ValueError(
+        f"❌ Invalid YAML structure in {path}: expected a dict(cards=…) or a list"
+    )
 
 
-def build_tags(key: str | None, gameplay: dict | None) -> list[str]:
-    """Create simple tags from key + gameplay (land/resource)."""
-    tags = set()
+# ---------------------------------------------------------------------------
+# Image resolution helper
+# ---------------------------------------------------------------------------
 
-    gp = gameplay or {}
-    if isinstance(gp, dict):
-        for k, v in gp.items():
-            if isinstance(v, dict):
-                for kk in ("target_land", "land", "resource_key", "target_resource"):
-                    if kk in v and v[kk]:
-                        tags.add(str(v[kk]))
-            else:
-                if k in ("target_land", "land", "resource_key", "target_resource") and v:
-                    tags.add(str(v))
+def resolve_card_image_path(card_image: str) -> Path:
+    """
+    Resolve the filesystem path of a card_image value.
 
-    if key:
-        if key.startswith("land_"):
-            tags.add("land")
-        for name in ("forest", "beach", "lake", "desert", "cave", "mountain", "farm", "village"):
-            if name in key:
-                tags.add(name)
+    Convention:
+      - card_image: "/static/assets/img/cards/foo.png"
+        -> PROJECT_ROOT / "static/assets/img/cards/foo.png"
+    """
+    img = card_image.strip()
 
-    return sorted(tags)
+    # If it starts with /static/, we strip the leading slash and prefix with app/
+    if img.startswith("/"):
+        img = img.lstrip("/")  # "static/assets/img/cards/foo.png"
+
+    # On suppose que tout ce qui vient de YAML est relatif à app/
+    return PROJECT_ROOT / img
 
 
-def normalize_card(old_card: dict) -> dict:
-    """Transform one old card dict into the new schema."""
-    c = deepcopy(old_card)
+# ---------------------------------------------------------------------------
+# Validation system
+# ---------------------------------------------------------------------------
 
-    new = {}
+def validate_card(
+    card: Dict[str, Any],
+    source_file: Path,
+    missing_images: List[Tuple[str, str, Path, Path]],
+) -> None:
+    """
+    Validate required fields for each card.
+    Raise ValueError with a clear message if something is wrong structurally.
 
-    # --- basic fields ---
-    new["key"] = c.get("key")
-    enabled = c.get("enabled", c.get("shop", {}).get("enabled", True))
-    new["enabled"] = bool(enabled)
+    For images:
+      - If image file does not exist → add to missing_images + print warning.
+    """
+    key = card.get("key", "<missing>")
 
-    card_type = c.get("type")
-    new["card_type"] = card_type
-    new["card_category"] = infer_category(card_type)
+    # Check required fields
+    for field in REQUIRED_FIELDS:
+        if field not in card:
+            raise ValueError(
+                f"❌ Missing field '{field}' in card '{key}' (file: {source_file})"
+            )
 
-    gameplay = c.get("gameplay") or {}
-    new["card_tags"] = build_tags(new["key"], gameplay)
-
-    # We keep current human-readable labels for now
-    new["card_label"] = c.get("label")
-    new["card_description"] = c.get("description")
-    new["card_image"] = c.get("icon")
-    new["card_rarity"] = c.get("rarity")
-
-    new["card_gameplay"] = gameplay
-
-    # --- shop and prices ---
-    shop = c.get("shop") or {}
-    root_buy_rules = c.get("buy_rules", None)
-    buy_rules = shop.get("buy_rules", root_buy_rules)
-
-    raw_prices = c.get("prices", [])
-    normalized_prices = []
-
-    for p in raw_prices:
-        if p is None:
-            continue
-        coins = p.get("coins", 0)
-        diams = p.get("diams", 0)
-        resources = p.get("resources", {})
-        if resources is None:
-            resources = {}
-        normalized_prices.append(
-            {
-                "coins": coins,
-                "diams": diams,
-                "resources": resources,
-            }
+    # Validate shop block
+    shop = card.get("shop")
+    if not isinstance(shop, dict):
+        raise ValueError(
+            f"❌ 'shop' block invalid for card '{key}' (file: {source_file})"
         )
 
-    if not normalized_prices:
-        normalized_prices = [{"coins": 0, "diams": 0, "resources": {}}]
+    for field in REQUIRED_SHOP_FIELDS:
+        if field not in shop:
+            raise ValueError(
+                f"❌ Missing field 'shop.{field}' in card '{key}' (file: {source_file})"
+            )
 
-    new["shop"] = {
-        "prices": normalized_prices,
-        "show_in_main_shop": shop.get("show_in_main_shop", False),
-        "show_in_village_shop": shop.get("show_in_village_shop", False),
-        "buy_rules": buy_rules,
-    }
+    # Validate prices
+    prices = shop.get("prices")
+    if not isinstance(prices, list):
+        raise ValueError(
+            f"❌ shop.prices must be a list in card '{key}' (file: {source_file})"
+        )
 
-    # --- economy / limits ---
-    new["tradable"] = shop.get("tradable", False)
-    new["giftable"] = shop.get("giftable", True)
+    for p in prices:
+        if not isinstance(p, dict):
+            raise ValueError(
+                f"❌ Invalid price entry in card '{key}' (file: {source_file})"
+            )
+        if "coins" not in p or "diams" not in p or "resources" not in p:
+            raise ValueError(
+                f"❌ Each price entry must contain coins/diams/resources "
+                f"in card '{key}' (file: {source_file})"
+            )
 
-    new["card_quantity"] = shop.get("quantity", 0)
-    new["card_purchase_limit_quantity"] = shop.get("purchase_limit", None)
-    new["card_max_owned"] = shop.get("max_owned", 1)
+    # Validate card_image existence on disk (warning only)
+    card_image = card.get("card_image")
+    if isinstance(card_image, str) and card_image.strip():
+        fs_path = resolve_card_image_path(card_image)
+        if not fs_path.exists():
+            print(
+                f"⚠ WARNING: image file not found for card '{key}' "
+                f"(card_image={card_image}, resolved={fs_path})"
+            )
+            missing_images.append((key, card_image, fs_path, source_file))
 
-    return new
 
+# ---------------------------------------------------------------------------
+# Grouping + YAML output
+# ---------------------------------------------------------------------------
 
-def group_by_type(cards: list[dict]):
-    """Group cards by card_type for nice sections in YAML."""
-    groups_def = [
-        ("land_access", "LAND ACCESS CARDS", "Cards that unlock new lands"),
-        ("land_slot", "LAND SLOT CARDS", "Cards that add extra slots on lands"),
-        ("cooldown_boost", "COOLDOWN BOOST CARDS", "Cards that reduce cooldown on resources"),
-        ("resource_boost", "RESOURCE BOOST CARDS", "Cards that increase harvested amount for a resource"),
-        ("land_loot_boost", "LAND LOOT BOOST CARDS", "Cards that boost loot on a specific land"),
-        ("xp_boost", "XP BOOST CARDS", "Cards that boost XP gained"),
-    ]
+def group_by_card_type(cards: List[Dict[str, Any]]):
     groups = defaultdict(list)
     for c in cards:
-        groups[c.get("card_type")].append(c)
-    return groups_def, groups
+        groups[c.get("card_type", "unknown")].append(c)
+
+    preferred_order = [
+        "land_access",
+        "land_slot",
+        "resource_boost",
+        "cooldown_boost",
+        "land_loot_boost",
+        "xp_boost",
+        "pack",
+    ]
+
+    extras = sorted(t for t in groups.keys() if t not in preferred_order)
+
+    return groups, preferred_order + extras
 
 
-def card_to_yaml_lines(card: dict) -> list[str]:
-    """Dump one card as a YAML list item with '- ' prefix."""
+def card_to_yaml_lines(card: Dict[str, Any]) -> List[str]:
     dumped = yaml.dump(card, sort_keys=False, allow_unicode=True).splitlines()
-    if not dumped:
-        return []
     first = "- " + dumped[0]
     rest = ["  " + line for line in dumped[1:]]
     return [first] + rest
 
 
-def build_yaml_text(cards: list[dict]) -> str:
-    """Build the final YAML text with sections and all cards."""
-    groups_def, groups = group_by_type(cards)
+def build_merged_yaml(cards: List[Dict[str, Any]]) -> str:
+    groups, order = group_by_card_type(cards)
 
-    lines: list[str] = []
-    lines.append("cards:")
-    lines.append("")
+    lines = ["cards:", ""]
 
-    for gid, title, desc in groups_def:
-        group_cards = sorted(
-            (c for c in groups.get(gid, []) if c.get("card_type") == gid),
-            key=lambda c: (c.get("card_category") or "", c.get("key") or "")
-        )
-        if not group_cards:
+    for ctype in order:
+        items = groups.get(ctype)
+        if not items:
             continue
 
-        lines.append("")
-        lines.append("# ============================================================")
-        lines.append(f"# {title}")
-        lines.append(f"# {desc}")
-        lines.append(f"# card_type: {gid}")
-        if gid in ("land_access", "land_slot"):
-            lines.append("# card_category: land")
-        elif gid in ("resource_boost", "cooldown_boost", "xp_boost", "land_loot_boost"):
-            lines.append("# card_category: boost")
-        lines.append("# ============================================================")
-        lines.append("")
+        title = ctype.upper().replace("_", " ")
 
-        for card in group_cards:
-            lines.extend(card_to_yaml_lines(card))
+        lines += [
+            "",
+            "# ============================================================",
+            f"# {title} CARDS",
+            f"# card_type: {ctype}",
+            "# ============================================================",
+            "",
+        ]
+
+        for c in sorted(items, key=lambda x: x.get("key", "")):
+            lines += card_to_yaml_lines(c)
             lines.append("")
 
     return "\n".join(lines) + "\n"
 
 
+# ---------------------------------------------------------------------------
+# MAIN
+# ---------------------------------------------------------------------------
+
 def main():
-    """Main entry point for normalization script."""
-    original_cards = load_cards()
-    normalized_cards = [normalize_card(c) for c in original_cards]
-    yaml_text = build_yaml_text(normalized_cards)
+    all_cards: List[Dict[str, Any]] = []
+    missing_images: List[Tuple[str, str, Path, Path]] = []
 
-    # Backup
-    backup_path = CARDS_PATH.with_suffix(".yml.bak")
-    backup_path.write_text(CARDS_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+    print(f"\nScanning YAML under: {CARDS_ROOT}\n")
 
-    # Write new file
-    CARDS_PATH.write_text(yaml_text, encoding="utf-8")
+    for path in CARDS_ROOT.rglob("*.yml"):
+        # Skip script and final output
+        if path.name in ("normalize_cards_yaml.py", OUTPUT_FILE.name):
+            continue
+        if path.name.endswith(".bak"):
+            continue
+        if "debug" in path.parts:
+            continue
 
-    print(f"Done. Normalized cards written to {CARDS_PATH}")
-    print(f"Backup created at {backup_path}")
+        print(f"  • Loading {path}")
+
+        cards = load_fragment_cards(path)
+
+        if not cards:
+            print(f"    ↳ (no cards found in {path}, skipped)")
+            continue
+
+        # Validate each card
+        for c in cards:
+            validate_card(c, path, missing_images)
+
+        all_cards.extend(cards)
+        print(f"    ↳ {len(cards)} card(s) loaded and validated")
+
+    if not all_cards:
+        print("\n⚠ No cards found at all, nothing to write.\n")
+        return
+
+    print(f"\n✓ All cards structurally validated successfully ({len(all_cards)} total)\n")
+
+    # Backup if needed
+    if OUTPUT_FILE.exists():
+        backup = OUTPUT_FILE.with_suffix(".yml.bak")
+        backup.write_text(OUTPUT_FILE.read_text(encoding="utf-8"), encoding="utf-8")
+        print(f"Backup created: {backup}")
+
+    # Write new merged file
+    yaml_text = build_merged_yaml(all_cards)
+    OUTPUT_FILE.write_text(yaml_text, encoding="utf-8")
+
+    print(f"✓ cards.yml generated: {OUTPUT_FILE}")
+
+    # Handle missing images report
+    if missing_images:
+        print(f"\n⚠ {len(missing_images)} image(s) missing. Writing report to {MISSING_IMAGES_FILE}…")
+        lines: List[str] = []
+        for key, card_image, fs_path, source_file in missing_images:
+            lines.append(
+                f"card_key={key} | card_image={card_image} | "
+                f"resolved_path={fs_path} | source_file={source_file}"
+            )
+        MISSING_IMAGES_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print(f"⚠ Missing images report written to: {MISSING_IMAGES_FILE}")
+    else:
+        print("\n✓ All card_image files exist on disk.\n")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("\n❌ === ERROR ===")
+        print(e)
+        print("\n✖ Merge aborted due to errors.\n")

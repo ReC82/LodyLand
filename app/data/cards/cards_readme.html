@@ -228,22 +228,14 @@
       margin-bottom: 0.2rem;
     }
 
-    .kbd-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.3rem;
-      margin-top: 0.3rem;
-    }
-
-    .kbd {
-      padding: 0.1rem 0.45rem;
-      border-radius: 6px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.86);
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: #e5e7eb;
-      box-shadow: 0 1px 0 rgba(248,250,252,0.1);
+    .note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding: 0.5rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.8);
+      border: 1px dashed rgba(148,163,184,0.5);
+      margin: 0.6rem 0 1rem;
     }
 
     table {
@@ -270,20 +262,6 @@
       color: var(--muted);
     }
 
-    .note {
-      font-size: 0.82rem;
-      color: var(--muted);
-      padding: 0.5rem 0.8rem;
-      border-radius: 10px;
-      background: rgba(15,23,42,0.8);
-      border: 1px dashed rgba(148,163,184,0.5);
-      margin: 0.6rem 0 1rem;
-    }
-
-    .section-anchor {
-      font-size: 0.8rem;
-      color: var(--accent);
-    }
   </style>
 </head>
 <body>
@@ -297,23 +275,24 @@
         </h1>
         <p class="lead">
           This document explains how to structure, organize and create card definitions for LodyLand.
-          Cards are split across multiple YAML files and folders for long‑term maintainability (200+ cards).
+          Cards are split across multiple YAML files and folders and then merged into a single
+          <code>cards.yml</code> file for the game.
         </p>
         <div class="pill-row">
           <span class="pill">YAML based</span>
-          <span class="pill pill--soft">Multi-file loader</span>
-          <span class="pill pill--soft">Future proof</span>
+          <span class="pill pill--soft">Multi-file fragments</span>
+          <span class="pill pill--soft">Automatic merge &amp; validation</span>
         </div>
       </header>
 
       <section>
         <h2>1. Folder Structure</h2>
         <p>
-          All card definitions live under <code>app/data/cards/</code>.  
+          All <strong>card fragments</strong> live under <code>app/data/cards/</code>.  
           Files are grouped by theme (boosts, lands, packs, debug, etc.).
         </p>
 
-<pre><code>cards/
+<pre><code>app/data/cards/
 ├── boosts/
 │   ├── resources.yml       # resource_boost cards
 │   ├── xp.yml              # xp_boost cards
@@ -330,15 +309,22 @@
 │   └── events.yml          # limited-time event packs
 │
 ├── debug/
-│   └── test_cards.yml      # test cards (never in production)
+│   └── test_cards.yml      # test cards (dev only, ignored in some flows)
 │
+├── normalize_cards_yaml.py # validator + merger
 └── _README.md              # this file
 </code></pre>
 
+        <p>
+          The **merged** file used by the game is:
+        </p>
+
+<pre><code>app/data/cards.yml</code></pre>
+
         <p class="note">
-          The game’s loader walks all <code>.yml</code> files recursively.  
-          You are free to add new folders and files (for tools, events, skills, etc.) —
-          they will be picked up automatically.
+          <strong>Do not edit</strong> <code>cards.yml</code> by hand.  
+          It is generated automatically by <code>normalize_cards_yaml.py</code> from
+          all fragment files under <code>app/data/cards/</code>.
         </p>
       </section>
 
@@ -348,66 +334,96 @@
           <div>
             <p>To create a new card:</p>
             <ol>
-              <li>Pick the right file (e.g. <code>boosts/resources.yml</code> for resource boosts).</li>
-              <li>Go to the <code>cards:</code> list in that file.</li>
+              <li>Pick the right fragment file (e.g. <code>boosts/resources.yml</code> for resource boosts).</li>
+              <li>Make sure the file either contains a simple YAML list, or a <code>cards:</code> list.</li>
               <li>Add a new <code>- key: ...</code> block using the standard structure below.</li>
+              <li>Run <code>python app/data/cards/normalize_cards_yaml.py</code> to validate and rebuild <code>cards.yml</code>.</li>
             </ol>
           </div>
           <div class="panel panel--subtle">
             <div class="panel-title">Example</div>
-            <p>Adding a new wood boost card:</p>
-<pre><code>cards:
-  - key: wood_boost_2
-    ...</code></pre>
+            <p>Inside <code>boosts/resources.yml</code>:</p>
+<pre><code>- key: wood_boost_2
+  enabled: true
+  card_type: resource_boost
+  card_category: boost
+  card_tags:
+    - wood
+    - forest
+  card_label: Booster Bois II
+  card_description: "+20% wood collected."
+  card_image: /static/assets/img/cards/wood_boost_2.png
+  card_rarity: uncommon
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: addition
+      amount: 0.2
+  shop:
+    prices:
+      - coins: 200
+        diams: 0
+        resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 5</code></pre>
           </div>
         </div>
 
-        <h3>2.1 Standard Card Structure</h3>
-        <p>Every card must follow this structure:</p>
+        <h3>2.1 Standard Card Structure (Fragment)</h3>
+        <p>Every card fragment must follow this structure:</p>
 
 <pre><code>- key: my_card_key
   enabled: true
-  label: "Human readable name"
-  description: "Human readable description"
-  icon: "/static/path/to/icon.png"
 
-  type: resource_boost           # gameplay type
-  categorie: boost               # for UI grouping
-  rarity: common                 # basic | common | uncommon | rare | epic | legendary
+  card_type: resource_boost           # land_access | resource_boost | cooldown_boost | xp_boost | land_slot | land_loot_boost | pack | ...
+  card_category: boost                # high-level category for UI (land, boost, pack, ...)
+  card_tags:                          # free tags for filtering/search
+    - forest
+    - wood
+    - boost
 
-  gameplay:
-    target_resource: branch
+  card_label: "Human readable name"
+  card_description: "Human readable description"
+  card_image: "/static/path/to/icon.png"
+  card_rarity: common                 # basic | common | uncommon | rare | epic | legendary
+
+  card_gameplay:                      # depends on card_type (see section 4)
+    target_resource: wood
     boost:
-      type: addition             # addition | multiplier
+      type: addition                  # addition | multiplier
       amount: 0.1
 
-  prices:
-    - coins: 100
-      diams: 0
-      resources: {}
-
-  buy_rules: null                # reserved for future conditions (level, quests, ...)
-
   shop:
-    enabled: true
-    tradable: false
-    giftable: true
-    quantity: 0
-    purchase_limit: null
-    max_owned: 5
+    prices:
+      - coins: 100
+        diams: 0
+        resources: {}
     show_in_main_shop: false
     show_in_village_shop: true
-</code></pre>
+    buy_rules: null                   # reserved for future conditions
+
+  tradable: false
+  giftable: true
+
+  card_quantity: 0                    # stock for special shops (0 = unlimited or not used yet)
+  card_purchase_limit_quantity: null  # per-player purchase limit (null = no limit)
+  card_max_owned: 5                   # max copies a single player can own</code></pre>
       </section>
 
       <section>
         <h2>3. Card Types</h2>
-        <p>Supported <code>type</code> values and their meaning:</p>
+        <p>Supported <code>card_type</code> values and their meaning:</p>
 
         <table>
           <thead>
             <tr>
-              <th>type</th>
+              <th>card_type</th>
               <th>Description</th>
             </tr>
           </thead>
@@ -434,7 +450,7 @@
             </tr>
             <tr>
               <td><code>land_loot_boost</code></td>
-              <td>Increase loot across a land, possibly for given tools.</td>
+              <td>Increase loot across a land, optionally limited to a given tool.</td>
             </tr>
             <tr>
               <td><code>pack</code></td>
@@ -452,37 +468,44 @@
         <h2>4. Gameplay Examples</h2>
 
         <h3>4.1 Resource Boost</h3>
-<pre><code>gameplay:
+<pre><code>card_type: resource_boost
+card_gameplay:
   target_resource: wood
   boost:
     type: addition
     amount: 0.2          # +20% wood per collect</code></pre>
 
         <h3>4.2 Cooldown Boost</h3>
-<pre><code>gameplay:
+<pre><code>card_type: cooldown_boost
+card_gameplay:
   cooldown:
     resource_key: branch
     type: multiplier
     amount: 0.8          # cooldown * 0.8 = -20%</code></pre>
 
         <h3>4.3 XP Boost</h3>
-<pre><code>gameplay:
+<pre><code>card_type: xp_boost
+card_gameplay:
   xp:
     type: multiplier
     amount: 1.1          # +10% XP on all actions</code></pre>
 
         <h3>4.4 Land Access</h3>
-<pre><code>gameplay:
+<pre><code>card_type: land_access
+card_gameplay:
   target_land: beach     # unlocks the beach land</code></pre>
 
         <h3>4.5 Land Slot</h3>
-<pre><code>gameplay:
+<pre><code>card_type: land_slot
+card_gameplay:
   land: forest
   slots: 1               # +1 extra slot on Forest</code></pre>
 
         <h3>4.6 Land Loot Boost</h3>
-<pre><code>gameplay:
+<pre><code>card_type: land_loot_boost
+card_gameplay:
   target_land: forest
+  target_tool: null      # or "hands", "rod", etc.
   loot:
     type: addition
     amount: 0.2          # +20% loot in Forest</code></pre>
@@ -491,19 +514,19 @@
       <section>
         <h2>5. Prices</h2>
         <p>
-          A card can have one or several pricing options.  
+          A card can have one or several pricing options inside <code>shop.prices</code>.  
           The player can buy using <strong>any one</strong> of the listed options.
         </p>
 
-<pre><code>prices:
-  - coins: 100
-    diams: 0
-    resources: {}
-  - coins: 0
-    diams: 5
-    resources:
-      branch: 50
-</code></pre>
+<pre><code>shop:
+  prices:
+    - coins: 100
+      diams: 0
+      resources: {}
+    - coins: 0
+      diams: 5
+      resources:
+        branch: 50</code></pre>
       </section>
 
       <section>
@@ -511,75 +534,138 @@
         <p>Shop configuration controls where and how the card is offered to players.</p>
 
 <pre><code>shop:
-  enabled: true
-  tradable: false
-  giftable: true
-  quantity: 0
-  purchase_limit: null
-  max_owned: 1
+  prices:
+    - coins: 200
+      diams: 0
+      resources: {}
   show_in_main_shop: false
   show_in_village_shop: true
-</code></pre>
+  buy_rules: null</code></pre>
 
         <ul>
-          <li><code>enabled</code>: card can appear in shops / rewards.</li>
           <li><code>show_in_main_shop</code>: visible in the main in-game shop.</li>
           <li><code>show_in_village_shop</code>: visible in the village shop only.</li>
-          <li><code>tradable</code>: can be traded/sold between players.</li>
-          <li><code>max_owned</code>: maximum copies a player is allowed to own.</li>
+          <li><code>buy_rules</code>: reserved for future conditions (level, quests, time windows, ...).</li>
         </ul>
+
+        <p>
+          Global economy-related fields live at the root level of the card:
+        </p>
+
+<pre><code>tradable: false                  # can be traded between players
+giftable: true                   # can be gifted
+card_quantity: 0                 # stock for some shops (0 = unlimited / not used)
+card_purchase_limit_quantity: null  # max times a player can buy this card
+card_max_owned: 1                # hard cap per player</code></pre>
       </section>
 
       <section>
         <h2>7. Validation Rules</h2>
         <p>
-          A new card is considered valid if:
+          A card fragment is considered structurally valid if:
         </p>
         <ul>
-          <li><code>key</code> is unique across all files.</li>
-          <li><code>label</code>, <code>description</code> and <code>icon</code> are present.</li>
-          <li><code>type</code>, <code>categorie</code> and <code>rarity</code> are provided.</li>
-          <li><code>gameplay</code> matches the card type.</li>
-          <li><code>prices</code> is a list (can be empty).</li>
-          <li><code>shop</code> exists (enabled or disabled).</li>
+          <li>All required fields are present:
+            <code>key</code>,
+            <code>enabled</code>,
+            <code>card_type</code>,
+            <code>card_category</code>,
+            <code>card_tags</code>,
+            <code>card_label</code>,
+            <code>card_description</code>,
+            <code>card_image</code>,
+            <code>card_rarity</code>,
+            <code>card_gameplay</code>,
+            <code>shop</code>,
+            <code>tradable</code>,
+            <code>giftable</code>,
+            <code>card_quantity</code>,
+            <code>card_purchase_limit_quantity</code>,
+            <code>card_max_owned</code>.
+          </li>
+          <li><code>shop.prices</code> is a list, each entry having
+            <code>coins</code>, <code>diams</code> and <code>resources</code>.
+          </li>
+          <li><code>card_gameplay</code> matches the semantics of <code>card_type</code>.</li>
         </ul>
 
         <p class="note">
-          A dedicated validation step can be added in the loader (e.g. in
-          <code>seed_cards_from_yaml()</code>) to enforce these rules and
-          fail fast if something is missing.
+          If any of these rules is broken, <code>normalize_cards_yaml.py</code> will stop,
+          print a clear error message with the card key and file name, and
+          <strong>will not</strong> regenerate <code>cards.yml</code>.
         </p>
       </section>
 
       <section>
-        <h2>8. Test Cards</h2>
+        <h2>8. Image Checks</h2>
         <p>
-          Any file inside <code>cards/debug/</code> is loaded but reserved for
+          During normalization, each <code>card_image</code> is resolved on disk (under
+          <code>app/static/…</code>) and checked:
+        </p>
+        <ul>
+          <li>If the image exists → OK.</li>
+          <li>If the image is missing → a warning is printed and the card is still accepted.</li>
+        </ul>
+
+        <p>
+          All missing images are also written to:
+        </p>
+
+<pre><code>app/data/cards/missing_card_images.txt</code></pre>
+
+        <p>
+          Each line contains:
+          <code>card_key</code>, the original <code>card_image</code> value,
+          the resolved filesystem path, and the source YAML file.  
+          This acts as a checklist for fixing broken assets.
+        </p>
+      </section>
+
+      <section>
+        <h2>9. Test Cards</h2>
+        <p>
+          Any file inside <code>app/data/cards/debug/</code> is loaded but reserved for
           experiments and development.
         </p>
 
-<pre><code>cards/debug/test_cards.yml</code></pre>
+<pre><code>app/data/cards/debug/test_cards.yml</code></pre>
 
         <p class="note">
           Use this file for temporary or debug cards that you do not want to
-          ship in production builds.
+          ship in production builds. You can also exclude this folder when needed.
         </p>
       </section>
 
       <section>
-        <h2>9. Extending the System</h2>
+        <h2>10. Normalization Script</h2>
         <p>
-          To add a new group of cards (for example: tools, skills, recipes),
-          simply create a new folder and YAML file:
+          The script <code>normalize_cards_yaml.py</code> is the single source of truth
+          for merging and validating cards.
         </p>
 
-<pre><code>cards/
-  tools/
-    crafting.yml</code></pre>
+<pre><code># From the project root:
+python app/data/cards/normalize_cards_yaml.py</code></pre>
 
-        <p>
-          As long as the file has a <code>cards:</code> list and each entry
-          respects the standard structure, the global loader will include it.
+        <p>What it does:</p>
+        <ul>
+          <li>Recursively scans <code>app/data/cards/</code> for <code>.yml</code> files.</li>
+          <li>Skips itself, <code>cards.yml</code>, backups, and optional debug files.</li>
+          <li>Loads cards from each fragment file:
+            <ul>
+              <li>either a plain YAML list <code>- key: ...</code></li>
+              <li>or a dict with <code>cards: [ ... ]</code></li>
+            </ul>
+          </li>
+          <li>Validates each card strictly (see section 7).</li>
+          <li>Checks that <code>card_image</code> files exist on disk (section 8).</li>
+          <li>If any structural error is found → stops with a clear error and does not touch <code>cards.yml</code>.</li>
+          <li>If everything is valid → writes a fresh <code>app/data/cards.yml</code> grouped by <code>card_type</code>.</li>
+        </ul>
+
+        <p class="note">
+          The game and the seeding logic (<code>seed_cards_from_yaml()</code>) only use
+          <code>app/data/cards.yml</code>.  
+          Fragment files are your editing surface; the merged file is generated.
         </p>
       </section>
 
