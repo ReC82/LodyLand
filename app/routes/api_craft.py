@@ -73,42 +73,46 @@ def _compute_craft_table_level(session, player: Player) -> int:
 def _is_item_unlocked_for_player(
     session,
     player: Player,
-    item_cfg: dict[str, Any],
+    item_cfg: Dict[str, Any],
     craft_table_level: int,
 ) -> bool:
     """
-    Check if a craft is unlocked for a given player.
+    Return True if this craft is currently unlocked for the given player.
 
-    - Vérifie d'abord le niveau de table requis (recipe.required_table_level).
-    - Puis, s'il y a une condition d'unlock (unlock_condition),
-      vérifie par ex. une carte de recette ou un niveau minimum.
+    - Check required_table_level (lié au tier de la grille)
+    - Then check unlock_condition (card, level, etc.)
     """
     recipe = item_cfg.get("recipe") or {}
     required_table_level = int(recipe.get("required_table_level") or 1)
 
-    # 1) niveau de table
+    # 1) Niveau de table
     if craft_table_level < required_table_level:
         return False
 
-    # 2) conditions d'unlock (optionnelles)
+    # 2) Condition d'unlock normalisée par craft_defs._build_unlock_condition
     unlock = item_cfg.get("unlock_condition") or {}
     if not unlock:
-        return True  # pas de condition -> débloqué
+        # aucune condition spéciale -> debloqué
+        return True
 
     cond_type = (unlock.get("type") or "").lower()
     cond_key = (unlock.get("key") or "").strip()
 
+    # 2.a) Condition type "card" -> il faut posséder la carte
     if cond_type == "card":
-        # ex: key = "recipe_tool_wooden_axe"
+        if not cond_key:
+            return True  # pas de clé précisée -> on ne bloque pas
         return _player_has_card(session, player.id, cond_key)
 
+    # 2.b) Condition type "level"
     if cond_type == "level":
         min_level = int(unlock.get("min_level") or 1)
         player_level = int(getattr(player, "level", 1))
         return player_level >= min_level
 
-    # Unknown condition type -> pour l'instant, on ne bloque pas
+    # 2.c) Autres types -> pour l'instant on ne bloque pas
     return True
+
 
 
 def _compute_required_resources(recipe: Dict[str, Any], times: int = 1) -> Dict[str, int]:

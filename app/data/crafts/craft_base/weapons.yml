@@ -1,0 +1,36 @@
+# Épée en bois – 1x3
+weapon_wooden_sword:
+  key: weapon_wooden_sword
+  station_key: craft_table_base
+
+  required_grid:
+    tier: 3        # 3x3, débloqué par upgrade_craft_table_3
+
+  output:
+    kind: weapon
+    key: weapon_wooden_sword
+    quantity: 1
+
+  recipe:
+    pattern:
+      - "SSW"
+      - "..."
+      - "..."
+    legend:
+      W:
+        kind: resource
+        key: wooden_plank
+        quantity: 1
+      S:
+        kind: resource
+        key: stick
+        quantity: 1
+
+  craft_time_seconds: 15
+  xp_reward: 12
+
+  unlock:
+    recipe_card_key: recipe_weapon_wooden_sword
+    min_level: 4
+
+  enabled: true

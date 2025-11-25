@@ -1,0 +1,89 @@
+- key: access_craft_table_basic
+  enabled: true
+  card_type: craft_access
+  card_category: craft
+  card_tags:
+  - craft
+  - craft_table
+  card_label: Access Craft Table Basic
+  card_description: Access to the basic Craft Table.
+  card_image: /static/assets/img/cards/access/card_access_craft_table_1.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: access_craft_table_medium
+  enabled: true
+  card_type: craft_access
+  card_category: craft
+  card_tags:
+  - craft
+  - craft_table
+  card_label: Access Craft Table Medium
+  card_description: Access to the medium Craft Table.
+  card_image: /static/assets/img/cards/access/card_access_craft_table_2.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: access_craft_table_advanced
+  enabled: true
+  card_type: craft_access
+  card_category: craft
+  card_tags:
+  - craft
+  - craft_table
+  card_label: Access Craft Table Advanced
+  card_description: Access to the advanced Craft Table.
+  card_image: /static/assets/img/cards/access/card_access_craft_table_3.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1

@@ -53,24 +53,24 @@ def load_craft_defs() -> None:
 # ---------------------------------------------------------------------------
 def _load_item_defs(data_root: Path) -> Dict[str, Dict[str, Any]]:
     """
-    Load all items from app/data/items/*.yml into a single dict.
+    Load items from app/data/items/*.yml
 
-    Expected structure per file:
-      items:
-        some_slug:
-          key: tool_wooden_axe
-          label: Wooden Axe
-          description: A basic axe to start chopping wood.
-          kind: tool             # tool, weapon, resource, ...
-          category: woodcutting
-          icon: /static/...
-          rarity: common
-          max_stack: 1
-          base_sell_price: 15
-          craftable: true
-          stats: {...}
-          unlock_default: {...}
+    Supports:
+      A) items:
+           slug:
+             key: ...
+             ...
+
+      B) Flat mapping:
+           slug:
+             key: ...
+             ...
+
+      C) List:
+           - key: ...
+           - key: ...
     """
+
     items_dir = data_root / "items"
     if not items_dir.exists():
         print(f"[craft_defs] items dir not found: {items_dir}")
@@ -79,60 +79,74 @@ def _load_item_defs(data_root: Path) -> Dict[str, Dict[str, Any]]:
     merged: Dict[str, Dict[str, Any]] = {}
 
     for yaml_path in items_dir.glob("*.yml"):
+
+        # Load YAML
         try:
-            with yaml_path.open("r", encoding="utf-8") as f:
-                raw = yaml.safe_load(f) or {}
-        except Exception as exc:  # noqa: BLE001
+            raw = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
+        except Exception as exc:
             print(f"[craft_defs] Error reading {yaml_path}: {exc}")
             continue
 
-        items = raw.get("items")
-        if not isinstance(items, dict):
-            print(f"[craft_defs] File {yaml_path} has no valid 'items' dict.")
+        if raw is None:
             continue
 
-        for slug, cfg in items.items():
+        # ---------- Detect structure ----------
+        items_block = None
+
+        # A) items: {}
+        if isinstance(raw, dict):
+            if "items" in raw and isinstance(raw["items"], dict):
+                items_block = raw["items"]
+
+            # B) flat mapping
+            else:
+                if any(isinstance(v, dict) for v in raw.values()):
+                    items_block = raw
+
+        # C) top-level list
+        elif isinstance(raw, list):
+            items_block = {}
+            for entry in raw:
+                if isinstance(entry, dict):
+                    key = (entry.get("key") or "").strip()
+                    if key:
+                        items_block[key] = entry
+
+        # Nothing usable
+        if not isinstance(items_block, dict):
+            print(f"[craft_defs] File {yaml_path} has no usable item definitions.")
+            continue
+
+        # ---------- Normalize entries ----------
+        for slug, cfg in items_block.items():
             if not isinstance(cfg, dict):
-                print(
-                    f"[craft_defs] Skipping item slug '{slug}' in {yaml_path}: "
-                    f"definition is not a dict."
-                )
+                print(f"[craft_defs] Skipping slug '{slug}' in {yaml_path}: not a dict.")
                 continue
 
             key = (cfg.get("key") or str(slug)).strip()
             if not key:
-                print(
-                    f"[craft_defs] Skipping item slug '{slug}' in {yaml_path}: "
-                    f"missing 'key'."
-                )
+                print(f"[craft_defs] Skipping slug '{slug}' in {yaml_path}: missing key.")
                 continue
 
+            cfg = dict(cfg)
             cfg["slug"] = str(slug)
             cfg["key"] = key
-
-            # Normalize fields so services/APIs have stable keys
-            # YAML has only 'label' (English for now)
-            label = (cfg.get("label") or key).strip()
-            cfg["label"] = label
-            description = (cfg.get("description") or "").strip()
-            cfg["description"] = description
+            cfg["label"] = (cfg.get("label") or key).strip()
+            cfg["description"] = (cfg.get("description") or "").strip()
 
             kind = (cfg.get("kind") or "").strip()
             cfg["kind"] = kind
-            # For compatibility: expose a "type" alias if not present
             if "type" not in cfg:
                 cfg["type"] = kind
 
-            # Merge into global dict
             if key in merged:
-                print(
-                    f"[craft_defs] WARNING: item key '{key}' defined multiple times. "
-                    f"Last one wins (file: {yaml_path})."
-                )
+                print(f"[craft_defs] WARNING: duplicate item key '{key}' – last wins ({yaml_path})")
+
             merged[key] = cfg
 
     print(f"[craft_defs] Loaded {len(merged)} items from {items_dir}.")
     return merged
+
 
 
 def _load_station_defs(data_root: Path) -> Dict[str, Dict[str, Any]]:

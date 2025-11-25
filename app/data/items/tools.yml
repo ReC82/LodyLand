@@ -1,0 +1,26 @@
+- key: tool_wooden_axe
+  label: Wooden Axe
+  description: Une hache en bois basique, utile pour couper du bois.
+  icon: /static/assets/img/items/tools/wooden_axe.png
+  unlock_min_level: 2
+  base_cooldown: 40.0
+  base_sell_price: 5
+  enabled: true
+
+- key: tool_rod_basic
+  label: Basic Rod  
+  description: Une canne à pêche basique, utile pour attraper des poissons.
+  icon: /static/assets/img/items/tools/basic_rod.png
+  unlock_min_level: 2
+  base_cooldown: 40.0
+  base_sell_price: 5
+  enabled: true
+
+- key: shovel_basic
+  label: Basic Shovel
+  description: Une pelle basique, utile pour creuser.
+  icon: /static/assets/img/items/tools/basic_shovel.png
+  unlock_min_level: 2
+  base_cooldown: 40.0
+  base_sell_price: 5
+  enabled: true    

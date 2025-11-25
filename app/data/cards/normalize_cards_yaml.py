@@ -22,15 +22,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from collections import defaultdict
 
-# Root where fragment YAML files live
-CARDS_ROOT = Path("app/data/cards")
+# Base paths are now computed from the script location, not from CWD
+SCRIPT_DIR = Path(__file__).resolve().parent        # .../app/data/cards
+PROJECT_ROOT = SCRIPT_DIR.parent.parent            # .../app
+CARDS_ROOT = SCRIPT_DIR                             # .../app/data/cards
+
 # Final merged file
-OUTPUT_FILE = Path("app/data/cards.yml")
+OUTPUT_FILE = PROJECT_ROOT / "data" / "cards.yml"
 # Where to write missing images report
 MISSING_IMAGES_FILE = CARDS_ROOT / "missing_card_images.txt"
-
-# Root of the project (for resolving /static/ paths)
-PROJECT_ROOT = Path("app")  # on part du principe que tu lances depuis la racine du projet
 
 
 # ---------------------------------------------------------------------------

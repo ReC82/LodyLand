@@ -1,0 +1,9 @@
+- key: weapon_wooden_sword
+  label: Wooden Sword
+  base_cooldown: 10
+  base_sell_price: 2
+  unlock_min_level: 1
+  enabled: true
+  icon: /static/assets/img/weapons/wooden_sword.png
+  description: Une épée en bois, utile pour combattre les ennemis.
+  unlock_description: Disponible dès le niveau 1. 

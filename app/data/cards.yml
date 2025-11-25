@@ -15,7 +15,7 @@ cards:
   - land
   card_label: Accès Plage
   card_description: Débloque le land Plage.
-  card_image: /static/assets/img/cards/land_beach.png
+  card_image: /static/assets/img/cards/lands/land_beach.png
   card_rarity: uncommon
   card_gameplay:
     target_land: beach
@@ -43,7 +43,7 @@ cards:
   - land
   card_label: Accès Grottes
   card_description: Débloque le land Grottes
-  card_image: /static/assets/img/cards/land_cave.png
+  card_image: /static/assets/img/cards/lands/land_cave.png
   card_rarity: uncommon
   card_gameplay:
     target_land: lake
@@ -71,7 +71,7 @@ cards:
   - land
   card_label: Accès Désert
   card_description: Débloque le land Désert
-  card_image: /static/assets/img/cards/land_desert.png
+  card_image: /static/assets/img/cards/lands/land_desert.png
   card_rarity: uncommon
   card_gameplay:
     target_land: lake
@@ -98,7 +98,7 @@ cards:
   - land
   card_label: Accès Ferme
   card_description: Débloque le land Ferme
-  card_image: /static/assets/img/cards/land_farm.png
+  card_image: /static/assets/img/cards/lands/land_farm.png
   card_rarity: uncommon
   card_gameplay:
     target_land: farm
@@ -125,7 +125,7 @@ cards:
   - land
   card_label: Accès Forêt
   card_description: Débloque le land Forêt.
-  card_image: /static/assets/img/cards/land_forest.png
+  card_image: /static/assets/img/cards/lands/land_forest.png
   card_rarity: common
   card_gameplay:
     target_land: forest
@@ -152,7 +152,7 @@ cards:
   - land
   card_label: Accès Lac
   card_description: Débloque le land Lac
-  card_image: /static/assets/img/cards/land_lake.png
+  card_image: /static/assets/img/cards/lands/land_lake.png
   card_rarity: uncommon
   card_gameplay:
     target_land: lake
@@ -206,7 +206,7 @@ cards:
   - village
   card_label: Accès Village
   card_description: Un petit village où tu pourras commercer, accepter des quêtes, etc.
-  card_image: /static/assets/img/cards/land_village.png
+  card_image: /static/assets/img/cards/lands/land_village.png
   card_rarity: rare
   card_gameplay:
     target_land: village
@@ -459,6 +459,35 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 3
 
+- key: boost_global_cooldown_1
+  enabled: true
+  card_type: cooldown_boost
+  card_category: boost
+  card_tags:
+  - global
+  card_label: Booster cooldown Global I
+  card_description: -10% sur le cooldown global.
+  card_image: /static/assets/img/cards/boosts/card_global_cooldown_boost_1.png
+  card_rarity: common
+  card_gameplay:
+    cooldown_boost:
+      resource_key: global
+      mode: multiplier
+      amount: 0.9
+  shop:
+    prices:
+    - coins: 0
+      diams: 50
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 3
+
 
 # ============================================================
 # LAND LOOT BOOST CARDS
@@ -507,24 +536,56 @@ cards:
   card_category: boost
   card_tags: []
   card_label: Booster XP I
-  card_description: +10% d'XP gagnée sur toutes les actions.
-  card_image: /static/assets/img/cards/global_xp_boost_1.png
+  card_description: XP x2 sur toutes les actions.
+  card_image: /static/assets/img/cards/boosts/card_boost_xp_1.png
   card_rarity: uncommon
   card_gameplay:
     xp_boost:
       mode: multiplier
-      amount: 1.1
+      amount: 2
   shop:
     prices:
-    - coins: 200
-      diams: 0
+    - coins: 20000
+      diams: 50
       resources: {}
-    - coins: 50
-      diams: 2
-      resources:
-        branch: 50
     show_in_main_shop: false
     show_in_village_shop: true
+    buy_rules: null
+  tradable: true
+  giftable: false
+  card_quantity: 50
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+
+# ============================================================
+# CRAFT ACCESS CARDS
+# card_type: craft_access
+# ============================================================
+
+- key: access_craft_table_advanced
+  enabled: true
+  card_type: craft_access
+  card_category: craft
+  card_tags:
+  - craft
+  - craft_table
+  card_label: Access Craft Table Advanced
+  card_description: Access to the advanced Craft Table.
+  card_image: /static/assets/img/cards/access/card_access_craft_table_3.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
     buy_rules: null
   tradable: false
   giftable: true
@@ -532,35 +593,249 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
-- key: xp_boost_global_x2_1
+- key: access_craft_table_basic
   enabled: true
-  card_type: xp_boost
-  card_category: boost
-  card_tags: []
-  card_label: Boost XP Global x2
-  card_description: Double l'XP gagnée sur toutes les actions.
-  card_image: /static/assets/img/cards/boost_xp_x2_unique_1.png
-  card_rarity: rare
+  card_type: craft_access
+  card_category: craft
+  card_tags:
+  - craft
+  - craft_table
+  card_label: Access Craft Table Basic
+  card_description: Access to the basic Craft Table.
+  card_image: /static/assets/img/cards/access/card_access_craft_table_1.png
+  card_rarity: basic
   card_gameplay:
-    target_land: null
-    target_tool: null
-    loot:
-      type: multiplicator
-      amount: 2
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
   shop:
     prices:
-    - coins: 20000
+    - coins: 50
       diams: 0
       resources: {}
-    - coins: 0
-      diams: 100
-      resources: {}
-    show_in_main_shop: false
-    show_in_village_shop: true
+    show_in_main_shop: true
+    show_in_village_shop: false
     buy_rules: null
-  tradable: true
-  giftable: false
-  card_quantity: 1
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: access_craft_table_medium
+  enabled: true
+  card_type: craft_access
+  card_category: craft
+  card_tags:
+  - craft
+  - craft_table
+  card_label: Access Craft Table Medium
+  card_description: Access to the medium Craft Table.
+  card_image: /static/assets/img/cards/access/card_access_craft_table_2.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+
+# ============================================================
+# CRAFT RECIPE CARDS
+# card_type: craft_recipe
+# ============================================================
+
+- key: recipe_iron_ingot
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - iron_ingot
+  card_label: Recipe Craft Iron Ingot
+  card_description: Recipe to craft an Iron Ingot.
+  card_image: /static/assets/img/cards/recipes/card_recipe_iron_ingot.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 10
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_stick
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - stick
+  card_label: Recipe Craft Stick
+  card_description: Recipe to craft a Stick.
+  card_image: /static/assets/img/cards/recipes/card_recipe_stick.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 10
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_tool_basic_rod
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - basic_rod
+  card_label: Recipe Craft Basic Rod
+  card_description: Recipe to craft a Basic Rod.
+  card_image: /static/assets/img/cards/recipes/card_recipe_rod_basic.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_tool_shovel_basic
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_shovel
+  card_label: Recipe Craft Basic Shovel
+  card_description: Recipe to craft a Basic Shovel.
+  card_image: /static/assets/img/cards/recipes/card_recipe_shovel_basic.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_tool_wooden_axe
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_axe
+  card_label: Recipe Craft Wooden Axe
+  card_description: Recipe to craft a Wooden Axe.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_axe.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_weapon_wooden_sword
+  enabled: false
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_sword
+  card_label: Recipe Craft Wooden Sword
+  card_description: Recipe to craft a Wooden Sword.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_sword.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
   card_purchase_limit_quantity: null
   card_max_owned: 1
 

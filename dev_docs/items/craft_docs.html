@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>LodyLand — Guide game_data (cards, items, crafts)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-alt: #020818;
+      --card-bg: #020617;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56,189,248,0.08);
+      --accent-strong: #0ea5e9;
+      --danger: #f97373;
+      --code-bg: #020617;
+      --code-border: #1f2937;
+      --mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+              "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+              "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+      color: var(--text);
+      font-family: var(--sans);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    main.page {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    article.card {
+      background: radial-gradient(circle at top left, #020617 0, #020617 45%, #020617 100%);
+      border-radius: 24px;
+      padding: 1.8rem 2rem 2.2rem;
+      border: 1px solid rgba(148,163,184,0.3);
+      box-shadow:
+        0 0 0 1px rgba(15,23,42,0.75),
+        0 18px 38px rgba(15,23,42,0.95);
+    }
+
+    header {
+      margin-bottom: 1.6rem;
+    }
+
+    .tagline {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--muted);
+      background: rgba(15,23,42,0.85);
+    }
+
+    .lead {
+      margin: 0.5rem 0 0.9rem;
+      color: var(--muted);
+      font-size: 0.96rem;
+      max-width: 60rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.2rem;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 0.16rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(56,189,248,0.45);
+      background: rgba(8,47,73,0.7);
+      color: #e0f2fe;
+    }
+
+    .pill--soft {
+      border-color: rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.85);
+      color: var(--muted);
+    }
+
+    section {
+      margin-top: 1.6rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 0 0 0.4rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin: 1.1rem 0 0.35rem;
+    }
+
+    p {
+      margin: 0.25rem 0 0.7rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    ul {
+      margin: 0.2rem 0 0.6rem 1.3rem;
+      padding: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      background: rgba(15,23,42,0.9);
+      border-radius: 4px;
+      padding: 0.12rem 0.3rem;
+      border: 1px solid rgba(30,64,175,0.7);
+      color: #e0f2fe;
+    }
+
+    pre {
+      margin: 0.7rem 0 0.9rem;
+      padding: 0.8rem 0.9rem;
+      border-radius: 10px;
+      background: linear-gradient(145deg, var(--code-bg), #020617);
+      border: 1px solid rgba(30,64,175,0.8);
+      box-shadow:
+        0 0 0 1px rgba(15,23,42,0.8),
+        0 18px 35px rgba(15,23,42,0.95);
+      overflow-x: auto;
+      font-size: 0.85rem;
+    }
+
+    pre code {
+      border: none;
+      padding: 0;
+      background: transparent;
+      color: #e5e7eb;
+    }
+
+    .code-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding: 0.5rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.8);
+      border: 1px dashed rgba(148,163,184,0.5);
+      margin: 0.6rem 0 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0 1.4rem;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 0.45rem 0.55rem;
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+
+    th {
+      background: rgba(15,23,42,0.9);
+      font-weight: 600;
+      text-align: left;
+      color: #e5e7eb;
+    }
+
+    td {
+      background: rgba(15,23,42,0.8);
+      color: var(--muted);
+    }
+
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 0.4rem 0 0.2rem;
+      padding: 0;
+      list-style: none;
+      font-size: 0.85rem;
+    }
+
+    .toc li a {
+      color: #bfdbfe;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(96,165,250,0.6);
+    }
+
+    .toc li a:hover {
+      color: #e0f2fe;
+      border-bottom-style: solid;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="card">
+      <header>
+        <div class="tagline">LodyLand — Game Data</div>
+        <h1>
+          Guide game_data (Cards / Items / Crafts)
+          <span class="badge">app/data</span>
+        </h1>
+        <p class="lead">
+          Ce document résume comment créer et organiser les définitions
+          <strong>de cartes</strong>, <strong>d’items</strong> (resources, tools, weapons, …)
+          et <strong>de crafts</strong> dans LodyLand.
+        </p>
+        <div class="pill-row">
+          <span class="pill">YAML source of truth</span>
+          <span class="pill pill--soft">Scripts de normalisation</span>
+          <span class="pill pill--soft">Vérifications &amp; warnings</span>
+        </div>
+      </header>
+
+      <section>
+        <h2>0. Vue d’ensemble &amp; pipeline</h2>
+        <ul class="toc">
+          <li><a href="#folders">Structure des dossiers</a></li>
+          <li><a href="#cards">Créer / modifier des cards</a></li>
+          <li><a href="#items">Créer / modifier des items</a></li>
+          <li><a href="#crafts">Créer / modifier des crafts</a></li>
+          <li><a href="#workflow">Workflow complet pour ajouter un nouveau craft</a></li>
+        </ul>
+
+        <p>
+          LodyLand utilise plusieurs sources YAML :
+        </p>
+
+        <table>
+          <tr>
+            <th>Type</th>
+            <th>Fragments éditables</th>
+            <th>Fichier merged utilisé par le jeu</th>
+            <th>Script de merge</th>
+          </tr>
+          <tr>
+            <td>Cards</td>
+            <td><code>app/data/cards/**.yml</code></td>
+            <td><code>app/data/cards.yml</code></td>
+            <td><code>app/data/cards/normalize_cards_yaml.py</code></td>
+          </tr>
+          <tr>
+            <td>Crafts</td>
+            <td><code>app/data/crafts/**.yml</code></td>
+            <td><code>app/data/crafts.yml</code></td>
+            <td><code>app/data/crafts/normalize_crafts_yaml.py</code></td>
+          </tr>
+          <tr>
+            <td>Items (tools, weapons, misc…)</td>
+            <td><code>app/data/items/*.yml</code></td>
+            <td>pas de merge : lus directement</td>
+            <td>–</td>
+          </tr>
+          <tr>
+            <td>Ressources récoltables</td>
+            <td><code>app/data/resources.yml</code></td>
+            <td>fichier unique</td>
+            <td>–</td>
+          </tr>
+        </table>
+
+        <div class="note">
+          <strong>Source of truth :</strong> tu édites toujours les fragments dans
+          <code>app/data/cards/</code>, <code>app/data/crafts/</code>,
+          <code>app/data/items/</code> et <code>app/data/resources.yml</code>.  
+          Les fichiers mergés <code>cards.yml</code> et <code>crafts.yml</code> sont
+          <em>générés</em>.
+        </div>
+      </section>
+
+      <section id="folders">
+        <h2>1. Structure des dossiers</h2>
+
+        <h3>1.1 Cards</h3>
+        <pre><code>app/data/cards/
+├── boosts/
+├── lands/
+├── packs/
+├── craft/
+│   ├── access.yml          # cartes d'accès aux stations de craft
+│   └── recipes/
+│       ├── resources.yml   # cartes "recipe" pour crafts de ressources
+│       ├── tools.yml       # cartes "recipe" pour crafts d'outils
+│       └── weapons.yml     # cartes "recipe" pour crafts d’armes
+├── debug/
+├── normalize_cards_yaml.py
+└── _README.md / cards_readme.html</code></pre>
+
+        <p>
+          Le script <code>normalize_cards_yaml.py</code> scanne tous les fragments
+          et génère <code>app/data/cards.yml</code>. Tu peux te référer à
+          <code>cards_readme.html</code> pour les détails complets sur les champs.
+        </p>
+
+        <h3>1.2 Items &amp; ressources</h3>
+        <pre><code>app/data/
+├── items/
+│   ├── resources.yml   # items de type "resource"
+│   ├── tools.yml       # items de type "tool"
+│   ├── weapons.yml     # items de type "weapon"
+│   └── misc.yml        # items divers (potions, consommables, etc.)
+└── resources.yml       # définition des ressources récoltables par les lands</code></pre>
+
+        <p>
+          Les items sont chargés par <code>craft_defs.py</code> (et d’autres services).
+          Ils sont organisés par fichier, mais tout se retrouve dans un seul gros dict
+          côté Python.
+        </p>
+
+        <h3>1.3 Crafts</h3>
+        <pre><code>app/data/crafts/
+├── craft_base/
+│   ├── resources.yml   # recettes de base → simple craft_table
+│   ├── tools.yml       # recettes outils de base
+│   ├── weapons.yml     # recettes armes de base
+│   └── misc.yml        # recettes divers
+├── forge_base/
+│   └── resources.yml   # recettes de forge
+├── craft_medium_table/
+├── craft_advanced_table/
+├── alchemy_base/
+├── cooking_base/
+├── craft_building/
+└── normalize_crafts_yaml.py</code></pre>
+
+        <p>
+          Chaque sous-dossier représente une <strong>station de craft</strong>
+          ou une famille de recettes (forge, alchimie, etc.).
+        </p>
+      </section>
+
+      <section id="items">
+        <h2>2. Définir des items (resources, tools, weapons…)</h2>
+
+        <p>
+          Les items “inventaire” sont définis dans <code>app/data/items/*.yml</code>.
+          Structure attendue dans chaque fichier :
+        </p>
+
+        <pre><code># app/data/items/tools.yml
+items:
+  tool_wooden_axe:                # slug interne
+    key: tool_wooden_axe          # clé globale, utilisée partout
+    label: Wooden Axe
+    icon: /static/assets/img/items/tools/wooden_axe.png
+
+    kind: tool                    # tool | weapon | resource | misc | consumable...
+    category: woodcutting         # pour ton futur système de skills
+
+    description: &gt;
+      A basic wooden axe. Allows you to chop trees faster.
+
+    stackable: false
+    max_stack: 1
+
+    base_sell_price: 30
+    base_buy_price: 0
+
+    unlock_default:
+      type: card                  # ou land, quest, etc.
+      key: recipe_tool_wooden_axe # clé d'une carte ou d'un autre déclencheur
+
+    tags: [axe, basic]</code></pre>
+
+        <h3>2.1 Champs principaux</h3>
+
+        <table>
+          <tr><th>Champ</th><th>Type</th><th>Usage</th></tr>
+          <tr>
+            <td><code>key</code></td>
+            <td>string</td>
+            <td>Identifiant global de l’item (doit être unique dans tous les fichiers items).</td>
+          </tr>
+          <tr>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>Nom affiché en jeu (pour l’instant en anglais, futur système de langues s’appuiera dessus).</td>
+          </tr>
+          <tr>
+            <td><code>kind</code></td>
+            <td>string</td>
+            <td><code>resource</code>, <code>tool</code>, <code>weapon</code>, <code>misc</code>, etc.</td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>string</td>
+            <td>Catégorie gameplay (ex: <code>woodcutting</code>, <code>fishing</code>…).</td>
+          </tr>
+          <tr>
+            <td><code>icon</code></td>
+            <td>string</td>
+            <td>Chemin d’icône (32x32 ou 64x64 PNG) sous <code>/static</code>.</td>
+          </tr>
+          <tr>
+            <td><code>stackable</code>, <code>max_stack</code></td>
+            <td>bool + int</td>
+            <td>Gestion de la pile en inventaire.</td>
+          </tr>
+          <tr>
+            <td><code>base_sell_price</code>, <code>base_buy_price</code></td>
+            <td>int</td>
+            <td>Prix par défaut (shop / trades).</td>
+          </tr>
+          <tr>
+            <td><code>unlock_default</code></td>
+            <td>mapping</td>
+            <td>Comment l’item se débloque par défaut (carte, land, quête…).</td>
+          </tr>
+          <tr>
+            <td><code>tags</code></td>
+            <td>list[str]</td>
+            <td>Mots clés libres pour filtres, logiques futures, etc.</td>
+          </tr>
+        </table>
+
+        <h3>2.2 Ressources récoltables : <code>app/data/resources.yml</code></h3>
+
+        <p>
+          Les ressources générées par les lands (clic, cooldown…) sont dans
+          <code>app/data/resources.yml</code> :
+        </p>
+
+        <pre><code>resources:
+  - key: branch
+    label: Branches
+    description: Une branche tombée d'un arbre...
+    icon: /static/assets/img/resources/branch.png
+
+    unlock_min_level: 0
+    base_cooldown: 10.0
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Toujours accessible (niveau 0).</code></pre>
+
+        <p>
+          Ce fichier est utilisé par le système de récolte / lands.<br />
+          Les crafts, eux, regardent les <strong>items</strong> (dans <code>app/data/items</code>)
+          pour les clés de ressources de type <code>resource</code> utilisées en sortie.
+        </p>
+      </section>
+
+      <section id="cards">
+        <h2>3. Rappel rapide : cartes d’accès &amp; recettes</h2>
+
+        <p>
+          Les cartes sont documentées en détail dans
+          <code>app/data/cards/cards_readme.html</code>. Ici on ne rappelle que
+          ce qui est pertinent pour les crafts.
+        </p>
+
+        <h3>3.1 Cartes d’accès au craft</h3>
+
+        <p>
+          Exemple de carte permettant d’accéder à une station de craft
+          (ou d’upgrader la table) :
+        </p>
+
+        <pre><code># app/data/cards/craft/access.yml
+- key: access_craft_table_basic
+  enabled: true
+  card_type: craft_access
+  card_category: craft
+  card_label: Craft Table — Tier 1
+  card_description: Unlocks the basic 1x3 craft table.
+  card_image: /static/assets/img/cards/craft/card_access_craft_table_basic.png
+  card_rarity: basic
+
+  card_gameplay:
+    station_key: craft_table_base
+    max_tier: 1</code></pre>
+
+        <p>
+          Le champ important côté craft est généralement
+          <code>card_gameplay.station_key</code> ou un équivalent :
+          il connecte la carte à une station de craft et/ou à un niveau
+          de grille.
+        </p>
+
+        <h3>3.2 Cartes de recettes</h3>
+
+        <p>
+          Chaque craft <strong>doit</strong> être protégé par une carte de type
+          “recipe” via <code>unlock.recipe_card_key</code>.
+        </p>
+
+        <pre><code># app/data/cards/craft/recipes/tools.yml
+- key: recipe_tool_wooden_axe
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_label: Recipe — Wooden Axe
+  card_description: Recipe to craft a Wooden Axe.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_axe.png
+
+  card_gameplay:
+    target_item_key: tool_wooden_axe
+
+  shop:
+    prices:
+      - coins: 50
+        diams: 0
+        resources: {}
+    show_in_main_shop: true</code></pre>
+
+        <div class="note">
+          La clé <code>recipe_tool_wooden_axe</code> sera référencée
+          dans le bloc <code>unlock.recipe_card_key</code> côté craft.
+        </div>
+      </section>
+
+      <section id="crafts">
+        <h2>4. Définir des crafts</h2>
+
+        <p>
+          Les crafts sont définis dans les fragments sous
+          <code>app/data/crafts/**.yml</code>, puis mergés en
+          <code>app/data/crafts.yml</code> par
+          <code>normalize_crafts_yaml.py</code>.
+        </p>
+
+        <h3>4.1 Format général d’un fragment</h3>
+
+        <p>
+          Deux formats sont acceptés :
+        </p>
+
+        <ul>
+          <li>
+            <strong>Ancien format</strong> (avec bloc <code>crafts:</code>) :
+          </li>
+        </ul>
+
+        <pre><code># app/data/crafts/craft_base_table.yml
+crafts:
+  tool_wooden_axe:
+    key: tool_wooden_axe
+    station_key: craft_table_base
+    ...</code></pre>
+
+        <ul>
+          <li>
+            <strong>Nouveau format “plat”</strong> : le top-level est directement
+            <code>slug -&gt; craft_cfg</code>.
+          </li>
+        </ul>
+
+        <pre><code># app/data/crafts/craft_base/resources.yml
+tool_wooden_axe:
+  key: tool_wooden_axe
+  station_key: craft_table_base
+  ...</code></pre>
+
+        <p>
+          Le normalizer supporte les deux, mais il est conseillé d’utiliser
+          le format plat pour les nouveaux fichiers.
+        </p>
+
+        <h3>4.2 Exemple complet de craft</h3>
+
+        <pre><code># app/data/crafts/craft_base/tools.yml
+tool_wooden_axe:
+  key: tool_wooden_axe
+  station_key: craft_table_base
+
+  required_grid:
+    tier: 1                  # 1x3 de base
+
+  output:
+    kind: tool
+    key: tool_wooden_axe
+    quantity: 1
+
+  recipe:
+    pattern:
+      - "BBS"
+    legend:
+      B:
+        kind: resource
+        key: branch
+        quantity: 1
+      S:
+        kind: resource
+        key: stick
+        quantity: 1
+
+  craft_time_seconds: 8
+  xp_reward: 5
+
+  unlock:
+    recipe_card_key: recipe_tool_wooden_axe
+    min_level: 2
+
+  enabled: true</code></pre>
+
+        <h3>4.3 Champs obligatoires côté craft</h3>
+
+        <table>
+          <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+          <tr>
+            <td><code>key</code></td>
+            <td>string</td>
+            <td>Clé de l’item crafté (doit exister dans <code>app/data/items/*.yml</code> ou être alignée avec future définition).</td>
+          </tr>
+          <tr>
+            <td><code>station_key</code></td>
+            <td>string</td>
+            <td>Identifie la station de craft (ex: <code>craft_table_base</code>, <code>forge_base</code>…).</td>
+          </tr>
+          <tr>
+            <td><code>required_grid.tier</code></td>
+            <td>int</td>
+            <td>Niveau de grille requis (1→1x3, 2→2x3, 3→3x3, etc.).</td>
+          </tr>
+          <tr>
+            <td><code>output</code></td>
+            <td>mapping</td>
+            <td>Type &amp; quantité du résultat (kind + key + quantity).</td>
+          </tr>
+          <tr>
+            <td><code>recipe.pattern</code></td>
+            <td>list[str]</td>
+            <td>Pattern de craft (lignes de caractères, <code>.</code> = vide).</td>
+          </tr>
+          <tr>
+            <td><code>recipe.legend</code></td>
+            <td>dict</td>
+            <td>Mapping symbole → { kind, key, quantity }.</td>
+          </tr>
+          <tr>
+            <td><code>unlock</code></td>
+            <td>dict</td>
+            <td>Doit contenir un <code>recipe_card_key</code> existant dans <code>cards.yml</code>.</td>
+          </tr>
+          <tr>
+            <td><code>craft_time_seconds</code></td>
+            <td>number</td>
+            <td>Durée de craft en secondes.</td>
+          </tr>
+        </table>
+
+        <h3>4.4 Vérifications automatiques</h3>
+
+        <p>
+          <code>normalize_crafts_yaml.py</code> fait les checks suivants :
+        </p>
+
+        <ul>
+          <li>Syntaxe YAML correcte (sinon erreur explicite).</li>
+          <li><code>pattern</code> non vide &amp; composé de strings.</li>
+          <li>Chaque symbole de <code>pattern</code> (hors <code>.</code>) doit exister dans <code>legend</code>.</li>
+          <li><code>legend.*.key</code> référencent des ressources / items existants (warnings si manquants).</li>
+          <li><code>unlock.recipe_card_key</code> doit être présent (erreur si manquant).</li>
+          <li>Si <code>card_keys</code> chargés → warning si la carte n’existe pas dans <code>cards.yml</code>.</li>
+        </ul>
+
+        <pre><code># Depuis la racine du projet
+python app/data/crafts/normalize_crafts_yaml.py</code></pre>
+
+        <p>
+          En cas d’erreur structurelle, le script :
+        </p>
+        <ul>
+          <li>affiche une liste d’erreurs;</li>
+          <li>n’écrase pas <code>app/data/crafts.yml</code> existant.</li>
+        </ul>
+      </section>
+
+      <section id="workflow">
+        <h2>5. Workflow pour ajouter un nouveau craft</h2>
+
+        <h3>Étape 1 — Créer / vérifier l’item de sortie</h3>
+        <ol>
+          <li>Ouvrir le bon fichier dans <code>app/data/items/*.yml</code> (ex: <code>tools.yml</code>).</li>
+          <li>Ajouter une entrée sous <code>items:</code> avec une clé unique (ex: <code>tool_shovel_basic</code>).</li>
+          <li>Remplir <code>key</code>, <code>label</code>, <code>kind</code>, <code>icon</code>, etc.</li>
+        </ol>
+
+        <h3>Étape 2 — Créer la carte de recette</h3>
+        <ol>
+          <li>Choisir le fichier de fragments adapté, ex: <code>app/data/cards/craft/recipes/tools.yml</code>.</li>
+          <li>Ajouter une nouvelle carte de type <code>craft_recipe</code> avec une <code>key</code> unique.</li>
+          <li>Éventuellement lier <code>card_gameplay.target_item_key</code> à l’item créé.</li>
+          <li>Configurer la partie <code>shop</code> (prix, visibilité).</li>
+        </ol>
+
+        <h3>Étape 3 — Déclarer la recette de craft</h3>
+        <ol>
+          <li>Choisir la station/famille : ex. <code>app/data/crafts/craft_base/tools.yml</code>.</li>
+          <li>Ajouter un bloc craft (slug = souvent la même chose que <code>key</code>).</li>
+          <li>
+            Définir :
+            <ul>
+              <li><code>station_key</code> (ex: <code>craft_table_base</code>);</li>
+              <li><code>required_grid.tier</code> (1, 2, 3…);</li>
+              <li><code>output.kind</code> et <code>output.key</code> (ton item);</li>
+              <li><code>recipe.pattern</code> / <code>recipe.legend</code> (matrice de craft);</li>
+              <li><code>craft_time_seconds</code> et <code>xp_reward</code>;</li>
+              <li><code>unlock.recipe_card_key</code> (la carte créée en Étape 2).</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Étape 4 — Normaliser et vérifier</h3>
+        <ol>
+          <li>Depuis la racine du projet, lancer :
+            <pre><code>python app/data/cards/normalize_cards_yaml.py
+python app/data/crafts/normalize_crafts_yaml.py</code></pre>
+          </li>
+          <li>
+            Corriger les éventuelles erreurs / warnings (items manquants,
+            carte absente, symboles non définis…).
+          </li>
+          <li>Lancer le jeu et vérifier que la recette apparaît bien dans l’UI de craft.</li>
+        </ol>
+
+        <div class="note">
+          Quand tu auras des centaines de recettes, ce workflow pourra être
+          encapsulé dans une UI d’édition, mais la structure YAML restera
+          la même. Cette doc sert de référence “canonique” pour le format.
+        </div>
+      </section>
+
+      <footer style="margin-top: 2rem; font-size: 0.8rem; color: var(--muted);">
+        LodyLand game_data — cards, items &amp; crafts.  
+        Voir aussi <code>cards_readme.html</code>,
+        <code>normalize_cards_yaml.py</code>,
+        <code>normalize_crafts_yaml.py</code> et <code>craft_defs.py</code>
+        pour les détails d’implémentation.
+      </footer>
+    </article>
+  </main>
+</body>
+</html>
