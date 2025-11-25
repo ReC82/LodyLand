@@ -1,0 +1,25 @@
+items:
+
+  weapon_wooden_sword:
+    key: weapon_wooden_sword
+    kind: weapon
+    label: Wooden Sword
+    description: Une épée en bois, utile pour combattre les ennemis.
+    icon: /static/assets/img/weapons/wooden_sword.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Disponible dès le niveau 1.
+
+  weapon_basic_bow:
+    key: weapon_basic_bow
+    kind: weapon
+    label: Basic Bow
+    description: Un arc basique, utile pour combattre les ennemis à distance.
+    icon: /static/assets/img/weapons/weapon_basic_bow.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Disponible dès le niveau 1.    

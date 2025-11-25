@@ -1,0 +1,35 @@
+# Lingot de fer – 2x3
+iron_ingot:
+  key: iron_ingot
+  station_key: craft_table
+
+  required_grid:
+    tier: 2        # 2x3, débloqué par la carte upgrade_craft_table_2
+
+  output:
+    kind: resource
+    key: iron_ingot
+    quantity: 1
+
+  recipe:
+    pattern:
+      - "III"
+      - "CCC"
+    legend:
+      I:
+        kind: resource
+        key: iron_ore
+        quantity: 1
+      C:
+        kind: resource
+        key: coal
+        quantity: 1
+
+  craft_time_seconds: 20
+  xp_reward: 10
+
+  unlock:
+    recipe_card_key: recipe_iron_ingot
+    min_level: 3
+
+  enabled: true

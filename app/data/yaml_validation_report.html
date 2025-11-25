@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang='fr'>
+<head>
+<meta charset='UTF-8' />
+<title>LodyLand — YAML Validation Report</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #020617;
+  color: #e5e7eb;
+}
+h1 {
+  color: #38bdf8;
+  margin-bottom: 4px;
+}
+h2 {
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+h3 {
+  margin-top: 0;
+}
+.small {
+  font-size: 12px;
+  color: #9ca3af;
+}
+.section {
+  margin-top: 24px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: #020617;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+}
+.section-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1f2937;
+}
+.section-body {
+  padding: 12px 16px 16px 16px;
+}
+.tag-ok {
+  color: #22c55e;
+}
+.tag-warn {
+  color: #facc15;
+}
+.tag-error {
+  color: #f97373;
+}
+pre {
+  background: #020617;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  overflow-x: auto;
+  border: 1px solid #1f2937;
+}
+</style>
+
+</head><body>
+<h1>YAML Validation Report</h1>
+<div class='small'>Généré le : 2025-11-25 14:09:07</div>
+<div class='section'>
+<div class='section-header'>
+<h2>normalize_cards_yaml.py</h2>
+<span class='tag-warn'>⚠ Warnings</span>
+</div>
+<div class='section-body'>
+<pre>
+
+Scanning YAML under: E:\Projects\CS50\Final_Project\Lodyland\app\data\cards
+
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\boosts\cooldown.yml
+WARNING: image file not found for card &#x27;boost_branch_cooldown_1&#x27; (card_image=/static/assets/img/cards/boost_cooldown_global_10pc_rare_1, resolved=E:\Projects\CS50\Final_Project\Lodyland\app\static\assets\img\cards\boost_cooldown_global_10pc_rare_1)
+    -&gt; 2 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\boosts\land_loot.yml
+    -&gt; 1 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\boosts\resources.yml
+    -&gt; 3 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\boosts\xp.yml
+    -&gt; 1 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\buildings\buildings.yml
+    -&gt; (no cards found in E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\buildings\buildings.yml, skipped)
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\craft\access.yml
+    -&gt; 3 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\lands\access.yml
+    -&gt; 8 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\lands\slots.yml
+    -&gt; 3 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\lands\specials.yml
+    -&gt; (no cards found in E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\lands\specials.yml, skipped)
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\packs\events.yml
+    -&gt; (no cards found in E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\packs\events.yml, skipped)
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\packs\starters.yml
+    -&gt; (no cards found in E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\packs\starters.yml, skipped)
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\craft\recipes\resources.yml
+WARNING: image file not found for card &#x27;recipe_iron_ingot&#x27; (card_image=/static/assets/img/cards/recipes/card_recipe_iron_ingot.png, resolved=E:\Projects\CS50\Final_Project\Lodyland\app\static\assets\img\cards\recipes\card_recipe_iron_ingot.png)
+    -&gt; 2 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\craft\recipes\tools.yml
+    -&gt; 3 card(s) loaded and validated
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\craft\recipes\weapons.yml
+    -&gt; 1 card(s) loaded and validated
+
+All cards structurally validated successfully (27 total)
+
+Backup created: E:\Projects\CS50\Final_Project\Lodyland\app\data\cards.yml.bak
+cards.yml generated: E:\Projects\CS50\Final_Project\Lodyland\app\data\cards.yml
+WARNING: 2 image(s) missing. Writing report to E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\missing_card_images.txt.
+Missing images report written to: E:\Projects\CS50\Final_Project\Lodyland\app\data\cards\missing_card_images.txt
+</pre>
+</div></div>
+<div class='section'>
+<div class='section-header'>
+<h2>normalize_items_yaml.py</h2>
+<span class='tag-error'>❌ Errors</span>
+</div>
+<div class='section-body'>
+<pre>
+
+Scanning item YAML under: E:\Projects\CS50\Final_Project\Lodyland\app\data\items
+
+  � Loading E:\Projects\CS50\Final_Project\Lodyland\app\data\items\misc.yml
+
+--- STDERR ---
+Traceback (most recent call last):
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\items\normalize_items_yaml.py&quot;, line 382, in &lt;module&gt;
+    sys.exit(main())
+             ^^^^^^
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\items\normalize_items_yaml.py&quot;, line 335, in main
+    rep.error(structural_error_msg)
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\items\normalize_items_yaml.py&quot;, line 86, in error
+    print(msg)
+  File &quot;C:\Python312\Lib\encodings\cp1252.py&quot;, line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: &#x27;charmap&#x27; codec can&#x27;t encode character &#x27;\u274c&#x27; in position 0: character maps to &lt;undefined&gt;
+</pre>
+</div></div>
+<div class='section'>
+<div class='section-header'>
+<h2>normalize_crafts_yaml.py</h2>
+<span class='tag-error'>❌ Errors</span>
+</div>
+<div class='section-body'>
+<pre>
+
+Scanning craft YAML under: E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts
+
+--- STDERR ---
+Traceback (most recent call last):
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts\normalize_crafts_yaml.py&quot;, line 957, in &lt;module&gt;
+    code = main(json_mode=json_mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts\normalize_crafts_yaml.py&quot;, line 804, in main
+    item_keys = load_item_keys(rep)
+                ^^^^^^^^^^^^^^^^^^^
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts\normalize_crafts_yaml.py&quot;, line 157, in load_item_keys
+    rep.warn(
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts\normalize_crafts_yaml.py&quot;, line 83, in warn
+    self._emit(&quot;\u26a0 &quot; + msg, &quot;warn&quot;)
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts\normalize_crafts_yaml.py&quot;, line 77, in _emit
+    print(msg)
+  File &quot;C:\Python312\Lib\encodings\cp1252.py&quot;, line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: &#x27;charmap&#x27; codec can&#x27;t encode character &#x27;\u26a0&#x27; in position 0: character maps to &lt;undefined&gt;
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &quot;E:\Projects\CS50\Final_Project\Lodyland\app\data\crafts\normalize_crafts_yaml.py&quot;, line 976, in &lt;module&gt;
+    print(&quot;\n\u274c === UNEXPECTED ERROR ===&quot;)
+  File &quot;C:\Python312\Lib\encodings\cp1252.py&quot;, line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: &#x27;charmap&#x27; codec can&#x27;t encode character &#x27;\u274c&#x27; in position 2: character maps to &lt;undefined&gt;
+</pre>
+</div></div>
+</body></html>

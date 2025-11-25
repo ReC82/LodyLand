@@ -1,0 +1,89 @@
+- key: recipe_tool_wooden_axe
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_axe
+  card_label: Recipe Craft Wooden Axe
+  card_description: Recipe to craft a Wooden Axe.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_axe.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_tool_shovel_basic
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_shovel
+  card_label: Recipe Craft Basic Shovel
+  card_description: Recipe to craft a Basic Shovel.
+  card_image: /static/assets/img/cards/recipes/card_recipe_shovel_basic.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_tool_basic_rod
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - basic_rod
+  card_label: Recipe Craft Basic Rod
+  card_description: Recipe to craft a Basic Rod.
+  card_image: /static/assets/img/cards/recipes/card_recipe_rod_basic.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1

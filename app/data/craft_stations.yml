@@ -1,0 +1,40 @@
+# app/data/craft_stations.yml
+
+stations:
+  craft_table_base:
+    key: craft_table_base
+    label: Crafting Table
+
+    # Tailles de grille disponibles pour cette table
+    grids:
+      - tier: 1
+        rows: 1
+        cols: 3
+        unlock:
+          type: default        # dispo dès le début du jeu
+
+      - tier: 2
+        rows: 2
+        cols: 3
+        unlock:
+          type: card
+          card_key: upgrade_craft_table_2
+
+      - tier: 3
+        rows: 3
+        cols: 3
+        unlock:
+          type: card
+          card_key: upgrade_craft_table_3
+
+  forge_level_1:
+    key: forge_level_1
+    label: Forge Level 1
+
+    grids:
+      - tier: 1
+        rows: 4
+        cols: 4
+        unlock:
+          type: card
+          card_key: building_forge_level_1

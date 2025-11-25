@@ -1,0 +1,32 @@
+  wooden_stick:
+    key: wooden_stick
+    station_key: craft_table_base
+
+    required_grid:
+      tier: 1        # 1x3 (début du jeu)
+
+    output:
+      kind: resource
+      key: wooden_stick
+      quantity: 1
+
+    recipe:
+      pattern:
+        - "BBB"
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+
+    craft_time_seconds: 8
+    xp_reward: 5
+
+    unlock:
+    - type: card
+      key: recipe_stick
+
+    - type: level
+      min_level: 2
+
+    enabled: true    
