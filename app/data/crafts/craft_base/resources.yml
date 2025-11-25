@@ -1,5 +1,5 @@
-  stick:
-    key: stick
+  wooden_stick:
+    key: wooden_stick
     station_key: craft_table_base
 
     required_grid:
@@ -7,7 +7,7 @@
 
     output:
       kind: resource
-      key: stick
+      key: wooden_stick
       quantity: 1
 
     recipe:

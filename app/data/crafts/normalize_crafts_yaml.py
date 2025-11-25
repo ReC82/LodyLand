@@ -9,34 +9,32 @@ Goals:
   - Merge all craft definitions into a single app/data/crafts.yml
   - Validate basic structure of each craft
   - Check references:
-      * resources used in recipe.legend exist in app/data/items/resources.yml
+      * resources used in recipe.legend exist in app/data/resources.yml
       * items (output + legend kind=item/tool/weapon/…) exist in app/data/items/*.yml
       * unlock.recipe_card_key exists in app/data/cards.yml
   - If ANY structural issue -> do NOT touch crafts.yml, generate an HTML report
   - Otherwise -> write a fresh crafts.yml with all crafts merged
+
+Extra:
+  - With --json, output a JSON summary (for a global "run_all" script) and
+    suppress console spam.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
-
+import json
+import sys
 import webbrowser
+
 import yaml
+
 
 # ---------------------------------------------------------------------------
 # Root paths
 # ---------------------------------------------------------------------------
 
-# Project layout assumption:
-#   project_root/
-#     app/
-#       data/
-#         crafts/
-#         items/
-#         resources.yml  (or items/resources.yml in our case)
-#         cards.yml
-#
 # Script lives in: app/data/crafts/normalize_crafts_yaml.py
 THIS_FILE = Path(__file__).resolve()
 PROJECT_ROOT = THIS_FILE.parents[2]          # app/
@@ -46,10 +44,53 @@ OUTPUT_FILE = DATA_ROOT / "crafts.yml"
 
 
 # ---------------------------------------------------------------------------
+# Reporter
+# ---------------------------------------------------------------------------
+
+class Reporter:
+    """
+    Small helper to centralize logs.
+
+    - In normal mode: prints to console.
+    - In json_mode: keeps messages in memory but does NOT print them,
+      so stdout contains only JSON.
+    """
+
+    def __init__(self, json_mode: bool = False) -> None:
+        self.json_mode = json_mode
+        self.infos: List[str] = []
+        self.warnings: List[str] = []
+        self.errors: List[str] = []
+
+    def _emit(self, msg: str, kind: str) -> None:
+        if kind == "info":
+            self.infos.append(msg)
+        elif kind == "warn":
+            self.warnings.append(msg)
+        elif kind == "error":
+            self.errors.append(msg)
+
+        if not self.json_mode:
+            if kind == "error":
+                print(msg, file=sys.stderr)
+            else:
+                print(msg)
+
+    def info(self, msg: str) -> None:
+        self._emit(msg, "info")
+
+    def warn(self, msg: str) -> None:
+        self._emit("⚠ " + msg, "warn")
+
+    def error(self, msg: str) -> None:
+        self._emit("❌ " + msg, "error")
+
+
+# ---------------------------------------------------------------------------
 # Helpers to load items / resources / cards for validation
 # ---------------------------------------------------------------------------
 
-def load_item_keys() -> Dict[str, str]:
+def load_item_keys(rep: Reporter) -> Dict[str, str]:
     """
     Load all item definitions from app/data/items/*.yml.
 
@@ -88,40 +129,40 @@ def load_item_keys() -> Dict[str, str]:
     result: Dict[str, str] = {}
 
     if not items_dir.exists():
-        print(f"⚠ items dir not found: {items_dir}")
+        rep.warn(f"items dir not found: {items_dir}")
         return result
 
     for path in items_dir.glob("*.yml"):
         try:
-            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+            raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         except Exception as e:  # noqa: BLE001
-            print(f"❌ ERROR reading items file {path}: {e}")
+            rep.error(f"ERROR reading items file {path}: {e}")
             raise
 
-        if data is None:
+        if raw is None:
             continue
 
         items_dict: Dict[str, Dict[str, Any]] = {}
 
         # Case 1: dict top-level
-        if isinstance(data, dict):
+        if isinstance(raw, dict):
             # 1A: explicit 'items' block
-            if "items" in data and isinstance(data["items"], dict):
-                items_dict = data["items"]
+            if "items" in raw and isinstance(raw["items"], dict):
+                items_dict = raw["items"]
             else:
-                # 1B: flat mapping (slug -> cfg)
-                if any(isinstance(v, dict) for v in data.values()):
-                    items_dict = data
+                # 1B: flat mapping (slug -> cfg) if values look like dicts
+                if any(isinstance(v, dict) for v in raw.values()):
+                    items_dict = raw
                 else:
-                    print(
-                        f"⚠ File {path} has a dict top-level but no usable items; "
+                    rep.warn(
+                        f"File {path} has a dict top-level but no usable items; "
                         f"skipping for item_keys."
                     )
                     continue
 
         # Case 2: list top-level
-        elif isinstance(data, list):
-            for entry in data:
+        elif isinstance(raw, list):
+            for entry in raw:
                 if not isinstance(entry, dict):
                     continue
                 key = (entry.get("key") or "").strip()
@@ -130,30 +171,30 @@ def load_item_keys() -> Dict[str, str]:
                 items_dict[key] = entry
 
         else:
-            print(
-                f"⚠ File {path} has unsupported top-level type "
-                f"({type(data).__name__}); skipping for item_keys."
+            rep.warn(
+                f"File {path} has unsupported top-level type "
+                f"({type(raw).__name__}); skipping for item_keys."
             )
             continue
 
         # Collect item keys
         for slug, cfg in items_dict.items():
             if not isinstance(cfg, dict):
-                print(
-                    f"⚠ Item '{slug}' in {path} is not a dict; skipping."
+                rep.warn(
+                    f"Item '{slug}' in {path} is not a dict; skipping."
                 )
                 continue
 
             item_key = (cfg.get("key") or str(slug)).strip()
             if not item_key:
-                print(
-                    f"⚠ Item '{slug}' in {path} has empty/missing key; skipping."
+                rep.warn(
+                    f"Item '{slug}' in {path} has empty/missing key; skipping."
                 )
                 continue
 
             if item_key in result:
-                print(
-                    f"⚠ WARNING: duplicate item_key '{item_key}' "
+                rep.warn(
+                    f"WARNING: duplicate item_key '{item_key}' "
                     f"in {path} (already seen in {result[item_key]})"
                 )
             result[item_key] = str(path)
@@ -161,13 +202,13 @@ def load_item_keys() -> Dict[str, str]:
     return result
 
 
-def load_resource_keys() -> Dict[str, str]:
+def load_resource_keys(rep: Reporter) -> Dict[str, str]:
     """
-    Load all resource definitions from app/data/items/resources.yml.
+    Load all resource definitions from app/data/resources.yml.
 
     Accepted formats:
 
-    A) Dict + 'resources' list:
+    1) dict + "resources" (generated file):
 
        resources:
          - key: branch
@@ -175,7 +216,7 @@ def load_resource_keys() -> Dict[str, str]:
          - key: stick
            ...
 
-    B) Direct list:
+    2) direct list:
 
        - key: branch
          ...
@@ -183,38 +224,38 @@ def load_resource_keys() -> Dict[str, str]:
          ...
 
     Returns:
-      Dict[resource_key, source_file_str]
+      Dict[resource_key, path_str]
     """
-    path = DATA_ROOT / "items" / "resources.yml"
+    path = DATA_ROOT / "resources.yml"
     result: Dict[str, str] = {}
 
     if not path.exists():
-        print(f"⚠ resources.yml not found at {path}")
+        rep.warn(f"resources.yml not found at {path}")
         return result
 
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except Exception as e:  # noqa: BLE001
-        print(f"❌ ERROR reading resources file {path}: {e}")
+        rep.error(f"ERROR reading resources file {path}: {e}")
         raise
 
-    # Case A: dict with 'resources' list
+    # Case 1: dict + "resources"
     if isinstance(data, dict):
         resources = data.get("resources") or []
         if not isinstance(resources, list):
-            print(
-                f"⚠ resources.yml: 'resources' is not a list at top-level "
+            rep.warn(
+                f"resources.yml: 'resources' is not a list at top-level "
                 f"({path}), resource validation will be limited."
             )
             return result
 
-    # Case B: top-level list
+    # Case 2: direct list
     elif isinstance(data, list):
         resources = data
 
     else:
-        print(
-            f"⚠ resources.yml: unexpected structure at top-level ({type(data).__name__}); "
+        rep.warn(
+            f"resources.yml: unexpected structure at top-level ({type(data).__name__}); "
             f"resource validation will be limited."
         )
         return result
@@ -226,8 +267,8 @@ def load_resource_keys() -> Dict[str, str]:
         if not key:
             continue
         if key in result:
-            print(
-                f"⚠ WARNING: duplicate resource key '{key}' "
+            rep.warn(
+                f"WARNING: duplicate resource key '{key}' "
                 f"in resources.yml (path {path})"
             )
         result[key] = str(path)
@@ -235,7 +276,7 @@ def load_resource_keys() -> Dict[str, str]:
     return result
 
 
-def load_card_keys() -> Dict[str, str]:
+def load_card_keys(rep: Reporter) -> Dict[str, str]:
     """
     Load all card keys from app/data/cards.yml.
 
@@ -268,13 +309,13 @@ def load_card_keys() -> Dict[str, str]:
     result: Dict[str, str] = {}
 
     if not path.exists():
-        print(f"⚠ cards.yml not found at {path} (card validation will be limited).")
+        rep.warn(f"cards.yml not found at {path} (card validation will be limited).")
         return result
 
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except Exception as e:  # noqa: BLE001
-        print(f"❌ ERROR reading cards.yml: {e}")
+        rep.error(f"ERROR reading cards.yml: {e}")
         raise
 
     iterable: List[dict] = []
@@ -287,7 +328,7 @@ def load_card_keys() -> Dict[str, str]:
         if isinstance(cards_root, dict):
             for card_type, cards in cards_root.items():
                 if not isinstance(cards, list):
-                    print(f"⚠ cards.yml: 'cards.{card_type}' is not a list, skipping.")
+                    rep.warn(f"cards.yml: 'cards.{card_type}' is not a list, skipping.")
                     continue
                 iterable.extend(cards)
 
@@ -297,12 +338,12 @@ def load_card_keys() -> Dict[str, str]:
 
         # A3: no 'cards' key
         elif cards_root is None:
-            print("⚠ cards.yml: no 'cards' key found; card validation disabled.")
+            rep.warn("cards.yml: no 'cards' key found; card validation disabled.")
             return {}
 
         # A4: unexpected type for 'cards'
         else:
-            print("⚠ cards.yml: unexpected type for 'cards'; card validation disabled.")
+            rep.warn("cards.yml: unexpected type for 'cards'; card validation disabled.")
             return {}
 
     # Case B: direct list
@@ -311,7 +352,7 @@ def load_card_keys() -> Dict[str, str]:
 
     # Case C: unsupported top-level
     else:
-        print("⚠ cards.yml: unexpected top-level structure; card validation disabled.")
+        rep.warn("cards.yml: unexpected top-level structure; card validation disabled.")
         return {}
 
     for card in iterable:
@@ -321,8 +362,8 @@ def load_card_keys() -> Dict[str, str]:
         if not key:
             continue
         if key in result:
-            print(
-                f"⚠ WARNING: duplicate card key '{key}' "
+            rep.warn(
+                f"WARNING: duplicate card key '{key}' "
                 f"in cards.yml (already collected)"
             )
         result[key] = str(path)
@@ -337,6 +378,7 @@ def load_card_keys() -> Dict[str, str]:
 def load_fragment_crafts(
     path: Path,
     errors: List[Tuple[Path, str, str]],
+    rep: Reporter,
 ) -> Dict[str, Dict[str, Any]]:
     """
     Load a craft fragment file.
@@ -362,14 +404,14 @@ def load_fragment_crafts(
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except Exception as e:  # noqa: BLE001
-        # YAML syntax error: we record one error and skip this file
+        # YAML syntax error: record one error and skip this file
         msg = f"YAML syntax error: {e}"
         errors.append((path, "<file>", msg))
-        print(f"    ↳ YAML ERROR in {path}: {e}")
+        rep.error(f"YAML ERROR in {path}: {e}")
         return {}
 
     if data is None:
-        print(f"    ↳ (empty YAML in {path}, skipped)")
+        rep.info(f"    ↳ (empty YAML in {path}, skipped)")
         return {}
 
     if not isinstance(data, dict):
@@ -378,14 +420,14 @@ def load_fragment_crafts(
             f"got {type(data).__name__}."
         )
         errors.append((path, "<file>", msg))
-        print(f"    ↳ {msg}")
+        rep.error(msg)
         return {}
 
     # Format A: explicit 'crafts' block
     if "crafts" in data:
         crafts = data["crafts"]
         if crafts is None:
-            print(f"    ↳ (no crafts found in 'crafts' block of {path}, skipped)")
+            rep.info(f"    ↳ (no crafts found in 'crafts' block of {path}, skipped)")
             return {}
         if not isinstance(crafts, dict):
             msg = (
@@ -393,7 +435,7 @@ def load_fragment_crafts(
                 f"(got {type(crafts).__name__})."
             )
             errors.append((path, "<file>", msg))
-            print(f"    ↳ {msg}")
+            rep.error(msg)
             return {}
 
     # Format B: flat mapping (slug -> cfg)
@@ -408,7 +450,7 @@ def load_fragment_crafts(
                 f"got {type(cfg).__name__}."
             )
             errors.append((path, str(slug), msg))
-            print(f"    ↳ {msg}")
+            rep.error(msg)
             continue
 
         result[str(slug)] = cfg
@@ -425,6 +467,7 @@ def validate_craft(
     card_keys: Dict[str, str],
     warnings: List[str],
     errors: List[Tuple[Path, str, str]],
+    rep: Reporter,
 ) -> None:
     """
     Validate a single craft definition.
@@ -433,7 +476,7 @@ def validate_craft(
       - missing output block or output.key
       - missing recipe.pattern or recipe.legend
       - recipe.pattern not a list of strings
-      - unlock.recipe_card_key missing (every craft must have a recipe card)
+      - unlock.recipe_card_key missing (directly or via unlock list)
 
     Structural errors are added to `errors` and we skip further checks for
     this craft.
@@ -445,9 +488,8 @@ def validate_craft(
       - etc.
     """
     def add_error(msg: str) -> None:
-        """Helper to record an error for this craft and stop validation."""
         errors.append((source_file, slug, msg))
-        print(f"    ✖ {msg}")
+        rep.error(f"Craft '{slug}' in {source_file}: {msg}")
 
     # Ensure "key" is set (fallback to slug)
     craft_key = (craft.get("key") or slug).strip()
@@ -535,22 +577,21 @@ def validate_craft(
                 f"⚠ Craft '{slug}' in {source_file}: legend '{sym}' has "
                 f"unknown kind '{k_kind}'."
             )
+
     # --- Unlock: every craft must have a recipe card ---
     unlock = craft.get("unlock")
     recipe_card_key = ""
 
-    # Cas 1 : unlock est un dict (format simple)
+    # Case 1 : unlock is a dict (simple format)
     if isinstance(unlock, dict):
         recipe_card_key = (unlock.get("recipe_card_key") or "").strip()
 
-    # Cas 2 : unlock est une liste (format "conditions" que tu utilises)
+    # Case 2 : unlock is a list (conditions list)
     elif isinstance(unlock, list):
-        # On cherche une entrée de type "card" avec un 'key'
         card_entry = None
         for entry in unlock:
             if not isinstance(entry, dict):
                 continue
-            # convention : type: card + key: recipe_xxx
             if entry.get("type") == "card" and entry.get("key"):
                 card_entry = entry
                 break
@@ -564,11 +605,9 @@ def validate_craft(
             )
             return
 
-    # Cas 3 : rien / type inattendu
+    # Case 3 : missing / invalid unlock
     else:
-        add_error(
-            "missing or invalid 'unlock' block (expected dict or list)."
-        )
+        add_error("missing or invalid 'unlock' block (expected dict or list).")
         return
 
     if not recipe_card_key:
@@ -581,7 +620,6 @@ def validate_craft(
             f"⚠ Craft '{slug}' in {source_file}: recipe_card_key '{recipe_card_key}' "
             f"not found in cards.yml."
         )
-
 
     # Optional sanity on craft_time_seconds
     ctime = craft.get("craft_time_seconds")
@@ -737,31 +775,39 @@ h2 {
     html.append("</body></html>")
 
     output_path.write_text("\n".join(html), encoding="utf-8")
-    try:
-        webbrowser.open(str(output_path))
-    except Exception:
-        # If opening fails, we just ignore; file is still generated.
-        pass
 
 
 # ---------------------------------------------------------------------------
 # MAIN
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    print(f"\nScanning craft YAML under: {CRAFTS_ROOT}\n")
+def main(json_mode: bool = False) -> int:
+    rep = Reporter(json_mode=json_mode)
+
+    rep.info(f"\nScanning craft YAML under: {CRAFTS_ROOT}\n")
 
     if not CRAFTS_ROOT.exists():
-        raise SystemExit(f"❌ crafts root folder not found: {CRAFTS_ROOT}")
+        msg = f"crafts root folder not found: {CRAFTS_ROOT}"
+        rep.error(msg)
+        if json_mode:
+            payload = {
+                "script": "normalize_crafts_yaml.py",
+                "ok": False,
+                "errors": [{"file": str(CRAFTS_ROOT), "craft": "<root>", "message": msg}],
+                "warnings": [],
+                "crafts_count": 0,
+            }
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 1
 
     # Load reference sets
-    item_keys = load_item_keys()
-    resource_keys = load_resource_keys()
-    card_keys = load_card_keys()
+    item_keys = load_item_keys(rep)
+    resource_keys = load_resource_keys(rep)
+    card_keys = load_card_keys(rep)
 
-    print(f"→ Loaded {len(item_keys)} item key(s) for validation.")
-    print(f"→ Loaded {len(resource_keys)} resource key(s) for validation.")
-    print(f"→ Loaded {len(card_keys)} card key(s) for validation.\n")
+    rep.info(f"→ Loaded {len(item_keys)} item key(s) for validation.")
+    rep.info(f"→ Loaded {len(resource_keys)} resource key(s) for validation.")
+    rep.info(f"→ Loaded {len(card_keys)} card key(s) for validation.\n")
 
     all_crafts: Dict[str, Dict[str, Any]] = {}
     warnings: List[str] = []
@@ -776,11 +822,11 @@ def main() -> None:
         if path.name == THIS_FILE.name:
             continue
 
-        print(f"  • Loading {path}")
+        rep.info(f"  • Loading {path}")
 
-        fragment = load_fragment_crafts(path, errors)
+        fragment = load_fragment_crafts(path, errors, rep)
         if not fragment:
-            print(f"    ↳ (no crafts found in {path}, skipped)")
+            rep.info(f"    ↳ (no crafts found in {path}, skipped)")
             continue
 
         for slug, cfg in fragment.items():
@@ -794,6 +840,7 @@ def main() -> None:
                 card_keys,
                 warnings,
                 errors,
+                rep,
             )
 
             # Only keep craft if no structural error for this slug
@@ -801,56 +848,134 @@ def main() -> None:
                 continue
 
             if slug in all_crafts:
-                print(
-                    f"⚠ WARNING: duplicate craft slug '{slug}' "
+                rep.warn(
+                    f"WARNING: duplicate craft slug '{slug}' "
                     f"in {path} (overwriting previous definition)."
                 )
 
             all_crafts[slug] = cfg
 
-        print(f"    ↳ {len(fragment)} craft(s) loaded (including invalid ones, if any)")
+        rep.info(
+            f"    ↳ {len(fragment)} craft(s) loaded (including invalid ones, if any)"
+        )
 
     # If there are structural errors, DO NOT write crafts.yml
     if errors:
-        print(
-            f"\n❌ {len(errors)} structural error(s) detected. "
-            f"crafts.yml was NOT updated.\n"
+        rep.error(
+            f"\n{len(errors)} structural error(s) detected. crafts.yml was NOT updated.\n"
         )
         report_path = DATA_ROOT / "craft_validation_report.html"
         generate_html_report(errors, warnings, report_path)
-        return
+
+        if not json_mode:
+            try:
+                webbrowser.open(str(report_path))
+            except Exception:
+                pass
+
+        if json_mode:
+            payload = {
+                "script": "normalize_crafts_yaml.py",
+                "ok": False,
+                "errors": [
+                    {"file": str(p), "craft": slug, "message": msg}
+                    for (p, slug, msg) in errors
+                ],
+                "warnings": warnings,
+                "crafts_count": len(all_crafts),
+            }
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+        return 1
 
     if not all_crafts:
-        print("\n⚠ No crafts found at all, nothing to write.\n")
+        rep.warn("\nNo crafts found at all, nothing to write.\n")
         report_path = DATA_ROOT / "craft_validation_report.html"
         generate_html_report(errors, warnings, report_path)
-        return
 
-    print(f"\n✓ All crafts structurally validated successfully ({len(all_crafts)} total)\n")
+        if not json_mode:
+            try:
+                webbrowser.open(str(report_path))
+            except Exception:
+                pass
+
+        if json_mode:
+            payload = {
+                "script": "normalize_crafts_yaml.py",
+                "ok": True,
+                "errors": [],
+                "warnings": warnings,
+                "crafts_count": 0,
+            }
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+        return 0
+
+    rep.info(
+        f"\n✓ All crafts structurally validated successfully ({len(all_crafts)} total)\n"
+    )
 
     # Backup existing crafts.yml if present
     if OUTPUT_FILE.exists():
         backup = OUTPUT_FILE.with_suffix(".yml.bak")
         backup.write_text(OUTPUT_FILE.read_text(encoding="utf-8"), encoding="utf-8")
-        print(f"Backup created: {backup}")
+        rep.info(f"Backup created: {backup}")
 
     # Write new merged crafts.yml
     yaml_text = build_merged_yaml(all_crafts)
     OUTPUT_FILE.write_text(yaml_text, encoding="utf-8")
 
-    print(f"✓ crafts.yml generated: {OUTPUT_FILE}")
+    rep.info(f"✓ crafts.yml generated: {OUTPUT_FILE}")
 
-    # Generate HTML report even in success (0 errors)
+    # Generate HTML report even in success
     report_path = DATA_ROOT / "craft_validation_report.html"
     generate_html_report(errors, warnings, report_path)
-    print(f"\nℹ HTML report written to: {report_path}\n")
+    rep.info(f"\nℹ HTML report written to: {report_path}\n")
+
+    if not json_mode:
+        try:
+            webbrowser.open(str(report_path))
+        except Exception:
+            pass
+
+    if json_mode:
+        payload = {
+            "script": "normalize_crafts_yaml.py",
+            "ok": True,
+            "errors": [],
+            "warnings": warnings,
+            "crafts_count": len(all_crafts),
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+    return 0
 
 
 if __name__ == "__main__":
+    json_mode = "--json" in sys.argv
     try:
-        main()
+        code = main(json_mode=json_mode)
     except Exception as e:  # noqa: BLE001
-        # This is only for unexpected exceptions (we already handle most cases).
-        print("\n❌ === UNEXPECTED ERROR ===")
-        print(e)
-        print("\n✖ Merge aborted due to unexpected error.\n")
+        # Only for unexpected exceptions (most cases already handled)
+        if json_mode:
+            payload = {
+                "script": "normalize_crafts_yaml.py",
+                "ok": False,
+                "errors": [
+                    {
+                        "file": "<internal>",
+                        "craft": "<internal>",
+                        "message": f"UNEXPECTED ERROR: {e}",
+                    }
+                ],
+                "warnings": [],
+                "crafts_count": 0,
+            }
+            print(json.dumps(payload, ensure_ascii=True, indent=2))
+        else:
+            print("\n❌ === UNEXPECTED ERROR ===")
+            print(e)
+            print("\n✖ Merge aborted due to unexpected error.\n")
+        code = 1
+
+    sys.exit(code)

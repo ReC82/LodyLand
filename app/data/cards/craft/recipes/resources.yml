@@ -7,7 +7,7 @@
   - stick
   card_label: Recipe Craft Stick
   card_description: Recipe to craft a Stick.
-  card_image: /static/assets/img/cards/recipes/card_recipe_stick.png
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_stick.png
   card_rarity: basic
   card_gameplay:
     target_resource: null

@@ -33,32 +33,6 @@ crafts:
       min_level: 3
     enabled: true
 
-  stick:
-    key: stick
-    station_key: craft_table_base
-    required_grid:
-      tier: 1
-    output:
-      kind: resource
-      key: stick
-      quantity: 1
-    recipe:
-      pattern:
-      - BBB
-      legend:
-        B:
-          kind: resource
-          key: branch
-          quantity: 1
-    craft_time_seconds: 8
-    xp_reward: 5
-    unlock:
-    - type: card
-      key: recipe_stick
-    - type: level
-      min_level: 2
-    enabled: true
-
   tool_rod_basic:
     key: tool_rod_basic
     station_key: craft_table_base
@@ -78,7 +52,7 @@ crafts:
           quantity: 1
         S:
           kind: resource
-          key: stick
+          key: wooden_stick
           quantity: 1
     craft_time_seconds: 8
     xp_reward: 5
@@ -108,7 +82,7 @@ crafts:
           quantity: 1
         S:
           kind: resource
-          key: stick
+          key: wooden_stick
           quantity: 1
     craft_time_seconds: 8
     xp_reward: 5
@@ -140,12 +114,38 @@ crafts:
           quantity: 1
         S:
           kind: resource
-          key: stick
+          key: wooden_stick
           quantity: 1
     craft_time_seconds: 15
     xp_reward: 12
     unlock:
       recipe_card_key: recipe_weapon_wooden_sword
       min_level: 4
+    enabled: true
+
+  wooden_stick:
+    key: wooden_stick
+    station_key: craft_table_base
+    required_grid:
+      tier: 1
+    output:
+      kind: resource
+      key: wooden_stick
+      quantity: 1
+    recipe:
+      pattern:
+      - BBB
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+    craft_time_seconds: 8
+    xp_reward: 5
+    unlock:
+    - type: card
+      key: recipe_stick
+    - type: level
+      min_level: 2
     enabled: true
 

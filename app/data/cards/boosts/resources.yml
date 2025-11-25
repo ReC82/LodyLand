@@ -13,7 +13,7 @@
   - anchovy
   card_label: Anchois +0.1
   card_description: Ajoute 0.1 a la récolte d'anchois
-  card_image: /static/assets/img/cards/anchovy_boost_1.png
+  card_image: /static/assets/img/cards/boosts/card_anchovy_boost_1.png
   card_rarity: common
   card_gameplay:
     target_resource: anchovy

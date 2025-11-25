@@ -23,7 +23,7 @@ weapon_wooden_sword:
         quantity: 1
       S:
         kind: resource
-        key: stick
+        key: wooden_stick
         quantity: 1
 
   craft_time_seconds: 15

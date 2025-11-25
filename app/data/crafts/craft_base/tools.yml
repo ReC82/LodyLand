@@ -20,7 +20,7 @@ tool_wooden_axe:
         quantity: 1
       S:
         kind: resource
-        key: stick
+        key: wooden_stick
         quantity: 1
 
   craft_time_seconds: 8
@@ -58,7 +58,7 @@ tool_rod_basic:
         quantity: 1
       S:
         kind: resource
-        key: stick
+        key: wooden_stick
         quantity: 1
 
   craft_time_seconds: 8
