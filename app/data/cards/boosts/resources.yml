@@ -42,7 +42,7 @@
   - branch
   card_label: Booster Branches I
   card_description: +0.2 de branches récoltées.
-  card_image: /static/assets/img/cards/branch_boost_1.png
+  card_image: /static/assets/img/cards/boosts/branch_boost_1.png
   card_rarity: common
   card_gameplay:
     target_resource: branch

@@ -16,7 +16,7 @@ items:
     kind: tool
     label: Basic Rod
     description: Une canne à pêche basique, utile pour attraper des poissons.
-    icon: /static/assets/img/items/tools/basic_rod.png
+    icon: /static/assets/img/items/tools/rod_basic.png
     unlock_min_level: 2
     base_cooldown: 40.0
     base_sell_price: 5

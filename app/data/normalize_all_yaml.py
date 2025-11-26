@@ -244,7 +244,7 @@ pre {
 # MAIN
 # ---------------------------------------------------------------------------
 
-def run_all_normalizers() -> None:
+def run_all_normalizers(report_mode: bool = False) -> None:
     scripts = [
         "app/data/cards/normalize_cards_yaml.py",
         "app/data/items/normalize_items_yaml.py",
@@ -260,12 +260,15 @@ def run_all_normalizers() -> None:
 
     make_html_report(results)
 
-    # Auto-open the HTML dans le navigateur
-    try:
-        webbrowser.open(REPORT_PATH.as_uri())
-        print("[normalize_all] Report opened in browser.")
-    except Exception:
-        print("[normalize_all] Could not open report automatically.")
+    # Ouvre le navigateur seulement si report_mode=True
+    if report_mode:
+        try:
+            webbrowser.open(REPORT_PATH.as_uri())
+            print("[normalize_all] Report opened in browser.")
+        except Exception:
+            print("[normalize_all] Could not open report automatically.")
+    else:
+        print("[normalize_all] Report generated (no auto-open).")
 
 
 if __name__ == "__main__":

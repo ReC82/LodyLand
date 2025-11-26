@@ -67,6 +67,24 @@ resources:
     icon: /static/assets/img/items/resources/pearl.png
     description: Une perle précieuse, très rare.
     unlock_description: Découverte exceptionnellement dans les coquillages.
+  - key: pearl_necklace
+    label: Collier de perles
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/pearl_necklace.png
+    description: Un collier fait de perles, symbole de statut.
+    unlock_description: Fabriqué en craftant des perles et de la corde.
+  - key: rope
+    label: Corde
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/rope.png
+    description: Une corde solide, utile pour attacher des objets.
+    unlock_description: Fabriquée en craftant des lianes.
   - key: sand
     label: Sable
     base_cooldown: 5.0
@@ -136,7 +154,7 @@ resources:
     base_sell_price: 2
     unlock_min_level: 1
     enabled: true
-    icon: /static/assets/img/items/resources/stick.png
+    icon: /static/assets/img/items/resources/wooden_stick.png
     description: Un bâton solide, utile pour fabriquer des outils simples.
     unlock_description: Fabriqué en craftant ou en récoltant des branches.
   - key: worm

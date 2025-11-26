@@ -46,11 +46,18 @@ def _compute_craft_table_level(session, player: Player) -> int:
     """
     Compute the craft table level for a player based on owned cards.
 
-    Version simple:
-    - level 1 par défaut (table de craft de base)
-    - +1 pour chaque upgrade (on pourra affiner plus tard)
+    Cartes attendues :
+      - access_craft_table_basic
+      - access_craft_table_medium
+      - access_craft_table_advanced
+
+    Niveaux :
+      0 = aucune table
+      1 = basic    (1x3)
+      2 = medium   (2x3)
+      3 = advanced (3x3)
     """
-    level = 1  # on donne la table de craft de base à tout le monde
+    level = 0  # par défaut, aucune table
 
     def has_card(card_key: str) -> bool:
         return (
@@ -60,18 +67,24 @@ def _compute_craft_table_level(session, player: Player) -> int:
             > 0
         )
 
-    # Base craft (si un jour tu veux démarrer à 0 et exiger craft_base, tu ajusteras)
-    if has_card("craft_base"):
+    has_basic    = has_card("access_craft_table_basic")
+    has_medium   = has_card("access_craft_table_medium")
+    has_advanced = has_card("access_craft_table_advanced")
+
+    # Au moins une carte => niveau 1 minimum
+    if has_basic or has_medium or has_advanced:
         level = max(level, 1)
 
-    # Upgrades
-    if has_card("craft_upgrade_1"):
+    # Medium ou advanced => niveau 2 minimum
+    if has_medium or has_advanced:
         level = max(level, 2)
 
-    if has_card("craft_upgrade_2"):
+    # Advanced => niveau 3
+    if has_advanced:
         level = max(level, 3)
 
     return level
+
     
     
 def _ensure_starting_land_card(session, player: Player) -> None:

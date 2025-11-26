@@ -11,21 +11,22 @@ stations:
         rows: 1
         cols: 3
         unlock:
-          type: default        # dispo dès le début du jeu
+          type: default
+          card_key: access_craft_table_basic
 
       - tier: 2
         rows: 2
         cols: 3
         unlock:
           type: card
-          card_key: upgrade_craft_table_2
+          card_key: access_craft_table_medium
 
       - tier: 3
         rows: 3
         cols: 3
         unlock:
           type: card
-          card_key: upgrade_craft_table_3
+          card_key: access_craft_table_advanced
 
   forge_level_1:
     key: forge_level_1

@@ -7,8 +7,6 @@ crafts:
   iron_ingot:
     key: iron_ingot
     station_key: craft_table
-    required_grid:
-      tier: 2
     output:
       kind: resource
       key: iron_ingot
@@ -26,6 +24,7 @@ crafts:
           kind: resource
           key: coal
           quantity: 1
+      required_table_level: 2
     craft_time_seconds: 20
     xp_reward: 10
     unlock:
@@ -33,11 +32,37 @@ crafts:
       min_level: 3
     enabled: true
 
+  pearl_necklace:
+    key: pearl_necklace
+    station_key: craft_table_advanced
+    output:
+      kind: resource
+      key: pearl_necklace
+      quantity: 1
+    recipe:
+      pattern:
+      - RRR
+      - RPR
+      - RRR
+      legend:
+        R:
+          kind: resource
+          key: rope
+          quantity: 1
+        P:
+          kind: resource
+          key: pearl
+          quantity: 1
+      required_table_level: 3
+    craft_time_seconds: 15
+    xp_reward: 15
+    unlock:
+      recipe_card_key: recipe_pearl_necklace
+      min_level: 5
+
   tool_rod_basic:
     key: tool_rod_basic
     station_key: craft_table_base
-    required_grid:
-      tier: 1
     output:
       kind: tool
       key: tool_rod_basic
@@ -54,27 +79,52 @@ crafts:
           kind: resource
           key: wooden_stick
           quantity: 1
+      required_table_level: 1
     craft_time_seconds: 8
     xp_reward: 5
     unlock:
-    - type: card
-      key: recipe_tool_basic_rod
-    - type: level
+      recipe_card_key: recipe_tool_basic_rod
+      min_level: 2
+    enabled: true
+
+  tool_rod_basic_with_worm:
+    key: tool_rod_basic_with_worm
+    station_key: craft_table_base
+    output:
+      kind: tool
+      key: tool_rod_basic_with_worm
+      quantity: 1
+    recipe:
+      pattern:
+      - RW.
+      legend:
+        R:
+          kind: tool
+          key: tool_rod_basic
+          quantity: 1
+        W:
+          kind: resource
+          key: worm
+          quantity: 1
+      required_table_level: 1
+    craft_time_seconds: 8
+    xp_reward: 5
+    unlock:
+      recipe_card_key: recipe_tool_basic_rod
       min_level: 2
     enabled: true
 
   tool_wooden_axe:
     key: tool_wooden_axe
-    station_key: craft_table_base
-    required_grid:
-      tier: 1
+    station_key: craft_table_medium
     output:
       kind: tool
       key: tool_wooden_axe
       quantity: 1
     recipe:
       pattern:
-      - BBS
+      - SSS
+      - B..
       legend:
         B:
           kind: resource
@@ -84,20 +134,17 @@ crafts:
           kind: resource
           key: wooden_stick
           quantity: 1
-    craft_time_seconds: 8
-    xp_reward: 5
+      required_table_level: 2
+    craft_time_seconds: 10
+    xp_reward: 8
     unlock:
-    - type: card
-      key: recipe_tool_wooden_axe
-    - type: level
+      recipe_card_key: recipe_tool_wooden_axe
       min_level: 2
     enabled: true
 
   weapon_wooden_sword:
     key: weapon_wooden_sword
     station_key: craft_table_base
-    required_grid:
-      tier: 3
     output:
       kind: weapon
       key: weapon_wooden_sword
@@ -116,6 +163,7 @@ crafts:
           kind: resource
           key: wooden_stick
           quantity: 1
+      required_table_level: 3
     craft_time_seconds: 15
     xp_reward: 12
     unlock:
@@ -126,8 +174,6 @@ crafts:
   wooden_stick:
     key: wooden_stick
     station_key: craft_table_base
-    required_grid:
-      tier: 1
     output:
       kind: resource
       key: wooden_stick
@@ -140,12 +186,11 @@ crafts:
           kind: resource
           key: branch
           quantity: 1
+      required_table_level: 1
     craft_time_seconds: 8
     xp_reward: 5
     unlock:
-    - type: card
-      key: recipe_stick
-    - type: level
+      recipe_card_key: recipe_stick
       min_level: 2
     enabled: true
 

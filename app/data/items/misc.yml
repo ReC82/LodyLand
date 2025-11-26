@@ -1,0 +1,11 @@
+  rope:
+    key: pearl_necklace
+    kind: resource
+    label: Collier de perles
+    description: Un collier fait de perles, symbole de statut.
+    icon: /static/assets/img/items/resources/pearl_necklace.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriqué en craftant des perles et de la corde.  

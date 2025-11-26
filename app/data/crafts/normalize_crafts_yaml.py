@@ -44,6 +44,15 @@ OUTPUT_FILE = DATA_ROOT / "crafts.yml"
 
 
 # ---------------------------------------------------------------------------
+# Small helpers
+# ---------------------------------------------------------------------------
+
+def to_ascii(s: str) -> str:
+    """Strip non-ASCII characters from a message (for JSON / Windows console)."""
+    return s.encode("ascii", errors="ignore").decode("ascii")
+
+
+# ---------------------------------------------------------------------------
 # Reporter
 # ---------------------------------------------------------------------------
 
@@ -80,6 +89,7 @@ class Reporter:
         self._emit(msg, "info")
 
     def warn(self, msg: str) -> None:
+        # garde les emojis pour la console, pas pour le JSON (on les filtre plus tard)
         self._emit("⚠ " + msg, "warn")
 
     def error(self, msg: str) -> None:
@@ -453,6 +463,33 @@ def load_fragment_crafts(
             rep.error(msg)
             continue
 
+        # on peut nettoyer des champs legacy ici (ex: required_grid)
+        # Normalize legacy required_grid → recipe.required_table_level
+        rg = cfg.get("required_grid")
+        if isinstance(rg, dict):
+            tier = rg.get("tier")
+            try:
+                lvl = int(tier)
+            except (TypeError, ValueError):
+                rep.warn(
+                    f"craft '{slug}' in {path}: required_grid.tier={tier!r} "
+                    f"is not a valid integer; ignoring."
+                )
+            else:
+                recipe = cfg.get("recipe")
+                if isinstance(recipe, dict):
+                    # Do not overwrite explicit required_table_level if present
+                    recipe.setdefault("required_table_level", lvl)
+                else:
+                    rep.warn(
+                        f"craft '{slug}' in {path}: has required_grid but no valid "
+                        f"recipe block; cannot apply required_table_level."
+                    )
+
+        # Remove legacy field after normalization
+        cfg.pop("required_grid", None)
+
+
         result[str(slug)] = cfg
 
     return result
@@ -550,12 +587,12 @@ def validate_craft(
         if isinstance(qty, (int, float)):
             if qty <= 0:
                 warnings.append(
-                    f"⚠ Craft '{slug}' in {source_file}: legend '{sym}' has "
+                    f"WARNING: craft '{slug}' in {source_file}: legend '{sym}' has "
                     f"non-positive quantity={qty}."
                 )
         else:
             warnings.append(
-                f"⚠ Craft '{slug}' in {source_file}: legend '{sym}' has "
+                f"WARNING: craft '{slug}' in {source_file}: legend '{sym}' has "
                 f"non-numeric quantity={qty!r}."
             )
 
@@ -563,47 +600,90 @@ def validate_craft(
         if k_kind == "resource":
             if k_key not in resource_keys:
                 warnings.append(
-                    f"⚠ Craft '{slug}' in {source_file}: legend '{sym}' "
+                    f"WARNING: craft '{slug}' in {source_file}: legend '{sym}' "
                     f"resource key '{k_key}' not found in resources."
                 )
         elif k_kind in ("item", "tool", "weapon", "misc", "consumable"):
             if k_key not in item_keys:
                 warnings.append(
-                    f"⚠ Craft '{slug}' in {source_file}: legend '{sym}' "
+                    f"WARNING: craft '{slug}' in {source_file}: legend '{sym}' "
                     f"item key '{k_key}' not found in items."
                 )
         else:
             warnings.append(
-                f"⚠ Craft '{slug}' in {source_file}: legend '{sym}' has "
+                f"WARNING: craft '{slug}' in {source_file}: legend '{sym}' has "
                 f"unknown kind '{k_kind}'."
             )
 
-    # --- Unlock: every craft must have a recipe card ---
+        # --- Unlock: every craft must have a recipe card ---
     unlock = craft.get("unlock")
     recipe_card_key = ""
+    min_level = None
 
-    # Case 1 : unlock is a dict (simple format)
+    # Case 1 : unlock is a dict (canonical format)
     if isinstance(unlock, dict):
-        recipe_card_key = (unlock.get("recipe_card_key") or "").strip()
+        # We support both "recipe_card_key" (canonical) and "card_key" (fallback)
+        recipe_card_key = (
+            unlock.get("recipe_card_key")
+            or unlock.get("card_key")
+            or ""
+        ).strip()
 
-    # Case 2 : unlock is a list (conditions list)
+        if "min_level" in unlock:
+            try:
+                min_level = int(unlock.get("min_level"))
+            except (TypeError, ValueError):
+                warnings.append(
+                    f"WARNING: craft '{slug}' in {source_file}: unlock.min_level "
+                    f"is not a valid integer ({unlock.get('min_level')!r})."
+                )
+
+        # We normalize back into a canonical dict
+        new_unlock: Dict[str, Any] = {"recipe_card_key": recipe_card_key}
+        if min_level is not None:
+            new_unlock["min_level"] = min_level
+        craft["unlock"] = new_unlock
+
+    # Case 2 : unlock is a list (conditions list -> we normalize it)
     elif isinstance(unlock, list):
         card_entry = None
+        level_entry = None
+
         for entry in unlock:
             if not isinstance(entry, dict):
                 continue
-            if entry.get("type") == "card" and entry.get("key"):
-                card_entry = entry
-                break
+            etype = (entry.get("type") or "").lower()
+            if etype == "card" and entry.get("key"):
+                if card_entry is None:
+                    card_entry = entry
+            elif etype == "level" and "min_level" in entry:
+                if level_entry is None:
+                    level_entry = entry
 
-        if card_entry:
-            recipe_card_key = (card_entry.get("key") or "").strip()
-        else:
+        if not card_entry:
             add_error(
                 "unlock is a list but contains no card condition "
                 "with 'type: card' and 'key: ...'."
             )
             return
+
+        recipe_card_key = (card_entry.get("key") or "").strip()
+
+        if level_entry is not None:
+            try:
+                min_level = int(level_entry.get("min_level"))
+            except (TypeError, ValueError):
+                warnings.append(
+                    f"WARNING: craft '{slug}' in {source_file}: unlock level condition "
+                    f"has non-integer min_level={level_entry.get('min_level')!r}."
+                )
+
+        # 🔥 Normalize to canonical dict unlock
+        new_unlock: Dict[str, Any] = {"recipe_card_key": recipe_card_key}
+        if min_level is not None:
+            new_unlock["min_level"] = min_level
+
+        craft["unlock"] = new_unlock
 
     # Case 3 : missing / invalid unlock
     else:
@@ -614,10 +694,11 @@ def validate_craft(
         add_error("'unlock.recipe_card_key' is required (from dict or card condition).")
         return
 
+
     # Check that the recipe card exists (warning only)
     if card_keys and recipe_card_key not in card_keys:
         warnings.append(
-            f"⚠ Craft '{slug}' in {source_file}: recipe_card_key '{recipe_card_key}' "
+            f"WARNING: craft '{slug}' in {source_file}: recipe_card_key '{recipe_card_key}' "
             f"not found in cards.yml."
         )
 
@@ -625,7 +706,7 @@ def validate_craft(
     ctime = craft.get("craft_time_seconds")
     if ctime is not None and not isinstance(ctime, (int, float)):
         warnings.append(
-            f"⚠ Craft '{slug}' in {source_file}: craft_time_seconds is not a number "
+            f"WARNING: craft '{slug}' in {source_file}: craft_time_seconds is not a number "
             f"({ctime!r})."
         )
 
@@ -637,7 +718,7 @@ def validate_craft(
         output_found = True
     if not output_found:
         warnings.append(
-            f"⚠ Craft '{slug}' in {source_file}: output key '{output_key}' "
+            f"WARNING: craft '{slug}' in {source_file}: output key '{output_key}' "
             f"not found in items or resources."
         )
 
@@ -793,11 +874,15 @@ def main(json_mode: bool = False) -> int:
             payload = {
                 "script": "normalize_crafts_yaml.py",
                 "ok": False,
-                "errors": [{"file": str(CRAFTS_ROOT), "craft": "<root>", "message": msg}],
+                "errors": [{
+                    "file": str(CRAFTS_ROOT),
+                    "craft": "<root>",
+                    "message": to_ascii(msg),
+                }],
                 "warnings": [],
                 "crafts_count": 0,
             }
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            print(json.dumps(payload, ensure_ascii=True, indent=2))
         return 1
 
     # Load reference sets
@@ -878,13 +963,17 @@ def main(json_mode: bool = False) -> int:
                 "script": "normalize_crafts_yaml.py",
                 "ok": False,
                 "errors": [
-                    {"file": str(p), "craft": slug, "message": msg}
+                    {
+                        "file": str(p),
+                        "craft": to_ascii(slug),
+                        "message": to_ascii(msg),
+                    }
                     for (p, slug, msg) in errors
                 ],
-                "warnings": warnings,
+                "warnings": [to_ascii(w) for w in warnings],
                 "crafts_count": len(all_crafts),
             }
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            print(json.dumps(payload, ensure_ascii=True, indent=2))
 
         return 1
 
@@ -904,10 +993,10 @@ def main(json_mode: bool = False) -> int:
                 "script": "normalize_crafts_yaml.py",
                 "ok": True,
                 "errors": [],
-                "warnings": warnings,
+                "warnings": [to_ascii(w) for w in warnings],
                 "crafts_count": 0,
             }
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            print(json.dumps(payload, ensure_ascii=True, indent=2))
 
         return 0
 
@@ -943,10 +1032,10 @@ def main(json_mode: bool = False) -> int:
             "script": "normalize_crafts_yaml.py",
             "ok": True,
             "errors": [],
-            "warnings": warnings,
+            "warnings": [to_ascii(w) for w in warnings],
             "crafts_count": len(all_crafts),
         }
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        print(json.dumps(payload, ensure_ascii=True, indent=2))
 
     return 0
 
@@ -965,7 +1054,7 @@ if __name__ == "__main__":
                     {
                         "file": "<internal>",
                         "craft": "<internal>",
-                        "message": f"UNEXPECTED ERROR: {e}",
+                        "message": to_ascii(f"UNEXPECTED ERROR: {e}"),
                     }
                 ],
                 "warnings": [],

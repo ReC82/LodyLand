@@ -112,7 +112,7 @@ items:
     kind: resource
     label: Bâton en bois
     description: Un bâton solide, utile pour fabriquer des outils simples.
-    icon: /static/assets/img/items/resources/stick.png
+    icon: /static/assets/img/items/resources/wooden_stick.png
     unlock_min_level: 1
     base_cooldown: 10
     base_sell_price: 2
@@ -189,4 +189,17 @@ items:
     base_cooldown: 10
     base_sell_price: 2
     enabled: true
-    unlock_description: Trouvé en fouillant la terre.        
+    unlock_description: Trouvé en fouillant la terre.       
+
+
+  rope:
+    key: rope
+    kind: resource
+    label: Corde
+    description: Une corde solide, utile pour attacher des objets.
+    icon: /static/assets/img/items/resources/rope.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant des lianes.     
