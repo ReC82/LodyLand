@@ -118,6 +118,7 @@ function initCraftUI() {
 }
 
 // Auto-init even if script is loaded at end of <body>
+/*
 (function () {
   try {
     if (document.readyState === "loading") {
@@ -128,7 +129,7 @@ function initCraftUI() {
   } catch (e) {
     console.error("[craft] initCraftUI error:", e);
   }
-})();
+})();*/
 
 
 // ============================================================================
@@ -545,25 +546,20 @@ function flashSlotError(idx) {
 function updateCraftPanelsVisibility() {
   const ingredientsPanel = $("craft-ingredients-panel");
   const recipesPanel     = $("craft-recipes-panel");
-
-  console.log(
-    "[craft] updatePanels showRecipes =",
-    craftState.showRecipes,
-    "ingredientsPanel=",
-    !!ingredientsPanel,
-    "recipesPanel=",
-    !!recipesPanel
-  );
-
+    console.log("Updating craft panels visibility...");
   if (!ingredientsPanel || !recipesPanel) return;
+    console.log("ingredientsPanels =", ingredientsPanel, "recipesPanel =", recipesPanel);
+
+  console.log("craftState.showRecipes =", craftState.showRecipes);
 
   if (craftState.showRecipes) {
-    // On force avec !important au cas où un CSS chelou traîne
-    ingredientsPanel.style.setProperty("display", "none", "important");
-    recipesPanel.style.setProperty("display", "block", "important");
+    console.log("Showing recipes panel, hiding ingredients panel.");
+    ingredientsPanel.style.display = "none";
+    recipesPanel.style.display     = "block";
   } else {
-    ingredientsPanel.style.setProperty("display", "block", "important");
-    recipesPanel.style.setProperty("display", "none", "important");
+    console.log("Showing ingredients panel, hiding recipes panel.");
+    ingredientsPanel.style.display = "block";
+    recipesPanel.style.display     = "none";
   }
 }
 

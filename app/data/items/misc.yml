@@ -3,7 +3,7 @@
     kind: resource
     label: Collier de perles
     description: Un collier fait de perles, symbole de statut.
-    icon: /static/assets/img/items/resources/pearl_necklace.png
+    icon: /static/assets/img/items/misc/pearl_necklace.png
     unlock_min_level: 1
     base_cooldown: 10
     base_sell_price: 2
