@@ -5,6 +5,8 @@
   - Uses http() and $() helpers from common.js / game_app.js.
 */
 
+/* global http, $ */
+
 // ============================================================================
 // Global craft state
 // ============================================================================
@@ -26,7 +28,6 @@ let craftState = {
 // ============================================================================
 // Helpers: grid size & rebuild
 // ============================================================================
-
 function getCraftGridSlotCount() {
   const level = craftState.tableLevel || 0;
   if (level <= 0) return 0;
@@ -65,7 +66,6 @@ function rebuildCraftGrid() {
 // ============================================================================
 // Init
 // ============================================================================
-
 function initCraftUI() {
   const modalEl          = $("craft-modal");
   const openBtn          = $("craft-open-btn");
@@ -134,7 +134,6 @@ function initCraftUI() {
 // ============================================================================
 // Open / Close modal
 // ============================================================================
-
 function openCraftModal() {
   const modalEl = $("craft-modal");
   if (!modalEl) return;
@@ -165,7 +164,6 @@ function closeCraftModal() {
 // ============================================================================
 // Load state + recipes
 // ============================================================================
-
 async function refreshCraftData() {
   // 1) Load player state
   const stateRes = await http("GET", "/api/state");
@@ -229,7 +227,6 @@ async function refreshCraftData() {
 // ============================================================================
 // Render ingredients panel
 // ============================================================================
-
 function renderCraftIngredients(inventory) {
   const listEl = $("craft-ingredients-list");
   if (!listEl) return;
@@ -311,7 +308,6 @@ function renderCraftIngredients(inventory) {
 // ============================================================================
 // Render recipes list
 // ============================================================================
-
 function renderCraftRecipes(recipes) {
   const listEl = $("craft-recipes-list");
   if (!listEl) return;
@@ -406,7 +402,6 @@ function renderCraftRecipes(recipes) {
 // ============================================================================
 // Decode recipe → expectedSlots (supports 1x3 / 2x3 / 3x3)
 // ============================================================================
-
 function decodeRecipeIntoSlots(r) {
   const cols = 3;
 
@@ -458,7 +453,6 @@ function decodeRecipeIntoSlots(r) {
 // ============================================================================
 // Render craft slots
 // ============================================================================
-
 function renderCraftSlots() {
   const slots = document.querySelectorAll(".craft-slot");
 
@@ -514,7 +508,6 @@ function renderCraftSlots() {
 // ============================================================================
 // Drag & Drop handlers
 // ============================================================================
-
 function onSlotDropped(e, slotIndex) {
   e.preventDefault();
   const key = e.dataTransfer.getData("text/plain");
@@ -546,9 +539,8 @@ function flashSlotError(idx) {
 
 
 // ============================================================================
-// Panels visibility (ingredients / recipes)
+// Panels visibility (ingredients / recipes) — *VERSION SIMPLE*
 // ============================================================================
-
 function updateCraftPanelsVisibility() {
   const ingredientsPanel = $("craft-ingredients-panel");
   const recipesPanel     = $("craft-recipes-panel");
@@ -564,23 +556,21 @@ function updateCraftPanelsVisibility() {
 
   if (!ingredientsPanel || !recipesPanel) return;
 
+  // On revient au comportement qui marchait avant :
+  // => uniquement style.display, aucune classe .hidden requise.
   if (craftState.showRecipes) {
-    // Show recipes, hide ingredients
     ingredientsPanel.style.display = "none";
     recipesPanel.style.display     = "block";
   } else {
-    // Show ingredients, hide recipes
     ingredientsPanel.style.display = "block";
     recipesPanel.style.display     = "none";
   }
 }
 
 
-
 // ============================================================================
 // Selection UI + enable/disable craft button
 // ============================================================================
-
 function updateCraftSelectionUI() {
   const performBtn = $("craft-perform-btn");
   const errEl      = $("craft-error");
@@ -646,7 +636,6 @@ function updateCraftSelectionUI() {
 // ============================================================================
 // Perform craft
 // ============================================================================
-
 async function onCraftPerformClicked() {
   if (!craftState.selectedRecipe) return;
 
