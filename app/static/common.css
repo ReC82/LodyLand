@@ -102,3 +102,24 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* --- Beta Warning Banner --- */
+.beta-banner {
+  width: 100%;
+  background: #f8c146; /* orange doux */
+  color: #3a2a00;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 2px solid #d9a32d;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+/* Décale le contenu pour éviter qu’il soit caché sous le bandeau */
+.home-wrapper {
+  margin-top: 60px; /* ajuste si nécessaire */
+}
