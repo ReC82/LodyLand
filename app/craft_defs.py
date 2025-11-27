@@ -44,6 +44,9 @@ def load_craft_defs() -> None:
     ITEM_DEFS = _load_item_defs(data_root)
     STATION_DEFS = _load_station_defs(data_root)
     CRAFT_DEFS = _load_craft_item_defs(data_root, ITEM_DEFS)
+    
+    print("[DEBUG ITEM_DEFS wooden_stick] =", ITEM_DEFS.get("wooden_stick"))
+    print("[DEBUG ITEM_DEFS rope]        =", ITEM_DEFS.get("rope"))
 
     print(f"[craft_defs] Loaded {len(ITEM_DEFS)} items, {len(CRAFT_DEFS)} craftable items.")
 

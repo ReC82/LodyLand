@@ -29,6 +29,13 @@
     </button>
     <button
       class="inv-tab"
+      id="invTabItems"
+      data-tab="items"
+    >
+      Items
+    </button>
+    <button
+      class="inv-tab"
       id="invTabCards"
       data-tab="cards"
     >
@@ -67,6 +74,27 @@
       </div>
       <div id="invResourcesEmpty" class="inv-empty d-none">
         Tu n'as pas encore de ressources.
+      </div>
+    </section>
+    <section id="invPanelItems" class="inv-panel">
+      <div class="inv-toolbar">
+        <label class="inv-filter-label">
+          Rechercher :
+          <input
+            id="invItemFilter"
+            type="text"
+            class="inv-filter-input"
+            placeholder="Nom ou clé…"
+          />
+        </label>
+      </div>
+
+      <div id="invItemsList" class="inv-grid">
+        <!-- rempli en JS -->
+      </div>
+
+      <div id="invItemsEmpty" class="inv-empty d-none">
+        Tu n'as pas encore d'items.
       </div>
     </section>
 

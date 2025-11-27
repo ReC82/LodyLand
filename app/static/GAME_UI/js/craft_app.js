@@ -448,6 +448,7 @@ function decodeRecipeIntoSlots(r) {
       }
     }
   }
+  console.log("[craft] expectedSlots =", craftState.expectedSlots);
 }
 
 
@@ -516,6 +517,7 @@ function onSlotDropped(e, slotIndex) {
 
   const expected = craftState.expectedSlots[slotIndex];
   if (!expected) return;
+  console.log("[craft] dropping", key, "into slot", slotIndex, "expected =", expected);
 
   if (expected.key !== key) {
     flashSlotError(slotIndex);
@@ -523,6 +525,7 @@ function onSlotDropped(e, slotIndex) {
   }
 
   craftState.filledSlots[slotIndex] = { key: key };
+
   renderCraftSlots();
   updateCraftSelectionUI();
 }
@@ -619,11 +622,15 @@ function updateCraftSelectionUI() {
   }
 
   // All expected slots must be filled with the correct key
+    console.log("[craft] updateUI selected=", !!craftState.selectedRecipe,
+            "expected=", craftState.expectedSlots,
+            "filled=", craftState.filledSlots);
   const allGood = craftState.expectedSlots.every((exp, i) => {
     if (!exp) return true;
     const filled = craftState.filledSlots[i];
     return filled && filled.key === exp.key;
   });
+
 
   performBtn.disabled = !allGood;
 }
@@ -666,6 +673,13 @@ async function onCraftPerformClicked() {
     craft_location: "craft_table",
     times: times,
   });
+  
+    console.log("[craft] perform =>", {
+      item_key: itemKey,
+      times,
+      filledSlots: craftState.filledSlots,
+      expectedSlots: craftState.expectedSlots
+    });
 
   performBtn.disabled = false;
 

@@ -15,7 +15,8 @@ from app.models import (
     PlayerQuest
 )
 from app.progression import next_threshold
-from app.craft_defs import CRAFT_DEFS
+from app.craft_defs import CRAFT_DEFS, ITEM_DEFS
+import app.craft_defs as craft_defs
 import datetime as dt
 
 from app.quests.service import assign_daily_quest_if_needed, serialize_quest
@@ -398,7 +399,13 @@ def get_state():
             if it.quantity <= 0:
                 continue  # on n'envoie pas les stacks vides
 
-            cfg = CRAFT_DEFS.get(it.item_key, {})  # peut être vide si supprimé du YAML
+            meta = craft_defs.ITEM_DEFS.get(it.item_key, {}) or {}
+            craft_cfg = craft_defs.CRAFT_DEFS.get(it.item_key, {}) or {}
+
+            cfg = {**meta, **craft_cfg}
+
+            print("[DEBUG ITEM META] key =", it.item_key, "meta =", meta)
+            print("[DEBUG ITEM CFG ] key =", it.item_key, "cfg  =", cfg)
 
             items_payload.append({
                 "item_key": it.item_key,
@@ -421,6 +428,7 @@ def get_state():
         # ------------------------------
         # Return final state
         # ------------------------------
+        print("DEBUG ITEM:", items_payload)
         return jsonify({
             "player": {
                 "id": me.id,

@@ -80,7 +80,7 @@ resources:
     label: Corde
     base_cooldown: 10.0
     base_sell_price: 2
-    unlock_min_level: 1
+    unlock_min_level: 4
     enabled: true
     icon: /static/assets/img/items/resources/rope.png
     description: Une corde solide, utile pour attacher des objets.

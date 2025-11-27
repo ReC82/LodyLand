@@ -1,0 +1,33 @@
+  rope:
+    key: rope
+    station_key: craft_table_medium
+
+    required_grid:
+      tier: 2        # 2x3 (milieu du jeu)
+
+    output:
+      kind: resource
+      key: rope
+      quantity: 1
+
+    recipe:
+      pattern:
+        - "VVV"
+        - "VVV"
+      legend:
+        V:
+          kind: resource
+          key: vine
+          quantity: 1
+
+    craft_time_seconds: 8
+    xp_reward: 5
+
+    unlock:
+    - type: card
+      key: recipe_rope
+
+    - type: level
+      min_level: 4
+
+    enabled: true    

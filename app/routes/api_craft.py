@@ -500,12 +500,18 @@ def perform_craft():
     if not item_cfg:
         return jsonify({"error": "unknown_item_key", "item_key": item_key}), 400
 
-    recipe = item_cfg.get("recipe")
+    recipe = item_cfg.get("recipe") or {}
     if not recipe:
         return jsonify({"error": "item_not_craftable", "item_key": item_key}), 400
 
     recipe_location = (recipe.get("craft_location") or "craft_table").strip()
-    if recipe_location != craft_location:
+
+    # IMPORTANT :
+    # - "craft_table" (côté UI) = alias générique pour toutes les tables de craft
+    #   (craft_table_base, craft_table_medium, craft_table_advanced, craft_table).
+    # - On ne bloque donc PAS si craft_location == "craft_table".
+    # - On ne bloque que si l'appel spécifie un lieu *plus précis* qui ne correspond pas.
+    if craft_location != "craft_table" and recipe_location != craft_location:
         return jsonify(
             {
                 "error": "invalid_craft_location",
