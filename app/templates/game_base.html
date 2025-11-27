@@ -38,7 +38,12 @@
           Version bêta – données de test
         </div>        
 </div>
-
+<button
+  id="hud-level-zone"
+  type="button"
+  class="gh-level-zone"
+  title="Voir la progression des niveaux"
+>
       <div class="gh-center">
         <div class="gh-xp-label">
           Niveau <span id="hud-level">0</span>
@@ -51,7 +56,7 @@
           <span id="hud-xp-next">100</span> XP
         </div>
       </div>
-
+</button>
       <div class="gh-right">
        
         <div class="gh-currency gh-coins">
@@ -177,6 +182,29 @@
       </div>
     </div>
 
+    <!-- Levels overview modal -->
+    <div id="levelsModal" class="ll-modal">
+      <div id="levelsModalBackdrop" class="ll-modal-backdrop"></div>
+      <div class="ll-modal-dialog ll-modal-dialog-wide">
+        <header class="ll-modal-header">
+          <h2 class="ll-modal-title">Progression des niveaux</h2>
+          <button id="levelsModalClose" class="ll-modal-close-btn" type="button">
+            ✕
+          </button>
+        </header>
+
+        <div class="ll-modal-body">
+          <p class="small text-muted mb-2">
+            Consulte chaque niveau et ses récompenses. Le niveau actuel est surligné.
+          </p>
+          <div id="levelsModalBody" class="levels-modal-body">
+            <!-- rempli par game_app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+
 <!-- Quests Panel -->
 <div id="quests-panel" class="quests-panel hidden">
   <div class="quests-panel-header">
@@ -288,6 +316,15 @@
           alt="Craft"
         />
       </button>
+    </div>
+
+    <!-- Image viewer (lightbox) -->
+    <div id="imgViewer" class="img-viewer">
+      <div class="img-viewer-backdrop" id="imgViewerBackdrop"></div>
+      <div class="img-viewer-box">
+        <button id="imgViewerClose" class="img-viewer-close">✕</button>
+        <img id="imgViewerImg" src="" alt="Aperçu" class="img-viewer-img" />
+      </div>
     </div>
     
     <!-- JS commun -->

@@ -37,19 +37,26 @@ function formatRewardLabel(r) {
 }
 
 function getRewardIconPath(r) {
-  // Choose an icon path based on reward type and key
-  if (r.type === "resource") {
-    // ex: /static/GAME_UI/img/resources/branch.png
+  // 1) Si le backend fournit déjà un chemin d'icône, on le respecte
+  if (r.icon) {
+    if (typeof r.icon === "string" && r.icon.startsWith("/")) {
+      return r.icon;
+    }
+    // Si ce n'est pas absolu, on le passe tel quel (ou tu peux prefixer si besoin)
+    return r.icon;
+  }
+
+  // 2) Fallbacks basés sur le type et la key
+  if (r.type === "resource" && r.key) {
     return `/static/assets/img/resources/${r.key}.png`;
   }
 
-  if (r.type === "card") {
-    // ex: /static/GAME_UI/img/cards/land_beach.png
+  if (r.type === "card" && r.key) {
     return `/static/assets/img/cards/${r.key}.png`;
   }
 
   if (r.type === "coins") {
-    return `/static/assets/img/ui/coins.png`; 
+    return `/static/assets/img/ui/coins.png`;
   }
 
   if (r.type === "diams") {
@@ -58,6 +65,32 @@ function getRewardIconPath(r) {
 
   return null;
 }
+
+// =====================================================
+// Image viewer (lightbox)
+// =====================================================
+
+function initImageViewer() {
+  const modal = document.getElementById("imgViewer");
+  const closeBtn = document.getElementById("imgViewerClose");
+  const backdrop = document.getElementById("imgViewerBackdrop");
+  const imgTag = document.getElementById("imgViewerImg");
+
+  function close() {
+    modal.classList.remove("is-open");
+    imgTag.src = "";
+  }
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", close);
+
+  // On ajoute une méthode globale pour ouvrir l'image
+  window.showImageViewer = function (src) {
+    imgTag.src = src;
+    modal.classList.add("is-open");
+  };
+}
+
 
 function showLevelUpModal(level, rewards) {
   const modal = document.getElementById("levelUpModal");
@@ -939,6 +972,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupDailyModal();
   refreshDailyStatus();
   initQuestsUI();
+  initLevelsUI();
+  initImageViewer(); 
   if (typeof initCraftUI === "function") {
     initCraftUI();
   }
@@ -956,3 +991,215 @@ document.addEventListener("DOMContentLoaded", async () => {
     // On attend que l'utilisateur clique sur "Commencer"
   }
 });
+
+// ---------------------------------------------------------------------------
+// Levels overview UI (all levels + rewards)
+// ---------------------------------------------------------------------------
+
+function initLevelsUI() {
+  const trigger = $("hud-level-zone");
+  const modal = $("levelsModal");
+  const closeBtn = $("levelsModalClose");
+  const backdrop = $("levelsModalBackdrop");
+
+  if (trigger) {
+    trigger.addEventListener("click", openLevelsModal);
+  }
+
+  const close = () => {
+    if (modal) modal.classList.remove("is-open");
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (backdrop) backdrop.addEventListener("click", close);
+}
+
+async function openLevelsModal() {
+  const modal = $("levelsModal");
+  const body = $("levelsModalBody");
+  if (!modal || !body) return;
+
+  body.innerHTML = `<div class="text-muted small">Chargement des niveaux...</div>`;
+
+  const r = await http("GET", "/api/levels");
+  if (!r.ok) {
+    console.error("levels error", r);
+    body.innerHTML = `<div class="text-danger small">Erreur chargement (${r.status})</div>`;
+    modal.classList.add("is-open");
+    return;
+  }
+
+  const levels = r.data || [];
+  renderLevelsList(levels);
+  modal.classList.add("is-open");
+}
+
+function computeLevelRowProgress(levelDef) {
+  if (!currentPlayer) return 0;
+
+  const curLevel = Number(currentPlayer.level ?? 0);
+  const curXp = Number(currentPlayer.xp ?? 0);
+  const L = Number(levelDef.level ?? 0);
+
+  // Player below this level => 0%
+  if (curLevel < L) return 0;
+
+  // Player above this level => 100%
+  if (curLevel > L) return 100;
+
+  // Player is exactly on this level => use xp_min/xp_max range
+  const min = Number(levelDef.xp_min ?? 0);
+  const max = Number(levelDef.xp_max ?? (min + 1));
+  const span = Math.max(1, max - min);
+  const pos = Math.max(0, Math.min(span, curXp - min));
+  return Math.round((pos / span) * 100);
+}
+
+function renderLevelsList(levels) {
+  const container = $("levelsModalBody");
+  if (!container) return;
+
+  if (!levels.length) {
+    container.innerHTML = `<div class="text-muted small">Aucun niveau défini.</div>`;
+    return;
+  }
+
+  container.innerHTML = levels
+    .map((lvl) => {
+      const pct = computeLevelRowProgress(lvl);
+      const isCurrent =
+        currentPlayer &&
+        Number(currentPlayer.level ?? 0) === Number(lvl.level);
+
+      const rewards = Array.isArray(lvl.rewards) ? lvl.rewards : [];
+
+      // Vue compacte (pills)
+      const rewardsCompactHtml = rewards.length
+        ? rewards
+            .map((r) => {
+              const icon = getRewardIconPath(r);
+              const label = formatRewardLabel(r);
+              return `
+                <div class="level-reward-pill">
+                  ${icon ? `<img src="${icon}" alt="">` : ""}
+                  <span>${label}</span>
+                </div>
+              `;
+            })
+            .join("")
+        : `<span class="text-muted">Aucune récompense</span>`;
+
+      const xpMin = lvl.xp_min ?? 0;
+      const xpMax = lvl.x_max ?? lvl.xp_max ?? null; // compat petit bug possible
+      const xpRequired = lvl.xp_required ?? xpMin;
+
+      const xpRangeText = xpMax
+        ? `XP ${xpMin} → ${xpMax}`
+        : `XP ≥ ${xpMin}`;
+
+      // Détails : on met en avant les rewards de type "card"
+      const cardRewards = rewards.filter((r) => r.type === "card");
+      const otherRewards = rewards.filter((r) => r.type !== "card");
+
+const cardsDetailsHtml = cardRewards.length
+  ? cardRewards
+      .map((r) => {
+        const icon = getRewardIconPath(r);
+        const label = formatRewardLabel(r);
+        return `
+          <div class="level-card-detail">
+            ${
+              icon
+                ? `<img src="${icon}"
+                         alt="${r.label || r.key || "Carte"}"
+                         class="clickable-img"
+                         onclick="showImageViewer('${icon}')">`
+                : ""
+            }
+            <div>
+              <div class="level-card-text-main">${label}</div>
+              <div class="level-card-text-sub">
+                Carte débloquée à ce niveau.
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join("")
+  : `<div class="text-muted small">Pas de carte spécifique à ce niveau.</div>`;
+
+
+      const otherRewardsHtml = otherRewards.length
+        ? otherRewards
+            .map((r) => `<li>${formatRewardLabel(r)}</li>`)
+            .join("")
+        : `<li class="text-muted">Aucune autre récompense.</li>`;
+
+        return `
+          <div class="level-row ${isCurrent ? "current" : ""}" data-level="${lvl.level}">
+            <div class="level-row-main">
+              <div class="d-flex align-items-center justify-content-center">
+                <div class="level-badge">${lvl.level}</div>
+              </div>
+
+              <div>
+                <div class="level-xp-range">
+                  ${xpRangeText}
+                  ${isCurrent ? `<span class="text-info ms-1">(niveau actuel)</span>` : ""}
+                </div>
+                <div class="level-progress-bar">
+                  <div class="level-progress-fill" style="width: ${pct}%;"></div>
+                </div>
+              </div>
+
+              <div class="level-rewards">
+                ${rewardsCompactHtml}
+              </div>
+
+              <div class="level-chevron">
+                <span class="level-chevron-icon">▼</span>
+              </div>
+            </div>
+
+            <!-- 🔽 Partie accordéon avec détails -->
+            <div class="level-details">
+              <div class="level-details-inner">
+                <div>
+                  <div class="level-details-block-title">Cartes débloquées</div>
+                  ${cardsDetailsHtml}
+                </div>
+                <div>
+                  <div class="level-details-block-title">Autres récompenses</div>
+                  <ul class="mb-0">
+                    ${otherRewardsHtml}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+
+    })
+    .join("");
+
+  setupLevelsAccordion();
+}
+
+function setupLevelsAccordion() {
+  const rows = document.querySelectorAll(".level-row");
+  if (!rows.length) return;
+
+  rows.forEach((row) => {
+    row.addEventListener("click", () => {
+      const alreadyExpanded = row.classList.contains("expanded");
+
+      // Si tu veux un vrai accordéon (une seule ouverte à la fois)
+      rows.forEach((r) => r.classList.remove("expanded"));
+
+      if (!alreadyExpanded) {
+        row.classList.add("expanded");
+      }
+    });
+  });
+}

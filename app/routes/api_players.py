@@ -14,7 +14,7 @@ from app.models import (
     PlayerItem, 
     PlayerQuest
 )
-from app.progression import next_threshold
+from app.progression import next_threshold, LEVELS, MAX_LEVEL, xp_required_for
 from app.craft_defs import CRAFT_DEFS, ITEM_DEFS
 import app.craft_defs as craft_defs
 import datetime as dt
@@ -465,3 +465,115 @@ def _get_current_player(session):
     except ValueError:
         return None
     return session.get(Player, pid)           
+
+from app.progression import LEVELS, xp_required_for
+from app.models import ResourceDef, CardDef
+
+@bp.get("/levels")
+def get_levels_definitions():
+    with SessionLocal() as s:
+        resource_defs = {
+            r.key: r
+            for r in s.query(ResourceDef).filter_by(enabled=True).all()
+        }
+        card_defs = {
+            c.key: c
+            for c in s.query(CardDef).filter_by(enabled=True).all()
+        }
+
+        level_numbers = sorted(LEVELS.keys()) if LEVELS else []
+        payload = []
+
+        # Optionnel : niveau 0 synthétique
+        if level_numbers:
+            first_level = level_numbers[0]
+            first_thr = xp_required_for(first_level)
+            payload.append(
+                {
+                    "level": 0,
+                    "xp_required": 0,
+                    "xp_min": 0,
+                    "xp_max": first_thr,
+                    "rewards": [],
+                }
+            )
+
+        for idx, lvl in enumerate(level_numbers):
+            thr = xp_required_for(lvl)
+            if idx + 1 < len(level_numbers):
+                next_lvl = level_numbers[idx + 1]
+                xp_max = xp_required_for(next_lvl)
+            else:
+                xp_max = None
+
+            cfg = LEVELS[lvl]
+            rewards_cfg = cfg.get("rewards", []) or []
+
+            normalized_rewards = []
+            for r in rewards_cfg:
+                r_type = r.get("type")
+
+                if r_type == "coins":
+                    amount = int(r.get("amount", 0))
+                    normalized_rewards.append(
+                        {
+                            "type": "coins",
+                            "amount": amount,
+                            "label": "Coins",
+                            "icon": "/static/GAME_UI/img/ui/coins.png",
+                        }
+                    )
+
+                elif r_type == "diams":
+                    amount = int(r.get("amount", 0))
+                    normalized_rewards.append(
+                        {
+                            "type": "diams",
+                            "amount": amount,
+                            "label": "Diams",
+                            "icon": "/static/GAME_UI/img/ui/diams.png",
+                        }
+                    )
+
+                elif r_type == "resource":
+                    resource_key = r.get("resource_key") or ""
+                    amount = float(r.get("amount", 0))
+                    rd = resource_defs.get(resource_key)
+                    normalized_rewards.append(
+                        {
+                            "type": "resource",
+                            "key": resource_key,
+                            "amount": amount,
+                            "label": rd.label if rd else resource_key,
+                            "icon": rd.icon if rd else None,
+                        }
+                    )
+
+                elif r_type == "card":
+                    card_key = r.get("card_key") or ""
+                    amount = int(r.get("amount", 1))
+                    cd = card_defs.get(card_key)
+                    label = getattr(cd, "card_label", None) if cd else None
+                    icon = getattr(cd, "card_image", None) if cd else None
+                    normalized_rewards.append(
+                        {
+                            "type": "card",
+                            "key": card_key,
+                            "amount": amount,
+                            "label": label or card_key,
+                            "icon": icon,
+                        }
+                    )
+
+            payload.append(
+                {
+                    "level": lvl,
+                    "xp_required": thr,
+                    "xp_min": thr,
+                    "xp_max": xp_max,
+                    "rewards": normalized_rewards,
+                }
+            )
+
+    return jsonify(payload)
+
