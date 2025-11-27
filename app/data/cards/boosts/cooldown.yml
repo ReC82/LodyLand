@@ -12,7 +12,7 @@
   - branch
   card_label: Booster cooldown Branches I
   card_description: -20% sur le cooldown des branches.
-  card_image: /static/assets/img/cards/boost_cooldown_global_10pc_rare_1
+  card_image: /static/assets/img/cards/boosts/card_branch_cooldown_boost_1.png
   card_rarity: common
   card_gameplay:
     cooldown_boost:

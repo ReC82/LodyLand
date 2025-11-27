@@ -5,7 +5,7 @@ items:
     kind: weapon
     label: Wooden Sword
     description: Une épée en bois, utile pour combattre les ennemis.
-    icon: /static/assets/img/weapons/wooden_sword.png
+    icon: /static/assets/img/items/weapons/wooden_sword.png
     unlock_min_level: 1
     base_cooldown: 10
     base_sell_price: 2

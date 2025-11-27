@@ -1,40 +1,3 @@
-tool_wooden_axe:
-  key: tool_wooden_axe
-  station_key: craft_table_base
-
-  required_grid:
-    tier: 1        # 1x3 (début du jeu)
-
-  output:
-    kind: tool
-    key: tool_wooden_axe
-    quantity: 1
-
-  recipe:
-    pattern:
-      - "BBS"
-    legend:
-      B:
-        kind: resource
-        key: branch
-        quantity: 1
-      S:
-        kind: resource
-        key: wooden_stick
-        quantity: 1
-
-  craft_time_seconds: 8
-  xp_reward: 5
-
-  unlock:
-  - type: card
-    key: recipe_tool_wooden_axe
-
-  - type: level
-    min_level: 2
-
-  enabled: true
-
 # Hache en bois – 1x3
 tool_rod_basic:
   key: tool_rod_basic
@@ -72,3 +35,40 @@ tool_rod_basic:
     min_level: 2
 
   enabled: true    
+
+tool_rod_basic_with_worm:
+  key: tool_rod_basic_with_worm
+  station_key: craft_table_base
+
+  required_grid:
+    tier: 1        # 1x3 (début du jeu)
+
+  output:
+    kind: tool
+    key: tool_rod_basic_with_worm
+    quantity: 1
+
+  recipe:
+    pattern:
+      - "RW."
+    legend:
+      R:
+        kind: tool
+        key: tool_rod_basic
+        quantity: 1
+      W:
+        kind: resource
+        key: worm
+        quantity: 1
+
+  craft_time_seconds: 8
+  xp_reward: 5
+
+  unlock:
+  - type: card
+    key: recipe_tool_basic_rod
+
+  - type: level
+    min_level: 2
+
+  enabled: true     

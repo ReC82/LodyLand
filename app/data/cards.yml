@@ -358,7 +358,7 @@ cards:
   - branch
   card_label: Booster Branches I
   card_description: +0.2 de branches récoltées.
-  card_image: /static/assets/img/cards/branch_boost_1.png
+  card_image: /static/assets/img/cards/boosts/branch_boost_1.png
   card_rarity: common
   card_gameplay:
     target_resource: branch
@@ -438,7 +438,7 @@ cards:
   - branch
   card_label: Booster cooldown Branches I
   card_description: -20% sur le cooldown des branches.
-  card_image: /static/assets/img/cards/boost_cooldown_global_10pc_rare_1
+  card_image: /static/assets/img/cards/boosts/card_branch_cooldown_boost_1.png
   card_rarity: common
   card_gameplay:
     cooldown_boost:
@@ -673,6 +673,66 @@ cards:
   card_label: Recipe Craft Iron Ingot
   card_description: Recipe to craft an Iron Ingot.
   card_image: /static/assets/img/cards/recipes/card_recipe_iron_ingot.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 10
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_pearl_necklace
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - pearl_necklace
+  card_label: Recipe Craft Pearl Necklace
+  card_description: Recipe to craft a Pearl Necklace.
+  card_image: /static/assets/img/cards/recipes/card_recipe_pearl_necklace.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: pearl_necklace
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_rope
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - rope
+  card_label: Recipe Craft Rope
+  card_description: Recipe to craft a Rope.
+  card_image: /static/assets/img/cards/recipes/card_recipe_rope.png
   card_rarity: basic
   card_gameplay:
     target_resource: null

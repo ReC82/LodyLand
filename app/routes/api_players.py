@@ -15,7 +15,8 @@ from app.models import (
     PlayerQuest
 )
 from app.progression import next_threshold
-from app.craft_defs import CRAFT_DEFS
+from app.craft_defs import CRAFT_DEFS, ITEM_DEFS
+import app.craft_defs as craft_defs
 import datetime as dt
 
 from app.quests.service import assign_daily_quest_if_needed, serialize_quest
@@ -46,11 +47,18 @@ def _compute_craft_table_level(session, player: Player) -> int:
     """
     Compute the craft table level for a player based on owned cards.
 
-    Version simple:
-    - level 1 par défaut (table de craft de base)
-    - +1 pour chaque upgrade (on pourra affiner plus tard)
+    Cartes attendues :
+      - access_craft_table_basic
+      - access_craft_table_medium
+      - access_craft_table_advanced
+
+    Niveaux :
+      0 = aucune table
+      1 = basic    (1x3)
+      2 = medium   (2x3)
+      3 = advanced (3x3)
     """
-    level = 1  # on donne la table de craft de base à tout le monde
+    level = 0  # par défaut, aucune table
 
     def has_card(card_key: str) -> bool:
         return (
@@ -60,18 +68,24 @@ def _compute_craft_table_level(session, player: Player) -> int:
             > 0
         )
 
-    # Base craft (si un jour tu veux démarrer à 0 et exiger craft_base, tu ajusteras)
-    if has_card("craft_base"):
+    has_basic    = has_card("access_craft_table_basic")
+    has_medium   = has_card("access_craft_table_medium")
+    has_advanced = has_card("access_craft_table_advanced")
+
+    # Au moins une carte => niveau 1 minimum
+    if has_basic or has_medium or has_advanced:
         level = max(level, 1)
 
-    # Upgrades
-    if has_card("craft_upgrade_1"):
+    # Medium ou advanced => niveau 2 minimum
+    if has_medium or has_advanced:
         level = max(level, 2)
 
-    if has_card("craft_upgrade_2"):
+    # Advanced => niveau 3
+    if has_advanced:
         level = max(level, 3)
 
     return level
+
     
     
 def _ensure_starting_land_card(session, player: Player) -> None:
@@ -385,7 +399,13 @@ def get_state():
             if it.quantity <= 0:
                 continue  # on n'envoie pas les stacks vides
 
-            cfg = CRAFT_DEFS.get(it.item_key, {})  # peut être vide si supprimé du YAML
+            meta = craft_defs.ITEM_DEFS.get(it.item_key, {}) or {}
+            craft_cfg = craft_defs.CRAFT_DEFS.get(it.item_key, {}) or {}
+
+            cfg = {**meta, **craft_cfg}
+
+            print("[DEBUG ITEM META] key =", it.item_key, "meta =", meta)
+            print("[DEBUG ITEM CFG ] key =", it.item_key, "cfg  =", cfg)
 
             items_payload.append({
                 "item_key": it.item_key,
@@ -408,6 +428,7 @@ def get_state():
         # ------------------------------
         # Return final state
         # ------------------------------
+        print("DEBUG ITEM:", items_payload)
         return jsonify({
             "player": {
                 "id": me.id,

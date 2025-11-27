@@ -51,23 +51,37 @@ def _compute_craft_table_level(session, player: Player) -> int:
     """
     Compute the craft table level for a player based on owned cards.
 
-    For now we keep:
-      - craft_base
-      - craft_upgrade_1
-      - craft_upgrade_2
-    """
-    level = 1
+    Cards:
+      - access_craft_table_basic
+      - access_craft_table_medium
+      - access_craft_table_advanced
 
-    if _player_has_card(session, player.id, "craft_base"):
+    Levels:
+      0 = aucune table
+      1 = basic   -> 1x3
+      2 = medium  -> 2x3
+      3 = advanced-> 3x3
+    """
+    level = 0
+
+    has_basic = _player_has_card(session, player.id, "access_craft_table_basic")
+    has_medium = _player_has_card(session, player.id, "access_craft_table_medium")
+    has_advanced = _player_has_card(session, player.id, "access_craft_table_advanced")
+
+    # Si le joueur a n'importe quelle carte, au moins niveau 1
+    if has_basic or has_medium or has_advanced:
         level = max(level, 1)
 
-    if _player_has_card(session, player.id, "craft_upgrade_1"):
+    # Medium ou advanced -> au moins niveau 2
+    if has_medium or has_advanced:
         level = max(level, 2)
 
-    if _player_has_card(session, player.id, "craft_upgrade_2"):
+    # Advanced -> niveau 3
+    if has_advanced:
         level = max(level, 3)
 
     return level
+
 
 
 def _is_item_unlocked_for_player(
@@ -79,38 +93,62 @@ def _is_item_unlocked_for_player(
     """
     Return True if this craft is currently unlocked for the given player.
 
-    - Check required_table_level (lié au tier de la grille)
-    - Then check unlock_condition (card, level, etc.)
+    - Check required_table_level (linked to grid tier)
+    - Then check unlock/unlock_condition (card, level, etc.)
     """
     recipe = item_cfg.get("recipe") or {}
     required_table_level = int(recipe.get("required_table_level") or 1)
 
-    # 1) Niveau de table
+    # 1) Table level gate
     if craft_table_level < required_table_level:
         return False
 
-    # 2) Condition d'unlock normalisée par craft_defs._build_unlock_condition
-    unlock = item_cfg.get("unlock_condition") or {}
-    if not unlock:
-        # aucune condition spéciale -> debloqué
+    # 2) Normalized unlock_condition (if craft_defs built it)
+    unlock = item_cfg.get("unlock_condition")
+    if unlock:
+        cond_type = (unlock.get("type") or "").lower()
+        cond_key = (unlock.get("key") or unlock.get("card_key") or "").strip()
+
+        if cond_type == "card":
+            if not cond_key:
+                return True
+            return _player_has_card(session, player.id, cond_key)
+
+        if cond_type == "level":
+            min_level = int(unlock.get("min_level") or 1)
+            player_level = int(getattr(player, "level", 1))
+            return player_level >= min_level
+
+        # Other types -> not blocking for now
         return True
 
-    cond_type = (unlock.get("type") or "").lower()
-    cond_key = (unlock.get("key") or "").strip()
+    # 3) Raw YAML 'unlock' list (like in pearl_necklace)
+    unlock_list = item_cfg.get("unlock") or []
+    if not unlock_list:
+        # No specific condition -> unlocked
+        return True
 
-    # 2.a) Condition type "card" -> il faut posséder la carte
-    if cond_type == "card":
-        if not cond_key:
-            return True  # pas de clé précisée -> on ne bloque pas
-        return _player_has_card(session, player.id, cond_key)
+    # For now: AND over all conditions
+    for cond in unlock_list:
+        if not isinstance(cond, dict):
+            continue
+        cond_type = (cond.get("type") or "").lower()
 
-    # 2.b) Condition type "level"
-    if cond_type == "level":
-        min_level = int(unlock.get("min_level") or 1)
-        player_level = int(getattr(player, "level", 1))
-        return player_level >= min_level
+        if cond_type == "card":
+            card_key = (cond.get("key") or cond.get("card_key") or "").strip()
+            if not card_key:
+                continue
+            if not _player_has_card(session, player.id, card_key):
+                return False
 
-    # 2.c) Autres types -> pour l'instant on ne bloque pas
+        elif cond_type == "level":
+            min_level = int(cond.get("min_level") or 1)
+            player_level = int(getattr(player, "level", 1))
+            if player_level < min_level:
+                return False
+
+        # Other cond types: ignore for now (do not block)
+
     return True
 
 
@@ -164,6 +202,138 @@ def _load_player_resources_map(session, player: Player) -> dict[str, ResourceSto
 
     return {s.resource: s for s in stocks}
 
+def _compute_player_craft_station_keys(session, player: Player) -> list[str]:
+    """
+    Return the list of station_key accessible for the generic 'craft_table'
+    location, based on the player's cards.
+
+    - level 0 : aucune table -> []
+    - level 1 : basic        -> ["craft_table_base"]
+    - level 2 : medium       -> ["craft_table_base", "craft_table_medium"]
+    - level 3 : advanced     -> ["craft_table_base", "craft_table_medium", "craft_table_advanced"]
+    """
+    level = _compute_craft_table_level(session, player)
+
+    stations: set[str] = set()
+    if level >= 1:
+        stations.add("craft_table_base")
+    if level >= 2:
+        stations.add("craft_table_medium")
+    if level >= 3:
+        stations.add("craft_table_advanced")
+
+    return sorted(stations)
+
+def _extract_recipe_card_keys(item_cfg: Dict[str, Any]) -> set[str]:
+    """
+    Explore unlock_condition et unlock[] (y compris les noeuds 'and'/'or')
+    et renvoie l'ensemble de toutes les card_key/ key de type 'card'.
+    """
+    keys: set[str] = set()
+
+    def _walk(node: Any) -> None:
+        if isinstance(node, dict):
+            cond_type = (node.get("type") or "").lower()
+
+            if cond_type == "card":
+                card_key = (node.get("key") or node.get("card_key") or "").strip()
+                if card_key:
+                    keys.add(card_key)
+
+            # Gérer les noeuds composés: { type: "and"/"or", conditions: [...] }
+            subconds = node.get("conditions")
+            if isinstance(subconds, list):
+                for sub in subconds:
+                    _walk(sub)
+
+        elif isinstance(node, list):
+            for sub in node:
+                _walk(sub)
+
+    # 1) unlock_condition normalisé
+    unlock_cond = item_cfg.get("unlock_condition")
+    if unlock_cond:
+        _walk(unlock_cond)
+
+    # 2) liste 'unlock' brute depuis les YAML
+    unlock_list = item_cfg.get("unlock")
+    if unlock_list:
+        _walk(unlock_list)
+
+    return keys
+
+
+def _extract_recipe_card_keys(item_cfg: Dict[str, Any]) -> list[str]:
+    """
+    Inspecte strictement la liste YAML brute 'unlock' et renvoie
+    la liste des clés de cartes de recette (type: card).
+    """
+    keys: list[str] = []
+
+    unlock_list = item_cfg.get("unlock") or []
+    if not isinstance(unlock_list, list):
+        return keys
+
+    for cond in unlock_list:
+        if not isinstance(cond, dict):
+            continue
+        cond_type = (cond.get("type") or "").lower()
+        if cond_type != "card":
+            continue
+
+        card_key = (cond.get("key") or cond.get("card_key") or "").strip()
+        if card_key:
+            keys.append(card_key)
+
+    return keys
+
+def _item_requires_recipe_card(item_cfg: Dict[str, Any]) -> bool:
+    unlock_cond = item_cfg.get("unlock_condition")
+
+    if isinstance(unlock_cond, dict):
+        return (unlock_cond.get("type") == "card")
+
+    return False
+
+def _recipe_card_flags_for_item(
+    session,
+    player: Player,
+    item_cfg: Dict[str, Any],
+) -> tuple[bool, bool]:
+    """
+    Returns:
+      (requires_recipe_card, has_recipe_card)
+    based on the normalized 'unlock_condition' built by craft_defs.
+    """
+    requires = False
+    has = False
+
+    unlock_cond = item_cfg.get("unlock_condition") or {}
+    if isinstance(unlock_cond, dict):
+        cond_type = (unlock_cond.get("type") or "").lower()
+        if cond_type == "card":
+            requires = True
+            card_key = (unlock_cond.get("key") or "").strip()
+            if card_key:
+                has = _player_has_card(session, player.id, card_key)
+
+    return requires, has
+
+
+
+def _player_has_recipe_card_for_item(session, player, item_cfg):
+    unlock_cond = item_cfg.get("unlock_condition")
+
+    if isinstance(unlock_cond, dict) and unlock_cond.get("type") == "card":
+        card_key = unlock_cond.get("key")
+        if card_key:
+            return _player_has_card(session, player.id, card_key)
+
+    return False
+
+
+
+
 
 # ---------------------------------------------------------------------------
 # GET /api/craft/recipes
@@ -171,61 +341,55 @@ def _load_player_resources_map(session, player: Player) -> dict[str, ResourceSto
 @bp.get("/craft/recipes")
 def list_craft_recipes():
     """
-    List craftable recipes for the current player and given craft_location.
+    List all craft recipes available for the given location.
 
-    Query params:
-      - location: "craft_table", "craft_table_base", "forge", ...
-      - playerId (optionnel) : override cookie (debug)
+    Front envoie:
+      GET /api/craft/recipes?location=craft_table
 
-    Réponse JSON:
-    {
-      "craft_location": "craft_table",
-      "craft_table_level": 1,
-      "recipes": [
-        {
-          "item_key": "tool_wooden_axe",
-          "label": "Wooden Axe",
-          "icon": "...",
-          "kind": "tool",
-          "category": "...",
-          "recipe": {
-            "pattern": ["BBS"],
-            "legend": {...},
-            "output_quantity": 1,
-            "craft_time_seconds": 8,
-            "required_table_level": 1
-          }
-        }
-      ]
-    }
+    On traduit "craft_table" côté back en plusieurs station_key
+    (craft_table_base / medium / advanced) en fonction des cartes du joueur.
     """
     craft_location = (request.args.get("location") or "craft_table").strip()
 
-    # On récupère playerId (si passé en param) pour être cohérent avec api_cards
-    payload = {"playerId": request.args.get("playerId")}
+    # On autorise éventuellement ?playerId=... en GET, mais en général
+    # on passe par le cookie -> get_current_player
+    payload: Dict[str, Any] = request.args.to_dict()
 
     with SessionLocal() as session:
         player = _resolve_player(session, payload)
         if not player:
             return jsonify({"error": "not_logged_in"}), 401
 
-        # TODO: brancher plus tard sur un vrai calcul de niveau de table
-        craft_table_level = 1
-
         recipes: list[dict[str, Any]] = []
 
-        print("[craft] list_craft_recipes() location=", craft_location)
-        print("[craft] CRAFT_DEFS keys:", list(craft_defs.CRAFT_DEFS.keys()))
-
-        # Niveau de table réel (avec cartes craft_base, craft_upgrade_1, craft_upgrade_2)
+        # Niveau de table (0 / 1 / 2 / 3)
         craft_table_level = _compute_craft_table_level(session, player)
+
+        # ----------------- mapping station_key autorisées -----------------
+        if craft_location == "craft_table":
+            # On convertit 'craft_table' en station_key réelles
+            allowed_locations = set(_compute_player_craft_station_keys(session, player))
+            # compat rétro: si certaines recettes ont craft_location="craft_table"
+            allowed_locations.add("craft_table")
+        else:
+            # autre station: forge_level_1, etc.
+            allowed_locations = {craft_location}
+        # ------------------------------------------------------------------
+
+        print("[craft] list_craft_recipes() location=", craft_location)
+        print("[craft] allowed_locations =", allowed_locations)
+        
+        print("=== DEBUG CRAFT_DEFS ENTRY ===")
+        print("ITEM KEYS:", list(craft_defs.CRAFT_DEFS.keys()))
+        print("pearl_necklace unlock =", craft_defs.CRAFT_DEFS.get("pearl_necklace", {}).get("unlock"))
+        print("pearl_necklace unlock_condition =", craft_defs.CRAFT_DEFS.get("pearl_necklace", {}).get("unlock_condition"))
+        print("=================================")        
 
         for item_key, cfg in craft_defs.CRAFT_DEFS.items():
             recipe = cfg.get("recipe")
             if not isinstance(recipe, dict):
                 continue
 
-            # 1) Déterminer la station de craft réelle de cette recette
             recipe_location = (
                 recipe.get("craft_location")
                 or cfg.get("craft_location")
@@ -233,11 +397,21 @@ def list_craft_recipes():
                 or "craft_table"
             )
 
-            # 2) Filtrer par station / location
-            if recipe_location != craft_location:
-                continue
+            # 1) Filtre station: on NE montre pas les recettes d'une station
+            #    que le joueur n'a pas encore (pas de craft_table_advanced sans la carte).
+            if craft_location == "craft_table":
+                if recipe_location not in allowed_locations:
+                    continue
+            else:
+                if recipe_location != craft_location:
+                    continue
 
-            # 3) Calculer si cette recette est débloquée pour le joueur
+            # 2) Flags recette
+            requires_recipe_card, has_recipe_card = _recipe_card_flags_for_item(
+                session, player, cfg
+            )
+
+            # 3) Calculer si cette recette est débloquée (table + level + carte, etc.)
             is_unlocked = _is_item_unlocked_for_player(
                 session=session,
                 player=player,
@@ -245,9 +419,8 @@ def list_craft_recipes():
                 craft_table_level=craft_table_level,
             )
 
-            # 4) Préparer les données pour le front
+            # 4) Label / recipe details
             label = cfg.get("label") or cfg.get("key") or item_key
-
             pattern = recipe.get("pattern") or []
             legend = recipe.get("legend") or {}
 
@@ -262,7 +435,12 @@ def list_craft_recipes():
                     "icon": cfg.get("icon"),
                     "kind": cfg.get("kind") or cfg.get("type"),
                     "category": cfg.get("category"),
-                    "is_unlocked": is_unlocked,  # 👈 super important pour l’UI
+
+                    # Pour l'UI
+                    "is_unlocked": is_unlocked,
+                    "requires_recipe_card": requires_recipe_card,
+                    "has_recipe_card": has_recipe_card,
+
                     "recipe": {
                         "craft_location": recipe_location,
                         "pattern": pattern,
@@ -274,19 +452,12 @@ def list_craft_recipes():
                 }
             )
 
-        print("[craft] list_craft_recipes ->", len(recipes), "recipes")
 
-        return jsonify(
-            {
-                "craft_location": craft_location,
-                "craft_table_level": craft_table_level,
-                "recipes": recipes,
-            }
-        )
 
+        # petit tri par label pour un affichage stable
+        recipes.sort(key=lambda r: r.get("label") or "")
 
         print("[craft] list_craft_recipes ->", len(recipes), "recipes")
-
 
         return jsonify(
             {
@@ -329,12 +500,18 @@ def perform_craft():
     if not item_cfg:
         return jsonify({"error": "unknown_item_key", "item_key": item_key}), 400
 
-    recipe = item_cfg.get("recipe")
+    recipe = item_cfg.get("recipe") or {}
     if not recipe:
         return jsonify({"error": "item_not_craftable", "item_key": item_key}), 400
 
     recipe_location = (recipe.get("craft_location") or "craft_table").strip()
-    if recipe_location != craft_location:
+
+    # IMPORTANT :
+    # - "craft_table" (côté UI) = alias générique pour toutes les tables de craft
+    #   (craft_table_base, craft_table_medium, craft_table_advanced, craft_table).
+    # - On ne bloque donc PAS si craft_location == "craft_table".
+    # - On ne bloque que si l'appel spécifie un lieu *plus précis* qui ne correspond pas.
+    if craft_location != "craft_table" and recipe_location != craft_location:
         return jsonify(
             {
                 "error": "invalid_craft_location",
