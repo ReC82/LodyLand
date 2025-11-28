@@ -1,35 +1,35 @@
-  pearl_necklace:
+pearl_necklace:
+  key: pearl_necklace
+  station_key: craft_table_advanced
+
+  required_grid:
+    tier: 3        # 3x3 (fin du jeu)
+
+  output:
+    kind: resource
     key: pearl_necklace
-    station_key: craft_table_advanced
+    quantity: 1
 
-    required_grid:
-      tier: 3        # 3x3 (fin du jeu)
+  recipe:
+    pattern:
+      - "RRR"
+      - "RPR"
+      - "RRR"
+    legend:
+      R:
+        key: rope
+        type: item      # 👈 consommé dans PlayerItem
+        quantity: 1
+      P:
+        key: pearl
+        type: resource      # 👈 idem
+        quantity: 1       
 
-    output:
-      kind: resource
-      key: pearl_necklace
-      quantity: 1
+  craft_time_seconds: 15
+  xp_reward: 15
 
-    recipe:
-      pattern:
-        - "RRR"
-        - "RPR"
-        - "RRR"
-      legend:
-        R:
-          kind: resource
-          key: rope
-          quantity: 1
-        P:
-          kind: resource
-          key: pearl
-          quantity: 1          
-
-    craft_time_seconds: 15
-    xp_reward: 15
-
-    unlock:
-      - type: card
-        key: recipe_pearl_necklace
-      - type: level
-        min_level: 5 
+  unlock:
+    - type: card
+      key: recipe_pearl_necklace
+    - type: level
+      min_level: 5
