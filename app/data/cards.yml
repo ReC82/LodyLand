@@ -612,8 +612,8 @@ cards:
       amount: 0
   shop:
     prices:
-    - coins: 50
-      diams: 0
+    - coins: 1000
+      diams: 2
       resources: {}
     show_in_main_shop: true
     show_in_village_shop: false
@@ -642,7 +642,7 @@ cards:
       amount: 0
   shop:
     prices:
-    - coins: 50
+    - coins: 100
       diams: 0
       resources: {}
     show_in_main_shop: true
@@ -672,8 +672,8 @@ cards:
       amount: 0
   shop:
     prices:
-    - coins: 50
-      diams: 0
+    - coins: 500
+      diams: 1
       resources: {}
     show_in_main_shop: true
     show_in_village_shop: false

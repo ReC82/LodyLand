@@ -58,6 +58,15 @@ resources:
     icon: /static/assets/img/items/resources/iron_stick.png
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     unlock_description: Fabriqué en craftant du minerai de fer.
+  - key: palm_leaf
+    label: Palm Leaf
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 0
+    enabled: true
+    icon: /static/assets/img/items/resources/palm_leaf.png
+    description: Une feuille de palmier, utile pour fabriquer des objets.
+    unlock_description: Toujours accessible (niveau 0).
   - key: pearl
     label: Perle
     base_cooldown: 60.0

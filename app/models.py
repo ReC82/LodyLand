@@ -147,7 +147,49 @@ class PlayerItem(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
-    )    
+    )   
+    
+class PlayerCraftJob(Base):
+    """
+    One delayed craft in progress for a player.
+
+    - quantity_total : combien d'items au total à produire (ex: 5 colliers)
+    - quantity_done  : combien déjà livrés dans l'inventaire
+    - started_at / ends_at : fenêtre de temps globale du job
+    - status : active / done / cancelled (on utilise active/done pour l’instant)
+    """
+
+    __tablename__ = "player_craft_jobs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    player_id: Mapped[int] = mapped_column(
+        ForeignKey("players.id"),
+        index=True,
+        nullable=False,
+    )
+
+    item_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    craft_location: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    quantity_total: Mapped[int] = mapped_column(Integer, nullable=False)
+    quantity_done: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    started_at: Mapped[dt.datetime] = mapped_column(
+        DateTime,
+        default=dt.datetime.utcnow,
+        nullable=False,
+    )
+    ends_at: Mapped[dt.datetime] = mapped_column(DateTime, nullable=False)
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="active",      # active / done / cancelled
+        nullable=False,
+    )
+
+    # backref pratique si besoin: player.craft_jobs
+    player = relationship("Player", backref="craft_jobs")     
     
 class PlayerLandSlots(Base):
     __tablename__ = "player_land_slots"

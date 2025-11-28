@@ -12,9 +12,11 @@ from flask import Blueprint, jsonify, request
 
 from app import craft_defs
 from app.db import SessionLocal
-from app.models import Player, PlayerCard, ResourceStock, PlayerItem
+from app.models import Player, PlayerCard, ResourceStock, PlayerItem, PlayerCraftJob
 from app.auth import get_current_player
 from app.quests.service import on_item_crafted
+from datetime import datetime, timedelta
+import datetime as dt
 
 bp = Blueprint("craft", __name__)
 
@@ -502,6 +504,82 @@ def list_craft_recipes():
             }
         )
 
+def _update_craft_jobs_for_player(session, player: Player):
+    """
+    Update all active craft jobs for this player:
+      - compute how many items should be finished based on current time
+      - add missing items to inventory
+      - mark jobs as done when finished
+
+    This is called:
+      - at the beginning of perform_craft()
+      - (plus tard) depuis /api/state pour un refresh passif.
+    """
+    now = dt.datetime.utcnow()
+
+    jobs = (
+        session.query(PlayerCraftJob)
+        .filter(PlayerCraftJob.player_id == player.id)
+        .filter(PlayerCraftJob.status == "active")
+        .order_by(PlayerCraftJob.started_at.asc())
+        .all()
+    )
+
+    for job in jobs:
+        total = int(job.quantity_total or 0)
+        done = int(job.quantity_done or 0)
+
+        if total <= 0:
+            job.status = "done"
+            continue
+
+        total_duration = (job.ends_at - job.started_at).total_seconds()
+        if total_duration <= 0:
+            # Safeguard : tout est terminé instantanément
+            completed_units = total
+        else:
+            elapsed = (now - job.started_at).total_seconds()
+            if elapsed <= 0:
+                completed_units = 0
+            else:
+                per_unit = total_duration / total  # temps pour 1 item
+                # ex: 5 colliers, 60s chacun => total_duration = 300, per_unit = 60
+                completed_units = int(elapsed // per_unit)
+                if completed_units > total:
+                    completed_units = total
+
+        if completed_units > done:
+            delta = completed_units - done
+
+            # Add delta items to inventory
+            pi = (
+                session.query(PlayerItem)
+                .filter_by(player_id=player.id, item_key=job.item_key)
+                .one_or_none()
+            )
+            if pi is None:
+                pi = PlayerItem(
+                    player_id=player.id,
+                    item_key=job.item_key,
+                    quantity=delta,
+                )
+                session.add(pi)
+            else:
+                pi.quantity = int(pi.quantity) + delta
+
+            # Quest hook (on récompense pour ce qui vient d'être crafté)
+            on_item_crafted(
+                session=session,
+                player=player,
+                item_key=job.item_key,
+                quantity=delta,
+            )
+
+            job.quantity_done = completed_units
+
+        # Si tout est fini, on marque le job comme done
+        if completed_units >= total or now >= job.ends_at:
+            job.status = "done"
 
 
 # ---------------------------------------------------------------------------
@@ -517,7 +595,7 @@ def perform_craft():
       "item_key": "wooden_stick",
       "craft_location": "craft_table",
       "times": 1,
-      "playerId": 1
+      "playerId": 1   # optionnel, sinon cookie
     }
     """
     data = request.get_json(silent=True) or {}
@@ -542,10 +620,8 @@ def perform_craft():
     recipe_location = (recipe.get("craft_location") or "craft_table").strip()
 
     # IMPORTANT :
-    # - "craft_table" (côté UI) = alias générique pour toutes les tables de craft
-    #   (craft_table_base, craft_table_medium, craft_table_advanced, craft_table).
-    # - On ne bloque donc PAS si craft_location == "craft_table".
-    # - On ne bloque que si l'appel spécifie un lieu *plus précis* qui ne correspond pas.
+    # - "craft_table" côté UI = alias générique pour toutes les tables de craft.
+    # - On ne bloque que si l'appel spécifie un lieu plus précis différent.
     if craft_location != "craft_table" and recipe_location != craft_location:
         return jsonify(
             {
@@ -559,6 +635,9 @@ def perform_craft():
         player = _resolve_player(session, data)
         if not player:
             return jsonify({"error": "player_required"}), 400
+
+        # 1) Avant tout : on met à jour les jobs en cours (crédite les crafts finis)
+        _update_craft_jobs_for_player(session, player)
 
         table_level = _compute_craft_table_level(session, player)
 
@@ -591,20 +670,26 @@ def perform_craft():
         res_map = _load_player_resources_map(session, player)
         item_map = _load_player_items_map(session, player)
 
-        print("[CRAFT DEBUG] res_map  =", {k: float(v.qty) for k, v in res_map.items()})
-        print("[CRAFT DEBUG] item_map =", {k: int(v.quantity) for k, v in item_map.items()})
+        print(
+            "[CRAFT DEBUG] res_map  =",
+            {k: float(v.qty) for k, v in res_map.items()},
+        )
+        print(
+            "[CRAFT DEBUG] item_map =",
+            {k: int(v.quantity) for k, v in item_map.items()},
+        )
 
         # --- Check if player has enough of everything -----------------------
         missing: Dict[str, int] = {}
 
-        # 1) Resources (branches, lianes, etc.)
+        # 1) Resources
         for res_key, needed in required_resources.items():
             pr = res_map.get(res_key)
             current = float(pr.qty) if pr else 0.0
             if current < needed:
                 missing[res_key] = needed - int(current)
 
-        # 2) Items (rope, pearl, tools, etc.)
+        # 2) Items
         for item_key_req, needed in required_items.items():
             pi_req = item_map.get(item_key_req)
             current = int(pi_req.quantity) if pi_req else 0
@@ -643,47 +728,86 @@ def perform_craft():
                 new_q = 0
             pi_req.quantity = new_q
 
-
-        # --- Add crafted item(s) -------------------------------------------
+        # --- Compute total output ------------------------------------------
         output_qty = int(recipe.get("output_quantity") or 1) * times
+        craft_time_seconds = int(recipe.get("craft_time_seconds") or 0)
 
-        pi = (
-            session.query(PlayerItem)
-            .filter_by(player_id=player.id, item_key=item_cfg.get("key"))
-            .one_or_none()
-        )
+        now = dt.datetime.utcnow()
 
-        if pi is None:
-            pi = PlayerItem(
-                player_id=player.id,
+        # --- Instant craft (old behaviour) ---------------------------------
+        if craft_time_seconds <= 0:
+            pi = (
+                session.query(PlayerItem)
+                .filter_by(player_id=player.id, item_key=item_cfg.get("key"))
+                .one_or_none()
+            )
+
+            if pi is None:
+                pi = PlayerItem(
+                    player_id=player.id,
+                    item_key=item_cfg.get("key"),
+                    quantity=output_qty,
+                )
+                session.add(pi)
+            else:
+                pi.quantity = int(pi.quantity) + output_qty
+
+            # Quest hook
+            on_item_crafted(
+                session=session,
+                player=player,
                 item_key=item_cfg.get("key"),
                 quantity=output_qty,
             )
-            session.add(pi)
-        else:
-            pi.quantity = int(pi.quantity) + output_qty
 
-        # Quest hook
-        on_item_crafted(
-            session=session,
-            player=player,
-            item_key=item_cfg.get("key"),
-            quantity=output_qty,
-        )
+            delayed = False
+            job_payload = None
+
+        # --- Delayed craft: create PlayerCraftJob --------------------------
+        else:
+            total_seconds = craft_time_seconds * output_qty
+            ends_at = now + timedelta(seconds=total_seconds)
+
+            job = PlayerCraftJob(
+                player_id=player.id,
+                item_key=item_cfg.get("key"),
+                craft_location=craft_location or recipe_location,
+                quantity_total=output_qty,
+                quantity_done=0,
+                started_at=now,
+                ends_at=ends_at,
+                status="active",
+            )
+            session.add(job)
+
+            delayed = True
+            job_payload = {
+                "id": job.id,  # sera renseigné après flush/commit
+                "item_key": job.item_key,
+                "quantity_total": job.quantity_total,
+                "quantity_done": job.quantity_done,
+                "started_at": job.started_at.isoformat(),
+                "ends_at": job.ends_at.isoformat(),
+                "seconds_total": total_seconds,
+            }
 
         session.commit()
 
+        resp = {
+            "ok": True,
+            "crafted_item": {
+                "item_key": item_cfg.get("key"),
+                "label": item_cfg.get("label"),
+                "quantity": output_qty,
+            },
+            "craft_location": craft_location,
+            "times": times,
+            "delayed": delayed,
+        }
 
-        return jsonify(
-            {
-                "ok": True,
-                "crafted_item": {
-                    "item_key": item_cfg.get("key"),
-                    "label": item_cfg.get("label"),
-                    "quantity": output_qty,
-                },
-                "craft_location": craft_location,
-                "times": times,
-            }
-        )
+        if delayed and job_payload:
+            # après commit, job.id est fixé
+            job_payload["id"] = job.id
+            resp["job"] = job_payload
 
+        return jsonify(resp)

@@ -25,7 +25,7 @@ pearl_necklace:
         type: resource      # 👈 idem
         quantity: 1       
 
-  craft_time_seconds: 15
+  craft_time_seconds: 60
   xp_reward: 15
 
   unlock:

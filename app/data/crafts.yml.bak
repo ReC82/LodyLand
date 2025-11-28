@@ -54,7 +54,7 @@ crafts:
           type: resource
           quantity: 1
       required_table_level: 3
-    craft_time_seconds: 15
+    craft_time_seconds: 60
     xp_reward: 15
     unlock:
       recipe_card_key: recipe_pearl_necklace
