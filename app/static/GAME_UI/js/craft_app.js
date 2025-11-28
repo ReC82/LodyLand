@@ -30,6 +30,8 @@ let craftState = {
 // NEW: timer id for countdown
 let craftJobTimerId = null;
 
+// NEW: clé actuellement dragguée depuis la liste d’ingrédients
+let craftDragKey = null;
 
 // Format seconds as "mm:ss"
 function formatSecondsMMSS(total) {
@@ -39,8 +41,34 @@ function formatSecondsMMSS(total) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-// Update the craft job status UI
-// Update the craft job status UI
+// ============================================================================
+// Helpers hover slots
+// ============================================================================
+function clearCraftSlotsHover() {
+  const slots = document.querySelectorAll(".craft-slot");
+  slots.forEach((s) => {
+    s.classList.remove("craft-slot--droppable");
+  });
+}
+
+function updateSlotHover(slotIndex, isOver) {
+  const slot = document.querySelector(`.craft-slot[data-slot="${slotIndex}"]`);
+  if (!slot) return;
+
+  const expected = craftState.expectedSlots[slotIndex];
+  if (!expected) {
+    slot.classList.remove("craft-slot--droppable");
+    return;
+  }
+
+  // On ne colore que si la clé dragguée correspond à l’ingrédient attendu
+  if (isOver && craftDragKey && craftDragKey === expected.key) {
+    slot.classList.add("craft-slot--droppable");
+  } else {
+    slot.classList.remove("craft-slot--droppable");
+  }
+}
+
 // Update the craft job status UI
 function renderCraftJobStatus() {
   const box = $("craft-job-status");
@@ -224,8 +252,19 @@ function rebuildCraftGrid() {
     slotEl.dataset.slot = String(i);
 
     // Enable drag & drop on slots
-    slotEl.addEventListener("dragover", (e) => e.preventDefault());
-    slotEl.addEventListener("drop", (e) => onSlotDropped(e, i));
+    slotEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      updateSlotHover(i, true);
+    });
+
+    slotEl.addEventListener("dragleave", () => {
+      updateSlotHover(i, false);
+    });
+
+    slotEl.addEventListener("drop", (e) => {
+      updateSlotHover(i, false);
+      onSlotDropped(e, i);
+    });
 
     grid.appendChild(slotEl);
   }
@@ -505,8 +544,8 @@ function renderCraftIngredients(inventory) {
     // Make ingredient draggable
     item.draggable = true;
     item.addEventListener("dragstart", (e) => {
-      // If a craft job is active, we lock the grid
-      if (isCraftJobActive()) {
+      // Si un craft est en cours, on bloque
+      if (craftState.activeJob) {
         e.preventDefault();
         const errEl = $("craft-error");
         if (errEl) {
@@ -516,7 +555,14 @@ function renderCraftIngredients(inventory) {
         }
         return;
       }
+
+      craftDragKey = key; // <-- on mémorise la clé dragguée
       e.dataTransfer.setData("text/plain", key);
+    });
+
+    item.addEventListener("dragend", () => {
+      craftDragKey = null;
+      clearCraftSlotsHover(); // <-- helper qu’on ajoute juste après
     });
 
     const left = document.createElement("div");

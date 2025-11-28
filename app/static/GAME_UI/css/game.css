@@ -1741,3 +1741,10 @@
   color: #e5e7eb;
   pointer-events: none;
 }
+
+/* Slot prêt à recevoir l’item draggué */
+.craft-slot--droppable {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.4);
+  transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out;
+}
