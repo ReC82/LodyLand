@@ -151,27 +151,33 @@ def _is_item_unlocked_for_player(
 
     return True
 
-
-
-def _compute_required_resources(recipe: Dict[str, Any], times: int = 1) -> Dict[str, int]:
+def _compute_required_cost(
+    recipe: Dict[str, Any],
+    times: int = 1,
+) -> tuple[Dict[str, int], Dict[str, int]]:
     """
-    Compute total required resources for a recipe, multiplied by 'times'.
+    Compute total required cost for a recipe, multiplied by 'times'.
 
     Returns:
-      { resource_key: total_quantity_required }
+      (required_resources, required_items)
+
+      required_resources = { resource_key: total_quantity_required }
+      required_items     = { item_key:     total_quantity_required }
     """
     pattern = recipe.get("pattern") or []
     legend = recipe.get("legend") or {}
 
+    # Count occurrences of each symbol in the pattern
     counts: Dict[str, int] = {}
 
     for line in pattern:
         for ch in str(line):
-            if ch == ".":
+            if ch in (".", " ", ""):
                 continue
             counts[ch] = counts.get(ch, 0) + 1
 
-    required: Dict[str, int] = {}
+    required_resources: Dict[str, int] = {}
+    required_items: Dict[str, int] = {}
 
     for symbol, count in counts.items():
         entry = legend.get(symbol)
@@ -179,17 +185,35 @@ def _compute_required_resources(recipe: Dict[str, Any], times: int = 1) -> Dict[
             print(f"[craft] Symbol '{symbol}' not defined in legend.")
             continue
 
-        res_key = entry.get("key")
+        key = entry.get("key")
+        if not key:
+            print(f"[craft] Legend entry for symbol '{symbol}' has no key.")
+            continue
+
         qty_per_slot = int(entry.get("quantity") or 1)
         total = count * qty_per_slot * max(times, 1)
 
-        if not res_key:
-            print(f"[craft] Legend entry for symbol '{symbol}' has no resource key.")
-            continue
+        # IMPORTANT : on regarde d'abord kind, puis source, on strip + lower
+        kind_raw = (
+            entry.get("type")     # <--- ajouté
+            or entry.get("kind")
+            or entry.get("source")
+            or "resource"
+        )
 
-        required[res_key] = required.get(res_key, 0) + total
+        kind = str(kind_raw).strip().lower()
+        print(f"[craft] Symbol '{symbol}': kind='{kind}', key='{key}', qty_per_slot={qty_per_slot}, count={count}, total={total}")
+        if kind == "item":
+            required_items[key] = required_items.get(key, 0) + total
+        else:
+            # tout le reste = resource
+            required_resources[key] = required_resources.get(key, 0) + total
 
-    return required
+    return required_resources, required_items
+
+
+
+
 
 
 def _load_player_resources_map(session, player: Player) -> dict[str, ResourceStock]:
@@ -199,8 +223,19 @@ def _load_player_resources_map(session, player: Player) -> dict[str, ResourceSto
         .filter(ResourceStock.player_id == player.id)
         .all()
     )
-
     return {s.resource: s for s in stocks}
+
+
+def _load_player_items_map(session, player: Player) -> dict[str, PlayerItem]:
+    """Load all crafted items for a player as a map: item_key -> PlayerItem row."""
+    rows = (
+        session.query(PlayerItem)
+        .filter(PlayerItem.player_id == player.id)
+        .all()
+    )
+    return {it.item_key: it for it in rows}
+
+
 
 def _compute_player_craft_station_keys(session, player: Player) -> list[str]:
     """
@@ -475,11 +510,11 @@ def list_craft_recipes():
 @bp.post("/craft/perform")
 def perform_craft():
     """
-    Perform a craft for the current player.
+    Perform a craft for the current player (or explicit playerId).
 
-    POST /api/craft/perform
+    Expected JSON:
     {
-      "item_key": "tool_wooden_axe",
+      "item_key": "wooden_stick",
       "craft_location": "craft_table",
       "times": 1,
       "playerId": 1
@@ -540,18 +575,43 @@ def perform_craft():
                 }
             ), 403
 
-        required = _compute_required_resources(recipe, times=times)
-        if not required:
+        # --- Compute total cost (resources + items) -------------------------
+        required_resources, required_items = _compute_required_cost(
+            recipe,
+            times=times,
+        )
+
+        print("[CRAFT DEBUG] item_key =", item_key)
+        print("[CRAFT DEBUG] required_resources =", required_resources)
+        print("[CRAFT DEBUG] required_items     =", required_items)
+
+        if not required_resources and not required_items:
             return jsonify({"error": "invalid_recipe_definition"}), 500
 
         res_map = _load_player_resources_map(session, player)
+        item_map = _load_player_items_map(session, player)
 
+        print("[CRAFT DEBUG] res_map  =", {k: float(v.qty) for k, v in res_map.items()})
+        print("[CRAFT DEBUG] item_map =", {k: int(v.quantity) for k, v in item_map.items()})
+
+        # --- Check if player has enough of everything -----------------------
         missing: Dict[str, int] = {}
-        for res_key, needed in required.items():
+
+        # 1) Resources (branches, lianes, etc.)
+        for res_key, needed in required_resources.items():
             pr = res_map.get(res_key)
             current = float(pr.qty) if pr else 0.0
             if current < needed:
                 missing[res_key] = needed - int(current)
+
+        # 2) Items (rope, pearl, tools, etc.)
+        for item_key_req, needed in required_items.items():
+            pi_req = item_map.get(item_key_req)
+            current = int(pi_req.quantity) if pi_req else 0
+            if current < needed:
+                missing[item_key_req] = needed - current
+
+        print("[CRAFT DEBUG] missing =", missing)
 
         if missing:
             return (
@@ -564,8 +624,8 @@ def perform_craft():
                 400,
             )
 
-        # Deduct resources
-        for res_key, needed in required.items():
+        # --- Deduct resources ----------------------------------------------
+        for res_key, needed in required_resources.items():
             pr = res_map.get(res_key)
             if not pr:
                 continue
@@ -573,7 +633,18 @@ def perform_craft():
             if pr.qty < 0:
                 pr.qty = 0.0
 
-        # Add crafted item(s)
+        # --- Deduct items ---------------------------------------------------
+        for item_key_req, needed in required_items.items():
+            pi_req = item_map.get(item_key_req)
+            if not pi_req:
+                continue
+            new_q = int(pi_req.quantity) - needed
+            if new_q < 0:
+                new_q = 0
+            pi_req.quantity = new_q
+
+
+        # --- Add crafted item(s) -------------------------------------------
         output_qty = int(recipe.get("output_quantity") or 1) * times
 
         pi = (
@@ -602,6 +673,7 @@ def perform_craft():
 
         session.commit()
 
+
         return jsonify(
             {
                 "ok": True,
@@ -614,3 +686,4 @@ def perform_craft():
                 "times": times,
             }
         )
+

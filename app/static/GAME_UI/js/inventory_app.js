@@ -146,7 +146,7 @@ function renderItemList(filterText = "") {
   filtered.forEach((it) => {
     const row = document.createElement("div");
     // Same visual style as resources: tile + tooltip
-    row.className = "inv-resource-item inv-tooltip";
+    row.className = "inv-resource-item inv-tooltip inv-item-crafted";
 
     // Small readable tag for type/category
     const typeLabel = it.type || "misc";

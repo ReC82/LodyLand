@@ -193,7 +193,7 @@ items:
 
   rope:
     key: rope
-    kind: resource
+    kind: item
     label: Corde
     description: Une corde solide, utile pour attacher des objets.
     icon: /static/assets/img/items/resources/rope.png

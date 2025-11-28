@@ -1,6 +1,6 @@
-  rope:
+  pearl_necklace:
     key: pearl_necklace
-    kind: resource
+    kind: item
     label: Collier de perles
     description: Un collier fait de perles, symbole de statut.
     icon: /static/assets/img/items/misc/pearl_necklace.png

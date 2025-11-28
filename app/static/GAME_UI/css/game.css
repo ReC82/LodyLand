@@ -971,6 +971,26 @@
   color: #a5b4fc;
 }
 
+/* ---------- Crafted items (inventaire + craft) ---------- */
+
+/* Items craftés dans le panneau d'ingrédients du craft */
+.craft-ingredient-item--crafted {
+  border: 1px solid #facc15;               /* doré */
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+}
+
+/* Items (PlayerItem) dans l'inventaire */
+.inv-item-crafted .inv-resource-icon-wrapper {
+  border: 2px solid #facc15;               /* doré */
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+}
+
+/* Optionnel : arrondir un peu les bords si ce n'est pas déjà le cas */
+.craft-ingredient-item--crafted,
+.inv-item-crafted .inv-resource-icon-wrapper {
+  border-radius: 8px;
+}
+
 /* Sélecteur de quantité */
 .craft-quantity-row {
   display: flex;
