@@ -13,6 +13,15 @@ resources:
     enabled: true
     icon: /static/assets/img/items/resources/anchovy.png
     description: Une anchois ... morte, mais elle a l'air commestible.
+  - key: apple
+    label: Apple
+    base_cooldown: 10.0
+    base_sell_price: 5
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/apple.png
+    description: Une pomme fraîche, bonne à manger.
+    unlock_description: Trouvé en fouillant coupant un arbre.
   - key: branch
     label: Branches
     base_cooldown: 10.0
@@ -31,6 +40,15 @@ resources:
     icon: /static/assets/img/items/resources/coal.png
     description: Du charbon, utile pour fabriquer des objets en fer.
     unlock_description: Fabriqué en craftant du bois ou trouvé dans les mines.
+  - key: dirt
+    label: Dirt
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/dirt.png
+    description: Some dirt, useful for various purposes.
+    unlock_description: Trouvé en utilsant une pelle.
   - key: iron_ingot
     label: Lingot de fer
     base_cooldown: 10.0
@@ -58,6 +76,15 @@ resources:
     icon: /static/assets/img/items/resources/iron_stick.png
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     unlock_description: Fabriqué en craftant du minerai de fer.
+  - key: palm_leaf
+    label: Palm Leaf
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 0
+    enabled: true
+    icon: /static/assets/img/items/resources/palm_leaf.png
+    description: Une feuille de palmier, utile pour fabriquer des objets.
+    unlock_description: Toujours accessible (niveau 0).
   - key: pearl
     label: Perle
     base_cooldown: 60.0

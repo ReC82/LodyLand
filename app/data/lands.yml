@@ -103,6 +103,10 @@ forest:
         max: 1
         chance: 1.0
       extra_loot:
+      - resource: palm_leaf
+        min: 1
+        max: 1
+        chance: 0.1
       - resource: vine
         min: 1
         max: 1
@@ -117,7 +121,22 @@ forest:
         min: 1
         max: 1
         chance: 1.0
-      extra_loot: []
+      extra_loot: 
+      - resource: apple
+        min: 1
+        max: 1
+        chance: 0.1      
+    shovel:
+      base_loot:
+      - resource: dirt
+        min: 1
+        max: 1
+        chance: 1.0
+      extra_loot: 
+      - resource: worm
+        min: 1
+        max: 1
+        chance: 0.1           
 lake:
   key: land_lake
   label_fr: Lac

@@ -23,6 +23,18 @@ items:
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
 
+  palm_leaf:
+    key: palm_leaf
+    kind: resource
+    label: Palm Leaf
+    description: Une feuille de palmier, utile pour fabriquer des objets.
+    icon: /static/assets/img/items/resources/palm_leaf.png
+    unlock_min_level: 0
+    base_cooldown: 10.0
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Toujours accessible (niveau 0).    
+
   pearl:
     key: pearl
     kind: resource
@@ -202,3 +214,27 @@ items:
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant des lianes.     
+
+  apple:
+    key: apple
+    kind: resource
+    label: Apple
+    description: Une pomme fraîche, bonne à manger.
+    icon: /static/assets/img/items/resources/apple.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 5
+    enabled: true
+    unlock_description: Trouvé en fouillant coupant un arbre. 
+
+  dirt:
+    key: dirt
+    kind: resource
+    label: Dirt
+    description: Some dirt, useful for various purposes.
+    icon: /static/assets/img/items/resources/dirt.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en utilsant une pelle.     

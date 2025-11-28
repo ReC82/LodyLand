@@ -250,8 +250,22 @@
             <!-- Ingrédients du joueur -->
             <div class="craft-ingredients-panel" id="craft-ingredients-panel">
               <h3 class="craft-section-title">Ingrédients disponibles</h3>
-              <div id="craft-ingredients-list" class="craft-ingredients-list">
-                <!-- JS: resources du joueur -->
+
+              <!-- Filtre ingrédients -->
+              <div class="craft-filter-row">
+                <input
+                  id="craft-ingredients-filter"
+                  type="text"
+                  class="craft-filter-input"
+                  placeholder="Filtrer les ingrédients..."
+                />
+              </div>
+
+              <!-- Zone scrollable (max ~10 éléments) -->
+              <div class="craft-list-scroll">
+                <div id="craft-ingredients-list" class="craft-ingredients-list">
+                  <!-- JS -->
+                </div>
               </div>
             </div>
 
@@ -262,7 +276,21 @@
               style="display:none;"
             >
               <h3 class="craft-section-title">Recettes</h3>
-              <div id="craft-recipes-list" class="craft-recipes-list"></div>
+
+              <!-- Filtre recettes -->
+              <div class="craft-filter-row">
+                <input
+                  id="craft-recipes-filter"
+                  type="text"
+                  class="craft-filter-input"
+                  placeholder="Filtrer les recettes..."
+                />
+              </div>
+
+              <!-- Zone scrollable (max ~10 éléments) -->
+              <div class="craft-list-scroll">
+                <div id="craft-recipes-list" class="craft-recipes-list"></div>
+              </div>
             </div>
           </div>
 
@@ -291,9 +319,11 @@
             </div>
 
             <button id="craft-perform-btn" class="craft-perform-btn" disabled>
-              Crafte
+              Craft
             </button>
-
+            <div id="craft-job-status" class="craft-job-status d-none">
+              <div id="craft-job-status-text" class="craft-job-status-text"></div>
+            </div>
             <div id="craft-success" class="craft-success-msg" style="display:none;"></div>
             <div id="craft-error" class="craft-error-msg" style="display:none;"></div>
           </div>

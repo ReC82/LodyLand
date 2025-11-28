@@ -12,15 +12,19 @@ from app.models import (
     PlayerCard,
     CardDef,
     PlayerItem, 
-    PlayerQuest
+    PlayerQuest,
+    PlayerCraftJob,
 )
 from app.progression import next_threshold, LEVELS, MAX_LEVEL, xp_required_for
+
 from app.craft_defs import CRAFT_DEFS, ITEM_DEFS
 import app.craft_defs as craft_defs
 import datetime as dt
 
 from app.quests.service import assign_daily_quest_if_needed, serialize_quest
 from app.services.cards import serialize_card_def
+from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
+
 
 
 
@@ -287,6 +291,11 @@ def get_state():
         now = dt.datetime.utcnow()
         assign_daily_quest_if_needed(s, me, now=now)
         s.commit()
+        
+        # --- ⚠️ IMPORTANT : résoudre les jobs de craft AVANT l'inventaire ---
+        craft_job_payload = _update_craft_jobs_for_player(s, me)
+        # (cette fonction doit elle-même faire ses commits internes si besoin)
+        
         # --- NEW: Load active quests ---------------------------------------
         quests = (
             s.query(PlayerQuest)
@@ -418,11 +427,98 @@ def get_state():
             })
 
         # ------------------------------
-        # Info Craft (niveau de table)
+        # Craft : niveau de table + jobs en cours
         # ------------------------------
+
+        # 1) Mettre à jour les jobs en cours (donne les items terminés)
+        _update_craft_jobs_for_player(s, me)
+
+        # 2) Niveau de table
         craft_table_level = _compute_craft_table_level(s, me)
+
+        # 3) Charger les jobs actifs
+        now = dt.datetime.utcnow()
+        job_rows = (
+            s.query(PlayerCraftJob)
+            .filter(PlayerCraftJob.player_id == me.id)
+            .filter(PlayerCraftJob.status == "active")
+            .order_by(PlayerCraftJob.started_at.asc())
+            .all()
+        )
+
+        jobs_payload = []
+        for job in job_rows:
+            total = int(job.quantity_total or 0)
+            done = int(job.quantity_done or 0)
+            remaining_units = max(0, total - done)
+
+            started_at = job.started_at
+            ends_at = job.ends_at
+
+            total_secs = max(
+                0, int((ends_at - started_at).total_seconds())
+            )
+            elapsed = max(
+                0, int((now - started_at).total_seconds())
+            )
+            remaining_total_secs = max(0, total_secs - elapsed)
+
+            # Durée par item (approx) si on a un total non nul
+            if total > 0 and total_secs > 0:
+                seconds_per_unit = total_secs / total
+            else:
+                seconds_per_unit = 0
+
+            # Temps jusqu'au prochain item (approx)
+            if remaining_units > 0 and seconds_per_unit > 0:
+                # Combien d'items *devraient* être finis à cet instant ?
+                units_should_be_done = min(
+                    total, int(elapsed // seconds_per_unit)
+                )
+                next_threshold_time = (units_should_be_done + 1) * seconds_per_unit
+                seconds_until_next_unit = max(
+                    0, int(next_threshold_time - elapsed)
+                )
+                if seconds_until_next_unit > remaining_total_secs:
+                    seconds_until_next_unit = remaining_total_secs
+            else:
+                seconds_until_next_unit = 0
+
+            # Label / meta depuis craft_defs si dispo
+            cfg = craft_defs.CRAFT_DEFS.get(job.item_key, {}) or {}
+            label = cfg.get("label") or job.item_key
+
+            job_payload = {
+                "id": job.id,
+                "station_key": job.craft_location,
+                "item_key": job.item_key,
+                "label": label,
+                "quantity_total": total,
+                "quantity_done": done,
+                "remaining_units": remaining_units,
+                "started_at": started_at.isoformat(),
+                "ends_at": ends_at.isoformat(),
+                "seconds_total": total_secs,
+                "seconds_elapsed": elapsed,
+                "seconds_remaining_total": remaining_total_secs,
+                "seconds_per_unit": int(seconds_per_unit) if seconds_per_unit else 0,
+                "seconds_until_next_unit": seconds_until_next_unit,
+                "status": job.status,
+            }
+            jobs_payload.append(job_payload)
+
+        # Pour l'instant, on considère qu'il n'y a qu'une seule table de craft "générique"
+        # -> on expose un "active_job" pratique pour l'UI sur craft_table
+        active_job = None
+        for jp in jobs_payload:
+            if jp["station_key"].startswith("craft_table"):
+                active_job = jp
+                break
+
         craft_payload = {
             "craft_table_level": craft_table_level,
+            "jobs": jobs_payload,
+            "active_job": active_job,
         }
 
         # ------------------------------
