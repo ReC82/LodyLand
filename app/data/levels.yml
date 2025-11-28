@@ -81,6 +81,8 @@ levels:
 - level: 10
   xp_required: 550
   rewards:
+  - type: card
+    card_key: land_cave  
   - type: coins
     amount: 200
   - type: diams
@@ -133,7 +135,7 @@ levels:
   xp_required: 1200
   rewards:
   - type: card
-    card_key: land_castle
+    card_key: land_desert
   - type: diams
     amount: 1
 - level: 16
@@ -183,6 +185,8 @@ levels:
 - level: 20
   xp_required: 2100
   rewards:
+  - type: card
+    card_key: land_temple
   - type: coins
     amount: 400
   - type: diams
@@ -234,6 +238,8 @@ levels:
 - level: 25
   xp_required: 3250
   rewards:
+  - type: card
+    card_key: land_mountain
   - type: coins
     amount: 500
   - type: diams
@@ -285,6 +291,8 @@ levels:
 - level: 30
   xp_required: 4650
   rewards:
+  - type: card
+    card_key: land_maze
   - type: coins
     amount: 600
   - type: diams

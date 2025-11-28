@@ -6,6 +6,7 @@ beach:
   slots: 5
   slot_icon: static/assets/img/lands/beach_slot.png
   logo: static/assets/img/lands/beach_logo.png
+  html_description: templates/GAME_UI/lands/land_beach_description.html
   additional_slot_base_cost_diams: 15
   additional_slot_cost_multiplier: 1.6
   tools:

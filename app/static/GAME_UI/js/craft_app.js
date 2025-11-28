@@ -673,7 +673,6 @@ async function onCraftPerformClicked() {
     craft_location: "craft_table",
     times: times,
   });
-  
     console.log("[craft] perform =>", {
       item_key: itemKey,
       times,
