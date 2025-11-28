@@ -802,17 +802,20 @@
 /* Panel gauche : recettes */
 .craft-left-panel {
   position: relative;
-  overflow-y: auto;
+  /* plus de scroll global sur tout le panel */
+  overflow-y: visible;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
   padding-right: 12px;
 }
 
 .craft-recipes-panel {
-  overflow-y: auto;
+  /* le scroll sera géré dans .craft-list-scroll */
+  overflow-y: visible;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
   padding-right: 12px;
   display: none;
 }
+
 
 .craft-recipes-list {
   display: flex;
@@ -1747,4 +1750,34 @@
   border-color: #22c55e;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.4);
   transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+/* Barre de filtre (ingrédients / recettes) */
+.craft-filter-row {
+  margin-bottom: 6px;
+}
+
+.craft-filter-input {
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+}
+
+/* Conteneur scrollable : ~10 éléments max visibles */
+.craft-list-scroll {
+  max-height: 320px;            /* 10 x (30-32px) environ */
+  overflow-y: auto;
+  padding-right: 4px;           /* petit espace pour le scroll */
+}
+
+/* Optionnel : léger spacing entre items */
+.craft-ingredients-list,
+.craft-recipes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }

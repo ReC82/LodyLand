@@ -24,7 +24,12 @@ let craftState = {
 
   // NEW: craft job state
   activeJob: null,          // current craft job for the craft table
-  jobRemainingSeconds: 0,   // countdown for UI
+  jobRemainingSeconds: 0,   // countdown for UI.
+
+  // NEW: filtres
+  ingredientsFilter: "",
+  recipesFilter: "",
+
 };
 
 // NEW: timer id for countdown
@@ -283,6 +288,10 @@ function initCraftUI() {
   const performBtn       = $("craft-perform-btn");
   const recipesToggleBtn = $("craft-recipes-toggle-btn");
 
+  // Inputs de filtre
+  const ingredientsFilterInput = $("craft-ingredients-filter");
+  const recipesFilterInput     = $("craft-recipes-filter");
+
   // Only modal, openBtn and performBtn are strictly required
   if (!modalEl || !openBtn || !performBtn) {
     console.warn("[craft] Missing essential DOM elements for craft UI.");
@@ -321,11 +330,27 @@ function initCraftUI() {
   // Perform craft
   performBtn.addEventListener("click", onCraftPerformClicked);
 
+  // Filtres
+  if (ingredientsFilterInput) {
+    ingredientsFilterInput.addEventListener("input", (e) => {
+      craftState.ingredientsFilterText = (e.target.value || "").trim();
+      renderCraftIngredients(craftState.inventory);
+    });
+  }
+
+  if (recipesFilterInput) {
+    recipesFilterInput.addEventListener("input", (e) => {
+      craftState.recipesFilterText = (e.target.value || "").trim();
+      renderCraftRecipes(craftState.recipes);
+    });
+  }
+
   // Initial load (state + grid + recipes)
   refreshCraftData().catch((e) => {
     console.error("[craft] refreshCraftData error:", e);
   });
 }
+
 
 // Auto-init even if script is loaded at end of <body>
 /*
@@ -391,6 +416,7 @@ async function refreshCraftData() {
       : 0;
 
   console.log("[craft] tableLevel from /api/state =", craftState.tableLevel);
+
   // Resource definitions (icons, labels, etc.)
   craftState.resourceDefs =
     state.resources || state.resource_defs || state.resourceDefinitions || [];
@@ -426,7 +452,7 @@ async function refreshCraftData() {
 
   const itemsInv = itemsFromState.map((it) => ({
     key: it.item_key,
-    quantity: it.qty || it.quantity || 0,
+    qty: it.qty || it.quantity || 0,
     kind: "item",
   }));
 
@@ -435,7 +461,6 @@ async function refreshCraftData() {
   // NEW: load active job from backend state
   craftState.activeJob = craftBlock.active_job || null;
   console.log("[craft] activeJob from /api/state =", craftState.activeJob);
-
 
   const levelSpan = $("craft-table-level");
   if (levelSpan) {
@@ -451,7 +476,7 @@ async function refreshCraftData() {
     craftBtn.style.display = craftState.tableLevel > 0 ? "" : "none";
   }
 
-  // Render ingredients
+  // Render ingredients (avec filtre)
   renderCraftIngredients(craftState.inventory);
 
   // NEW: update job status + timer
@@ -481,6 +506,7 @@ async function refreshCraftData() {
 
 
 
+
 // ============================================================================
 // Render ingredients panel (resources + crafted items)
 // ============================================================================
@@ -490,7 +516,8 @@ function renderCraftIngredients(inventory) {
 
   listEl.innerHTML = "";
 
-  if (!Array.isArray(inventory) || inventory.length === 0) {
+  const entries = Array.isArray(inventory) ? inventory : [];
+  if (entries.length === 0) {
     const empty = document.createElement("div");
     empty.textContent = "Aucune ressource.";
     empty.style.color = "#9ca3af";
@@ -499,7 +526,12 @@ function renderCraftIngredients(inventory) {
     return;
   }
 
-  inventory.forEach((entry) => {
+  const term = (craftState.ingredientsFilterText || "").toLowerCase().trim();
+
+  // Normalisation : on calcule (key, kind, label, icon, qty)
+  const normalized = [];
+
+  entries.forEach((entry) => {
     const key = entry.key || entry.resource || "";
     if (!key) return;
 
@@ -508,7 +540,6 @@ function renderCraftIngredients(inventory) {
     let labelText = key;
     let iconPath = null;
 
-    // --- Si c'est un item crafté : on va chercher dans craftState.itemDefs ---
     if (kind === "item") {
       const itemDefs = craftState.itemDefs || {};
       const def = itemDefs[key] || null;
@@ -517,7 +548,6 @@ function renderCraftIngredients(inventory) {
         iconPath = def.icon || null;
       }
     } else {
-      // --- Sinon : c'est une ressource classique ---
       const defs = craftState.resourceDefs || [];
       const def = defs.find((d) => d.key === key) || null;
       if (def) {
@@ -533,6 +563,36 @@ function renderCraftIngredients(inventory) {
         ? entry.quantity
         : 0;
 
+    normalized.push({
+      key,
+      kind,
+      labelText,
+      iconPath,
+      qtyVal,
+    });
+  });
+
+  // Filtre texte
+  const filtered = term
+    ? normalized.filter((it) => {
+        const label = (it.labelText || "").toLowerCase();
+        const key = (it.key || "").toLowerCase();
+        return label.includes(term) || key.includes(term);
+      })
+    : normalized;
+
+  if (filtered.length === 0) {
+    const empty = document.createElement("div");
+    empty.textContent = "Aucun ingrédient ne correspond à ce filtre.";
+    empty.style.color = "#9ca3af";
+    empty.style.fontSize = "0.85rem";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach((data) => {
+    const { key, kind, labelText, iconPath, qtyVal } = data;
+
     const item = document.createElement("div");
     // Classe de base + surcouche dorée si c'est un item crafté
     item.className =
@@ -544,7 +604,7 @@ function renderCraftIngredients(inventory) {
     // Make ingredient draggable
     item.draggable = true;
     item.addEventListener("dragstart", (e) => {
-      // Si un craft est en cours, on bloque
+      // Si un craft est en cours, on bloque le drag
       if (craftState.activeJob) {
         e.preventDefault();
         const errEl = $("craft-error");
@@ -555,14 +615,7 @@ function renderCraftIngredients(inventory) {
         }
         return;
       }
-
-      craftDragKey = key; // <-- on mémorise la clé dragguée
       e.dataTransfer.setData("text/plain", key);
-    });
-
-    item.addEventListener("dragend", () => {
-      craftDragKey = null;
-      clearCraftSlotsHover(); // <-- helper qu’on ajoute juste après
     });
 
     const left = document.createElement("div");
@@ -602,8 +655,6 @@ function renderCraftIngredients(inventory) {
 }
 
 
-
-
 // ============================================================================
 // Render recipes list
 // ============================================================================
@@ -624,6 +675,8 @@ function renderCraftRecipes(recipes) {
     return;
   }
 
+  const term = (craftState.recipesFilterText || "").toLowerCase().trim();
+
   // Sort: unlocked first, then by label
   const sorted = [...recipes].sort((a, b) => {
     const aUn = a.is_unlocked ? 1 : 0;
@@ -635,7 +688,32 @@ function renderCraftRecipes(recipes) {
     return aLabel.localeCompare(bLabel);
   });
 
-  sorted.forEach((r) => {
+  // Filtre texte
+  const filtered = term
+    ? sorted.filter((r) => {
+        const label = (r.label || r.item_key || "").toLowerCase();
+        const key = (r.item_key || "").toLowerCase();
+        const kind = (r.kind || "").toLowerCase();
+        return (
+          label.includes(term) ||
+          key.includes(term) ||
+          kind.includes(term)
+        );
+      })
+    : sorted;
+
+  if (filtered.length === 0) {
+    const empty = document.createElement("div");
+    empty.textContent = "Aucune recette ne correspond à ce filtre.";
+    empty.style.color = "#9ca3af";
+    empty.style.fontSize = "0.85rem";
+    listEl.appendChild(empty);
+    craftState.selectedRecipe = null;
+    updateCraftSelectionUI();
+    return;
+  }
+
+  filtered.forEach((r) => {
     const item = document.createElement("div");
     item.className = "craft-recipe-item";
     item.dataset.itemKey = r.item_key;
@@ -686,7 +764,7 @@ function renderCraftRecipes(recipes) {
     // Click: select recipe + decode pattern into grid
     item.addEventListener("click", () => {
       // Si un job est actif, on ne laisse pas changer de recette
-      if (isCraftJobActive()) {
+      if (craftState.activeJob) {
         const errEl = $("craft-error");
         if (errEl) {
           errEl.style.display = "block";
