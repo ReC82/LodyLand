@@ -294,7 +294,7 @@ async function refreshCraftData() {
 
 
 // ============================================================================
-// Render ingredients panel
+// Render ingredients panel (resources + crafted items)
 // ============================================================================
 function renderCraftIngredients(inventory) {
   const listEl = $("craft-ingredients-list");
@@ -315,6 +315,29 @@ function renderCraftIngredients(inventory) {
     const key = entry.key || entry.resource || "";
     if (!key) return;
 
+    const kind = (entry.kind || "resource").toLowerCase();
+
+    let labelText = key;
+    let iconPath = null;
+
+    // --- Si c'est un item crafté : on va chercher dans craftState.itemDefs ---
+    if (kind === "item") {
+      const itemDefs = craftState.itemDefs || {};
+      const def = itemDefs[key] || null;
+      if (def) {
+        labelText = def.label || key;
+        iconPath = def.icon || null;
+      }
+    } else {
+      // --- Sinon : c'est une ressource classique ---
+      const defs = craftState.resourceDefs || [];
+      const def = defs.find((d) => d.key === key) || null;
+      if (def) {
+        labelText = def.label || key;
+        iconPath = def.icon || null;
+      }
+    }
+
     const qtyVal =
       typeof entry.qty === "number"
         ? entry.qty
@@ -322,29 +345,13 @@ function renderCraftIngredients(inventory) {
         ? entry.quantity
         : 0;
 
-    // Déf ressource
-    const resDefs = craftState.resourceDefs || [];
-    const resDef = resDefs.find((d) => d.key === key) || null;
-
-    // Déf item
-    const itemDef =
-      craftState.itemDefs && craftState.itemDefs[key]
-        ? craftState.itemDefs[key]
-        : null;
-
-    const labelText =
-      (resDef && resDef.label) ||
-      (itemDef && itemDef.label) ||
-      key;
-
-    const iconPath =
-      (resDef && resDef.icon) ||
-      (itemDef && itemDef.icon) ||
-      null;
-
     const item = document.createElement("div");
-    item.className = "craft-ingredient-item";
+    // Classe de base + surcouche dorée si c'est un item crafté
+    item.className =
+      "craft-ingredient-item" +
+      (kind === "item" ? " craft-ingredient-item--crafted" : "");
     item.dataset.key = key;
+    item.dataset.kind = kind;
 
     // Make ingredient draggable
     item.draggable = true;
@@ -368,25 +375,26 @@ function renderCraftIngredients(inventory) {
       img.alt = labelText;
       iconWrap.appendChild(img);
     } else {
-      iconWrap.textContent = labelText.charAt(0).toUpperCase();
+      iconWrap.textContent = kind === "item" ? "★" : "📦";
     }
 
-    const label = document.createElement("span");
+    const label = document.createElement("div");
     label.textContent = labelText;
 
     left.appendChild(iconWrap);
     left.appendChild(label);
 
-    const qty = document.createElement("div");
-    qty.className = "craft-ingredient-qty";
-    qty.textContent = "x" + qtyVal;
+    const right = document.createElement("div");
+    right.className = "craft-ingredient-qty";
+    right.textContent = "x" + qtyVal;
 
     item.appendChild(left);
-    item.appendChild(qty);
+    item.appendChild(right);
 
     listEl.appendChild(item);
   });
 }
+
 
 
 
