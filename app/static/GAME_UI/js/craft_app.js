@@ -1087,7 +1087,9 @@ async function onCraftPerformClicked() {
 
   if (!res.ok) {
     console.error("[craft] perform error:", res);
+    if (qtyInput) qtyInput.value = "1";
     if (performBtn) {
+      
       performBtn.disabled = false;
     }
     if (errEl) {
@@ -1141,6 +1143,7 @@ async function onCraftPerformClicked() {
 
   // Refresh ingredients, jobs & timer
   await refreshCraftData();
+  if (qtyInput) qtyInput.value = "1";
 
   // Reset filled slots but keep pattern for the selected recipe
   craftState.filledSlots = new Array(craftState.expectedSlots.length).fill(null);
