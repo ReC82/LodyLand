@@ -13,16 +13,25 @@
 let craftState = {
   recipes: [],
   selectedRecipe: null,
-  tableLevel: 0,        // 0: no table, 1: 1x3, 2: 2x3, 3: 3x3
+  tableLevel: 0,        // 0: no table, 1: 1x3, 2: 2x3, 3x3
 
-  inventory: [],        // player stock from /api/state
-  resourceDefs: [],     // ResourceDef list from /api/state
+  // Inventaire combiné pour le panneau d'ingrédients
+  // (resources + items craftés)
+  inventory: [],
+
+  // Définitions de ressources (depuis /api/state.resources)
+  resourceDefs: [],
+
+  // Définitions d'items craftés (depuis /api/state.items)
+  itemDefs: {},
 
   expectedSlots: [],    // pattern decoded from recipe
   filledSlots: [],      // what the player dropped in slots
 
   showRecipes: false,   // toggle ingredients / recipes panel
 };
+
+
 
 
 // ============================================================================
@@ -182,9 +191,23 @@ async function refreshCraftData() {
 
   console.log("[craft] tableLevel from /api/state =", craftState.tableLevel);
 
-  craftState.inventory = state.inventory || [];
+  // Définitions de ressources (icônes, labels, etc.)
   craftState.resourceDefs =
     state.resources || state.resource_defs || state.resourceDefinitions || [];
+
+  // Définitions d'items (icônes, labels, type, etc.)
+  craftState.itemDefs = {};
+  (state.items || []).forEach((it) => {
+    const key = it.item_key;
+    if (!key) return;
+    craftState.itemDefs[key] = {
+      key,
+      label: it.label_fr || it.label_en || key,
+      icon: it.icon || null,
+      type: it.type || null,
+      category: it.category || null,
+    };
+  });
 
   const levelSpan = $("craft-table-level");
   if (levelSpan) {
@@ -200,7 +223,51 @@ async function refreshCraftData() {
     craftBtn.style.display = craftState.tableLevel > 0 ? "" : "none";
   }
 
-  // Render ingredients
+  // ---------------------------
+  // Build combined inventory:
+  // resources (state.inventory) + items (state.items)
+  // ---------------------------
+  const combinedInventory = [];
+
+  // Resources
+  (state.inventory || []).forEach((res) => {
+    const key = res.resource || res.key || "";
+    if (!key) return;
+    const qty =
+      typeof res.qty === "number"
+        ? res.qty
+        : typeof res.quantity === "number"
+        ? res.quantity
+        : 0;
+
+    combinedInventory.push({
+      key,
+      qty,
+      kind: "resource",
+    });
+  });
+
+  // Items craftés
+  (state.items || []).forEach((it) => {
+    const key = it.item_key;
+    if (!key) return;
+    const qty =
+      typeof it.qty === "number"
+        ? it.qty
+        : typeof it.quantity === "number"
+        ? it.quantity
+        : 0;
+
+    combinedInventory.push({
+      key,
+      qty,
+      kind: "item",
+    });
+  });
+
+  craftState.inventory = combinedInventory;
+
+  // Render ingredients (resources + items)
   renderCraftIngredients(craftState.inventory);
 
   // 2) Load recipes
@@ -225,6 +292,7 @@ async function refreshCraftData() {
 }
 
 
+
 // ============================================================================
 // Render ingredients panel
 // ============================================================================
@@ -243,21 +311,36 @@ function renderCraftIngredients(inventory) {
     return;
   }
 
-  inventory.forEach((res) => {
-    const key = res.key || res.resource || "";
+  inventory.forEach((entry) => {
+    const key = entry.key || entry.resource || "";
     if (!key) return;
 
-    const defs = craftState.resourceDefs || [];
-    const def = defs.find((d) => d.key === key) || null;
-
-    const labelText = def && def.label ? def.label : key;
     const qtyVal =
-      typeof res.qty === "number"
-        ? res.qty
-        : typeof res.quantity === "number"
-        ? res.quantity
+      typeof entry.qty === "number"
+        ? entry.qty
+        : typeof entry.quantity === "number"
+        ? entry.quantity
         : 0;
-    const iconPath = def && def.icon ? def.icon : null;
+
+    // Déf ressource
+    const resDefs = craftState.resourceDefs || [];
+    const resDef = resDefs.find((d) => d.key === key) || null;
+
+    // Déf item
+    const itemDef =
+      craftState.itemDefs && craftState.itemDefs[key]
+        ? craftState.itemDefs[key]
+        : null;
+
+    const labelText =
+      (resDef && resDef.label) ||
+      (itemDef && itemDef.label) ||
+      key;
+
+    const iconPath =
+      (resDef && resDef.icon) ||
+      (itemDef && itemDef.icon) ||
+      null;
 
     const item = document.createElement("div");
     item.className = "craft-ingredient-item";
@@ -304,6 +387,7 @@ function renderCraftIngredients(inventory) {
     listEl.appendChild(item);
   });
 }
+
 
 
 // ============================================================================
