@@ -422,6 +422,35 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 5
 
+- key: vine_boost_1
+  enabled: true
+  card_type: resource_boost
+  card_category: boost
+  card_tags:
+  - liane
+  card_label: Liane +2
+  card_description: Ajoute 2 a la récolte de liane
+  card_image: /static/assets/img/cards/boosts/vine_boost_1.png
+  card_rarity: common
+  card_gameplay:
+    target_resource: vine
+    boost:
+      type: addition
+      amount: 2
+  shop:
+    prices:
+    - coins: 100
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
 - key: wood_boost_1
   enabled: true
   card_type: resource_boost

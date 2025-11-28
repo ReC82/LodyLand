@@ -716,7 +716,7 @@ function decodeRecipeIntoSlots(r) {
 
 
 // ============================================================================
-// Render craft slots
+// Render craft slots (expected + filled, avec icône ghost pour les attentes)
 // ============================================================================
 function renderCraftSlots() {
   const slots = document.querySelectorAll(".craft-slot");
@@ -730,6 +730,7 @@ function renderCraftSlots() {
 
     el.innerHTML = "";
 
+    // Pas d'attente sur ce slot → slot "vide" (gris)
     if (!expected) {
       el.style.opacity = "0.25";
       return;
@@ -737,16 +738,31 @@ function renderCraftSlots() {
 
     el.style.opacity = "1";
 
+    // ----------------------------------------------------------------------
+    // 1) CAS REMPLI : on affiche l'icône "pleine" de l'item / ressource
+    // ----------------------------------------------------------------------
     if (filled && filled.key) {
-      const def = (craftState.resourceDefs || []).find(
-        (d) => d.key === filled.key
-      );
+      let iconPath = null;
 
-      if (def && def.icon) {
+      // D'abord: item crafté ?
+      const itemDef = craftState.itemDefs?.[filled.key];
+      if (itemDef && itemDef.icon) {
+        iconPath = itemDef.icon;
+      } else {
+        // Sinon: ressource classique
+        const resDef = (craftState.resourceDefs || []).find(
+          (d) => d.key === filled.key
+        );
+        if (resDef && resDef.icon) {
+          iconPath = resDef.icon;
+        }
+      }
+
+      if (iconPath) {
         const img = document.createElement("img");
         img.className = "craft-slot-img";
 
-        let src = def.icon;
+        let src = iconPath;
         if (!src.startsWith("/") && !src.startsWith("http")) {
           src = "/" + src.replace(/^\/+/, "");
         }
@@ -760,14 +776,69 @@ function renderCraftSlots() {
         placeholder.textContent = filled.key;
         el.appendChild(placeholder);
       }
-    } else {
-      const placeholder = document.createElement("div");
-      placeholder.className = "craft-slot-placeholder";
-      placeholder.textContent = expected.key + " x" + expected.qty;
-      el.appendChild(placeholder);
+
+      return; // slot rempli → on s'arrête ici
     }
+
+    // ----------------------------------------------------------------------
+    // 2) CAS VIDE MAIS AVEC INGREDIENT ATTENDU :
+    //    on affiche l'icône "ghost" + un badge xQty
+    // ----------------------------------------------------------------------
+    let iconPath = null;
+    let labelText = expected.key || "";
+
+    // D'abord: l'item crafté ?
+    const ghostItemDef = craftState.itemDefs?.[expected.key];
+    if (ghostItemDef) {
+      labelText = ghostItemDef.label || labelText;
+      iconPath = ghostItemDef.icon || iconPath;
+    }
+
+    // Sinon: ressource classique
+    if (!iconPath) {
+      const ghostResDef = (craftState.resourceDefs || []).find(
+        (d) => d.key === expected.key
+      );
+      if (ghostResDef) {
+        labelText = ghostResDef.label || labelText;
+        iconPath = ghostResDef.icon || iconPath;
+      }
+    }
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "craft-slot-ghost";
+
+    if (iconPath) {
+      const img = document.createElement("img");
+      img.className = "craft-slot-img craft-slot-img-ghost";
+
+      let src = iconPath;
+      if (!src.startsWith("/") && !src.startsWith("http")) {
+        src = "/" + src.replace(/^\/+/, "");
+      }
+
+      img.src = src;
+      img.alt = labelText;
+      wrapper.appendChild(img);
+    } else {
+      // Fallback texte si pas d'icône
+      const placeholder = document.createElement("div");
+      placeholder.className =
+        "craft-slot-placeholder craft-slot-placeholder-ghost";
+      placeholder.textContent = labelText;
+      wrapper.appendChild(placeholder);
+    }
+
+    // Petit badge pour la quantité attendue
+    const badge = document.createElement("div");
+    badge.className = "craft-slot-qty-badge";
+    badge.textContent = "x" + (expected.qty || 1);
+    wrapper.appendChild(badge);
+
+    el.appendChild(wrapper);
   });
 }
+
 
 
 // ============================================================================

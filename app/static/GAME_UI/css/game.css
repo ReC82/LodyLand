@@ -1698,3 +1698,46 @@
 .clickable-img {
   cursor: zoom-in;
 }
+
+/* image normale dans un slot */
+.craft-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* image "ghost" (attente d'ingrédient) */
+.craft-slot-img-ghost {
+  opacity: 0.45;
+  filter: grayscale(0.2);
+}
+
+/* wrapper pour les slots ghost */
+.craft-slot-ghost {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* placeholder texte en mode ghost si pas d'icône */
+.craft-slot-placeholder-ghost {
+  font-size: 0.70rem;
+  opacity: 0.6;
+}
+
+/* petit badge quantité en bas à droite du slot */
+.craft-slot-qty-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 1px 4px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  background: rgba(15, 23, 42, 0.85); /* bleu nuit */
+  border: 1px solid rgba(248, 250, 252, 0.25); /* léger contour clair */
+  color: #e5e7eb;
+  pointer-events: none;
+}
