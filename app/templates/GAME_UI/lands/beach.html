@@ -8,12 +8,13 @@
 {% block body_class %}game-body beach-body{% endblock %}
 
 {% block content %}
-  <script>
-    // Nom du land pour le HUD
-    window.LAND_NAME = "Plage";
-  </script>
+<script>
+  window.LAND_NAME = "Plage";
+  window.CURRENT_LAND = "beach";
+  window.LAND_LABEL = "{{ land_label }}";
+</script>
 
-  <div class="land-container forest-land">
+  <div class="land-container beach-land">
     <div class="land-header d-flex justify-content-between align-items-center mb-3">
       <div class="land-logo-block">
         {% if land_logo %}
@@ -36,10 +37,36 @@
         ←
       </a>
     </div>
+
+    <!-- Sélecteur d'outils pour la Plage (généré depuis lands.yml) -->
+    <div class="land-tools mb-3">
+      <div class="land-tools-label mb-1">Outil utilisé :</div>
+      <div class="btn-group" role="group" aria-label="Outils de collecte plage">
+        {% for tool in tools %}
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light land-tool-btn {% if tool.key == 'hands' %}active{% endif %}"
+            data-tool="{{ tool.key }}"
+            data-requires-item="{{ tool.requires_item or '' }}"
+          >
+            {{ tool.emoji }} {{ tool.label }}
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+
     <!-- Grille des slots -->
     <div class="slot-grid">
       {% for idx in range(state.total_slots) %}
-        <div class="slot-tile" data-slot="{{ idx }}">
+        {% set cd = slot_cooldowns.get(idx) if slot_cooldowns is defined else None %}
+        <div
+          class="slot-tile"
+          data-slot="{{ idx }}"
+          {% if cd %}
+            data-cooldown-until="{{ cd.until }}"
+            data-cooldown-duration="{{ cd.duration }}"
+          {% endif %}
+        >
           <div class="slot-icon">
             <img
               src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
@@ -48,6 +75,11 @@
           </div>
           <div class="slot-index">{{ idx + 1 }}</div>
           <div class="slot-status">Clique pour fouiller</div>
+
+          <!-- Barre de cooldown -->
+          <div class="slot-cooldown-bar">
+            <div class="slot-cooldown-fill"></div>
+          </div>
         </div>
       {% endfor %}
     </div>
@@ -80,13 +112,12 @@
     </div>
   </div>
 
+  <!-- Toasts de loot -->
+  <div id="loot-toasts" class="loot-toasts"></div>
 
-      <!-- Toasts de loot -->
-    <div id="loot-toasts" class="loot-toasts"></div>
-    
 {% endblock %}
 
 {% block extra_scripts %}
-  <!-- Village Shop purchase logic -->
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/beach_app.js') }}"></script>
 {% endblock %}

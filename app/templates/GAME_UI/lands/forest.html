@@ -8,10 +8,11 @@
 {% block body_class %}game-body forest-body{% endblock %}
 
 {% block content %}
-  <script>
-    // Nom du land pour le HUD
-    window.LAND_NAME = "Forêt";
-  </script>
+<script>
+  window.LAND_NAME = "Forêt";
+  window.CURRENT_LAND = "forest";
+  window.LAND_LABEL = "{{ land_label }}";
+</script>
 
   <div class="land-container forest-land">
     <div class="land-header d-flex justify-content-between align-items-center mb-3">
@@ -23,7 +24,7 @@
             class="land-logo-img"
           />
         {% else %}
-          <h1 class="h3 mb-0">🌲 {{ land_label }}</h1>
+          <h1 class="h3 mb-0">{{ land_label }}</h1>
         {% endif %}
       </div>
 
@@ -37,38 +38,35 @@
       </a>
     </div>
 
-        <!-- Tool selector for this land -->
+    <!-- Sélecteur d'outils pour la Forêt (généré depuis lands.yml) -->
     <div class="land-tools mb-3">
       <div class="land-tools-label mb-1">Outil utilisé :</div>
       <div class="btn-group" role="group" aria-label="Outils de collecte forêt">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-light land-tool-btn active"
-          data-tool="hands"
-        >
-          🤲 Mains
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-light land-tool-btn"
-          data-tool="axe"
-        >
-          🪓 Hache
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-light land-tool-btn"
-          data-tool="shovel"
-        >
-          🪣 Pelle
-        </button>
+        {% for tool in tools %}
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light land-tool-btn {% if tool.key == 'hands' %}active{% endif %}"
+            data-tool="{{ tool.key }}"
+            data-requires-item="{{ tool.requires_item or '' }}"
+          >
+            {{ tool.emoji }} {{ tool.label }}
+          </button>
+        {% endfor %}
       </div>
     </div>
 
-
+    <!-- Grille des slots -->
     <div class="slot-grid">
       {% for idx in range(state.total_slots) %}
-        <div class="slot-tile" data-slot="{{ idx }}">
+        {% set cd = slot_cooldowns.get(idx) if slot_cooldowns is defined else None %}
+        <div
+          class="slot-tile"
+          data-slot="{{ idx }}"
+          {% if cd %}
+            data-cooldown-until="{{ cd.until }}"
+            data-cooldown-duration="{{ cd.duration }}"
+          {% endif %}
+        >
           <div class="slot-icon">
             <img
               src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
@@ -77,10 +75,14 @@
           </div>
           <div class="slot-index">{{ idx + 1 }}</div>
           <div class="slot-status">Clique pour fouiller</div>
+
+          <!-- Barre de cooldown -->
+          <div class="slot-cooldown-bar">
+            <div class="slot-cooldown-fill"></div>
+          </div>
         </div>
       {% endfor %}
     </div>
-
 
     <!-- TUYAU : la tuile "+" est ici seule -->
     <div class="slot-add-container">
@@ -93,6 +95,7 @@
         <div class="slot-icon">
           <img
             src="{{ url_for('static', filename='assets/img/lands/add_slot.png') }}"
+            alt="+ slot"
             class="land-slot-icon"
           />
         </div>
@@ -107,13 +110,13 @@
         <div class="slot-status">Clique pour débloquer</div>
       </div>
     </div>
+  </div>
 
-    <!-- Toasts de loot -->
-    <div id="loot-toasts" class="loot-toasts"></div>
+  <!-- Toasts de loot -->
+  <div id="loot-toasts" class="loot-toasts"></div>
 
 {% endblock %}
 
 {% block extra_scripts %}
-  <!-- Village Shop purchase logic -->
-  <script src="{{ url_for('static', filename='GAME_UI/js/lands/forest_app.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
 {% endblock %}

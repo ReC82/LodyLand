@@ -76,6 +76,15 @@ resources:
     icon: /static/assets/img/items/resources/iron_stick.png
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     unlock_description: Fabriqué en craftant du minerai de fer.
+  - key: oak_wood
+    label: Bois
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/oak_wood_log.png
+    description: Du bois de chêne, ressource de base pour construire et crafter.
+    unlock_description: Récolté avec une hache dans la forêt.
   - key: palm_leaf
     label: Palm Leaf
     base_cooldown: 10.0
@@ -85,6 +94,15 @@ resources:
     icon: /static/assets/img/items/resources/palm_leaf.png
     description: Une feuille de palmier, utile pour fabriquer des objets.
     unlock_description: Toujours accessible (niveau 0).
+  - key: palm_wood
+    label: Bois
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/palm_wood_log.png
+    description: Du bois de palmier, ressource de base pour construire et crafter.
+    unlock_description: Récolté avec une hache dans la forêt.
   - key: pearl
     label: Perle
     base_cooldown: 60.0
@@ -118,7 +136,7 @@ resources:
     base_sell_price: 8
     unlock_min_level: 0
     enabled: true
-    icon: /static/assets/img/items/resources/starfish.png
+    icon: /static/assets/img/items/resources/star.png
     description: Une étoile de mer colorée.
     unlock_description: Trouvée très rarement en fouillant la plage.
   - key: stone
@@ -139,15 +157,6 @@ resources:
     icon: /static/assets/img/items/resources/vine.png
     description: Des lianes qui serviront de ficelle pour fabriquer des objets.
     unlock_description: Trouvées parfois en fouillant la forêt.
-  - key: wood
-    label: Bois
-    base_cooldown: 10.0
-    base_sell_price: 2
-    unlock_min_level: 1
-    enabled: true
-    icon: /static/assets/img/items/resources/palm_wood.png
-    description: Du bois de palmier, ressource de base pour construire et crafter.
-    unlock_description: Récolté avec une hache dans la forêt.
   - key: wooden_plank
     label: Planche de bois
     base_cooldown: 10.0

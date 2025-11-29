@@ -4,7 +4,7 @@ from __future__ import annotations
 import random
 from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 
 from app.db import SessionLocal
 from app.models import (
@@ -14,6 +14,7 @@ from app.models import (
     ResourceStock,
     CardDef,
     PlayerCard,
+    PlayerItem,
     LandSlotState,  # NEW: per-slot land cooldown
 )
 from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
@@ -38,6 +39,35 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
         .filter_by(key=key, enabled=True)
         .first()
     )
+
+# ---------------------------------------------------------------------------
+# Helper: check if player owns a crafted item (tool, etc.).
+# ---------------------------------------------------------------------------
+
+def _player_has_item(session, player_id: int, item_key: str) -> bool:
+    """
+    Return True if the player owns at least one crafted item with this key.
+    This checks PlayerItem.quantity > 0.
+
+    We assume item_key matches PlayerItem.item_key.
+    """
+    if not item_key:
+        # No requirement => always OK
+        return True
+
+    row = (
+        session.query(PlayerItem)
+        .filter(PlayerItem.player_id == player_id)
+        .filter(PlayerItem.item_key == item_key)
+        .first()
+    )
+
+    if not row:
+        return False
+
+    qty = row.quantity or 0
+    return qty > 0
+
 
 
 def _player_has_land(session, player_id: int, land_key: str) -> bool:
@@ -548,7 +578,7 @@ def collect():
         except ValueError:
             return jsonify({"error": "slot_invalid"}), 400
 
-        # Optional tool, default to "hands" for now.
+        # Optional tool, default to "hands"
         tool_key = (data.get("tool") or "hands").strip() or "hands"
 
         with SessionLocal() as s:
@@ -566,20 +596,35 @@ def collect():
             if not land_def:
                 return jsonify({"error": "land_unknown"}), 400
 
-            # NOTE: on reste sur la clé "slots" existante dans lands.yml
             slots = int(land_def.get("slots", 0) or 0)
             if slots <= 0:
                 return jsonify({"error": "land_has_no_slots"}), 400
             if slot < 0 or slot >= slots:
                 return jsonify({"error": "slot_out_of_range", "max": slots}), 400
 
-            # Tool config (from lands.yml)
             tools_cfg = land_def.get("tools") or {}
+
+            # Tool config pour le tool demandé
             tool_cfg = tools_cfg.get(tool_key)
             if not tool_cfg:
                 return jsonify(
                     {"error": "tool_not_allowed", "tool": tool_key},
                 ), 400
+
+            # Check item requis (tool crafté)
+            required_item_key = tool_cfg.get("requires_item")
+            if required_item_key:
+                if not _player_has_item(s, p.id, required_item_key):
+                    return (
+                        jsonify(
+                            {
+                                "error": "tool_requires_item",
+                                "tool": tool_key,
+                                "item_key": required_item_key,
+                            }
+                        ),
+                        403,
+                    )
 
             # ------------------------------------------------------------------
             # Per-slot cooldown: LandSlotState(player_id, land_key, slot_index)
@@ -596,13 +641,18 @@ def collect():
                 .first()
             )
 
-            # If slot already exists and is on cooldown -> block
+            # Si le slot est déjà en cooldown → on renvoie aussi la durée
             if slot_state and slot_state.cooldown_until:
                 cd = slot_state.cooldown_until
                 if cd.tzinfo is None:
                     cd = cd.replace(tzinfo=timezone.utc)
 
                 if cd > now:
+                    # Quel outil a été utilisé pour ce cooldown ?
+                    used_tool_key = slot_state.last_tool_key or "hands"
+                    used_tool_cfg = tools_cfg.get(used_tool_key, {})
+                    used_cd = int(used_tool_cfg.get("cooldown_seconds", 10))
+
                     return (
                         jsonify(
                             {
@@ -610,12 +660,13 @@ def collect():
                                 "land": land_key,
                                 "slot": slot,
                                 "until": cd.isoformat(),
+                                "cooldown_duration": used_cd,
                             }
                         ),
                         409,
                     )
 
-            # If no state yet, create it
+            # Si pas encore de state, on le crée
             if not slot_state:
                 slot_state = LandSlotState(
                     player_id=p.id,
@@ -623,7 +674,6 @@ def collect():
                     slot_index=slot,
                 )
                 s.add(slot_state)
-
 
             # ------------------------------------------------------------------
             # Loot computation
@@ -649,10 +699,8 @@ def collect():
                 gained_xp,
             )
 
-            # Apply resource_boost cards, update inventory, and quest progress
             loot_payload = []
             for res_key, base_amount in raw_loot.items():
-                # Per unit amount (cards "resource_boost" for that resource)
                 per_unit = _compute_collect_amount(s, p.id, res_key)
                 amount = base_amount * per_unit * land_loot_mult
 
@@ -680,8 +728,6 @@ def collect():
                     }
                 )
 
-                # Quest progression for collect_resource (land mode)
-                # base_amount is pre-boost amount used for quest logic.
                 on_resource_collected(
                     session=s,
                     player=p,
@@ -694,12 +740,11 @@ def collect():
             # ------------------------------------------------------------------
             tool_cd = int(tool_cfg.get("cooldown_seconds", 10))
             if tool_cd < 0:
-                tool_cd = 0  # safety guard
+                tool_cd = 0
 
             next_cd = now + timedelta(seconds=tool_cd)
             slot_state.cooldown_until = next_cd
             slot_state.last_tool_key = tool_key
-
 
             s.commit()
             s.refresh(p)
@@ -713,8 +758,8 @@ def collect():
                         "slot": slot,
                         "tool": tool_key,
                         "loot": loot_payload,
-                        # For UI cooldown display (per slot)
                         "next": next_cd.isoformat(),
+                        "cooldown_duration": tool_cd,
                         "player": {
                             "id": p.id,
                             "name": p.name,
@@ -730,6 +775,7 @@ def collect():
                 ),
                 200,
             )
+
 
     # ----------------------------------------------------------------------
     # 2) Legacy mode: collect on a Tile

@@ -76,7 +76,7 @@ items:
     kind: resource
     label: Étoile de mer
     description: Une étoile de mer colorée.
-    icon: /static/assets/img/items/resources/starfish.png
+    icon: /static/assets/img/items/resources/star.png
     unlock_min_level: 0
     base_cooldown: 30
     base_sell_price: 8
@@ -107,17 +107,29 @@ items:
     enabled: true
     unlock_description: Trouvées parfois en fouillant la forêt.
 
-  wood:
-    key: wood
+  palm_wood:
+    key: palm_wood
     kind: resource
     label: Bois
     description: Du bois de palmier, ressource de base pour construire et crafter.
-    icon: /static/assets/img/items/resources/palm_wood.png
+    icon: /static/assets/img/items/resources/palm_wood_log.png
     unlock_min_level: 1
     base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Récolté avec une hache dans la forêt.
+
+  oak_wood:
+    key: oak_wood
+    kind: resource
+    label: Bois
+    description: Du bois de chêne, ressource de base pour construire et crafter.
+    icon: /static/assets/img/items/resources/oak_wood_log.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Récolté avec une hache dans la forêt.    
 
   wooden_stick:
     key: wooden_stick

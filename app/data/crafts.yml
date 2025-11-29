@@ -147,7 +147,7 @@ crafts:
       quantity: 1
     recipe:
       pattern:
-      - SSS
+      - BBB
       - B..
       legend:
         B:
@@ -163,6 +163,35 @@ crafts:
     xp_reward: 8
     unlock:
       recipe_card_key: recipe_tool_wooden_axe
+      min_level: 2
+    enabled: true
+
+  tool_wooden_shovel:
+    key: tool_wooden_shovel
+    station_key: craft_table_advanced
+    output:
+      kind: tool
+      key: tool_wooden_shovel
+      quantity: 1
+    recipe:
+      pattern:
+      - BBB
+      - .B.
+      - .B.
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+        S:
+          kind: resource
+          key: wooden_stick
+          quantity: 1
+      required_table_level: 3
+    craft_time_seconds: 10
+    xp_reward: 8
+    unlock:
+      recipe_card_key: recipe_tool_shovel_basic
       min_level: 2
     enabled: true
 
