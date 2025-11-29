@@ -107,7 +107,7 @@ def home():
 
     if player is not None:
         # Player already logged in → send to forest land
-        return redirect(url_for("frontend.land_forest"))
+        return redirect(url_for("frontend.land_page", slug="forest"))
 
     return render_template("home.html")
 
@@ -136,6 +136,10 @@ def shop():
 # Lands selection + individual lands
 # ---------------------------------------------------------------------------
 
+
+# ---------------------------------------------------------------------------
+# Lands selection + individual lands
+# ---------------------------------------------------------------------------
 
 @frontend_bp.get("/lands")
 def lands_select():
@@ -197,7 +201,6 @@ def lands_select():
             if diams:
                 parts.append(f"{diams} 💎")
 
-            # Simple display for resource costs, e.g. "100 wood"
             for res_key, qty in res_costs.items():
                 parts.append(f"{qty} {res_key}")
 
@@ -206,12 +209,13 @@ def lands_select():
 
             return " + ".join(parts)
 
-        # Optional: small emoji mapping per land (purely cosmetic)
         EMOJI_BY_SLUG = {
             "forest": "🌲",
             "beach": "🏝️",
+            "lake": "🏞️",
+            "mountain": "⛰️",
             "village": "🏘️",
-            # "desert": "🏜️", etc. when you add more
+            # "desert": "🏜️", etc. quand tu en ajoutes
         }
 
         lands: list[dict] = []
@@ -219,10 +223,9 @@ def lands_select():
             # key = "land_forest" -> slug = "forest"
             slug = cd.key[len("land_") :]
 
-            # Try to resolve frontend.land_<slug> route
-            endpoint = f"frontend.land_{slug}"
+            # URL = route générique /land/<slug>
             try:
-                land_url = url_for(endpoint)
+                land_url = url_for("frontend.land_page", slug=slug)
                 has_route = True
             except Exception:
                 land_url = None
@@ -247,13 +250,14 @@ def lands_select():
     return render_template("GAME_UI/lands/select.html", lands=lands)
 
 
-@frontend_bp.get("/land/forest")
-def land_forest():
+@frontend_bp.get("/land/<slug>")
+def land_page(slug: str):
     """
-    Forest land page.
+    Generic land page.
 
-    Renders slots state for the player + free slot card usage info
-    + tools list coming from lands.yml (for the tool selector UI).
+    - For classic "slot" lands (forest, beach, lake, mountain, ...):
+      uses lands.yml + LandSlotState to render slots, tools, cooldowns.
+    - For special lands like "village": render their own custom template.
     """
     session = SessionLocal()
     try:
@@ -261,55 +265,90 @@ def land_forest():
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # ------------------------------------------------------------------
-        # Land state for this player (slots, next_cost, slot_icon, ...)
-        # ------------------------------------------------------------------
-        state = get_player_land_state(session, player.id, "forest")
+        # -------------------------------
+        # Special case: village
+        # -------------------------------
+        if slug == "village":
+            # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
+            return render_template("GAME_UI/lands/village/village.html")
 
-        # ------------------------------------------------------------------
-        # Land config from lands.yml (logo, label, tools, ...)
-        # ------------------------------------------------------------------
-        conf = get_land_def("forest") or {}
+        # -------------------------------
+        # Config du land via lands.yml
+        # -------------------------------
+        conf = get_land_def(slug) or {}
+        if not conf:
+            # Land inconnu -> retour à la sélection
+            return redirect(url_for("frontend.lands_select"))
 
-        land_logo = conf.get("logo")  # ex: "static/assets/img/lands/forest_logo.png"
+        land_key = conf.get("key") or f"land_{slug}"
+        starting_land = bool(conf.get("starting_land", False))
+
+        # Si ce n'est pas un starting_land, on vérifie que le joueur a la carte
+        if not starting_land:
+            has_access = (
+                session.query(PlayerCard)
+                .filter(
+                    PlayerCard.player_id == player.id,
+                    PlayerCard.card_key == land_key,
+                    PlayerCard.qty > 0,
+                )
+                .first()
+            )
+            if not has_access:
+                return redirect(url_for("frontend.lands_select"))
+
+        # -------------------------------
+        # État des slots pour ce joueur
+        # -------------------------------
+        state = get_player_land_state(session, player.id, slug)
+
+        # -------------------------------
+        # Logo / label / tools
+        # -------------------------------
+        land_logo = conf.get("logo")
         land_label = (
             conf.get("label_fr")
             or conf.get("label_en")
             or conf.get("label")
-            or "Forêt"
+            or slug.capitalize()
         )
 
-        # Tools config from lands.yml (keys, labels, optional emoji, etc.)
         tools_cfg = conf.get("tools") or {}
 
-        # Normalize for template: list of dicts with key/label/emoji/requires_item
+        # Normalisation pour le template: [{key, label, emoji, requires_item}, ...]
         tools = []
         for key, cfg in tools_cfg.items():
             if not isinstance(cfg, dict):
-                # Safety: skip invalid entries
                 continue
 
             label = cfg.get("label") or key
-            # Default emoji: hands -> 🤲, otherwise generic 🛠️
+
             if "emoji" in cfg:
                 emoji = cfg.get("emoji") or ""
             else:
                 emoji = "🤲" if key == "hands" else "🛠️"
+
+            # Priority to explicit requires_item in YAML.
+            requires_item = cfg.get("requires_item")
+            # Option: si pas de requires_item, on considère que l'item a le même key
+            # sauf pour "hands" qui ne demande rien.
+            if requires_item is None and key != "hands":
+                requires_item = key
 
             tools.append(
                 {
                     "key": key,
                     "label": label,
                     "emoji": emoji,
-                    # Optionnel : on laisse passer requires_item si tu veux l'utiliser plus tard
-                    "requires_item": cfg.get("requires_item"),
+                    "requires_item": requires_item,
                 }
             )
 
-        # ------------------------------------------------------------------
-        # "Forest Free Slot" card presence
-        # ------------------------------------------------------------------
-        free_card_key = "land_forest_free_slot"
+        # -------------------------------
+        # Carte "Free Slot" (optionnelle)
+        # Pattern: land_<slug>_free_slot si tu veux
+        # -------------------------------
+        free_card_key = f"{land_key}_free_slot"
         has_free_slot_card = (
             session.query(PlayerCard)
             .filter(
@@ -321,77 +360,15 @@ def land_forest():
             > 0
         )
 
-        return render_template(
-            "GAME_UI/lands/forest.html",
-            state=state,
-            has_free_slot_card=has_free_slot_card,
-            land_logo=land_logo,
-            land_label=land_label,
-            tools=tools,  # 👈 utilisé dans le template pour générer les boutons
-        )
-    finally:
-        session.close()
+        # -------------------------------
+        # Cooldowns par slot (barre verte)
+        # -------------------------------
+        now = dt.datetime.now(dt.timezone.utc)
 
-
-
-@frontend_bp.get("/land/beach")
-def land_beach():
-    """
-    Beach land page.
-
-    Requires the player to own the land_beach card, otherwise redirects to /lands.
-    """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
-
-        # Check that player owns the beach access card
-        has_beach = (
-            session.query(PlayerCard)
-            .filter(
-                PlayerCard.player_id == player.id,
-                PlayerCard.card_key == "land_beach",
-                PlayerCard.qty > 0,
-            )
-            .first()
-        )
-        if not has_beach:
-            # Redirect to lands selection
-            return redirect(url_for("frontend.lands_select"))
-
-        # Land state (slots + cost of next slot for this player on this land)
-        state = get_player_land_state(session, player.id, "beach")
-
-        # Land config (logo + label) from lands.yml
-        conf = get_land_def("beach") or {}
-        land_logo = conf.get("logo")  # e.g. "static/assets/img/lands/beach_logo.png"
-        land_label = conf.get("label_fr") or conf.get("label_en") or "Plage"
-
-        # Does the player have a "Beach Free Slot" card?
-        free_card_key = "land_beach_free_slot"
-        has_free_slot_card = (
-            session.query(PlayerCard)
-            .filter(
-                PlayerCard.player_id == player.id,
-                PlayerCard.card_key == free_card_key,
-                PlayerCard.qty > 0,
-            )
-            .count()
-            > 0
-        )
-
-        # ------------------------------------------------------------------
-        # Per-slot cooldowns for visual bar
-        # ------------------------------------------------------------------
-        tools_cfg = conf.get("tools") or {}
-        now = datetime.now(timezone.utc)
-
-        slot_cooldowns = {}
+        slot_cooldowns: dict[int, dict] = {}
         rows = (
             session.query(LandSlotState)
-            .filter_by(player_id=player.id, land_key="beach")
+            .filter_by(player_id=player.id, land_key=slug)
             .all()
         )
 
@@ -400,89 +377,42 @@ def land_beach():
             if not cd:
                 continue
             if cd.tzinfo is None:
-                cd = cd.replace(tzinfo=timezone.utc)
+                cd = cd.replace(tzinfo=dt.timezone.utc)
             if cd <= now:
                 continue
 
             tool_key = st.last_tool_key or "hands"
             tool_cfg = tools_cfg.get(tool_key, {})
-            dur = int(tool_cfg.get("cooldown_seconds", 0))
-            if dur <= 0:
+            duration = int(tool_cfg.get("cooldown_seconds", 0))
+            if duration <= 0:
                 continue
 
             slot_cooldowns[st.slot_index] = {
                 "until": cd.isoformat(),
-                "duration": dur,
+                "duration": duration,
             }
 
+        # -------------------------------
+        # Rendu du template générique
+        # -------------------------------
         return render_template(
-            "GAME_UI/lands/beach.html",
+            "GAME_UI/lands/land_generic.html",
+            # pour le <script> global
+            land_key=slug,
+            land_label=land_label,
+            # pour le header
+            land_logo=land_logo,
+            # slots & coûts
             state=state,
             has_free_slot_card=has_free_slot_card,
-            land_logo=land_logo,
-            land_label=land_label,
+            # outils
+            tools=tools,
+            # cooldowns par slot
             slot_cooldowns=slot_cooldowns,
         )
+
     finally:
         session.close()
-
-@frontend_bp.get("/land/lake")
-def land_lake():
-    """
-    Lake land page.
-
-    Requires the player to own the land_lake card, otherwise redirects to /lands.
-    """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
-
-        # Check that player owns the lake access card
-        has_lake = (
-            session.query(PlayerCard)
-            .filter(
-                PlayerCard.player_id == player.id,
-                PlayerCard.card_key == "land_lake",
-                PlayerCard.qty > 0,
-            )
-            .first()
-        )
-        if not has_lake:
-            return redirect(url_for("frontend.lands_select"))
-
-        # Land state (base slots + bonuses + next slot cost)
-        state = get_player_land_state(session, player.id, "lake")
-
-        # Land config (logo + label) from lands.yml
-        conf = get_land_def("lake") or {}
-        land_logo = conf.get("logo")  # e.g. "static/assets/img/lands/lake_logo.png"
-        land_label = conf.get("label_fr") or conf.get("label_en") or "Lac"
-
-        # Does the player have a "Lake Free Slot" card?
-        free_card_key = "land_lake_free_slot"
-        has_free_slot_card = (
-            session.query(PlayerCard)
-            .filter(
-                PlayerCard.player_id == player.id,
-                PlayerCard.card_key == free_card_key,
-                PlayerCard.qty > 0,
-            )
-            .count()
-            > 0
-        )
-
-        return render_template(
-            "GAME_UI/lands/lake.html",
-            state=state,
-            has_free_slot_card=has_free_slot_card,
-            land_logo=land_logo,
-            land_label=land_label,
-        )
-    finally:
-        session.close()
-
 
 @frontend_bp.get("/land/village")
 def land_village():
