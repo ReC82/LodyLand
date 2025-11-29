@@ -95,8 +95,16 @@ forest:
   logo: static/assets/img/lands/forest_logo.png
   additional_slot_base_cost_diams: 10
   additional_slot_cost_multiplier: 1.5
+
+  # Base XP for one collect on this land (before tool multiplier and boosts)
+  xp_per_collect: 1
+
   tools:
     hands:
+      # Hand tool is always available (no item required)
+      cooldown_seconds: 10
+      xp_multiplier: 1.0
+
       base_loot:
       - resource: branch
         min: 1
@@ -115,7 +123,12 @@ forest:
         min: 1
         max: 1
         chance: 0.05
+
     axe:
+      # Later we will enforce an item here (item_axe_wood for example)
+      cooldown_seconds: 20
+      xp_multiplier: 1.2
+
       base_loot:
       - resource: wood
         min: 1
@@ -126,7 +139,12 @@ forest:
         min: 1
         max: 1
         chance: 0.1      
+
     shovel:
+      # Later we will enforce an item here (item_shovel_wood for example)
+      cooldown_seconds: 15
+      xp_multiplier: 1.1
+
       base_loot:
       - resource: dirt
         min: 1
@@ -136,7 +154,8 @@ forest:
       - resource: worm
         min: 1
         max: 1
-        chance: 0.1           
+        chance: 0.1
+
 lake:
   key: land_lake
   label_fr: Lac
