@@ -1,7 +1,80 @@
 // static/GAME_UI/js/lands/lake_app.js
+// Handle UI + collect logic for the Lake land page.
 
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
+}
+
+// ---------------------------------------------------------------------------
+// Simple cooldown manager for Lake slots (per slot timer)
+// ---------------------------------------------------------------------------
+
+let lakeCooldownInterval = null;
+
+/**
+ * Ensure we have a running interval that updates cooldown labels.
+ */
+function ensureLakeCooldownTicker() {
+  if (lakeCooldownInterval) return;
+  lakeCooldownInterval = setInterval(updateLakeCooldownUI, 1000);
+}
+
+/**
+ * Attach a cooldown to a given lake slot element.
+ * @param {HTMLElement} slotEl - Slot tile element.
+ * @param {string} iso - ISO datetime string (cooldown end).
+ */
+function setLakeSlotCooldown(slotEl, iso) {
+  if (!slotEl || !iso) return;
+
+  slotEl.dataset.cooldownUntil = iso;
+  ensureLakeCooldownTicker();
+
+  const statusEl = slotEl.querySelector(".slot-status");
+  if (!statusEl) return;
+
+  const msEnd = new Date(iso).getTime();
+  const diffSec = Math.ceil((msEnd - Date.now()) / 1000);
+
+  if (diffSec > 0) {
+    statusEl.textContent = `Cooldown : ${diffSec}s`;
+  } else {
+    statusEl.textContent = "Prêt à pêcher.";
+  }
+}
+
+/**
+ * Tick function called every second to refresh cooldown text for lake slots.
+ */
+function updateLakeCooldownUI() {
+  const slots = document.querySelectorAll(".slot-tile:not(.slot-add)");
+  let hasCooldown = false;
+
+  const now = Date.now();
+
+  slots.forEach((slot) => {
+    const iso = slot.dataset.cooldownUntil;
+    const statusEl = slot.querySelector(".slot-status");
+    if (!iso || !statusEl) return;
+
+    const msEnd = new Date(iso).getTime();
+    const diffSec = Math.ceil((msEnd - now) / 1000);
+
+    if (diffSec > 0) {
+      hasCooldown = true;
+      statusEl.textContent = `Cooldown : ${diffSec}s`;
+      slot.classList.add("slot-on-cooldown");
+    } else {
+      statusEl.textContent = "Prêt à pêcher.";
+      slot.classList.remove("slot-on-cooldown");
+      delete slot.dataset.cooldownUntil;
+    }
+  });
+
+  if (!hasCooldown && lakeCooldownInterval) {
+    clearInterval(lakeCooldownInterval);
+    lakeCooldownInterval = null;
+  }
 }
 
 async function collectOnLakeSlot(slotEl) {
@@ -22,7 +95,7 @@ async function collectOnLakeSlot(slotEl) {
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({
-        land: "lake",   // 👈 important
+        land: "lake",
         slot: slotIndex,
       }),
     });
@@ -36,6 +109,15 @@ async function collectOnLakeSlot(slotEl) {
         msg = "Tu n'as pas la carte 'Accès Lac'.";
       } else if (data.error === "player_required") {
         msg = "Tu dois être connecté(e) pour fouiller le lac.";
+      } else if (data.error === "on_cooldown" && data.until) {
+        // Slot is on cooldown server-side -> sync cooldown with UI
+        setLakeSlotCooldown(slotEl, data.until);
+        const msEnd = new Date(data.until).getTime();
+        const diffSec = Math.ceil((msEnd - Date.now()) / 1000);
+        msg =
+          diffSec > 0
+            ? `Slot en cooldown (${diffSec}s restants).`
+            : "Slot presque prêt...";
       } else if (data.error) {
         msg = `Erreur: ${data.error}`;
       }
@@ -58,9 +140,9 @@ async function collectOnLakeSlot(slotEl) {
 
     if (statusEl) statusEl.textContent = `Tu as trouvé : ${summary}`;
 
-    // Toasts de loot (icône + quantité au format "+ 1.6")
+    // Loot toasts (icon + amount like "+ 1.6")
     if (Array.isArray(data.loot) && data.loot.length > 0 && window.showLootToasts) {
-    window.showLootToasts(data.loot);
+      window.showLootToasts(data.loot);
     }
 
     if (data.player && window.renderPlayer) {
@@ -74,6 +156,11 @@ async function collectOnLakeSlot(slotEl) {
       const lvl = data.player?.level ?? 0;
       const rewards = data.level_rewards || [];
       showLevelUpModal(lvl, rewards);
+    }
+
+    // Visual cooldown for this slot
+    if (data.next) {
+      setLakeSlotCooldown(slotEl, data.next);
     }
   } catch (err) {
     console.error("Lake collect request failed:", err);

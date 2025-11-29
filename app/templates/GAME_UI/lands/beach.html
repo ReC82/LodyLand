@@ -41,17 +41,13 @@
       {% for idx in range(state.total_slots) %}
         <div class="slot-tile" data-slot="{{ idx }}">
           <div class="slot-icon">
-            {% if state.slot_icon %}
-              <img
-                src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
-                alt="Plage"
-                class="land-slot-icon"
-              />
-            {% else %}
-              🏖️
-            {% endif %}
+            <img
+              src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
+              class="land-slot-icon"
+            />
           </div>
           <div class="slot-index">{{ idx + 1 }}</div>
+          <div class="slot-status">Clique pour fouiller</div>
         </div>
       {% endfor %}
     </div>

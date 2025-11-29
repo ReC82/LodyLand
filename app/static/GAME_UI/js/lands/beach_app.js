@@ -5,8 +5,80 @@ function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
 
+// ---------------------------------------------------------------------------
+// Simple cooldown manager for Beach slots (per slot timer)
+// ---------------------------------------------------------------------------
+
+let beachCooldownInterval = null;
+
 /**
- * Appelle /api/collect en mode "land" pour la Plage.
+ * Ensure we have a running interval that updates cooldown labels.
+ */
+function ensureBeachCooldownTicker() {
+  if (beachCooldownInterval) return;
+  beachCooldownInterval = setInterval(updateBeachCooldownUI, 1000);
+}
+
+/**
+ * Attach a cooldown to a given beach slot element.
+ * @param {HTMLElement} slotEl - Slot tile element.
+ * @param {string} iso - ISO datetime string (cooldown end).
+ */
+function setBeachSlotCooldown(slotEl, iso) {
+  if (!slotEl || !iso) return;
+
+  slotEl.dataset.cooldownUntil = iso;
+  ensureBeachCooldownTicker();
+
+  const statusEl = slotEl.querySelector(".slot-status");
+  if (!statusEl) return;
+
+  const msEnd = new Date(iso).getTime();
+  const diffSec = Math.ceil((msEnd - Date.now()) / 1000);
+
+  if (diffSec > 0) {
+    statusEl.textContent = `Cooldown : ${diffSec}s`;
+  } else {
+    statusEl.textContent = "Prêt à fouiller.";
+  }
+}
+
+/**
+ * Tick function called every second to refresh cooldown text for beach slots.
+ */
+function updateBeachCooldownUI() {
+  const slots = document.querySelectorAll(".slot-tile:not(.slot-add)");
+  let hasCooldown = false;
+
+  const now = Date.now();
+
+  slots.forEach((slot) => {
+    const iso = slot.dataset.cooldownUntil;
+    const statusEl = slot.querySelector(".slot-status");
+    if (!iso || !statusEl) return;
+
+    const msEnd = new Date(iso).getTime();
+    const diffSec = Math.ceil((msEnd - now) / 1000);
+
+    if (diffSec > 0) {
+      hasCooldown = true;
+      statusEl.textContent = `Cooldown : ${diffSec}s`;
+      slot.classList.add("slot-on-cooldown");
+    } else {
+      statusEl.textContent = "Prêt à fouiller.";
+      slot.classList.remove("slot-on-cooldown");
+      delete slot.dataset.cooldownUntil;
+    }
+  });
+
+  if (!hasCooldown && beachCooldownInterval) {
+    clearInterval(beachCooldownInterval);
+    beachCooldownInterval = null;
+  }
+}
+
+/**
+ * Call /api/collect in "land" mode for the Beach.
  */
 async function collectOnBeachSlot(slotEl) {
   const slotIndex = Number(slotEl.getAttribute("data-slot"));
@@ -44,6 +116,15 @@ async function collectOnBeachSlot(slotEl) {
         msg = "Tu n'as pas la carte 'Accès Plage'.";
       } else if (data.error === "player_required") {
         msg = "Tu dois être connecté(e) pour fouiller la plage.";
+      } else if (data.error === "on_cooldown" && data.until) {
+        // Slot is on cooldown server-side -> sync cooldown with UI
+        setBeachSlotCooldown(slotEl, data.until);
+        const msEnd = new Date(data.until).getTime();
+        const diffSec = Math.ceil((msEnd - Date.now()) / 1000);
+        msg =
+          diffSec > 0
+            ? `Slot en cooldown (${diffSec}s restants).`
+            : "Slot presque prêt...";
       } else if (data.error) {
         msg = `Erreur: ${data.error}`;
       }
@@ -68,7 +149,7 @@ async function collectOnBeachSlot(slotEl) {
       statusEl.textContent = `Tu as trouvé : ${summary}`;
     }
 
-    // Toasts de loot (icône + quantité au format "+ 1.6")
+    // Loot toasts (icon + amount like "+ 1.6")
     if (Array.isArray(data.loot) && data.loot.length > 0 && window.showLootToasts) {
       window.showLootToasts(data.loot);
     }
@@ -86,6 +167,10 @@ async function collectOnBeachSlot(slotEl) {
       showLevelUpModal(lvl, rewards);
     }
 
+    // Visual cooldown for this slot
+    if (data.next) {
+      setBeachSlotCooldown(slotEl, data.next);
+    }
   } catch (err) {
     console.error("Beach collect request failed:", err);
     if (statusEl) {
