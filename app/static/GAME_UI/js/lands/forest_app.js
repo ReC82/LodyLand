@@ -10,6 +10,7 @@
   // ---------------------------------------------------------------------------
 
   let forestCooldownInterval = null;
+  let currentForestTool = "hands";
 
   /**
    * Ensure we have a running interval that updates cooldown labels.
@@ -106,6 +107,7 @@
         body: JSON.stringify({
           land: "forest",
           slot: slotIndex,
+          tool: currentForestTool,   // NEW: selected tool
         }),
       });
 
@@ -191,6 +193,29 @@
   }
 
   /**
+   * Init tool selector for Forest (hands / axe / shovel).
+   */
+  function initForestTools() {
+    const buttons = document.querySelectorAll(".land-tool-btn");
+    if (!buttons.length) return;
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tool = btn.getAttribute("data-tool") || "hands";
+        currentForestTool = tool;
+
+        // Toggle active class
+        buttons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // Optional: you could update a HUD text later
+        console.log("[Forest] Tool selected:", currentForestTool);
+      });
+    });
+  }
+
+
+  /**
    * Init click handlers on all forest slots (except the + tile).
    */
   function initForestCollect() {
@@ -265,6 +290,7 @@
 
   // Wait for DOM ready
   document.addEventListener("DOMContentLoaded", () => {
+    initForestTools();
     initForestCollect();
     initForestAddSlot();
   });

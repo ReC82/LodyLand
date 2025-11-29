@@ -37,6 +37,35 @@
       </a>
     </div>
 
+        <!-- Tool selector for this land -->
+    <div class="land-tools mb-3">
+      <div class="land-tools-label mb-1">Outil utilisé :</div>
+      <div class="btn-group" role="group" aria-label="Outils de collecte forêt">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-light land-tool-btn active"
+          data-tool="hands"
+        >
+          🤲 Mains
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-light land-tool-btn"
+          data-tool="axe"
+        >
+          🪓 Hache
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-light land-tool-btn"
+          data-tool="shovel"
+        >
+          🪣 Pelle
+        </button>
+      </div>
+    </div>
+
+
     <div class="slot-grid">
       {% for idx in range(state.total_slots) %}
         <div class="slot-tile" data-slot="{{ idx }}">
