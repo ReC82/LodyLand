@@ -1,19 +1,20 @@
-tool_wooden_axe:
-  key: tool_wooden_axe
-  station_key: craft_table_medium
+tool_wooden_shovel:
+  key: tool_wooden_shovel
+  station_key: craft_table_advanced
 
   required_grid:
-    tier: 2        
+    tier: 3      
 
   output:
     kind: tool
-    key: tool_wooden_axe
+    key: tool_wooden_shovel
     quantity: 1
 
   recipe:
     pattern:
       - "BBB"
-      - "B.."
+      - ".B."
+      - ".B."      
     legend:
       B:
         kind: resource
@@ -29,7 +30,7 @@ tool_wooden_axe:
 
   unlock:
   - type: card
-    key: recipe_tool_wooden_axe
+    key: recipe_tool_shovel_basic
 
   - type: level
     min_level: 2

@@ -15,6 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from datetime import datetime
 
 from .db import Base
@@ -280,3 +281,51 @@ class PlayerQuestObjective(Base):
 
     # Back link to the parent quest
     quest = relationship("PlayerQuest", back_populates="objectives")
+
+# app/models.py
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Boolean,
+    ForeignKey,
+    Float,
+    UniqueConstraint,
+)
+# ... tes autres imports existants (Base, etc.)
+
+# ---------------------------------------------------------------------------
+# LandSlotState: per-player, per-land, per-slot cooldown + last tool used
+# ---------------------------------------------------------------------------
+
+class LandSlotState(Base):
+    __tablename__ = "land_slot_states"
+
+    id = Column(Integer, primary_key=True)
+
+    # Player owning this slot state
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+
+    # Short land key used in YAML and API: "forest", "beach", "lake", ...
+    land_key = Column(String(50), nullable=False)
+
+    # Slot index inside the land (0..N-1)
+    slot_index = Column(Integer, nullable=False)
+
+    # When this slot will be ready again (cooldown end)
+    cooldown_until = Column(DateTime, nullable=True)
+
+    # Last tool used on this slot: "hands", "axe", "shovel", ...
+    last_tool_key = Column(String(50), nullable=True)
+
+    __table_args__ = (
+        # Ensure only one row per (player, land, slot_index)
+        UniqueConstraint(
+            "player_id",
+            "land_key",
+            "slot_index",
+            name="uq_land_slot_state_player_land_slot",
+        ),
+    )

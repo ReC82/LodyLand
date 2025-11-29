@@ -9,49 +9,63 @@ beach:
   html_description: templates/GAME_UI/lands/land_beach_description.html
   additional_slot_base_cost_diams: 15
   additional_slot_cost_multiplier: 1.6
+
+  xp_per_collect: 1
+
   tools:
     hands:
+      label: "Mains nues"
+      emoji: "🤲"
+      cooldown_seconds: 300
+      xp_multiplier: 1.0
       base_loot:
-      - resource: sand
-        min: 1
-        max: 1
-        chance: 1.0
-      - resource: pearl
-        min: 1
-        max: 1
-        chance: 10.0       
+        - resource: sand
+          min: 1
+          max: 1
+          chance: 1.0
       extra_loot:
-      - resource: seashell
-        min: 1
-        max: 1
-        chance: 0.0001
-      - resource: starfish
-        min: 1
-        max: 1
-        chance: 0.0001
-      - resource: pearl
-        min: 1
-        max: 1
-        chance: 0.0001
-    shovel:
+        - resource: seashell
+          min: 1
+          max: 1
+          chance: 0.0001
+        - resource: starfish
+          min: 1
+          max: 1
+          chance: 0.0001
+        - resource: pearl
+          min: 1
+          max: 1
+          chance: 0.0001
+
+    tool_wooden_shovel:         # 👈 clé = item_key de ta pelle (à adapter)
+      label: "Pelle de plage"
+      emoji: "🪣"
+      # requires_item: tool_sand_shovel  # tu peux le laisser implicite
+      cooldown_seconds: 15
+      xp_multiplier: 1.1
       base_loot:
-      - resource: sand
-        min: 1
-        max: 2
-        chance: 1.0
+        - resource: sand
+          min: 1
+          max: 2
+          chance: 1.0
       extra_loot:
-      - resource: seashell
-        min: 1
-        max: 1
-        chance: 0.001
-      - resource: starfish
-        min: 1
-        max: 1
-        chance: 0.001
-      - resource: pearl
-        min: 1
-        max: 1
-        chance: 0.001
+        - resource: seashell
+          min: 1
+          max: 1
+          chance: 0.015
+        - resource: starfish
+          min: 1
+          max: 1
+          chance: 0.10
+        - resource: pearl
+          min: 1
+          max: 1
+          chance: 0.05
+        - resource: piece_of_broken_statue
+          min: 1
+          max: 1
+          chance: 0.01         
+
 cave:
   key: land_cave
   label_fr: Grotte
@@ -86,57 +100,79 @@ farm:
   additional_slot_cost_multiplier: 1.5
   tools: {}
 forest:
-  key: land_forest
-  label_fr: Forêt
-  label_en: Forest
+  card_key: land_forest
+  label: "Forest"
+  short_description: "A simple forest"
+  full_description: land_forest_description
+
   starting_land: true
   slots: 8
   slot_icon: static/assets/img/lands/forest_slot.png
   logo: static/assets/img/lands/forest_logo.png
+
   additional_slot_base_cost_diams: 10
   additional_slot_cost_multiplier: 1.5
+
+  xp_per_collect: 1   # base XP pour ce land
+
   tools:
     hands:
+      label: "Mains nues"
+      emoji: "🤲"
+      cooldown_seconds: 10
+      xp_multiplier: 1.0
       base_loot:
-      - resource: branch
-        min: 1
-        max: 1
-        chance: 1.0
+        - resource: branch
+          chance: 1.0
+          min: 1
+          max: 2
       extra_loot:
-      - resource: palm_leaf
-        min: 1
-        max: 1
-        chance: 0.1
-      - resource: vine
-        min: 1
-        max: 1
-        chance: 0.1
-      - resource: stone
-        min: 1
-        max: 1
-        chance: 0.05
-    axe:
+        - resource: palm_leaf
+          chance: 0.10
+          min: 1
+          max: 1
+        - resource: vine
+          chance: 0.10
+          min: 1
+          max: 1
+        - resource: small_stone
+          chance: 0.05
+          min: 1
+          max: 1
+
+    tool_wooden_axe:
+      label: "Hache en bois"
+      emoji: "🪓"
+      cooldown_seconds: 20
+      xp_multiplier: 1.2
       base_loot:
-      - resource: wood
-        min: 1
-        max: 1
-        chance: 1.0
-      extra_loot: 
-      - resource: apple
-        min: 1
-        max: 1
-        chance: 0.1      
-    shovel:
+        - resource: palm_wood
+          chance: 1.0
+          min: 1
+          max: 3
+      extra_loot:
+        - resource: apple
+          chance: 0.10
+          min: 1
+          max: 1
+
+    tool_wooden_shovel:
+      label: "Pelle en bois"
+      emoji: "🪣"
+      cooldown_seconds: 15
+      xp_multiplier: 1.1
       base_loot:
-      - resource: dirt
-        min: 1
-        max: 1
-        chance: 1.0
-      extra_loot: 
-      - resource: worm
-        min: 1
-        max: 1
-        chance: 0.1           
+        - resource: dirt
+          chance: 1.0
+          min: 1
+          max: 2
+      extra_loot:
+        - resource: worm
+          chance: 0.10
+          min: 1
+          max: 1
+
+
 lake:
   key: land_lake
   label_fr: Lac

@@ -19,11 +19,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from .auth import get_current_player
 from .db import SessionLocal
-from .models import Player, Account, PlayerCard, CardDef
+from .models import Player, Account, PlayerCard, CardDef, LandSlotState
 from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
 
 import datetime as dt
+from datetime import datetime, timezone 
 from .village_shop import get_active_village_offers
 
 from pathlib import Path
@@ -251,7 +252,8 @@ def land_forest():
     """
     Forest land page.
 
-    Renders slots state for the player + free slot card usage info.
+    Renders slots state for the player + free slot card usage info
+    + tools list coming from lands.yml (for the tool selector UI).
     """
     session = SessionLocal()
     try:
@@ -259,15 +261,54 @@ def land_forest():
         if not player:
             return redirect(url_for("frontend.home"))
 
-        # Land state (base_slots, extra_slots, total_slots, next_cost, slot_icon, ...)
+        # ------------------------------------------------------------------
+        # Land state for this player (slots, next_cost, slot_icon, ...)
+        # ------------------------------------------------------------------
         state = get_player_land_state(session, player.id, "forest")
 
-        # Land config (logo + label) from lands.yml
+        # ------------------------------------------------------------------
+        # Land config from lands.yml (logo, label, tools, ...)
+        # ------------------------------------------------------------------
         conf = get_land_def("forest") or {}
-        land_logo = conf.get("logo")  # e.g. "static/assets/img/lands/forest_logo.png"
-        land_label = conf.get("label_fr") or conf.get("label_en") or "Forêt"
 
-        # Does the player have a "Forest Free Slot" card?
+        land_logo = conf.get("logo")  # ex: "static/assets/img/lands/forest_logo.png"
+        land_label = (
+            conf.get("label_fr")
+            or conf.get("label_en")
+            or conf.get("label")
+            or "Forêt"
+        )
+
+        # Tools config from lands.yml (keys, labels, optional emoji, etc.)
+        tools_cfg = conf.get("tools") or {}
+
+        # Normalize for template: list of dicts with key/label/emoji/requires_item
+        tools = []
+        for key, cfg in tools_cfg.items():
+            if not isinstance(cfg, dict):
+                # Safety: skip invalid entries
+                continue
+
+            label = cfg.get("label") or key
+            # Default emoji: hands -> 🤲, otherwise generic 🛠️
+            if "emoji" in cfg:
+                emoji = cfg.get("emoji") or ""
+            else:
+                emoji = "🤲" if key == "hands" else "🛠️"
+
+            tools.append(
+                {
+                    "key": key,
+                    "label": label,
+                    "emoji": emoji,
+                    # Optionnel : on laisse passer requires_item si tu veux l'utiliser plus tard
+                    "requires_item": cfg.get("requires_item"),
+                }
+            )
+
+        # ------------------------------------------------------------------
+        # "Forest Free Slot" card presence
+        # ------------------------------------------------------------------
         free_card_key = "land_forest_free_slot"
         has_free_slot_card = (
             session.query(PlayerCard)
@@ -286,9 +327,11 @@ def land_forest():
             has_free_slot_card=has_free_slot_card,
             land_logo=land_logo,
             land_label=land_label,
+            tools=tools,  # 👈 utilisé dans le template pour générer les boutons
         )
     finally:
         session.close()
+
 
 
 @frontend_bp.get("/land/beach")
@@ -339,16 +382,49 @@ def land_beach():
             > 0
         )
 
+        # ------------------------------------------------------------------
+        # Per-slot cooldowns for visual bar
+        # ------------------------------------------------------------------
+        tools_cfg = conf.get("tools") or {}
+        now = datetime.now(timezone.utc)
+
+        slot_cooldowns = {}
+        rows = (
+            session.query(LandSlotState)
+            .filter_by(player_id=player.id, land_key="beach")
+            .all()
+        )
+
+        for st in rows:
+            cd = st.cooldown_until
+            if not cd:
+                continue
+            if cd.tzinfo is None:
+                cd = cd.replace(tzinfo=timezone.utc)
+            if cd <= now:
+                continue
+
+            tool_key = st.last_tool_key or "hands"
+            tool_cfg = tools_cfg.get(tool_key, {})
+            dur = int(tool_cfg.get("cooldown_seconds", 0))
+            if dur <= 0:
+                continue
+
+            slot_cooldowns[st.slot_index] = {
+                "until": cd.isoformat(),
+                "duration": dur,
+            }
+
         return render_template(
             "GAME_UI/lands/beach.html",
             state=state,
             has_free_slot_card=has_free_slot_card,
             land_logo=land_logo,
             land_label=land_label,
+            slot_cooldowns=slot_cooldowns,
         )
     finally:
         session.close()
-
 
 @frontend_bp.get("/land/lake")
 def land_lake():

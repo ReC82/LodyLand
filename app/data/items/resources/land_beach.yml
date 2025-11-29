@@ -1,0 +1,11 @@
+  piece_of_broken_statue:
+    key: piece_of_broken_statue
+    kind: item
+    label: Pièce de statue cassée
+    description: Une pièce d'une statue ancienne et cassée.
+    icon: /static/assets/img/items/resources/piece_of_broken_statue.png
+    unlock_min_level: 4
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Trouvée en explorant des terres anciennes.

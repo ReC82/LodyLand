@@ -4,17 +4,20 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/lands.css') }}">
 {% endblock %}
 
-{% block title %}Land – Lac{% endblock %}
-{% block body_class %}game-body lake-body{% endblock %}
+{# Titre onglet #}
+{% block title %}Land – {{ land_label }}{% endblock %}
+
+{# Body class dynamique : game-body + {land_key}-body #}
+{% block body_class %}game-body {{ land_key }}-body{% endblock %}
 
 {% block content %}
 <script>
-  window.LAND_NAME = "Lac";
-  window.CURRENT_LAND = "lake";
+  window.LAND_NAME = "{{ land_label }}";
+  window.CURRENT_LAND = "{{ land_key }}";
   window.LAND_LABEL = "{{ land_label }}";
 </script>
 
-  <div class="land-container lake-land">
+  <div class="land-container {{ land_key }}-land">
     <div class="land-header d-flex justify-content-between align-items-center mb-3">
       <div class="land-logo-block">
         {% if land_logo %}
@@ -24,7 +27,7 @@
             class="land-logo-img"
           />
         {% else %}
-          <h1 class="h3 mb-0">🏞️ {{ land_label }}</h1>
+          <h1 class="h3 mb-0">{{ land_label }}</h1>
         {% endif %}
       </div>
 
@@ -38,10 +41,10 @@
       </a>
     </div>
 
-    <!-- Sélecteur d'outils pour la Forêt (généré depuis lands.yml) -->
+    <!-- Sélecteur d'outils (généré depuis lands.yml) -->
     <div class="land-tools mb-3">
       <div class="land-tools-label mb-1">Outil utilisé :</div>
-      <div class="btn-group" role="group" aria-label="Outils de collecte forêt">
+      <div class="btn-group" role="group" aria-label="Outils de collecte {{ land_label }}">
         {% for tool in tools %}
           <button
             type="button"
@@ -84,7 +87,7 @@
       {% endfor %}
     </div>
 
-    <!-- TUYAU : la tuile "+" est ici seule -->
+    <!-- Tuile +1 slot -->
     <div class="slot-add-container">
       <div
         class="slot-tile slot-add full-width"
