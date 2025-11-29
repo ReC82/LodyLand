@@ -7,7 +7,15 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, jsonify, request
 
 from app.db import SessionLocal
-from app.models import ResourceDef, Tile, Player, ResourceStock, CardDef, PlayerCard
+from app.models import (
+    ResourceDef,
+    Tile,
+    Player,
+    ResourceStock,
+    CardDef,
+    PlayerCard,
+    LandSlotState,  # NEW: per-slot land cooldown
+)
 from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
 from app.unlock_rules import check_unlock_rules
 from app.auth import get_current_player
@@ -540,6 +548,9 @@ def collect():
         except ValueError:
             return jsonify({"error": "slot_invalid"}), 400
 
+        # Optional tool, default to "hands" for now.
+        tool_key = (data.get("tool") or "hands").strip() or "hands"
+
         with SessionLocal() as s:
             # Current player from cookie
             p = get_current_player(s)
@@ -555,20 +566,68 @@ def collect():
             if not land_def:
                 return jsonify({"error": "land_unknown"}), 400
 
+            # NOTE: on reste sur la clé "slots" existante dans lands.yml
             slots = int(land_def.get("slots", 0) or 0)
             if slots <= 0:
                 return jsonify({"error": "land_has_no_slots"}), 400
             if slot < 0 or slot >= slots:
                 return jsonify({"error": "slot_out_of_range", "max": slots}), 400
 
-            # For now: always use "hands" as tool
+            # Tool config (from lands.yml)
             tools_cfg = land_def.get("tools") or {}
-            tool_key = "hands"
             tool_cfg = tools_cfg.get(tool_key)
             if not tool_cfg:
-                return jsonify({"error": "tool_not_allowed", "tool": tool_key}), 400
+                return jsonify(
+                    {"error": "tool_not_allowed", "tool": tool_key},
+                ), 400
 
-            # Base loot roll (without boosts)
+            # ------------------------------------------------------------------
+            # Per-slot cooldown: LandSlotState(player_id, land_key, slot_index)
+            # ------------------------------------------------------------------
+            now = datetime.now(timezone.utc)
+
+            slot_state = (
+                s.query(LandSlotState)
+                .filter_by(
+                    player_id=p.id,
+                    land_key=land_key,
+                    slot_index=slot,
+                )
+                .first()
+            )
+
+            # If slot already exists and is on cooldown -> block
+            if slot_state and slot_state.cooldown_until:
+                cd = slot_state.cooldown_until
+                if cd.tzinfo is None:
+                    cd = cd.replace(tzinfo=timezone.utc)
+
+                if cd > now:
+                    return (
+                        jsonify(
+                            {
+                                "error": "on_cooldown",
+                                "land": land_key,
+                                "slot": slot,
+                                "until": cd.isoformat(),
+                            }
+                        ),
+                        409,
+                    )
+
+            # If no state yet, create it
+            if not slot_state:
+                slot_state = LandSlotState(
+                    player_id=p.id,
+                    land_key=land_key,
+                    slot_index=slot,
+                )
+                s.add(slot_state)
+
+
+            # ------------------------------------------------------------------
+            # Loot computation
+            # ------------------------------------------------------------------
             raw_loot = _roll_land_loot(tool_cfg)  # {resource: base_qty}
 
             # Global land loot multiplier (cards with type "land_loot_boost")
@@ -579,11 +638,11 @@ def collect():
                 tool_key,
             )
 
-            # Current time (for XP & cooldown displayed to client)
-            now = datetime.now(timezone.utc)
+            # XP gain: land xp_per_collect * tool xp_multiplier
+            base_xp = float(land_def.get("xp_per_collect", XP_PER_COLLECT))
+            xp_mult = float(tool_cfg.get("xp_multiplier", 1.0))
+            gained_xp = _compute_xp_gain(s, p.id, base_xp * xp_mult)
 
-            # XP gain for this collect (base XP_PER_COLLECT + XP cards)
-            gained_xp = _compute_xp_gain(s, p.id, XP_PER_COLLECT)
             level_up, new_level, level_rewards = apply_xp_and_level_up(
                 s,
                 p,
@@ -630,21 +689,17 @@ def collect():
                     base_amount=int(base_amount),
                 )
 
-            # "Virtual" cooldown for client (not stored per slot yet)
-            # We use the first base_loot resource as reference for cooldown.
-            base_res = None
-            base_loot_list = tool_cfg.get("base_loot") or []
-            if base_loot_list:
-                base_res = base_loot_list[0].get("resource")
+            # ------------------------------------------------------------------
+            # Cooldown application for this slot / tool
+            # ------------------------------------------------------------------
+            tool_cd = int(tool_cfg.get("cooldown_seconds", 10))
+            if tool_cd < 0:
+                tool_cd = 0  # safety guard
 
-            base_cd = 10
-            if base_res:
-                rd = _get_res_def(s, base_res)
-                if rd and rd.base_cooldown is not None:
-                    base_cd = rd.base_cooldown
+            next_cd = now + timedelta(seconds=tool_cd)
+            slot_state.cooldown_until = next_cd
+            slot_state.last_tool_key = tool_key
 
-            effective_cd = _compute_cooldown(s, p.id, base_res or "", base_cd)
-            next_cd = now + timedelta(seconds=effective_cd)
 
             s.commit()
             s.refresh(p)
@@ -656,7 +711,9 @@ def collect():
                         "mode": "land",
                         "land": land_key,
                         "slot": slot,
+                        "tool": tool_key,
                         "loot": loot_payload,
+                        # For UI cooldown display (per slot)
                         "next": next_cd.isoformat(),
                         "player": {
                             "id": p.id,
