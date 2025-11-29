@@ -249,6 +249,7 @@ def run_all_normalizers(report_mode: bool = False) -> None:
         "app/data/cards/normalize_cards_yaml.py",
         "app/data/items/normalize_items_yaml.py",
         "app/data/crafts/normalize_crafts_yaml.py",
+        "app/data/lands/normalize_lands_yaml.py",
     ]
 
     results: list[dict] = []

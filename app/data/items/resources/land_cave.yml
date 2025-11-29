@@ -1,0 +1,12 @@
+  items:
+    gold_leaf:
+      key: gold_leaf
+      kind: resource
+      label: Feuille d'or
+      description: Une feuille d'or précieuse trouvée dans la caverne.
+      icon: /static/assets/img/items/resources/gold_leaf.png
+      unlock_min_level: 4
+      base_cooldown: 10
+      base_sell_price: 10
+      enabled: true
+      unlock_description: Trouvée en explorant des cavernes profondes.
