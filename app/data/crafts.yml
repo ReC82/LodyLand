@@ -47,11 +47,11 @@ crafts:
       legend:
         R:
           key: rope
-          type: item
+          kind: item
           quantity: 1
         P:
           key: pearl
-          type: resource
+          kind: resource
           quantity: 1
       required_table_level: 3
     craft_time_seconds: 60
