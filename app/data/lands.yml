@@ -88,10 +88,10 @@ cave:
       - resource: stone
         chance: 1.0
         min: 1
-        max: 2
+        max: 1
       extra_loot:
       - resource: gold_leaf
-        chance: 0.01
+        chance: 0.5
         min: 1
         max: 1
     tool_wooden_pickaxe:
@@ -175,7 +175,7 @@ forest:
       cooldown_seconds: 15
       xp_multiplier: 1.2
       base_loot:
-      - resource: palm_wood
+      - resource: palm_wood_log
         chance: 1.0
         min: 1
         max: 3
@@ -197,6 +197,21 @@ forest:
       extra_loot:
       - resource: worm
         chance: 0.1
+        min: 1
+        max: 1
+    tool_wooden_knife:
+      label: Couteau en bois
+      emoji: 🪣
+      cooldown_seconds: 10
+      xp_multiplier: 1.1
+      base_loot:
+      - resource: bark
+        chance: 1.0
+        min: 1
+        max: 2
+      extra_loot:
+      - resource: resin
+        chance: 0.05
         min: 1
         max: 1
   key: forest

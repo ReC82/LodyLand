@@ -13,6 +13,15 @@ resources:
     enabled: true
     icon: /static/assets/img/items/resources/anchovy.png
     description: Une anchois ... morte, mais elle a l'air commestible.
+  - key: ancient_relic_part
+    label: Ancient Relic Part
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/ancient_relic_part.png
+    description: Une pièce d'une relique ancienne.
+    unlock_description: Trouvé en fouillant le sol.
   - key: apple
     label: Apple
     base_cooldown: 10.0
@@ -22,6 +31,24 @@ resources:
     icon: /static/assets/img/items/resources/apple.png
     description: Une pomme fraîche, bonne à manger.
     unlock_description: Trouvé en fouillant coupant un arbre.
+  - key: bark
+    label: Écorce
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/bark.png
+    description: De l'écorce, utile pour fabriquer des colles et des encres.
+    unlock_description: Trouvé en coupant des arbres.
+  - key: berry
+    label: Berry
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/berry.png
+    description: Une baie juteuse, bonne à manger.
+    unlock_description: Trouvé en fouillant les buissons.
   - key: branch
     label: Branches
     base_cooldown: 10.0
@@ -31,6 +58,15 @@ resources:
     icon: /static/assets/img/items/resources/branch.png
     description: Une branche tombée d'un arbre.  Ca peut toujours être utile.
     unlock_description: Toujours accessible (niveau 0).
+  - key: clay
+    label: Argile
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/clay.png
+    description: De l'argile, utile pour fabriquer des poteries.
+    unlock_description: Trouvé en fouillant le sol.
   - key: coal
     label: Charbon
     base_cooldown: 10.0
@@ -49,6 +85,33 @@ resources:
     icon: /static/assets/img/items/resources/dirt.png
     description: Some dirt, useful for various purposes.
     unlock_description: Trouvé en utilsant une pelle.
+  - key: flint
+    label: Flint
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/flint.png
+    description: Du silex, utile pour allumer des feux.
+    unlock_description: Trouvé en fouillant le sol.
+  - key: gold_leaf
+    label: Feuille d'or
+    base_cooldown: 10.0
+    base_sell_price: 10
+    unlock_min_level: 4
+    enabled: true
+    icon: /static/assets/img/items/resources/gold_leaf.png
+    description: Une feuille d'or précieuse trouvée dans la caverne.
+    unlock_description: Trouvée en explorant des cavernes profondes.
+  - key: herbs
+    label: Herbs
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/herbs.png
+    description: Des herbes. Utile pour cuisiner ou fabriquer des potions.
+    unlock_description: Trouvé en fouillant les plantes.
   - key: iron_ingot
     label: Lingot de fer
     base_cooldown: 10.0
@@ -112,6 +175,15 @@ resources:
     icon: /static/assets/img/items/resources/pearl.png
     description: Une perle précieuse, très rare.
     unlock_description: Découverte exceptionnellement dans les coquillages.
+  - key: resin
+    label: Résine
+    base_cooldown: 10.0
+    base_sell_price: 1
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/resin.png
+    description: De la résine, utile pour fabriquer des colles et des encres.
+    unlock_description: Trouvé en coupant des arbres.
   - key: sand
     label: Sable
     base_cooldown: 5.0
@@ -148,6 +220,15 @@ resources:
     icon: /static/assets/img/items/resources/small_stone.png
     description: De petites pierres, utiles pour la construction.
     unlock_description: Récolté à la main dans la forêt.
+  - key: stone_chunk
+    label: Morceau de pierre
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 1
+    enabled: true
+    icon: /static/assets/img/items/resources/stone_chunk.png
+    description: Un morceau de pierre, utile pour la construction.
+    unlock_description: Trouvé en explorant des cavernes.
   - key: vine
     label: Lianes
     base_cooldown: 5.0

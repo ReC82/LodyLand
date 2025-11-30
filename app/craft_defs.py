@@ -56,79 +56,56 @@ def load_craft_defs() -> None:
 # ---------------------------------------------------------------------------
 def _load_item_defs(data_root: Path) -> Dict[str, Dict[str, Any]]:
     """
-    Load items from app/data/items/*.yml
+    Load item definitions for crafting.
 
-    Supports:
-      A) items:
-           slug:
-             key: ...
-             ...
+    Priority:
+      1) If app/data/items.yml exists (merged by normalize_items_yaml.py),
+         we load ONLY that file.
+      2) Otherwise, we fall back to scanning app/data/items/*.yml
 
-      B) Flat mapping:
-           slug:
-             key: ...
-             ...
-
-      C) List:
-           - key: ...
-           - key: ...
+    Accepted structures are the same as before:
+      - items:
+          slug:
+            key: ...
+      - flat mapping
+      - top-level list of dicts
     """
-
-    items_dir = data_root / "items"
-    if not items_dir.exists():
-        print(f"[craft_defs] items dir not found: {items_dir}")
-        return {}
-
     merged: Dict[str, Dict[str, Any]] = {}
 
-    for yaml_path in items_dir.glob("*.yml"):
+    merged_file = data_root / "items.yml"
+    items_dir = data_root / "items"
 
-        # Load YAML
+    # ------------------------------------------------------------------
+    # 1) Mode moderne : fichier mergé items.yml
+    # ------------------------------------------------------------------
+    if merged_file.exists():
         try:
-            raw = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
-        except Exception as exc:
-            print(f"[craft_defs] Error reading {yaml_path}: {exc}")
-            continue
+            raw = yaml.safe_load(merged_file.read_text(encoding="utf-8")) or {}
+        except Exception as exc:  # noqa: BLE001
+            print(f"[craft_defs] Error reading merged items.yml: {exc}")
+            return {}
 
-        if raw is None:
-            continue
-
-        # ---------- Detect structure ----------
-        items_block = None
-
-        # A) items: {}
-        if isinstance(raw, dict):
-            if "items" in raw and isinstance(raw["items"], dict):
-                items_block = raw["items"]
-
-            # B) flat mapping
-            else:
-                if any(isinstance(v, dict) for v in raw.values()):
-                    items_block = raw
-
-        # C) top-level list
-        elif isinstance(raw, list):
-            items_block = {}
-            for entry in raw:
-                if isinstance(entry, dict):
-                    key = (entry.get("key") or "").strip()
-                    if key:
-                        items_block[key] = entry
-
-        # Nothing usable
+        items_block = raw.get("items")
         if not isinstance(items_block, dict):
-            print(f"[craft_defs] File {yaml_path} has no usable item definitions.")
-            continue
+            print(
+                "[craft_defs] merged items.yml has no valid 'items' dict "
+                f"(type={type(items_block).__name__})."
+            )
+            return {}
 
-        # ---------- Normalize entries ----------
+        # Normalise exactement comme avant
         for slug, cfg in items_block.items():
             if not isinstance(cfg, dict):
-                print(f"[craft_defs] Skipping slug '{slug}' in {yaml_path}: not a dict.")
+                print(
+                    f"[craft_defs] Skipping slug '{slug}' in {merged_file}: not a dict."
+                )
                 continue
 
             key = (cfg.get("key") or str(slug)).strip()
             if not key:
-                print(f"[craft_defs] Skipping slug '{slug}' in {yaml_path}: missing key.")
+                print(
+                    f"[craft_defs] Skipping slug '{slug}' in {merged_file}: missing key."
+                )
                 continue
 
             cfg = dict(cfg)
@@ -143,13 +120,90 @@ def _load_item_defs(data_root: Path) -> Dict[str, Dict[str, Any]]:
                 cfg["type"] = kind
 
             if key in merged:
-                print(f"[craft_defs] WARNING: duplicate item key '{key}' – last wins ({yaml_path})")
+                print(
+                    f"[craft_defs] WARNING: duplicate item key '{key}' – "
+                    f"last wins (merged items.yml)"
+                )
+
+            merged[key] = cfg
+
+        print(f"[craft_defs] Loaded {len(merged)} items from merged {merged_file}.")
+        return merged
+
+    # ------------------------------------------------------------------
+    # 2) Fallback : ancien comportement, scan du dossier items/
+    # ------------------------------------------------------------------
+    if not items_dir.exists():
+        print(f"[craft_defs] items dir not found: {items_dir}")
+        return {}
+
+    for yaml_path in items_dir.glob("*.yml"):
+        try:
+            raw = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
+        except Exception as exc:
+            print(f"[craft_defs] Error reading {yaml_path}: {exc}")
+            continue
+
+        if raw is None:
+            continue
+
+        items_block = None
+
+        if isinstance(raw, dict):
+            if "items" in raw and isinstance(raw["items"], dict):
+                items_block = raw["items"]
+            else:
+                if any(isinstance(v, dict) for v in raw.values()):
+                    items_block = raw
+        elif isinstance(raw, list):
+            items_block = {}
+            for entry in raw:
+                if isinstance(entry, dict):
+                    key = (entry.get("key") or "").strip()
+                    if key:
+                        items_block[key] = entry
+
+        if not isinstance(items_block, dict):
+            print(
+                f"[craft_defs] File {yaml_path} has no usable item definitions."
+            )
+            continue
+
+        for slug, cfg in items_block.items():
+            if not isinstance(cfg, dict):
+                print(
+                    f"[craft_defs] Skipping slug '{slug}' in {yaml_path}: not a dict."
+                )
+                continue
+
+            key = (cfg.get("key") or str(slug)).strip()
+            if not key:
+                print(
+                    f"[craft_defs] Skipping slug '{slug}' in {yaml_path}: missing key."
+                )
+                continue
+
+            cfg = dict(cfg)
+            cfg["slug"] = str(slug)
+            cfg["key"] = key
+            cfg["label"] = (cfg.get("label") or key).strip()
+            cfg["description"] = (cfg.get("description") or "").strip()
+
+            kind = (cfg.get("kind") or "").strip()
+            cfg["kind"] = kind
+            if "type" not in cfg:
+                cfg["type"] = kind
+
+            if key in merged:
+                print(
+                    f"[craft_defs] WARNING: duplicate item key '{key}' – "
+                    f"last wins ({yaml_path})"
+                )
 
             merged[key] = cfg
 
     print(f"[craft_defs] Loaded {len(merged)} items from {items_dir}.")
     return merged
-
 
 
 def _load_station_defs(data_root: Path) -> Dict[str, Dict[str, Any]]:

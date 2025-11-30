@@ -1,0 +1,54 @@
+  tool_sharp_stone:
+    key: tool_sharp_stone
+    kind: tool
+    label: Sharp Stone
+    description: Une pierre taillée, utile comme outil de base.
+    icon: /static/assets/img/items/tools/tool_sharp_stone.png
+    unlock_min_level: 2
+    base_cooldown: 40.0
+    base_sell_price: 5
+    enabled: true 
+
+  tool_wooden_knife:
+    key: tool_wooden_knife
+    kind: tool
+    label: Wooden Knife
+    description: Un couteau en bois, utile comme outil de base.
+    icon: /static/assets/img/items/tools/tool_wooden_knife.png
+    unlock_min_level: 2
+    base_cooldown: 40.0
+    base_sell_price: 5
+    enabled: true  
+
+  tool_wooden_hammer:
+    key: tool_wooden_hammer
+    kind: tool
+    label: Wooden Hammer
+    description: Un marteau en bois, utile comme outil de base.
+    icon: /static/assets/img/items/tools/tool_wooden_hammer.png
+    unlock_min_level: 2
+    base_cooldown: 40.0
+    base_sell_price: 5
+    enabled: true       
+
+  tool_vine_net:
+    key: tool_vine_net
+    kind: tool
+    label: Vine Net
+    description: Un filet en lianes, utile pour attraper des poissons.
+    icon: /static/assets/img/items/tools/tool_vine_net.png
+    unlock_min_level: 2
+    base_cooldown: 40.0
+    base_sell_price: 5
+    enabled: true    
+
+  tool_vine_basket:
+    key: tool_vine_basket
+    kind: tool
+    label: Vine Basket
+    description: Un panier en lianes, utile pour transporter des objets.
+    icon: /static/assets/img/items/tools/vine_basket.png
+    unlock_min_level: 2
+    base_cooldown: 40.0
+    base_sell_price: 5
+    enabled: true      

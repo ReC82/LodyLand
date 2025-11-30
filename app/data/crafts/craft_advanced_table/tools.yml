@@ -36,3 +36,42 @@ tool_wooden_shovel:
     min_level: 2
 
   enabled: true
+
+tool_vine_basket:
+  key: tool_vine_basket
+  station_key: craft_table_advanced
+
+  required_grid:
+    tier: 3      
+
+  output:
+    kind: tool
+    key: tool_vine_basket
+    quantity: 1
+
+  recipe:
+    pattern:
+      - ".V."
+      - "VBV"
+      - "VVV"      
+    legend:
+      V:
+        kind: resource
+        key: vine
+        quantity: 1
+      B:
+        kind: resource
+        key: branch
+        quantity: 1        
+
+  craft_time_seconds: 60
+  xp_reward: 15
+
+  unlock:
+  - type: card
+    key: recipe_tool_vine_basket
+
+  - type: level
+    min_level: 2
+
+  enabled: true
