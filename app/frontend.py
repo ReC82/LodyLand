@@ -706,7 +706,7 @@ def register():
         session.commit()
 
         # Prepare response + player_id cookie
-        resp = make_response(redirect(url_for("frontend.land_forest")))
+        resp = make_response(redirect(url_for("frontend.land_page", slug="forest")))
         resp.set_cookie(
             "player_id",
             str(player.id),
@@ -762,7 +762,7 @@ def login():
             )
 
         # OK → set cookie + redirect to forest land
-        resp = make_response(redirect(url_for("frontend.land_forest")))
+        resp = make_response(redirect(url_for("frontend.land_page", slug="forest")))
         resp.set_cookie(
             "player_id",
             str(player.id),

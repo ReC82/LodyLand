@@ -138,6 +138,35 @@ crafts:
       min_level: 2
     enabled: true
 
+  tool_vine_basket:
+    key: tool_vine_basket
+    station_key: craft_table_advanced
+    output:
+      kind: tool
+      key: tool_vine_basket
+      quantity: 1
+    recipe:
+      pattern:
+      - .V.
+      - VBV
+      - VVV
+      legend:
+        V:
+          kind: resource
+          key: vine
+          quantity: 1
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+      required_table_level: 3
+    craft_time_seconds: 60
+    xp_reward: 15
+    unlock:
+      recipe_card_key: recipe_tool_vine_basket
+      min_level: 2
+    enabled: true
+
   tool_wooden_axe:
     key: tool_wooden_axe
     station_key: craft_table_medium

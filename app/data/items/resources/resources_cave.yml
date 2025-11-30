@@ -1,0 +1,47 @@
+  gold_leaf:
+    key: gold_leaf
+    kind: resource
+    label: Feuille d'or
+    description: Une feuille d'or précieuse trouvée dans la caverne.
+    icon: /static/assets/img/items/resources/gold_leaf.png
+    unlock_min_level: 4
+    base_cooldown: 10
+    base_sell_price: 10
+    enabled: true
+    unlock_description: Trouvée en explorant des cavernes profondes.
+
+  iron_ore:
+    key: iron_ore
+    kind: resource
+    label: Minerai de fer
+    description: Un minerai de fer, utile pour fabriquer des objets en fer.
+    icon: /static/assets/img/items/resources/iron_ore.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Trouvé dans les mines.
+
+  coal:
+    key: coal
+    kind: resource
+    label: Charbon
+    description: Du charbon, utile pour fabriquer des objets en fer.
+    icon: /static/assets/img/items/resources/coal.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriqué en craftant du bois ou trouvé dans les mines.      
+
+  stone_chunk:
+    key: stone_chunk
+    kind: resource
+    label: Morceau de pierre
+    description: Un morceau de pierre, utile pour la construction.
+    icon: /static/assets/img/items/resources/stone_chunk.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.   

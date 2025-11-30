@@ -1,0 +1,179 @@
+  branch:
+    key: branch
+    kind: resource
+    label: Branches
+    description: Une branche tombée d'un arbre.  Ca peut toujours être utile.
+    icon: /static/assets/img/items/resources/branch.png
+    unlock_min_level: 0
+    base_cooldown: 10.0
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Toujours accessible (niveau 0).
+
+  stone:
+    key: stone
+    kind: resource
+    label: Small Stone
+    description: De petites pierres, utiles pour la construction.
+    icon: /static/assets/img/items/resources/small_stone.png
+    unlock_min_level: 2
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Récolté à la main dans la forêt.
+
+  vine:
+    key: vine
+    kind: resource
+    label: Lianes
+    description: Des lianes qui serviront de ficelle pour fabriquer des objets.
+    icon: /static/assets/img/items/resources/vine.png
+    unlock_min_level: 0
+    base_cooldown: 5
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Trouvées parfois en fouillant la forêt.
+
+  palm_wood:
+    key: palm_wood
+    kind: resource
+    label: Bois
+    description: Du bois de palmier, ressource de base pour construire et crafter.
+    icon: /static/assets/img/items/resources/palm_wood_log.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Récolté avec une hache dans la forêt.
+
+  oak_wood:
+    key: oak_wood
+    kind: resource
+    label: Bois
+    description: Du bois de chêne, ressource de base pour construire et crafter.
+    icon: /static/assets/img/items/resources/oak_wood_log.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Récolté avec une hache dans la forêt.        
+
+  worm:
+    key: worm
+    kind: resource
+    label: Ver
+    description: Un ver, utile pour attraper des poissons.
+    icon: /static/assets/img/items/resources/worm.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Trouvé en fouillant la terre. 
+
+  apple:
+    key: apple
+    kind: resource
+    label: Apple
+    description: Une pomme fraîche, bonne à manger.
+    icon: /static/assets/img/items/resources/apple.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 5
+    enabled: true
+    unlock_description: Trouvé en fouillant coupant un arbre. 
+
+  dirt:
+    key: dirt
+    kind: resource
+    label: Dirt
+    description: Some dirt, useful for various purposes.
+    icon: /static/assets/img/items/resources/dirt.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en utilsant une pelle.         
+
+  berry:
+    key: berry
+    kind: resource
+    label: Berry
+    description: Une baie juteuse, bonne à manger.
+    icon: /static/assets/img/items/resources/berry.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en fouillant les buissons.  
+
+  herbs:
+    key: herbs
+    kind: resource
+    label: Herbs
+    description: Des herbes. Utile pour cuisiner ou fabriquer des potions.
+    icon: /static/assets/img/items/resources/herbs.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en fouillant les plantes.   
+
+  flint:
+    key: flint
+    kind: resource
+    label: Flint
+    description: Du silex, utile pour allumer des feux.
+    icon: /static/assets/img/items/resources/flint.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en fouillant le sol. 
+
+  ancient_relic_part:
+    key: ancient_relic_part
+    kind: resource
+    label: Ancient Relic Part
+    description: Une pièce d'une relique ancienne.
+    icon: /static/assets/img/items/resources/ancient_relic_part.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en fouillant le sol.
+
+  clay:
+    key: clay
+    kind: resource
+    label: Argile
+    description: De l'argile, utile pour fabriquer des poteries.
+    icon: /static/assets/img/items/resources/clay.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en fouillant le sol.
+
+  resin:
+    key: resin
+    kind: resource
+    label: Résine
+    description: De la résine, utile pour fabriquer des colles et des encres.
+    icon: /static/assets/img/items/resources/resin.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en coupant des arbres.
+
+  bark:
+    key: bark
+    kind: resource
+    label: Écorce
+    description: De l'écorce, utile pour fabriquer des colles et des encres.
+    icon: /static/assets/img/items/resources/bark.png
+    unlock_min_level: 1
+    base_cooldown: 0
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en coupant des arbres.       
