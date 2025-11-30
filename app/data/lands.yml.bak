@@ -175,7 +175,7 @@ forest:
       cooldown_seconds: 15
       xp_multiplier: 1.2
       base_loot:
-      - resource: palm_wood
+      - resource: palm_wood_log
         chance: 1.0
         min: 1
         max: 3

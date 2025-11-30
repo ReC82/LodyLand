@@ -25,9 +25,22 @@
 
     function lockToolButton(btn) {
       if (!btn) return;
+
+      const toolKey = btn.getAttribute("data-tool") || "hands";
+
+      // "hands" must always be visible
+      if (toolKey === "hands") {
+        btn.classList.remove("tool-locked");
+        btn.disabled = false;
+        btn.removeAttribute("title");
+        btn.style.display = "flex";
+        return;
+      }
+
       btn.classList.add("tool-locked");
       btn.disabled = true;
       btn.setAttribute("title", "Tu dois d'abord crafter cet outil.");
+      btn.style.display = "none"; // hide from dropdown
     }
 
     function unlockToolButton(btn) {
@@ -35,17 +48,30 @@
       btn.classList.remove("tool-locked");
       btn.disabled = false;
       btn.removeAttribute("title");
+      btn.style.display = "flex"; // show in dropdown
     }
+
+
 
     /**
      * Enable/disable tools based on player's crafted items.
      * items = data.items from /api/state
+     * -> On utilise aussi items.icon (depuis items.yml) pour afficher les icônes.
      */
     function applyAvailability(items) {
       const list = Array.isArray(items) ? items : [];
 
-      const hasItem = (key) =>
-        list.some((it) => it.item_key === key && (it.qty || 0) > 0);
+      // Map rapide item_key -> meta (avec icon, qty, labels, ...)
+      const metaByKey = new Map();
+      list.forEach((it) => {
+        if (!it || !it.item_key) return;
+        metaByKey.set(it.item_key, it);
+      });
+
+      const hasItem = (key) => {
+        const meta = metaByKey.get(key);
+        return !!meta && (meta.qty || 0) > 0;
+      };
 
       const buttons = document.querySelectorAll(".land-tool-btn");
       buttonsCache = buttons;
@@ -55,7 +81,8 @@
 
         // Priority: explicit requires_item in HTML
         const explicitRequired = btn.dataset.requiresItem || null;
-        let requiredItemKey = explicitRequired;
+        const itemKeyAttr = btn.dataset.itemKey || null;
+        let requiredItemKey = explicitRequired || itemKeyAttr;
 
         // Fallback convention:
         //  - pas de requires_item explicite
@@ -68,10 +95,23 @@
 
         // Mains (ou outil sans requirement) = toujours dispo
         if (!requiredItemKey || toolKey === "hands") {
+          // Icône des mains normalement déjà câblée dans le HTML
           unlockToolButton(btn);
           return;
         }
 
+        // Si on a des meta pour cet item_key → on pousse l'icône dans le bouton
+        const meta = metaByKey.get(requiredItemKey);
+        if (meta && meta.icon) {
+          const label =
+            meta.label_fr ||
+            meta.label_en ||
+            btn.getAttribute("data-label") ||
+            toolKey;
+          applyIconToButton(btn, meta.icon, label);
+        }
+
+        // Lock / unlock suivant présence dans l'inventaire
         if (hasItem(requiredItemKey)) {
           unlockToolButton(btn);
         } else {
@@ -79,6 +119,7 @@
         }
       });
     }
+
 
     /**
      * Load /api/state once and apply tool availability.
@@ -530,6 +571,43 @@
   })();
 
   window.LandSlots = LandSlots;
+
+    // Normalize icon path from YAML to a usable URL
+    function normalizeIconPath(iconPath) {
+      if (!iconPath) return null;
+
+      // Absolute URL (CDN, etc.)
+      if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
+        return iconPath;
+      }
+
+      // Déjà en chemin absolu (/static/...)
+      if (iconPath.startsWith("/")) {
+        return iconPath;
+      }
+
+      // On enlève un éventuel "static/" au début, on préfixe par /static/
+      const cleaned = iconPath.replace(/^\/?static\//, "");
+      return "/static/" + cleaned;
+    }
+
+    // Apply icon + alt to a given tool button (if present)
+    function applyIconToButton(btn, iconPath, label) {
+      if (!btn) return;
+      const url = normalizeIconPath(iconPath);
+      if (!url) return;
+
+      btn.dataset.icon = url;
+
+      const img = btn.querySelector(".land-tool-icon");
+      if (img) {
+        img.src = url;
+        if (label) {
+          img.alt = label;
+        }
+      }
+    }
+
 
   // ---------------------------------------------------------------------------
   // DOM Ready: wiring commun à tous les lands

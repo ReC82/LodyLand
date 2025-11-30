@@ -41,22 +41,74 @@
       </a>
     </div>
 
-    <!-- Sélecteur d'outils (généré depuis lands.yml) -->
+    <!-- Sélecteur d'outils (menu déroulant) -->
     <div class="land-tools mb-3">
       <div class="land-tools-label mb-1">Outil utilisé :</div>
-      <div class="btn-group" role="group" aria-label="Outils de collecte {{ land_label }}">
-        {% for tool in tools %}
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-light land-tool-btn {% if tool.key == 'hands' %}active{% endif %}"
-            data-tool="{{ tool.key }}"
-            data-requires-item="{{ tool.requires_item or '' }}"
-          >
-            {{ tool.emoji }} {{ tool.label }}
-          </button>
-        {% endfor %}
+
+      <div class="land-tool-dropdown">
+        {# Bouton principal qui affiche l’outil courant (par défaut : mains) #}
+        <button
+          type="button"
+          class="land-tool-dropdown-toggle"
+          id="land-tool-toggle"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <span class="land-tool-toggle-icon-wrapper">
+            <img
+              src="{{ url_for('static', filename='assets/img/items/tools/hand.png') }}"
+              alt="Mains nues"
+              class="land-tool-toggle-icon"
+            />
+          </span>
+          <span class="land-tool-toggle-text">
+            <span class="land-tool-toggle-label-main">Mains nues</span>
+          </span>
+          <span class="land-tool-toggle-caret">▾</span>
+        </button>
+
+        {# Menu contenant tous les tools disponibles pour ce land #}
+        <div class="land-tool-dropdown-menu" id="land-tool-menu">
+          {% for tool in tools %}
+            {# hands = icône fixe dans static #}
+            {% if tool.key == 'hands' %}
+              {% set icon_static = url_for('static', filename='assets/img/items/tools/hand.png') %}
+            {% else %}
+              {% set icon_static = '' %}
+            {% endif %}
+
+            {# clé d'item utilisée pour PlayerItem + ITEM_DEFS (items.yml) #}
+            {% set item_key = tool.requires_item or tool.key %}
+
+            <button
+              type="button"
+              class="land-tool-dropdown-item land-tool-btn {% if tool.key == 'hands' %}active{% endif %}"
+              data-tool="{{ tool.key }}"
+              data-requires-item="{{ tool.requires_item or '' }}"
+              data-item-key="{{ item_key }}"
+              data-icon="{{ icon_static }}"
+              data-label="{{ tool.label }}"
+            >
+              <span class="land-tool-icon-wrapper">
+                <img
+                  src="{{ icon_static }}"
+                  alt="{{ tool.label }}"
+                  class="land-tool-icon"
+                />
+              </span>
+              <span class="land-tool-text">
+                <span class="land-tool-label-main">
+                  {{ tool.label }}
+                </span>
+              </span>
+            </button>
+          {% endfor %}
+        </div>
       </div>
     </div>
+
+
+
 
     <!-- Grille des slots -->
     <div class="slot-grid">
@@ -122,4 +174,5 @@
 
 {% block extra_scripts %}
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_tools_dropdown.js') }}"></script>
 {% endblock %}

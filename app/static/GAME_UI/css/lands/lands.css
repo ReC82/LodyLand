@@ -276,3 +276,160 @@
 .slot-tile.slot-on-cooldown {
   opacity: 0.8;
 }
+
+/* ============================================================
+   LAND TOOLS DROPDOWN
+   ============================================================ */
+
+.land-tools {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.land-tools-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a0aec0;
+}
+
+/* Container dropdown */
+.land-tool-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Main toggle button */
+.land-tool-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.7);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.land-tool-dropdown-toggle:hover {
+  background: rgba(30, 64, 175, 0.85);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.8);
+}
+
+.land-tool-toggle-icon-wrapper {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.land-tool-toggle-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+
+.land-tool-toggle-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.land-tool-toggle-label-main {
+  font-weight: 600;
+}
+
+.land-tool-toggle-caret {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* Dropdown menu */
+.land-tool-dropdown-menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  min-width: 220px;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+  z-index: 50;
+  display: none;
+}
+
+.land-tool-dropdown-menu.open {
+  display: block;
+}
+
+/* Items = vrais boutons de tool utilisés par LandTools */
+.land-tool-dropdown-item.land-tool-btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.08s ease;
+}
+
+.land-tool-dropdown-item.land-tool-btn:hover {
+  background: rgba(30, 64, 175, 0.7);
+  transform: translateX(1px);
+}
+
+.land-tool-dropdown-item.land-tool-btn.active {
+  background: radial-gradient(circle at top left, #fbbf24, #92400e);
+  color: #111827;
+}
+
+/* Icones dans la liste (réutilisation) */
+.land-tool-icon-wrapper {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.land-tool-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+
+.land-tool-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.land-tool-label-main {
+  font-weight: 500;
+}
+
+/* Tools non craftés : cachés */
+.land-tool-btn.tool-locked {
+  display: none !important;
+  pointer-events: none;
+}

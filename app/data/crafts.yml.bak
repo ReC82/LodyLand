@@ -137,6 +137,35 @@ crafts:
       recipe_card_key: recipe_tool_basic_rod
       min_level: 2
     enabled: true
+    wooden_knife:
+      key: wooden_knife
+      station_key: craft_table_base
+      required_grid:
+        tier: 1
+      output:
+        kind: tool
+        key: wooden_knife
+        quantity: 1
+      recipe:
+        pattern:
+        - BS.
+        legend:
+          B:
+            kind: resource
+            key: small_stone
+            quantity: 1
+          S:
+            kind: resource
+            key: wooden_stick
+            quantity: 1
+      craft_time_seconds: 10
+      xp_reward: 5
+      unlock:
+      - type: card
+        key: recipe_wooden_knife
+      - type: level
+        min_level: 2
+      enabled: true
 
   tool_vine_basket:
     key: tool_vine_basket
