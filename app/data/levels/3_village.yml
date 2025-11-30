@@ -1,0 +1,95 @@
+levels:
+  - level: 3
+    xp_required: 60
+    rewards:
+      - type: coins
+        amount: 80
+      - type: card
+        card_key: land_village
+
+    system_unlocks:
+      - type: "feature"
+        key: "hud_currencies"    # afficher coins/diams dans le HUD
+      - type: "feature"
+        key: "daily_chest"       # coffre journalier
+      - type: "feature"
+        key: "resource_market"   # vendre ses ressources
+      - type: "feature"
+        key: "card_shop"         # boutique de cartes
+      - type: "feature"
+        key: "quest_system"      # quêtes
+
+    story_events:
+      - id: "village_first_visit"
+        trigger: "on_enter_land"
+        land_key: "land_village"
+        show_once: true
+        modal_variant: "full"
+
+        pages:
+          - speaker: "npc_villager_guide"
+            portrait: "villager_guide"
+            mood: "friendly"
+            text:
+              fr: >
+                Hé toi ! Tu as l’air un peu perdu.
+                Bienvenue au village… ou ce qu’il en reste.
+              en: >
+                Hey you! You look a bit lost.
+                Welcome to the village… or what’s left of it.
+
+          - speaker: "npc_villager_guide"
+            mood: "explaining"
+            text:
+              fr: >
+                Ici, tu peux vendre les ressources que tu trouves
+                contre des pièces. Avec ces pièces, tu peux acheter des cartes,
+                débloquer de nouveaux lieux et améliorer ton équipement.
+              en: >
+                Here, you can sell the resources you gather
+                for coins. With those coins, you can buy cards,
+                unlock new places and upgrade your gear.
+
+          - speaker: "npc_villager_guide"
+            mood: "explaining"
+            text:
+              fr: >
+                Parfois, tu gagneras aussi des diamants.
+                Ils sont rares, garde-les pour les choses vraiment importantes.
+              en: >
+                Sometimes you’ll earn diamonds too.
+                They’re rare, save them for really important things.
+
+          - speaker: "npc_villager_guide"
+            mood: "hint"
+            text:
+              fr: >
+                Chaque jour, tu peux ouvrir un coffre gratuit.
+                Passe le voir, même si tu n’as pas beaucoup de temps.
+              en: >
+                Every day, you can open a free chest.
+                Don’t forget to grab it, even on busy days.
+
+          - speaker: "npc_villager_guide"
+            mood: "hint"
+            text:
+              fr: >
+                Et si tu as besoin de direction, regarde les quêtes.
+                Elles te guideront vers ce que tu devrais faire ensuite.
+              en: >
+                And if you need direction, check your quests.
+                They’ll guide you toward what you should do next.
+
+          - speaker: "self"
+            mood: "determined"
+            text:
+              fr: >
+                Donc… récolter, vendre, acheter des cartes,
+                accomplir des quêtes…
+                Si je veux comprendre ce qu’il se passe sur cette île,
+                il va falloir que je m’y mette sérieusement.
+              en: >
+                So… gather, sell, buy cards,
+                complete quests…
+                If I want to understand what’s going on with this island,
+                I have to get serious about it.
