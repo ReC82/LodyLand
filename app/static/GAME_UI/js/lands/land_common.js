@@ -4,25 +4,88 @@
 (function (window) {
   "use strict";
 
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
   // Base helpers
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
 
+  /**
+   * Build base URL for API calls.
+   * Example: https://example.com
+   */
   function baseUrl() {
     return `${location.protocol}//${location.host}`;
   }
 
-  // Expose globally (add-slot, etc. peuvent en avoir besoin)
+  // Expose globally (add-slot, etc. may need it)
   window.baseUrl = baseUrl;
 
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
+  // Icon helpers (used by LandTools)
+  // ==========================================================================
+
+  /**
+   * Normalize icon path from YAML (items.yml) into a usable browser URL.
+   *
+   * Supports:
+   *  - Absolute URLs (http/https)
+   *  - Already absolute paths starting with "/"
+   *  - Relative paths with / without "static/" prefix
+   */
+  function normalizeIconPath(iconPath) {
+    if (!iconPath) return null;
+
+    // Absolute URL (CDN, etc.)
+    if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
+      return iconPath;
+    }
+
+    // Already absolute (/static/...)
+    if (iconPath.startsWith("/")) {
+      return iconPath;
+    }
+
+    // Remove possible leading "static/" and prefix with "/static/"
+    const cleaned = iconPath.replace(/^\/?static\//, "");
+    return "/static/" + cleaned;
+  }
+
+  /**
+   * Apply icon + alt text to a given tool button, if present.
+   *
+   * @param {HTMLButtonElement} btn
+   * @param {string} iconPath - Icon path from items.yml
+   * @param {string} label - Fallback label for alt text
+   */
+  function applyIconToButton(btn, iconPath, label) {
+    if (!btn) return;
+    const url = normalizeIconPath(iconPath);
+    if (!url) return;
+
+    // Store on dataset for other scripts (e.g. dropdown)
+    btn.dataset.icon = url;
+
+    const img = btn.querySelector(".land-tool-icon");
+    if (img) {
+      img.src = url;
+      if (label) {
+        img.alt = label;
+      }
+    }
+  }
+
+  // ==========================================================================
   // LandTools: tool selector + availability from /api/state
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
 
   const LandTools = (function () {
     let currentTool = "hands";
     let buttonsCache = null;
 
+    /**
+     * Lock a tool button:
+     *  - "hands" must always remain visible and usable
+     *  - other tools will be hidden from the dropdown if not crafted
+     */
     function lockToolButton(btn) {
       if (!btn) return;
 
@@ -43,6 +106,10 @@
       btn.style.display = "none"; // hide from dropdown
     }
 
+    /**
+     * Unlock a tool button:
+     *  - it becomes visible and clickable in the dropdown
+     */
     function unlockToolButton(btn) {
       if (!btn) return;
       btn.classList.remove("tool-locked");
@@ -51,17 +118,16 @@
       btn.style.display = "flex"; // show in dropdown
     }
 
-
-
     /**
      * Enable/disable tools based on player's crafted items.
+     *
      * items = data.items from /api/state
-     * -> On utilise aussi items.icon (depuis items.yml) pour afficher les icônes.
+     * -> Uses items.icon (from items.yml) to display icons for tools.
      */
     function applyAvailability(items) {
       const list = Array.isArray(items) ? items : [];
 
-      // Map rapide item_key -> meta (avec icon, qty, labels, ...)
+      // Fast map: item_key -> meta (with icon, qty, labels, ...)
       const metaByKey = new Map();
       list.forEach((it) => {
         if (!it || !it.item_key) return;
@@ -85,22 +151,22 @@
         let requiredItemKey = explicitRequired || itemKeyAttr;
 
         // Fallback convention:
-        //  - pas de requires_item explicite
+        //  - no explicit requires_item
         //  - toolKey != "hands"
-        //  - toolKey commence par "tool_"
+        //  - toolKey starts with "tool_"
         //  => requiredItemKey = toolKey
         if (!requiredItemKey && toolKey !== "hands" && toolKey.startsWith("tool_")) {
           requiredItemKey = toolKey;
         }
 
-        // Mains (ou outil sans requirement) = toujours dispo
+        // Hands (or a tool without requirement) = always available
         if (!requiredItemKey || toolKey === "hands") {
-          // Icône des mains normalement déjà câblée dans le HTML
+          // Hands icon is normally wired directly in the HTML
           unlockToolButton(btn);
           return;
         }
 
-        // Si on a des meta pour cet item_key → on pousse l'icône dans le bouton
+        // If we have meta for this item_key → push icon into the button
         const meta = metaByKey.get(requiredItemKey);
         if (meta && meta.icon) {
           const label =
@@ -111,7 +177,7 @@
           applyIconToButton(btn, meta.icon, label);
         }
 
-        // Lock / unlock suivant présence dans l'inventaire
+        // Lock / unlock depending on inventory
         if (hasItem(requiredItemKey)) {
           unlockToolButton(btn);
         } else {
@@ -119,7 +185,6 @@
         }
       });
     }
-
 
     /**
      * Load /api/state once and apply tool availability.
@@ -145,8 +210,8 @@
 
     /**
      * Init tool selector:
-     *  - defaultTool: "hands" par défaut
-     *  - ignore les boutons verrouillés
+     *  - defaultTool: "hands" by default
+     *  - ignore locked buttons
      */
     function initToolSelector(defaultTool = "hands") {
       const buttons = document.querySelectorAll(".land-tool-btn");
@@ -154,7 +219,9 @@
 
       buttonsCache = buttons;
 
-      // Default: on met defaultTool actif, le reste est lock jusqu'à /api/state
+      // Default behavior:
+      //  - set defaultTool active
+      //  - lock all others until /api/state is loaded
       buttons.forEach((btn) => {
         const toolKey = btn.getAttribute("data-tool") || "hands";
         if (toolKey === defaultTool) {
@@ -165,10 +232,10 @@
         }
       });
 
-      // Click handler
+      // Click handler: switch current tool if not locked
       buttons.forEach((btn) => {
         btn.addEventListener("click", () => {
-          // Ignorer les outils verrouillés
+          // Ignore locked tools
           if (btn.disabled || btn.classList.contains("tool-locked")) {
             return;
           }
@@ -184,6 +251,9 @@
       });
     }
 
+    /**
+     * Force current tool back to "hands" (used when a tool requires an item).
+     */
     function resetToHands() {
       const buttons = buttonsCache || document.querySelectorAll(".land-tool-btn");
       if (!buttons.length) return;
@@ -199,11 +269,14 @@
       });
     }
 
+    /**
+     * Return current tool key.
+     */
     function getCurrentTool() {
       return currentTool || "hands";
     }
 
-    // public API
+    // Public API
     return {
       initToolSelector,
       loadAvailability,
@@ -217,9 +290,9 @@
 
   window.LandTools = LandTools;
 
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
   // LandCooldown: per-slot cooldown + optional green bar
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
 
   const LandCooldown = (function () {
     let intervalId = null;
@@ -254,7 +327,7 @@
         }
       }
 
-      // Green bar si on connait la durée
+      // Green bar if we know total duration
       if (durationSec > 0 && barFill) {
         const durationMs = durationSec * 1000;
         const remainingMs = Math.max(0, msEnd - now);
@@ -337,11 +410,14 @@
 
   window.LandCooldown = LandCooldown;
 
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
   // LandCollect: generic /api/collect logic for all lands
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
 
   const LandCollect = (function () {
+    /**
+     * Perform /api/collect for a given slot element.
+     */
     async function collectOnSlot(slotEl) {
       const land = window.CURRENT_LAND || slotEl.dataset.land || null;
       const statusEl = slotEl.querySelector(".slot-status");
@@ -369,7 +445,7 @@
           slot: slotIndex,
         };
 
-        // possibilité de désactiver les outils pour certains lands
+        // Possibility to disable tools for some lands
         if (window.LAND_DISABLE_TOOLS !== true) {
           payload.tool = LandTools.getCurrentTool();
         }
@@ -405,8 +481,7 @@
                 ? `Slot en cooldown (${diffSec}s restants).`
                 : "Slot presque prêt...";
           } else if (data.error === "tool_requires_item") {
-            msg =
-              "Tu n'as pas encore l'objet nécessaire pour utiliser cet outil.";
+            msg = "Tu n'as pas encore l'objet nécessaire pour utiliser cet outil.";
             LandTools.resetToHands();
           } else if (data.error) {
             msg = `Erreur: ${data.error}`;
@@ -434,7 +509,7 @@
           statusEl.textContent = `Tu as trouvé : ${summary}`;
         }
 
-        // Toasts
+        // Loot toasts
         if (
           Array.isArray(data.loot) &&
           data.loot.length > 0 &&
@@ -443,7 +518,7 @@
           window.showLootToasts(data.loot);
         }
 
-        // HUD
+        // HUD update
         if (data.player && window.renderPlayer) {
           window.renderPlayer({
             ...data.player,
@@ -458,7 +533,7 @@
           window.showLevelUpModal(lvl, rewards);
         }
 
-        // Cooldown visuel
+        // Visual cooldown
         if (data.next) {
           const duration = Number(data.cooldown_duration || 0);
           LandCooldown.setSlotCooldown(slotEl, data.next, duration);
@@ -473,6 +548,9 @@
       }
     }
 
+    /**
+     * Attach click handlers to all non-add slots.
+     */
     function initCollect() {
       const tiles = document.querySelectorAll(".slot-tile:not(.slot-add)");
       tiles.forEach((tile) => {
@@ -494,11 +572,14 @@
 
   window.LandCollect = LandCollect;
 
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
   // LandSlots: generic "+1 slot" logic
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
 
   const LandSlots = (function () {
+    /**
+     * Attach click handler for "+1 slot" button.
+     */
     function initAddSlot() {
       const addBtn = document.getElementById("add-slot-btn");
       if (!addBtn) return;
@@ -527,15 +608,12 @@
         if (!confirm(message)) return;
 
         try {
-          const r = await fetch(
-            baseUrl() + `/api/lands/${landKey}/slots/buy`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "same-origin",
-              body: JSON.stringify({}),
-            }
-          );
+          const r = await fetch(baseUrl() + `/api/lands/${landKey}/slots/buy`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({}),
+          });
 
           const data = await r.json();
 
@@ -572,62 +650,25 @@
 
   window.LandSlots = LandSlots;
 
-    // Normalize icon path from YAML to a usable URL
-    function normalizeIconPath(iconPath) {
-      if (!iconPath) return null;
-
-      // Absolute URL (CDN, etc.)
-      if (iconPath.startsWith("http://") || iconPath.startsWith("https://")) {
-        return iconPath;
-      }
-
-      // Déjà en chemin absolu (/static/...)
-      if (iconPath.startsWith("/")) {
-        return iconPath;
-      }
-
-      // On enlève un éventuel "static/" au début, on préfixe par /static/
-      const cleaned = iconPath.replace(/^\/?static\//, "");
-      return "/static/" + cleaned;
-    }
-
-    // Apply icon + alt to a given tool button (if present)
-    function applyIconToButton(btn, iconPath, label) {
-      if (!btn) return;
-      const url = normalizeIconPath(iconPath);
-      if (!url) return;
-
-      btn.dataset.icon = url;
-
-      const img = btn.querySelector(".land-tool-icon");
-      if (img) {
-        img.src = url;
-        if (label) {
-          img.alt = label;
-        }
-      }
-    }
-
-
-  // ---------------------------------------------------------------------------
-  // DOM Ready: wiring commun à tous les lands
-  // ---------------------------------------------------------------------------
+  // ==========================================================================
+  // DOM Ready: wiring common to all lands
+  // ==========================================================================
 
   document.addEventListener("DOMContentLoaded", () => {
-    // On ne fait rien si ce n'est pas une page de land
+    // Do nothing if not on a land page
     if (!window.CURRENT_LAND) return;
 
-    // Outil par défaut = mains
+    // Default tool = hands
     LandTools.initToolSelector("hands");
     LandTools.loadAvailability();
 
-    // Restaure les cooldowns (barre verte) depuis data-*
+    // Restore cooldowns (green bar) from data-* attributes
     LandCooldown.initFromDataset();
 
-    // Clique sur les slots = collecte générique
+    // Click on slots = generic collect logic
     LandCollect.initCollect();
 
-    // Achat de slots générique
+    // "+1 slot" generic logic
     LandSlots.initAddSlot();
   });
 })(window);
