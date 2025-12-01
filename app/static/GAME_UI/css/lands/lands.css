@@ -451,3 +451,9 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Zone marquée comme feature-locked mais qu’on ne veut pas déplacer */
+.feature-locked {
+  opacity: 0.15;         /* presque invisible */
+  pointer-events: none;  /* pas cliquable */
+}

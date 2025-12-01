@@ -19,6 +19,115 @@ let LEVEL_STORY_INDEX = {};     // { [level]: [story_events] }
 let storyQueue = [];            // file des story_events à afficher
 let storyIsPlaying = false;     // pour éviter de lancer 2 histoires en même temps
 
+// ============================================================
+// Feature flags (system_unlocks via /api/levels)
+// ============================================================
+let ACTIVE_FEATURES = new Set();
+
+/**
+ * Calcule toutes les features débloquées jusqu'au niveau `level`.
+ * Prend les données de LEVEL_DEFS (avec system_unlocks).
+ */
+function computeUnlockedFeaturesForLevel(level) {
+  const lvl = Number(level || 0);
+  const features = new Set();
+
+  (LEVEL_DEFS || []).forEach((def) => {
+    const defLevel = Number(def.level ?? 0);
+    if (defLevel > lvl) return;
+
+    const unlocks = Array.isArray(def.system_unlocks)
+      ? def.system_unlocks
+      : [];
+
+    unlocks.forEach((u) => {
+      if (!u) return;
+
+      // Format normal : { type: "feature", key: "daily_chest" }
+      if (typeof u === "object" && u.key && (u.type === "feature" || !u.type)) {
+        features.add(u.key);
+      }
+      // Fallback si un jour tu mets juste une string
+      else if (typeof u === "string") {
+        features.add(u);
+      }
+    });
+  });
+
+  return features;
+}
+
+/**
+ * Recalcule ACTIVE_FEATURES en fonction du joueur + LEVEL_DEFS
+ * puis applique l'affichage sur le HUD / menus.
+ */
+function recomputeFeaturesFromLevels() {
+  if (!window.currentPlayer || !LEVEL_DEFS.length) return;
+
+  const lvl = Number(window.currentPlayer.level || 0);
+  ACTIVE_FEATURES = computeUnlockedFeaturesForLevel(lvl);
+
+  applyFeatureVisibility();
+}
+
+/**
+ * Test simple utilisable partout : isFeatureUnlocked("daily_chest")
+ */
+function isFeatureUnlocked(key) {
+  if (!key) return false;
+  return ACTIVE_FEATURES.has(key);
+}
+
+/**
+ * Parcourt tous les éléments ayant data-feature="xxx"
+ * et les affiche / cache selon l'état de la feature.
+ *
+ * Convention :
+ *  - data-feature="quest_system"  → clé telle que dans system_unlocks
+ *  - optionnel data-feature-hide="0" pour ne PAS faire display:none
+ */
+function applyFeatureVisibility() {
+  const nodes = document.querySelectorAll("[data-feature]");
+  if (!nodes.length) return;
+
+  nodes.forEach((el) => {
+    const key = el.getAttribute("data-feature");
+    if (!key) return;
+
+    const unlocked = isFeatureUnlocked(key);
+
+    el.classList.toggle("feature-locked", !unlocked);
+
+    // Par défaut : on cache complètement l'élément si non débloqué
+    const hide = el.dataset.featureHide !== "0";
+
+    if (hide) {
+      if (unlocked) {
+        // On remet le display original si on l'avait sauvegardé
+        const prev = el.dataset.featureDisplay || "";
+        el.style.display = prev;
+      } else {
+        // On mémorise le display actuel pour plus tard
+        if (!el.dataset.featureDisplay) {
+          el.dataset.featureDisplay = el.style.display || "";
+        }
+        el.style.display = "none";
+      }
+    }
+
+    // Accessibilité : on marque désactivé
+    if (!unlocked) {
+      el.setAttribute("aria-disabled", "true");
+    } else {
+      el.removeAttribute("aria-disabled");
+    }
+  });
+}
+
+// On expose le testeur global pour d'autres scripts (village, etc.)
+window.isFeatureUnlocked = isFeatureUnlocked;
+
+
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
@@ -127,6 +236,13 @@ async function loadLevelDefinitions() {
       "[story] Loaded level definitions, story levels =",
       Object.keys(LEVEL_STORY_INDEX)
     );
+
+        // Dès qu'on a les levels + un joueur, on recalcule les features
+    if (window.currentPlayer) {
+      recomputeFeaturesFromLevels();
+    }
+
+
   } catch (err) {
     console.error("[levels] Error while loading /api/levels", err);
   }
@@ -286,6 +402,12 @@ function renderPlayer(p) {
       diams: 0,
       land_name: window.LAND_NAME || "",
     });
+
+    // Recalcule les features dès que le niveau du joueur change
+    if (LEVEL_DEFS && LEVEL_DEFS.length) {
+      recomputeFeaturesFromLevels();
+    }
+
     return;
   }
 
@@ -561,6 +683,11 @@ async function startGame() {
 
   currentPlayer = p;
   renderPlayer(currentPlayer);
+
+  // 🔥 Charge les niveaux + stories de premier login
+  await loadLevelDefinitions();
+  enqueueInitialStoriesOnLogin();
+
   await refreshInventory();
   await refreshGrid();
   await loadCardShop(); 
@@ -1069,21 +1196,34 @@ function playNextStoryFromQueue() {
 
   storyIsPlaying = true;
 
+  // 🟡 Si le nouveau StoryModal est dispo → on l'utilise
+  if (typeof window.openStoryModalForEvent === "function") {
+    window.openStoryModalForEvent(ev, () => {
+      // callback appelé quand le joueur clique sur "J'ai compris"
+      storyIsPlaying = false;
+
+      if (storyQueue.length > 0) {
+        playNextStoryFromQueue();
+      }
+    });
+    return;
+  }
+
+  // 🔙 Fallback : ancien comportement en alert()
   const msg = renderStoryEventAsText(ev);
-  // Pour l'instant : simple alert bloquante
   alert(msg);
 
-  if (ev.id) {
+  if (ev.id && typeof markStoryEventSeen === "function") {
     markStoryEventSeen(ev.id);
   }
 
   storyIsPlaying = false;
 
-  // Si plusieurs stories sont en file, on enchaîne
   if (storyQueue.length > 0) {
     playNextStoryFromQueue();
   }
 }
+
 
 /**
  * Appelé quand le joueur passe de oldLevel -> newLevel.
@@ -1107,6 +1247,32 @@ function handleStoryAfterLevelUp(oldLevel, newLevel) {
 
   // La story ne démarre PAS tout de suite ici,
   // on laisse d’abord le LevelUp modal se fermer.
+}
+
+/**
+ * Stories de type "on_first_login"
+ * Appelée après qu'on connaisse le joueur + qu'on ait chargé /api/levels.
+ */
+function enqueueInitialStoriesOnLogin() {
+  if (!Array.isArray(LEVEL_DEFS) || !LEVEL_DEFS.length) return;
+
+  LEVEL_DEFS.forEach((lvl) => {
+    const events = Array.isArray(lvl.story_events) ? lvl.story_events : [];
+
+    events
+      .filter((ev) => ev.trigger === "on_first_login")
+      .forEach((ev) => {
+        if (ev.show_once && hasSeenStoryEvent(ev.id)) {
+          return; // déjà vu => on ne rejoue pas
+        }
+        enqueueStoryEvent(ev);
+      });
+  });
+
+  // S'il y a au moins une story dans la file, on démarre
+  if (storyQueue.length > 0 && typeof window.playNextStoryFromQueue === "function") {
+    window.playNextStoryFromQueue();
+  }
 }
 
 
@@ -1238,7 +1404,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (me) {
     currentPlayer = me;
     renderPlayer(currentPlayer);
+
+    // On charge les niveaux AVANT d'essayer de jouer les stories
     await loadLevelDefinitions();
+    // 🔥 Stories "on_first_login" possibles (si jamais pas encore vues)
+    enqueueInitialStoriesOnLogin();
+
     await refreshInventory();
     await refreshGrid();
     await loadCardShop();  
@@ -1248,6 +1419,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderBoostSummary([]);  
     // On attend que l'utilisateur clique sur "Commencer"
   }
+
 });
 
 // ---------------------------------------------------------------------------

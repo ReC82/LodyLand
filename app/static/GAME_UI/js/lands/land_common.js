@@ -533,6 +533,11 @@ async function collectOnSlot(slotEl) {
         });
       }
 
+      // 🔥 Recalcule tout de suite les features (daily chest, shop, etc.)
+      if (typeof window.recomputeFeaturesFromLevels === "function") {
+        window.recomputeFeaturesFromLevels();
+      }
+
       // -----------------------------
       // Level up : queue des stories + modal
       // -----------------------------

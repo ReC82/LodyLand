@@ -1,248 +1,220 @@
-/*
-  File: static/GAME_UI/js/story_app.js
-  Purpose: Handle narrative / tutorial story events (level-based).
-  Notes:
-  - Uses /api/levels and /api/state.
-  - Depends on global http() and $() helpers.
-*/
+// static/GAME_UI/js/story_app.js
+// UI du Story Modal (multi-pages) + intégration avec la file de stories
 
-/* global http, $ */
+const STORY_AVATARS = {
+  self: "/static/assets/img/ui/players/defaults/player_default_avatar.png",
 
-const STORY_STATE = {
-  lang: document.documentElement.lang === "en" ? "en" : "fr",
-  levels: null,          // cached /api/levels result
-  shownIds: new Set(),   // IDs persisted in DB + session
-  currentEvent: null,
-  currentPageIndex: 0,
+  npc_villager_guide: "/static/assets/img/ui/pnj/village_guide.png",
+  npc_village_chief: "/static/assets/img/ui/pnj/village_chief.png",
+  npc_villager_fisher: "/static/assets/img/ui/pnj/village_fisher.png",
+
+  // fallback
+  default: "/static/assets/img/ui/players/defaults/player_default_avatar.png"
 };
 
-/**
- * Fetch and cache levels (including story_events) from the API.
- */
-async function storyLoadLevels() {
-  if (STORY_STATE.levels) {
-    return STORY_STATE.levels;
+(function (window) {
+  "use strict";
+
+  let currentEvent = null;      // story_event en cours
+  let currentPageIndex = 0;     // index dans ev.pages
+  let onDoneCallback = null;    // callback fourni par playNextStoryFromQueue
+
+  // ---------------------------------------------
+  // Helpers internes
+  // ---------------------------------------------
+
+  function getPages(ev) {
+    return Array.isArray(ev && ev.pages) ? ev.pages : [];
   }
 
-  const res = await http("GET", "/api/levels");
-  if (!res.ok) {
-    console.error("[story] Failed to load levels", res);
-    STORY_STATE.levels = [];
-    return STORY_STATE.levels;
+  function getTextForPage(page) {
+    const lang = document.documentElement.lang || "fr";
+    if (!page || !page.text) return "";
+    return page.text[lang] || page.text.en || "";
   }
 
-  STORY_STATE.levels = res.data || [];
-  return STORY_STATE.levels;
-}
+    function formatSpeakerLabel(rawSpeaker) {
+    if (!rawSpeaker) return "";
 
-/**
- * Fetch full player state, and hydrate story_flags.
- */
-async function storyFetchState() {
-  const res = await http("GET", "/api/state");
-  if (!res.ok) {
-    console.error("[story] Failed to load state", res);
-    return null;
-  }
-  const data = res.data || null;
-  if (!data) return null;
-
-  // NEW: hydrate shownIds from backend story_flags
-  const flags = Array.isArray(data.story_flags) ? data.story_flags : [];
-  flags.forEach((id) => {
-    if (id) {
-      STORY_STATE.shownIds.add(id);
+    if (rawSpeaker === "self") {
+      return "Moi";
     }
-  });
 
-  return data;
-}
-
-/**
- * Helper to get localized text for a page.
- */
-function storyGetTextForPage(page) {
-  const textMap = page.text || {};
-  if (STORY_STATE.lang in textMap) {
-    return textMap[STORY_STATE.lang] || "";
-  }
-  // Fallbacks
-  if (textMap.fr) return textMap.fr;
-  if (textMap.en) return textMap.en;
-  return "";
-}
-
-/**
- * Render the current page of the current event into the modal.
- */
-function storyRenderCurrentPage() {
-  const ev = STORY_STATE.currentEvent;
-  if (!ev) return;
-
-  const pages = Array.isArray(ev.pages) ? ev.pages : [];
-  const idx = STORY_STATE.currentPageIndex;
-
-  const modal = $("storyModal");
-  const textEl = $("storyModalText");
-  const pageIndexEl = $("storyModalPageIndex");
-  const pageCountEl = $("storyModalPageCount");
-  const nextBtn = $("storyModalNext");
-  const doneBtn = $("storyModalDone");
-
-  if (!modal || !textEl || !pageIndexEl || !pageCountEl || !nextBtn || !doneBtn) {
-    return;
-  }
-
-  if (!pages.length || idx < 0 || idx >= pages.length) {
-    console.warn("[story] Invalid page index", idx);
-    return;
-  }
-
-  const page = pages[idx];
-
-  // Set text
-  const txt = storyGetTextForPage(page);
-  textEl.textContent = txt;
-
-  // Page indicator
-  pageIndexEl.textContent = String(idx + 1);
-  pageCountEl.textContent = String(pages.length);
-
-  // Buttons logic
-  if (idx < pages.length - 1) {
-    // Not last page
-    nextBtn.style.display = "inline-block";
-    doneBtn.style.display = "none";
-  } else {
-    // Last page
-    nextBtn.style.display = "none";
-    doneBtn.style.display = "inline-block";
-  }
-
-  // Apply modal variant if present (full / centered / toast)
-  modal.classList.remove("story-modal-full", "story-modal-centered", "story-modal-toast");
-  const variant = ev.modal_variant || "centered";
-  if (variant === "full") {
-    modal.classList.add("story-modal-full");
-  } else if (variant === "toast") {
-    modal.classList.add("story-modal-toast");
-  } else {
-    modal.classList.add("story-modal-centered");
-  }
-
-  // Finally open modal
-  modal.classList.add("is-open");
-}
-
-/**
- * Open the story modal for a given event (starting at page 0).
- */
-function storyOpenEvent(ev) {
-  STORY_STATE.currentEvent = ev;
-  STORY_STATE.currentPageIndex = 0;
-  storyRenderCurrentPage();
-}
-
-/**
- * Initialize story modal buttons.
- */
-function initStoryModal() {
-  const modal = $("storyModal");
-  const nextBtn = $("storyModalNext");
-  const doneBtn = $("storyModalDone");
-  const backdrop = $("storyModalBackdrop");
-
-  if (!modal || !nextBtn || !doneBtn || !backdrop) {
-    return;
-  }
-
-  // Next page
-  nextBtn.addEventListener("click", () => {
-    const ev = STORY_STATE.currentEvent;
-    if (!ev) return;
-    const pages = Array.isArray(ev.pages) ? ev.pages : [];
-    const idx = STORY_STATE.currentPageIndex;
-
-    if (idx < pages.length - 1) {
-      STORY_STATE.currentPageIndex = idx + 1;
-      storyRenderCurrentPage();
+    if (rawSpeaker.startsWith("npc_")) {
+      // npc_village_chief -> "Village chief"
+      const base = rawSpeaker.replace(/^npc_/, "").replace(/_/g, " ");
+      // On met simplement la première lettre en majuscule
+      return base.charAt(0).toUpperCase() + base.slice(1);
     }
-  });
 
-  // Finish story
-  doneBtn.addEventListener("click", async () => {
-    const ev = STORY_STATE.currentEvent;
-    if (ev && ev.id) {
-      // Mark as seen in memory immediately
-      STORY_STATE.shownIds.add(ev.id);
+    return rawSpeaker;
+  }
 
-      // NEW: persist to backend
-      try {
-        const res = await http("POST", "/api/story/seen", {
-          story_id: ev.id,
-        });
-        if (!res.ok) {
-          console.error("[story] Failed to mark story as seen", res);
-        }
-      } catch (err) {
-        console.error("[story] Error while marking story as seen", err);
+  function computeTitle(ev, page) {
+    const speaker = (page && page.speaker) || ev.speaker || "";
+    const mood = (page && page.mood) || ev.mood || "";
+
+    if (!speaker) return "Histoire";
+    return mood ? `${speaker} – ${mood}` : speaker;
+  }
+
+  function renderCurrentPage() {
+    const modal = document.getElementById("storyModal");
+    if (!modal || !currentEvent) return;
+
+    const pages = getPages(currentEvent);
+    const total = Math.max(pages.length, 1);
+    const idx = Math.min(Math.max(currentPageIndex, 0), total - 1);
+    const page = pages[idx] || {};
+
+    const titleEl   = document.getElementById("storyModalTitle");
+    const textEl    = document.getElementById("storyModalText");
+    const idxEl     = document.getElementById("storyModalPageIndex");
+    const countEl   = document.getElementById("storyModalPageCount");
+    const btnNext   = document.getElementById("storyModalNext");
+    const btnDone   = document.getElementById("storyModalDone");
+    const avatarEl  = document.getElementById("storyModalAvatar");
+    const speakerEl = document.getElementById("storyModalSpeaker");
+
+    // Speaker / avatar
+    const rawSpeaker   = (page && page.speaker) || currentEvent.speaker || "";
+    const speakerLabel = formatSpeakerLabel(rawSpeaker);
+    const avatarPath   =
+      STORY_AVATARS[rawSpeaker] || STORY_AVATARS.default;
+
+    if (titleEl) {
+      // Tu peux garder le titre "global" ou quelque chose de neutre
+      titleEl.textContent = computeTitle(currentEvent, page);
+    }
+
+    if (speakerEl) {
+      speakerEl.textContent = speakerLabel;
+    }
+
+    if (avatarEl) {
+      avatarEl.src = avatarPath;
+      avatarEl.alt = speakerLabel || "avatar";
+    }
+
+    // Texte
+    if (textEl) {
+      textEl.textContent = (getTextForPage(page) || "").trim();
+    }
+
+    // Pagination
+    if (idxEl) idxEl.textContent = String(idx + 1);
+    if (countEl) countEl.textContent = String(total);
+
+    // Boutons Next / Done
+    if (btnNext && btnDone) {
+      if (idx < total - 1) {
+        btnNext.style.display = "";
+        btnDone.style.display = "none";
+      } else {
+        btnNext.style.display = "none";
+        btnDone.style.display = "";
       }
     }
-
-    modal.classList.remove("is-open");
-    STORY_STATE.currentEvent = null;
-    STORY_STATE.currentPageIndex = 0;
-  });
-
-  // Optional: ignore click on backdrop to force using buttons
-  backdrop.addEventListener("click", (e) => {
-    // Do nothing: player must use the buttons.
-    e.stopPropagation();
-  });
-}
-
-/**
- * Baby step: show only the "on_first_login" story for level 0.
- * Condition: player.level === 0 AND player.xp === 0 (approx first login).
- */
-async function storyMaybeShowIntroOnFirstLogin() {
-  const [levels, state] = await Promise.all([
-    storyLoadLevels(),
-    storyFetchState(),
-  ]);
-
-  if (!state || !state.player) {
-    return;
   }
 
-  const player = state.player;
 
-  // Approximate "first login": level 0 and no XP yet
-  if (Number(player.level ?? 0) !== 0) return;
-  if (Number(player.xp ?? 0) > 0) return;
+  function closeModal() {
+    const modal = document.getElementById("storyModal");
+    if (modal) {
+      modal.classList.remove("is-open");
+    }
 
-  const lvl0 = levels.find((l) => Number(l.level) === 0);
-  if (!lvl0) return;
+    const ev = currentEvent;
 
-  const events = Array.isArray(lvl0.story_events) ? lvl0.story_events : [];
-  const ev = events.find((e) => e.trigger === "on_first_login");
-  if (!ev) return;
+    // Marquer l'event comme "vu"
+    if (ev && ev.id && typeof window.markStoryEventSeen === "function") {
+      window.markStoryEventSeen(ev.id);
+    }
 
-  // Respect show_once using persisted flags
-  if (ev.show_once && ev.id && STORY_STATE.shownIds.has(ev.id)) {
-    return;
+    currentEvent = null;
+    currentPageIndex = 0;
+
+    // Prévenir playNextStoryFromQueue qu'on a fini
+    if (typeof onDoneCallback === "function") {
+      const cb = onDoneCallback;
+      onDoneCallback = null;
+      cb();
+    }
   }
 
-  storyOpenEvent(ev);
-}
+  // ---------------------------------------------
+  // API appelée par game_app.js
+  // ---------------------------------------------
+  function openStoryModalForEvent(ev, doneCallback) {
+    currentEvent = ev;
+    currentPageIndex = 0;
+    onDoneCallback = doneCallback || null;
 
-/**
- * Entry point: called on DOM ready.
- */
-document.addEventListener("DOMContentLoaded", () => {
-  initStoryModal();
-  // Baby step: only intro for now
-  storyMaybeShowIntroOnFirstLogin().catch((err) => {
-    console.error("[story] intro error", err);
-  });
-});
+    const modal = document.getElementById("storyModal");
+    if (!modal) {
+      console.warn("[story_app] storyModal introuvable, fallback alert().");
+      // Fallback si pour une raison quelconque le modal n'existe pas
+      if (ev && typeof window.renderStoryEventAsText === "function") {
+        alert(window.renderStoryEventAsText(ev));
+      }
+      if (ev && ev.id && typeof window.markStoryEventSeen === "function") {
+        window.markStoryEventSeen(ev.id);
+      }
+      if (typeof doneCallback === "function") {
+        doneCallback();
+      }
+      return;
+    }
+
+    modal.classList.add("is-open");
+    renderCurrentPage();
+  }
+
+  // ---------------------------------------------
+  // Wiring DOM (Next / Done / Backdrop)
+  // ---------------------------------------------
+  function initStoryModal() {
+    const modal = document.getElementById("storyModal");
+    if (!modal) return;
+
+    const backdrop = document.getElementById("storyModalBackdrop");
+    const btnNext = document.getElementById("storyModalNext");
+    const btnDone = document.getElementById("storyModalDone");
+
+    if (btnNext) {
+      btnNext.addEventListener("click", () => {
+        const pages = getPages(currentEvent || {});
+        if (!pages.length) {
+          closeModal();
+          return;
+        }
+
+        if (currentPageIndex < pages.length - 1) {
+          currentPageIndex += 1;
+          renderCurrentPage();
+        } else {
+          // Sécurité, mais normalement on ne passe plus ici
+          closeModal();
+        }
+      });
+    }
+
+    if (btnDone) {
+      btnDone.addEventListener("click", () => {
+        closeModal();
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener("click", () => {
+        closeModal();
+      });
+    }
+  }
+
+  // Expose au window pour game_app.js
+  window.openStoryModalForEvent = openStoryModalForEvent;
+
+  // Init quand le DOM est prêt
+  document.addEventListener("DOMContentLoaded", initStoryModal);
+})(window);

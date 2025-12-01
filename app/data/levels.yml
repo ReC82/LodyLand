@@ -168,7 +168,7 @@ levels:
   - type: feature
     key: resource_market
   - type: feature
-    key: card_shop
+    key: global_shop
   - type: feature
     key: quest_system
   story_events:

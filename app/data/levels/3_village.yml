@@ -13,7 +13,7 @@ levels:
       - type: "feature"
         key: "resource_market"   # vendre ses ressources
       - type: "feature"
-        key: "card_shop"         # boutique de cartes
+        key: "global_shop"         # boutique de cartes
       - type: "feature"
         key: "quest_system"      # quêtes
 

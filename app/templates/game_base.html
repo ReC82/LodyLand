@@ -59,42 +59,44 @@
 </button>
       <div class="gh-right">
        
-        <div class="gh-currency gh-coins">
-          <img
-            src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
-            alt="Coins"
-            class="hud-icon-small"
-          />
-          <span id="hud-coins">0</span>
+        <div class="gh-currency gh-coins" data-feature="hud_currencies" data-feature-hide="0">
+            <img
+              src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
+              alt="Coins"
+              class="hud-icon-small"
+            />
+            <span id="hud-coins">0</span>
         </div>
-        <div class="gh-currency gh-diams">
-          <img
-            src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
-            alt="Diamants"
-            class="hud-icon-small"
-          />
-          <span id="hud-diams">0</span>
+        <div class="gh-currency gh-diams" data-feature="hud_currencies" data-feature-hide="0">
+            <img
+              src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
+              alt="Diamants"
+              class="hud-icon-small"
+            />
+            <span id="hud-diams">0</span>
         </div>
         <!-- Daily Chest (icon HUD) -->
-        <div class="hud-daily" id="hudDaily">
-          <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
-            <img
-              src="{{ url_for('static', filename='assets/img/ui/chest.png') }}"
-              alt="Daily Chest"
-              class="hud-icon-img"
-            />
-            <span id="dailyAlert" class="daily-alert-badge">!</span>
-          </div>
-          <div class="hud-daily-tooltip" id="dailyTooltip">
-            Chargement...
-          </div>
+        <div class="hud-daily" id="hudDaily" data-feature="daily_chest" data-feature-hide="0">
+            <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
+              <img
+                src="{{ url_for('static', filename='assets/img/ui/chest.png') }}"
+                alt="Daily Chest"
+                class="hud-icon-img"
+              />
+              <span id="dailyAlert" class="daily-alert-badge">!</span>
+            </div>
+            <div class="hud-daily-tooltip" id="dailyTooltip">
+              Chargement...
+            </div>
         </div>
 
         <!-- Bouton Quêtes dans le HUD -->
-        <button id="btn-quests" class="gh-btn gh-btn-quests">
-          <span class="gh-btn-icon">📜</span>
-          <span class="gh-btn-label">Quêtes</span>
-        </button>
+        <div class="hud-quests-separator" data-feature="quest_system" data-feature-hide="0">
+          <button id="btn-quests" class="gh-btn gh-btn-quests">
+            <span class="gh-btn-icon">📜</span>
+            <span class="gh-btn-label">Quêtes</span>
+          </button>
+        </div>
        
         <button class="gh-menu-btn" id="hud-menu-btn" type="button">☰</button>
       </div>
@@ -122,7 +124,7 @@
           <button class="game-menu-item" data-action="lands">
             Lands
           </button>
-          <button class="game-menu-item" data-action="shop">
+          <button class="game-menu-item" data-action="shop" data-feature="global_shop">
             Boutique
           </button>
           <button class="game-menu-item" data-action="inventory">
@@ -205,22 +207,22 @@
     </div>
 
 
-<!-- Quests Panel -->
-<div id="quests-panel" class="quests-panel hidden">
-  <div class="quests-panel-header">
-    <h2 class="quests-title">Quêtes</h2>
-    <button id="btn-quests-close" class="quests-close-btn">&times;</button>
-  </div>
+    <!-- Quests Panel -->
+    <div id="quests-panel" class="quests-panel hidden">
+      <div class="quests-panel-header">
+        <h2 class="quests-title">Quêtes</h2>
+        <button id="btn-quests-close" class="quests-close-btn">&times;</button>
+      </div>
 
-  <div class="quests-filters">
-    <button class="qfilter-btn qfilter-active" data-filter="running">En cours</button>
-    <button class="qfilter-btn" data-filter="completed">Terminées</button>
-  </div>
+      <div class="quests-filters">
+        <button class="qfilter-btn qfilter-active" data-filter="running">En cours</button>
+        <button class="qfilter-btn" data-filter="completed">Terminées</button>
+      </div>
 
-  <div id="quests-list" class="quests-list">
-    <!-- rempli par JS -->
-  </div>
-</div>
+      <div id="quests-list" class="quests-list">
+        <!-- rempli par JS -->
+      </div>
+    </div>
 
     <!-- ===========================
         Craft Modal
@@ -372,16 +374,26 @@
         </header>
 
         <div class="ll-modal-body story-modal-body">
-          <div id="storyModalText" class="story-modal-text">
-            <!-- Texte de la page courante -->
+        <div class="story-modal-content">
+          <div class="story-avatar-wrapper">
+            <img id="storyModalAvatar" class="story-avatar" src="" alt="avatar" />
           </div>
 
-          <div class="story-modal-page-indicator">
-            <span id="storyModalPageIndex">1</span>
-            /
-            <span id="storyModalPageCount">1</span>
+          <div class="story-bubble">
+            <div id="storyModalSpeaker" class="story-speaker"></div>
+            <div id="storyModalText" class="story-text">
+              <!-- Texte de la page courante -->
+            </div>
           </div>
         </div>
+
+        <div class="story-modal-page-indicator">
+          <span id="storyModalPageIndex">1</span>
+          /
+          <span id="storyModalPageCount">1</span>
+        </div>
+      </div>
+
 
         <footer class="ll-modal-footer story-modal-footer">
           <!-- Bouton Suivant (page suivante) -->
