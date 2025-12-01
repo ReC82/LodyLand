@@ -2,16 +2,12 @@ levels:
   - level: 2
     xp_required: 30
     rewards:
-      - type: coins
-        amount: 50
-      - type: diams
-        amount: 1
       - type: card
         card_key: land_beach
 
     story_events:
       - id: "unlock_beach_card"
-        trigger: "on_land_unlocked"
+        trigger: "on_level_reached"
         land_key: "land_beach"
         show_once: true
         modal_variant: "centered"

@@ -250,6 +250,7 @@ def run_all_normalizers(report_mode: bool = False) -> None:
         "app/data/items/normalize_items_yaml.py",
         "app/data/crafts/normalize_crafts_yaml.py",
         "app/data/lands/normalize_lands_yaml.py",
+        "app/data/levels/normalize_levels_yaml.py",
     ]
 
     results: list[dict] = []

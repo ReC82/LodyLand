@@ -1,9 +1,7 @@
 levels:
   - level: 1
     xp_required: 10
-    rewards:
-      - type: coins
-        amount: 20
+    rewards: []
 
     story_events:
       - id: "level_1_explain_progress"

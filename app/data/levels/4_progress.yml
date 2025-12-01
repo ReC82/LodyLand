@@ -3,7 +3,7 @@ levels:
     xp_required: 100
     rewards:
       - type: coins
-        amount: 120
+        amount: 100
       - type: resource
         resource_key: branch
         amount: 40

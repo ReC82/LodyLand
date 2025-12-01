@@ -9,7 +9,7 @@ levels:
 
     story_events:
       - id: "unlock_cave_card"
-        trigger: "on_land_unlocked"
+        trigger: "on_level_reached"
         land_key: "land_cave"
         show_once: true
         modal_variant: "centered"

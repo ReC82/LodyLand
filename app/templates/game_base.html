@@ -357,12 +357,63 @@
       </div>
     </div>
     
+    <!-- ===========================
+         Story Modal (narration / tuto)
+         =========================== -->
+    <div id="storyModal" class="ll-modal story-modal">
+      <div class="ll-modal-backdrop" id="storyModalBackdrop"></div>
+
+      <div class="ll-modal-dialog story-modal-dialog story-modal-centered">
+        <header class="ll-modal-header story-modal-header">
+          <h2 class="ll-modal-title" id="storyModalTitle">
+            <!-- Optionnel : pourra afficher le "speaker" plus tard -->
+            Histoire
+          </h2>
+        </header>
+
+        <div class="ll-modal-body story-modal-body">
+          <div id="storyModalText" class="story-modal-text">
+            <!-- Texte de la page courante -->
+          </div>
+
+          <div class="story-modal-page-indicator">
+            <span id="storyModalPageIndex">1</span>
+            /
+            <span id="storyModalPageCount">1</span>
+          </div>
+        </div>
+
+        <footer class="ll-modal-footer story-modal-footer">
+          <!-- Bouton Suivant (page suivante) -->
+          <button
+            id="storyModalNext"
+            type="button"
+            class="btn btn-primary btn-sm"
+          >
+            Suivant
+          </button>
+
+          <!-- Bouton Terminer (dernière page) -->
+          <button
+            id="storyModalDone"
+            type="button"
+            class="btn btn-success btn-sm"
+            style="display:none;"
+          >
+            J’ai compris
+          </button>
+        </footer>
+      </div>
+    </div>
+
+
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/craft_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/quests_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/story_app.js') }}"></script>
     {# Scripts spécifiques à certaines pages (shop, lands spéciaux, etc.) #}
     {% block extra_scripts %}{% endblock %}
   </body>

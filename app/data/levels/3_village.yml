@@ -2,8 +2,6 @@ levels:
   - level: 3
     xp_required: 60
     rewards:
-      - type: coins
-        amount: 80
       - type: card
         card_key: land_village
 
@@ -21,7 +19,7 @@ levels:
 
     story_events:
       - id: "village_first_visit"
-        trigger: "on_enter_land"
+        trigger: "on_level_reached"
         land_key: "land_village"
         show_once: true
         modal_variant: "full"

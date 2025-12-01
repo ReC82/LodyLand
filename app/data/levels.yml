@@ -63,9 +63,7 @@ levels:
       quest_key: q_first_gather
 - level: 1
   xp_required: 10
-  rewards:
-  - type: coins
-    amount: 20
+  rewards: []
   story_events:
   - id: level_1_explain_progress
     trigger: on_level_reached
@@ -107,15 +105,11 @@ levels:
 - level: 2
   xp_required: 30
   rewards:
-  - type: coins
-    amount: 50
-  - type: diams
-    amount: 1
   - type: card
     card_key: land_beach
   story_events:
   - id: unlock_beach_card
-    trigger: on_land_unlocked
+    trigger: on_level_reached
     land_key: land_beach
     show_once: true
     modal_variant: centered
@@ -164,8 +158,6 @@ levels:
 - level: 3
   xp_required: 60
   rewards:
-  - type: coins
-    amount: 80
   - type: card
     card_key: land_village
   system_unlocks:
@@ -181,7 +173,7 @@ levels:
     key: quest_system
   story_events:
   - id: village_first_visit
-    trigger: on_enter_land
+    trigger: on_level_reached
     land_key: land_village
     show_once: true
     modal_variant: full
@@ -259,7 +251,7 @@ levels:
   xp_required: 100
   rewards:
   - type: coins
-    amount: 120
+    amount: 100
   - type: resource
     resource_key: branch
     amount: 40
@@ -292,7 +284,7 @@ levels:
     amount: 1
   story_events:
   - id: unlock_cave_card
-    trigger: on_land_unlocked
+    trigger: on_level_reached
     land_key: land_cave
     show_once: true
     modal_variant: centered
@@ -330,3 +322,23 @@ levels:
           answers than problems.
 
           '
+- level: 6
+  xp_required: 200
+  rewards:
+  - type: coins
+    amount: 200
+  story_events:
+  - id: level_6_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: 'On m''a parlé d''un temple ancien caché quelque part sur cette île. Il
+          paraît que c''est là que tout a commencé.
+
+          '
+        en: I've heard about an ancient temple hidden somewhere on this island. They
+          say that's where it all began.

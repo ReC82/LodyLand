@@ -410,167 +410,196 @@
 
   window.LandCooldown = LandCooldown;
 
-  // ==========================================================================
-  // LandCollect: generic /api/collect logic for all lands
-  // ==========================================================================
+// ==========================================================================
+// LandCollect: generic /api/collect logic for all lands
+// ==========================================================================
 
-  const LandCollect = (function () {
-    /**
-     * Perform /api/collect for a given slot element.
-     */
-    async function collectOnSlot(slotEl) {
-      const land = window.CURRENT_LAND || slotEl.dataset.land || null;
-      const statusEl = slotEl.querySelector(".slot-status");
-      const slotIndex = Number(slotEl.getAttribute("data-slot"));
+const LandCollect = (function () {
+  /**
+   * Perform /api/collect for a given slot element.
+   */
+async function collectOnSlot(slotEl) {
+    const land = window.CURRENT_LAND || slotEl.dataset.land || null;
+    const statusEl = slotEl.querySelector(".slot-status");
+    const slotIndex = Number(slotEl.getAttribute("data-slot"));
 
-      if (!land) {
-        console.warn("[LandCollect] Missing CURRENT_LAND.");
-        if (statusEl) statusEl.textContent = "Erreur : land inconnu";
+    // Niveau AVANT la collecte (utilisé pour détecter les levels gagnés)
+    const oldLevel =
+      window.currentPlayer ? Number(window.currentPlayer.level || 0) : 0;
+
+    if (!land) {
+      console.warn("[LandCollect] Missing CURRENT_LAND.");
+      if (statusEl) statusEl.textContent = "Erreur : land inconnu";
+      return;
+    }
+
+    if (Number.isNaN(slotIndex)) {
+      console.warn("[LandCollect] Invalid slot index:", slotEl);
+      if (statusEl) statusEl.textContent = "Erreur : slot invalide";
+      return;
+    }
+
+    if (statusEl) {
+      statusEl.textContent = "Fouille en cours...";
+    }
+
+    try {
+      const payload = { land, slot: slotIndex };
+
+      // Possibility to disable tools for some lands
+      if (window.LAND_DISABLE_TOOLS !== true) {
+        payload.tool = LandTools.getCurrentTool();
+      }
+
+      const response = await fetch(baseUrl() + "/api/collect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      // -----------------------------
+      // Gestion des erreurs
+      // -----------------------------
+      if (!response.ok || !data.ok) {
+        console.warn("[LandCollect] collect error:", data);
+
+        let msg = "Erreur de collecte";
+
+        if (data.error === "land_locked") {
+          msg = "Tu n'as pas la carte pour accéder à ce land.";
+        } else if (data.error === "player_required") {
+          msg = "Tu dois être connecté(e) pour fouiller ce land.";
+        } else if (data.error === "on_cooldown" && data.until) {
+          const duration = Number(data.cooldown_duration || 0);
+          if (duration > 0) {
+            LandCooldown.setSlotCooldown(slotEl, data.until, duration);
+          }
+
+          const msEnd = new Date(data.until).getTime();
+          const diffSec = Math.ceil((msEnd - Date.now()) / 1000);
+          msg =
+            diffSec > 0
+              ? `Slot en cooldown (${diffSec}s restants).`
+              : "Slot presque prêt...";
+        } else if (data.error === "tool_requires_item") {
+          msg = "Tu n'as pas encore l'objet nécessaire pour utiliser cet outil.";
+          LandTools.resetToHands();
+        } else if (data.error) {
+          msg = `Erreur: ${data.error}`;
+        }
+
+        if (statusEl) statusEl.textContent = msg;
         return;
       }
 
-      if (Number.isNaN(slotIndex)) {
-        console.warn("[LandCollect] Invalid slot index:", slotEl);
-        if (statusEl) statusEl.textContent = "Erreur : slot invalide";
-        return;
+      // -----------------------------
+      // Succès : loot + HUD
+      // -----------------------------
+      // Résumé texte
+      let summary = "Rien trouvé...";
+      if (Array.isArray(data.loot) && data.loot.length > 0) {
+        summary = data.loot
+          .map((entry) => {
+            const amount =
+              typeof entry.final_amount === "number"
+                ? entry.final_amount
+                : entry.base_amount;
+            return `${amount}x ${entry.resource}`;
+          })
+          .join(", ");
       }
 
       if (statusEl) {
-        statusEl.textContent = "Fouille en cours...";
+        statusEl.textContent = `Tu as trouvé : ${summary}`;
       }
 
-      try {
-        const payload = {
-          land,
-          slot: slotIndex,
-        };
+      // Loot toasts
+      if (
+        Array.isArray(data.loot) &&
+        data.loot.length > 0 &&
+        window.showLootToasts
+      ) {
+        window.showLootToasts(data.loot);
+      }
 
-        // Possibility to disable tools for some lands
-        if (window.LAND_DISABLE_TOOLS !== true) {
-          payload.tool = LandTools.getCurrentTool();
-        }
-
-        const response = await fetch(baseUrl() + "/api/collect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify(payload),
+      // Mise à jour du joueur (HUD, XP, etc.)
+      if (data.player && window.renderPlayer) {
+        window.renderPlayer({
+          ...data.player,
+          next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
         });
+      }
 
-        const data = await response.json();
+      // -----------------------------
+      // Level up : queue des stories + modal
+      // -----------------------------
+      if (data.level_up) {
+        const newLevel = data.player?.level ?? oldLevel;
 
-        if (!response.ok || !data.ok) {
-          console.warn("[LandCollect] collect error:", data);
-
-          let msg = "Erreur de collecte";
-
-          if (data.error === "land_locked") {
-            msg = "Tu n'as pas la carte pour accéder à ce land.";
-          } else if (data.error === "player_required") {
-            msg = "Tu dois être connecté(e) pour fouiller ce land.";
-          } else if (data.error === "on_cooldown" && data.until) {
-            const duration = Number(data.cooldown_duration || 0);
-            if (duration > 0) {
-              LandCooldown.setSlotCooldown(slotEl, data.until, duration);
-            }
-
-            const msEnd = new Date(data.until).getTime();
-            const diffSec = Math.ceil((msEnd - Date.now()) / 1000);
-            msg =
-              diffSec > 0
-                ? `Slot en cooldown (${diffSec}s restants).`
-                : "Slot presque prêt...";
-          } else if (data.error === "tool_requires_item") {
-            msg = "Tu n'as pas encore l'objet nécessaire pour utiliser cet outil.";
-            LandTools.resetToHands();
-          } else if (data.error) {
-            msg = `Erreur: ${data.error}`;
+        // 1) On prépare les stories pour tous les niveaux gagnés
+        if (typeof window.handleStoryAfterLevelUp === "function") {
+          const from = Number(oldLevel) || 0;
+          const to = Number(newLevel) || 0;
+          if (to > from) {
+            window.handleStoryAfterLevelUp(from, to);
           }
-
-          if (statusEl) statusEl.textContent = msg;
-          return;
         }
 
-        // Loot summary
-        let summary = "Rien trouvé...";
-        if (Array.isArray(data.loot) && data.loot.length > 0) {
-          summary = data.loot
-            .map((entry) => {
-              const amount =
-                typeof entry.final_amount === "number"
-                  ? entry.final_amount
-                  : entry.base_amount;
-              return `${amount}x ${entry.resource}`;
-            })
-            .join(", ");
-        }
-
-        if (statusEl) {
-          statusEl.textContent = `Tu as trouvé : ${summary}`;
-        }
-
-        // Loot toasts
-        if (
-          Array.isArray(data.loot) &&
-          data.loot.length > 0 &&
-          window.showLootToasts
-        ) {
-          window.showLootToasts(data.loot);
-        }
-
-        // HUD update
-        if (data.player && window.renderPlayer) {
-          window.renderPlayer({
-            ...data.player,
-            next_xp: data.player.next_xp ?? data.player.nextXp ?? null,
-          });
-        }
-
-        // Level up
-        if (data.level_up && window.showLevelUpModal) {
-          const lvl = data.player?.level ?? 0;
+        // 2) On affiche le modal de level up
+        if (window.showLevelUpModal) {
           const rewards = data.level_rewards || [];
-          window.showLevelUpModal(lvl, rewards);
+          window.showLevelUpModal(newLevel, rewards);
         }
+        // ⚠️ NE PAS lancer playNextStoryFromQueue ici :
+        // c'est géré dans game_app.js quand on ferme le modal.
+      }
 
-        // Visual cooldown
-        if (data.next) {
-          const duration = Number(data.cooldown_duration || 0);
-          LandCooldown.setSlotCooldown(slotEl, data.next, duration);
-        }
+      // -----------------------------
+      // Cooldown visuel sur le slot
+      // -----------------------------
+      if (data.next) {
+        const duration = Number(data.cooldown_duration || 0);
+        LandCooldown.setSlotCooldown(slotEl, data.next, duration);
+      }
 
-        console.log("[LandCollect] OK:", land, "slot", slotIndex, data);
-      } catch (err) {
-        console.error("[LandCollect] request failed:", err);
-        if (statusEl) {
-          statusEl.textContent = "Erreur réseau";
-        }
+      console.log("[LandCollect] OK:", land, "slot", slotIndex, data);
+    } catch (err) {
+      console.error("[LandCollect] request failed:", err);
+      if (statusEl) {
+        statusEl.textContent = "Erreur réseau";
       }
     }
+  }
 
-    /**
-     * Attach click handlers to all non-add slots.
-     */
-    function initCollect() {
-      const tiles = document.querySelectorAll(".slot-tile:not(.slot-add)");
-      tiles.forEach((tile) => {
-        tile.addEventListener("click", () => collectOnSlot(tile));
-      });
-      console.log(
-        "[LandCollect] initialized for land=",
-        window.CURRENT_LAND,
-        "slots=",
-        tiles.length
-      );
-    }
 
-    return {
-      initCollect,
-      collectOnSlot,
-    };
-  })();
+  /**
+   * Attach click handlers to all non-add slots.
+   */
+  function initCollect() {
+    const tiles = document.querySelectorAll(".slot-tile:not(.slot-add)");
+    tiles.forEach((tile) => {
+      tile.addEventListener("click", () => collectOnSlot(tile));
+    });
+    console.log(
+      "[LandCollect] initialized for land=",
+      window.CURRENT_LAND,
+      "slots=",
+      tiles.length
+    );
+  }
 
-  window.LandCollect = LandCollect;
+  return {
+    initCollect,
+    collectOnSlot,
+  };
+})();
+
+window.LandCollect = LandCollect;
+
+
 
   // ==========================================================================
   // LandSlots: generic "+1 slot" logic
@@ -654,21 +683,46 @@
   // DOM Ready: wiring common to all lands
   // ==========================================================================
 
-  document.addEventListener("DOMContentLoaded", () => {
-    // Do nothing if not on a land page
-    if (!window.CURRENT_LAND) return;
+// ==========================================================================
+// DOM Ready: wiring common to all lands
+// ==========================================================================
 
-    // Default tool = hands
-    LandTools.initToolSelector("hands");
-    LandTools.loadAvailability();
+document.addEventListener("DOMContentLoaded", () => {
+  // Do nothing if not on a land page
+  if (!window.CURRENT_LAND) return;
 
-    // Restore cooldowns (green bar) from data-* attributes
-    LandCooldown.initFromDataset();
+  // Default tool = hands
+  LandTools.initToolSelector("hands");
+  LandTools.loadAvailability();
 
-    // Click on slots = generic collect logic
-    LandCollect.initCollect();
+  // Restore cooldowns (green bar) from data-* attributes
+  LandCooldown.initFromDataset();
 
-    // "+1 slot" generic logic
-    LandSlots.initAddSlot();
-  });
+  // Click on slots = generic collect logic
+  LandCollect.initCollect();
+
+  // "+1 slot" generic logic
+  LandSlots.initAddSlot();
+
+  // 🔥 Story "on_enter_land" (si configurée)
+  if (typeof window.handleStoryOnEnterLand === "function") {
+    const slug =
+      typeof window.CURRENT_LAND === "string" ? window.CURRENT_LAND : null;
+
+    // Priorité à une variable explicite (que tu peux définir dans le template)
+    // Exemple dans le HTML du village :
+    // <script>window.LAND_CARD_KEY = "land_village";</script>
+    const storyLandKey =
+      window.LAND_CARD_KEY ||
+      window.LAND_STORY_KEY ||
+      (slug ? `land_${slug}` : null);
+
+    if (storyLandKey) {
+      window.handleStoryOnEnterLand(storyLandKey);
+    }
+  }
+});
+
+
+
 })(window);

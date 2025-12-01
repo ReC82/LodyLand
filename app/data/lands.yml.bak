@@ -144,7 +144,7 @@ forest:
   logo: static/assets/img/lands/forest_logo.png
   additional_slot_base_cost_diams: 10
   additional_slot_cost_multiplier: 1.5
-  xp_per_collect: 1
+  xp_per_collect: 5
   tools:
     hands:
       label: Mains nues

@@ -97,3 +97,12 @@
 
 </div>
 {% endblock %}
+{% block extra_scripts %}
+  
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
+
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_shop.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_quests.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_trades.js') }}"></script>
+{% endblock %}
