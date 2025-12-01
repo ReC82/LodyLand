@@ -12,7 +12,7 @@ forest:
   additional_slot_base_cost_diams: 10
   additional_slot_cost_multiplier: 1.5
 
-  xp_per_collect: 1   # base XP pour ce land
+  xp_per_collect: 5   # base XP pour ce land
 
   tools:
     hands:

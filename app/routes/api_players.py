@@ -14,6 +14,7 @@ from app.models import (
     PlayerItem, 
     PlayerQuest,
     PlayerCraftJob,
+    PlayerStoryFlag,
 )
 from app.progression import next_threshold, LEVELS, MAX_LEVEL, xp_required_for
 
@@ -520,7 +521,15 @@ def get_state():
             "jobs": jobs_payload,
             "active_job": active_job,
         }
-
+        # ------------------------------
+        # Story flags (which story events have been seen)
+        # ------------------------------
+        story_flags_rows = (
+            s.query(PlayerStoryFlag)
+            .filter_by(player_id=me.id)
+            .all()
+        )
+        seen_story_ids = [row.story_id for row in story_flags_rows]
         # ------------------------------
         # Return final state
         # ------------------------------
@@ -546,7 +555,41 @@ def get_state():
             "craft": craft_payload,
             
             "quests": quests_payload, 
+            "story_flags": seen_story_ids,
         }), 200
+
+@bp.post("/story/seen")
+def mark_story_seen():
+    """Mark a given story event as seen for the current player."""
+    with SessionLocal() as s:
+        me = _get_current_player(s)
+        if not me:
+            return jsonify({"error": "not_authenticated"}), 401
+
+        data = request.get_json(silent=True) or {}
+        story_id = (data.get("story_id") or "").strip()
+
+        if not story_id:
+            return jsonify({"error": "story_id_required"}), 400
+
+        # Check if already stored
+        existing = (
+            s.query(PlayerStoryFlag)
+            .filter_by(player_id=me.id, story_id=story_id)
+            .one_or_none()
+        )
+        if existing:
+            return jsonify({"ok": True, "already_seen": True}), 200
+
+        flag = PlayerStoryFlag(
+            player_id=me.id,
+            story_id=story_id,
+            seen_at=dt.datetime.utcnow(),
+        )
+        s.add(flag)
+        s.commit()
+
+        return jsonify({"ok": True, "already_seen": False}), 200
 
         
 # -----------------------------------------------------------------
@@ -567,7 +610,15 @@ from app.models import ResourceDef, CardDef
 
 @bp.get("/levels")
 def get_levels_definitions():
+    """
+    Return the list of level definitions for the UI:
+      - xp_min / xp_max (pour afficher la barre)
+      - normalized rewards (coins/diams/resources/cards)
+      - story_events (brut depuis levels.yml)
+      - system_unlocks (brut depuis levels.yml)
+    """
     with SessionLocal() as s:
+        # Cache des définitions pour enrichir les rewards
         resource_defs = {
             r.key: r
             for r in s.query(ResourceDef).filter_by(enabled=True).all()
@@ -580,22 +631,13 @@ def get_levels_definitions():
         level_numbers = sorted(LEVELS.keys()) if LEVELS else []
         payload = []
 
-        # Optionnel : niveau 0 synthétique
-        if level_numbers:
-            first_level = level_numbers[0]
-            first_thr = xp_required_for(first_level)
-            payload.append(
-                {
-                    "level": 0,
-                    "xp_required": 0,
-                    "xp_min": 0,
-                    "xp_max": first_thr,
-                    "rewards": [],
-                }
-            )
-
         for idx, lvl in enumerate(level_numbers):
             thr = xp_required_for(lvl)
+
+            # xp_min = seuil de ce niveau
+            xp_min = thr
+
+            # xp_max = seuil du niveau suivant, ou None si dernier niveau
             if idx + 1 < len(level_numbers):
                 next_lvl = level_numbers[idx + 1]
                 xp_max = xp_required_for(next_lvl)
@@ -604,6 +646,10 @@ def get_levels_definitions():
 
             cfg = LEVELS[lvl]
             rewards_cfg = cfg.get("rewards", []) or []
+
+            # NEW: raw story + system unlocks (directement depuis LEVELS)
+            story_events_cfg = cfg.get("story_events", []) or []
+            system_unlocks_cfg = cfg.get("system_unlocks", []) or []
 
             normalized_rewards = []
             for r in rewards_cfg:
@@ -665,11 +711,13 @@ def get_levels_definitions():
                 {
                     "level": lvl,
                     "xp_required": thr,
-                    "xp_min": thr,
+                    "xp_min": xp_min,
                     "xp_max": xp_max,
                     "rewards": normalized_rewards,
+                    # story + unlocks bruts (le front décidera quoi en faire)
+                    "story_events": story_events_cfg,
+                    "system_unlocks": system_unlocks_cfg,
                 }
             )
 
     return jsonify(payload)
-

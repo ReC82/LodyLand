@@ -1,0 +1,31 @@
+levels:
+  - level: 4
+    xp_required: 100
+    rewards:
+      - type: coins
+        amount: 100
+      - type: resource
+        resource_key: branch
+        amount: 40
+      - type: resource
+        resource_key: vine
+        amount: 15
+
+    story_events:
+      - id: "level_4_short_thought"
+        trigger: "on_level_reached"
+        show_once: true
+        modal_variant: "toast"
+
+        pages:
+          - speaker: "self"
+            mood: "thinking"
+            text:
+              fr: >
+                Je commence à m’habituer à ce rythme…
+                Mais j’ai l’impression que les choses sérieuses
+                ne font que commencer.
+              en: >
+                I’m getting used to this rhythm…
+                But it feels like the real challenges
+                are only just starting.

@@ -28,12 +28,10 @@ def _load_levels_from_yaml() -> Dict[int, dict]:
       levels:
         - level: 1
           xp_required: 10
-          rewards:
-            - type: "coins"
-              amount: 20
-            - type: "card"
-              card_key: "land_forest"
-              amount: 1
+          rewards: [...]
+          story_events: [...]
+          system_unlocks: [...]
+          quest_start: {...}
     """
     if not LEVELS_FILE.exists():
         # Fallback to old hard-coded thresholds if file is missing
@@ -43,6 +41,9 @@ def _load_levels_from_yaml() -> Dict[int, dict]:
             levels[idx] = {
                 "xp_required": thr,
                 "rewards": [],
+                "story_events": [],
+                "system_unlocks": [],
+                "quest_start": None,
             }
         return levels
 
@@ -52,17 +53,25 @@ def _load_levels_from_yaml() -> Dict[int, dict]:
     levels: Dict[int, dict] = {}
     for entry in levels_list:
         lvl = int(entry["level"])
+
+        # On garde TOUT ce qui nous intéresse
         levels[lvl] = {
             "xp_required": int(entry.get("xp_required", 0)),
             "rewards": entry.get("rewards", []) or [],
+            # NEW: histoire / déblocages / quête
+            "story_events": entry.get("story_events", []) or [],
+            "system_unlocks": entry.get("system_unlocks", []) or [],
+            # optionnel, peut être None
+            "quest_start": entry.get("quest_start"),
         }
+
     return levels
 
-
-# Global config: all levels loaded from YAML at import time
+# =============================================================================
+# Global config – LOAD LEVELS NOW
+# =============================================================================
 LEVELS: Dict[int, dict] = _load_levels_from_yaml()
 MAX_LEVEL: int = max(LEVELS.keys()) if LEVELS else 0
-
 
 # =============================================================================
 # XP / level helpers

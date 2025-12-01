@@ -10,6 +10,124 @@ const cooldowns = {};
 let tickInterval = null;
 let cardShopLoaded = false;
 
+// ============================================================
+// Story / Levels cache
+// ============================================================
+let LEVEL_DEFS = [];            // contenu brut de /api/levels
+let LEVEL_STORY_INDEX = {};     // { [level]: [story_events] }
+
+let storyQueue = [];            // file des story_events à afficher
+let storyIsPlaying = false;     // pour éviter de lancer 2 histoires en même temps
+
+// ============================================================
+// Feature flags (system_unlocks via /api/levels)
+// ============================================================
+let ACTIVE_FEATURES = new Set();
+
+/**
+ * Calcule toutes les features débloquées jusqu'au niveau `level`.
+ * Prend les données de LEVEL_DEFS (avec system_unlocks).
+ */
+function computeUnlockedFeaturesForLevel(level) {
+  const lvl = Number(level || 0);
+  const features = new Set();
+
+  (LEVEL_DEFS || []).forEach((def) => {
+    const defLevel = Number(def.level ?? 0);
+    if (defLevel > lvl) return;
+
+    const unlocks = Array.isArray(def.system_unlocks)
+      ? def.system_unlocks
+      : [];
+
+    unlocks.forEach((u) => {
+      if (!u) return;
+
+      // Format normal : { type: "feature", key: "daily_chest" }
+      if (typeof u === "object" && u.key && (u.type === "feature" || !u.type)) {
+        features.add(u.key);
+      }
+      // Fallback si un jour tu mets juste une string
+      else if (typeof u === "string") {
+        features.add(u);
+      }
+    });
+  });
+
+  return features;
+}
+
+/**
+ * Recalcule ACTIVE_FEATURES en fonction du joueur + LEVEL_DEFS
+ * puis applique l'affichage sur le HUD / menus.
+ */
+function recomputeFeaturesFromLevels() {
+  if (!window.currentPlayer || !LEVEL_DEFS.length) return;
+
+  const lvl = Number(window.currentPlayer.level || 0);
+  ACTIVE_FEATURES = computeUnlockedFeaturesForLevel(lvl);
+
+  applyFeatureVisibility();
+}
+
+/**
+ * Test simple utilisable partout : isFeatureUnlocked("daily_chest")
+ */
+function isFeatureUnlocked(key) {
+  if (!key) return false;
+  return ACTIVE_FEATURES.has(key);
+}
+
+/**
+ * Parcourt tous les éléments ayant data-feature="xxx"
+ * et les affiche / cache selon l'état de la feature.
+ *
+ * Convention :
+ *  - data-feature="quest_system"  → clé telle que dans system_unlocks
+ *  - optionnel data-feature-hide="0" pour ne PAS faire display:none
+ */
+function applyFeatureVisibility() {
+  const nodes = document.querySelectorAll("[data-feature]");
+  if (!nodes.length) return;
+
+  nodes.forEach((el) => {
+    const key = el.getAttribute("data-feature");
+    if (!key) return;
+
+    const unlocked = isFeatureUnlocked(key);
+
+    el.classList.toggle("feature-locked", !unlocked);
+
+    // Par défaut : on cache complètement l'élément si non débloqué
+    const hide = el.dataset.featureHide !== "0";
+
+    if (hide) {
+      if (unlocked) {
+        // On remet le display original si on l'avait sauvegardé
+        const prev = el.dataset.featureDisplay || "";
+        el.style.display = prev;
+      } else {
+        // On mémorise le display actuel pour plus tard
+        if (!el.dataset.featureDisplay) {
+          el.dataset.featureDisplay = el.style.display || "";
+        }
+        el.style.display = "none";
+      }
+    }
+
+    // Accessibilité : on marque désactivé
+    if (!unlocked) {
+      el.setAttribute("aria-disabled", "true");
+    } else {
+      el.removeAttribute("aria-disabled");
+    }
+  });
+}
+
+// On expose le testeur global pour d'autres scripts (village, etc.)
+window.isFeatureUnlocked = isFeatureUnlocked;
+
+
 function baseUrl() {
   return `${location.protocol}//${location.host}`;
 }
@@ -91,6 +209,45 @@ function initImageViewer() {
   };
 }
 
+// ============================================================
+// Load levels & cache story events
+// ============================================================
+async function loadLevelDefinitions() {
+  try {
+    const res = await http("GET", "/api/levels");
+    if (!res.ok) {
+      console.error("[levels] Failed to load /api/levels", res.status);
+      return;
+    }
+
+    const data = res.data || [];
+    LEVEL_DEFS = data;
+    LEVEL_STORY_INDEX = {};
+
+    data.forEach((lvl) => {
+      const lvlNo = Number(lvl.level);
+      LEVEL_STORY_INDEX[lvlNo] = Array.isArray(lvl.story_events)
+        ? lvl.story_events
+        : [];
+    });
+
+    // debug léger
+    console.log(
+      "[story] Loaded level definitions, story levels =",
+      Object.keys(LEVEL_STORY_INDEX)
+    );
+
+        // Dès qu'on a les levels + un joueur, on recalcule les features
+    if (window.currentPlayer) {
+      recomputeFeaturesFromLevels();
+    }
+
+
+  } catch (err) {
+    console.error("[levels] Error while loading /api/levels", err);
+  }
+}
+
 
 function showLevelUpModal(level, rewards) {
   const modal = document.getElementById("levelUpModal");
@@ -142,7 +299,13 @@ function initLevelUpModal() {
   const backdrop = document.getElementById("levelUpModalBackdrop");
 
   const close = () => {
+    // On ferme le modal de level-up
     modal.classList.remove("is-open");
+
+    // Et ENSUITE on démarre la file de stories, s'il y en a
+    if (typeof window.playNextStoryFromQueue === "function") {
+      window.playNextStoryFromQueue();
+    }
   };
 
   if (closeBtn) closeBtn.addEventListener("click", close);
@@ -211,6 +374,16 @@ function renderPlayer(p) {
   const hudCoins = $("hudCoins");
   const hudDiams = $("hudDiams");
 
+  // 🔥 NEW: garder currentPlayer en phase avec ce qui est affiché (et accessible aux autres scripts)
+  if (!p) {
+    currentPlayer = null;
+    window.currentPlayer = null;
+  } else {
+    currentPlayer = p;
+    window.currentPlayer = p;
+  }
+
+
   if (!p) {
     if (header) header.textContent = 'Aucun joueur (clique sur "Commencer").';
     if (xpBar) xpBar.style.width = "0%";
@@ -229,6 +402,12 @@ function renderPlayer(p) {
       diams: 0,
       land_name: window.LAND_NAME || "",
     });
+
+    // Recalcule les features dès que le niveau du joueur change
+    if (LEVEL_DEFS && LEVEL_DEFS.length) {
+      recomputeFeaturesFromLevels();
+    }
+
     return;
   }
 
@@ -504,6 +683,11 @@ async function startGame() {
 
   currentPlayer = p;
   renderPlayer(currentPlayer);
+
+  // 🔥 Charge les niveaux + stories de premier login
+  await loadLevelDefinitions();
+  enqueueInitialStoriesOnLogin();
+
   await refreshInventory();
   await refreshGrid();
   await loadCardShop(); 
@@ -958,6 +1142,244 @@ function showLootToasts(lootArray) {
   });
 }
 
+// ============================================================
+// Story helpers: seen / queue / run
+// ============================================================
+function hasSeenStoryEvent(eventId) {
+  if (!eventId) return false;
+  try {
+    return localStorage.getItem(`ll_story_seen_${eventId}`) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markStoryEventSeen(eventId) {
+  if (!eventId) return;
+  try {
+    localStorage.setItem(`ll_story_seen_${eventId}`, "1");
+  } catch {
+    // ignore
+  }
+}
+
+function enqueueStoryEvent(ev) {
+  if (!ev) return;
+  storyQueue.push(ev);
+}
+
+function renderStoryEventAsText(ev) {
+  const lang = document.documentElement.lang || "fr";
+  const pages = Array.isArray(ev.pages) ? ev.pages : [];
+  const lines = [];
+
+  pages.forEach((p) => {
+    const t =
+      (p.text && (p.text[lang] || p.text.en)) ||
+      "";
+    const speaker = p.speaker || "";
+    const mood = p.mood || "";
+    const prefix = speaker ? `[${speaker}${mood ? " / " + mood : ""}] ` : "";
+    if (t.trim()) {
+      lines.push(prefix + t.trim());
+    }
+  });
+
+  return lines.join("\n\n");
+}
+
+function playNextStoryFromQueue() {
+  if (storyIsPlaying) return;
+
+  const ev = storyQueue.shift();
+  if (!ev) return;
+
+  storyIsPlaying = true;
+
+  // 🟡 Si le nouveau StoryModal est dispo → on l'utilise
+  if (typeof window.openStoryModalForEvent === "function") {
+    window.openStoryModalForEvent(ev, () => {
+      // callback appelé quand le joueur clique sur "J'ai compris"
+      storyIsPlaying = false;
+
+      if (storyQueue.length > 0) {
+        playNextStoryFromQueue();
+      }
+    });
+    return;
+  }
+
+  // 🔙 Fallback : ancien comportement en alert()
+  const msg = renderStoryEventAsText(ev);
+  alert(msg);
+
+  if (ev.id && typeof markStoryEventSeen === "function") {
+    markStoryEventSeen(ev.id);
+  }
+
+  storyIsPlaying = false;
+
+  if (storyQueue.length > 0) {
+    playNextStoryFromQueue();
+  }
+}
+
+
+/**
+ * Appelé quand le joueur passe de oldLevel -> newLevel.
+ * Parcourt tous les niveaux gagnés et met en file les story_events
+ * avec trigger === "on_level_reached".
+ */
+function handleStoryAfterLevelUp(oldLevel, newLevel) {
+  if (!LEVEL_STORY_INDEX) return;
+
+  for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
+    const events = LEVEL_STORY_INDEX[lvl] || [];
+    events
+      .filter((ev) => ev.trigger === "on_level_reached")
+      .forEach((ev) => {
+        if (ev.show_once && hasSeenStoryEvent(ev.id)) {
+          return; // déjà vu
+        }
+        enqueueStoryEvent(ev);
+      });
+  }
+
+  // La story ne démarre PAS tout de suite ici,
+  // on laisse d’abord le LevelUp modal se fermer.
+}
+
+/**
+ * Stories de type "on_first_login"
+ * Appelée après qu'on connaisse le joueur + qu'on ait chargé /api/levels.
+ */
+function enqueueInitialStoriesOnLogin() {
+  if (!Array.isArray(LEVEL_DEFS) || !LEVEL_DEFS.length) return;
+
+  LEVEL_DEFS.forEach((lvl) => {
+    const events = Array.isArray(lvl.story_events) ? lvl.story_events : [];
+
+    events
+      .filter((ev) => ev.trigger === "on_first_login")
+      .forEach((ev) => {
+        if (ev.show_once && hasSeenStoryEvent(ev.id)) {
+          return; // déjà vu => on ne rejoue pas
+        }
+        enqueueStoryEvent(ev);
+      });
+  });
+
+  // S'il y a au moins une story dans la file, on démarre
+  if (storyQueue.length > 0 && typeof window.playNextStoryFromQueue === "function") {
+    window.playNextStoryFromQueue();
+  }
+}
+
+
+/**
+ * Stories déclenchées quand un land est débloqué via une carte de land
+ * reçue dans les récompenses de level.
+ *
+ * - oldLevel / newLevel : niveaux avant/après
+ * - levelRewards : array de récompenses du level up (coins, diams, card, ...)
+ *
+ * On va chercher dans LEVEL_STORY_INDEX[lvl] les events:
+ *   trigger === "on_land_unlocked"
+ *   et land_key qui correspond à une carte de land débloquée.
+ */
+function handleLandStoryOnUnlock(oldLevel, newLevel, levelRewards) {
+  if (!LEVEL_STORY_INDEX) return;
+
+  const rewards = Array.isArray(levelRewards) ? levelRewards : [];
+
+  // On ne garde que les cartes de type "land_xxx"
+  const unlockedLandKeys = rewards
+    .filter(
+      (r) =>
+        r &&
+        r.type === "card" &&
+        typeof r.key === "string" &&
+        r.key.startsWith("land_")
+    )
+    .map((r) => r.key);
+
+  if (!unlockedLandKeys.length) return;
+
+  for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
+    const events = LEVEL_STORY_INDEX[lvl] || [];
+    events
+      .filter(
+        (ev) =>
+          ev &&
+          ev.trigger === "on_land_unlocked" &&
+          (!ev.land_key || unlockedLandKeys.includes(ev.land_key))
+      )
+      .forEach((ev) => {
+        if (ev.show_once && hasSeenStoryEvent(ev.id)) {
+          return;
+        }
+        enqueueStoryEvent(ev);
+      });
+  }
+}
+
+/**
+ * Stories déclenchées quand on ENTRE sur un land (page /land/xxx ouverte).
+ * On parcourt tous les events ayant trigger === "on_enter_land" + land_key.
+ */
+function handleStoryOnEnterLand(landKey) {
+  if (!LEVEL_STORY_INDEX || !landKey) return;
+
+  Object.values(LEVEL_STORY_INDEX).forEach((events) => {
+    (events || [])
+      .filter(
+        (ev) =>
+          ev &&
+          ev.trigger === "on_enter_land" &&
+          (!ev.land_key || ev.land_key === landKey)
+      )
+      .forEach((ev) => {
+        if (ev.show_once && hasSeenStoryEvent(ev.id)) {
+          return;
+        }
+        enqueueStoryEvent(ev);
+      });
+  });
+
+  // Pas de modal de level up ici, on peut jouer la story tout de suite
+  if (typeof playNextStoryFromQueue === "function") {
+    playNextStoryFromQueue();
+  }
+}
+
+/**
+ * Orchestrateur front : à appeler quand on détecte un level up côté client.
+ * - Affiche le LevelUp modal
+ * - Met en file les stories "on_level_reached"
+ * - Met en file les stories "on_land_unlocked" (en fonction des rewards)
+ */
+function handleLevelUpFront(oldLevel, newLevel, levelRewards) {
+  const rewards = levelRewards || [];
+
+  // 1) Modal de Level Up (visuel + récompenses)
+  if (typeof showLevelUpModal === "function") {
+    showLevelUpModal(newLevel, rewards);
+  }
+
+  // 2) Stories de type "on_level_reached"
+  if (typeof handleStoryAfterLevelUp === "function") {
+    handleStoryAfterLevelUp(oldLevel, newLevel);
+  }
+
+  // 3) Stories de type "on_land_unlocked"
+  handleLandStoryOnUnlock(oldLevel, newLevel, rewards);
+}
+
+// On expose au window pour les autres scripts (land_common.js)
+window.handleStoryOnEnterLand = handleStoryOnEnterLand;
+window.handleLevelUpFront = handleLevelUpFront;
+
+
 // On met la fonction sur window pour l'appeler depuis les lands
 window.showLootToasts = showLootToasts;
 
@@ -974,6 +1396,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initQuestsUI();
   initLevelsUI();
   initImageViewer(); 
+  
   if (typeof initCraftUI === "function") {
     initCraftUI();
   }
@@ -981,6 +1404,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (me) {
     currentPlayer = me;
     renderPlayer(currentPlayer);
+
+    // On charge les niveaux AVANT d'essayer de jouer les stories
+    await loadLevelDefinitions();
+    // 🔥 Stories "on_first_login" possibles (si jamais pas encore vues)
+    enqueueInitialStoriesOnLogin();
+
     await refreshInventory();
     await refreshGrid();
     await loadCardShop();  
@@ -990,6 +1419,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderBoostSummary([]);  
     // On attend que l'utilisateur clique sur "Commencer"
   }
+
 });
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,68 @@
+levels:
+  - level: 0
+    xp_required: 0
+    rewards: []
+
+    story_events:
+      - id: "intro_forest_wakeup"
+        trigger: "on_first_login"
+        show_once: true
+        modal_variant: "full"
+
+        pages:
+          - speaker: "self"
+            mood: "confused"
+            text:
+              fr: >
+                Aaah… ma tête… Qu’est-ce qui s’est passé ?
+              en: >
+                Ugh… my head… What happened?
+
+          - speaker: "self"
+            mood: "lost"
+            text:
+              fr: >
+                Où est-ce que je suis ? C’est… une forêt ?
+                Je ne me souviens de rien. Ni d’où je viens…
+                Ni même de mon nom.
+              en: >
+                Where am I? This… is a forest?
+                I don’t remember anything. Where I came from…
+                Not even my name.
+
+          - speaker: "self"
+            mood: "thinking"
+            text:
+              fr: >
+                Ok. Respire. Panique plus tard.
+                D’abord, il faut survivre.
+              en: >
+                Okay. Breathe. Panic later.
+                First, I need to survive.
+
+          - speaker: "self"
+            mood: "observing"
+            text:
+              fr: >
+                Autour de moi, il y a des branches, des feuilles, des pierres…
+                Si je clique sur ces cases de terrain,
+                je peux sûrement ramasser des ressources.
+              en: >
+                Around me, there are branches, leaves, rocks…
+                If I click on these tiles,
+                I can probably gather some resources.
+
+          - speaker: "self"
+            mood: "determined"
+            text:
+              fr: >
+                Allez. Je commence par là :
+                cliquer sur les slots de la forêt pour récupérer
+                tout ce qui peut m’aider à rester en vie.
+              en: >
+                Alright. Let’s start with that:
+                click on the forest slots and pick up
+                anything that can help me stay alive.
+
+        quest_start:
+          quest_key: "q_first_gather"

@@ -1,0 +1,47 @@
+levels:
+  - level: 5
+    xp_required: 150
+    rewards:
+      - type: card
+        card_key: land_cave
+      - type: diams
+        amount: 1
+
+    story_events:
+      - id: "unlock_cave_card"
+        trigger: "on_level_reached"
+        land_key: "land_cave"
+        show_once: true
+        modal_variant: "centered"
+
+        pages:
+          - speaker: "self"
+            mood: "worried"
+            text:
+              fr: >
+                Une grotte… Bien sûr.
+                Rien de bon ne commence par “je suis entré dans une grotte”.
+              en: >
+                A cave… Of course.
+                Nothing good ever starts with “so I walked into a cave”.
+
+          - speaker: "self"
+            mood: "curious"
+            text:
+              fr: >
+                Mais si je veux avancer, je vais devoir prendre des risques.
+                Qui sait quelles ressources se cachent là-dessous.
+              en: >
+                But if I want to move forward, I’ll have to take risks.
+                Who knows what resources are hidden down there.
+
+          - speaker: "self"
+            mood: "determined"
+            text:
+              fr: >
+                Minerais, reliques, vieux secrets…
+                Avec un peu de chance, cette cave me donnera
+                plus de réponses que de problèmes.
+              en: >
+                Ores, relics, old secrets…
+                With some luck, this cave will bring more answers than problems.

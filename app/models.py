@@ -329,3 +329,16 @@ class LandSlotState(Base):
             name="uq_land_slot_state_player_land_slot",
         ),
     )
+
+class PlayerStoryFlag(Base):
+    """Store which story events have been seen by a player."""
+
+    __tablename__ = "player_story_flags"
+
+    id = Column(Integer, primary_key=True)
+    player_id = Column(Integer, ForeignKey("players.id"), index=True, nullable=False)
+    story_id = Column(String(100), index=True, nullable=False)
+    seen_at = Column(DateTime, nullable=False, default=dt.datetime.utcnow)
+
+    # Optional: relation back to Player
+    player = relationship("Player", backref="story_flags")

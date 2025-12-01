@@ -1,0 +1,43 @@
+levels:
+  - level: 1
+    xp_required: 10
+    rewards: []
+
+    story_events:
+      - id: "level_1_explain_progress"
+        trigger: "on_level_reached"
+        show_once: true
+        modal_variant: "centered"
+
+        pages:
+          - speaker: "self"
+            mood: "surprised"
+            text:
+              fr: >
+                Tiens… je me sens un peu plus en forme.
+                Comme si chaque action me rendait plus fort.
+              en: >
+                Huh… I feel a bit stronger.
+                Like every action is making me level up.
+
+          - speaker: "self"
+            mood: "explaining"
+            text:
+              fr: >
+                En ramassant des ressources, je gagne de l’XP.
+                Quand je monte de niveau, je reçois des récompenses…
+                Et parfois, je peux débloquer de nouveaux endroits.
+              en: >
+                By gathering resources, I gain XP.
+                When I level up, I get rewards…
+                And sometimes I unlock new places.
+
+          - speaker: "self"
+            mood: "curious"
+            text:
+              fr: >
+                Si je continue à récolter tout ce que je trouve,
+                je finirai bien par comprendre ce qui se cache sur cette île.
+              en: >
+                If I keep collecting everything I can,
+                I’ll eventually figure out what’s hidden on this island.
