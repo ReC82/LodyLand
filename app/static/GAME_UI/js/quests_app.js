@@ -6,6 +6,7 @@
 
 let QQ_currentQuests = [];
 let QQ_statusFilter = "running";
+let QQ_typeFilter = "all";   // "all", "daily", "weekly", etc.
 console.log("[quests] quests_app.js loaded");
 /**
  * Convert quest_type into a label.
@@ -123,43 +124,85 @@ function QQ_renderQuestsPanel() {
     return;
   }
 
-  // 1) appliquer filtre running / completed
+  // 1) Filtre statut : "En cours" / "Terminées"
   const filtered = QQ_currentQuests.filter((q) => {
     const isCompleted = q.status === "completed";
+    const isExpired = q.status === "expired";
+    const isFailed = q.status === "failed";
+
     if (QQ_statusFilter === "completed") {
-      return isCompleted;
+      // Dans l'onglet "Terminées" on montre:
+      // - completed
+      // - expired
+      // - failed
+      return isCompleted || isExpired || isFailed;
     }
-    // "running" = tout ce qui n'est pas completed
-    return !isCompleted;
+
+    // Dans l'onglet "En cours", on ne garde que les actives
+    return q.status === "active";
   });
 
-  if (!filtered.length) {
+  // 2) Filtre par TYPE (onglets)
+  const filteredByType = filtered.filter((q) => {
+    if (QQ_typeFilter === "all") return true;
+
+    if (QQ_typeFilter === "daily") return q.quest_type === "daily";
+    if (QQ_typeFilter === "storyline") return q.quest_type === "storyline";
+    if (QQ_typeFilter === "weekly") return q.quest_type === "weekly";
+    if (QQ_typeFilter === "monthly") return q.quest_type === "monthly";
+
+    if (QQ_typeFilter === "other") {
+      // "other" = tout ce qui n'est PAS daily / storyline / weekly / monthly
+      return (
+        q.quest_type !== "daily" &&
+        q.quest_type !== "storyline" &&
+        q.quest_type !== "weekly" &&
+        q.quest_type !== "monthly"
+      );
+    }
+
+    return true;
+  });
+
+  if (!filteredByType.length) {
     container.innerHTML = `
-      <p class="quest-desc">
+      <p class="quest-desc text-muted small">
         Aucune quête pour ce filtre pour l'instant.
       </p>
     `;
     return;
   }
 
-  // 2) grouper par type
+  // 3) Si on est sur un onglet spécifique (daily / storyline / other…)
+  //    -> on affiche juste une liste de cartes, sans sous-groupes.
+  if (QQ_typeFilter !== "all") {
+    const cardsHtml = filteredByType.map(QQ_renderQuestCard).join("");
+    container.innerHTML = cardsHtml;
+    return;
+  }
+
+  // 4) Mode "Toutes" : on regroupe par type (comme avant, mais avec storyline séparé)
   const groupsDef = [
-    { key: "daily", label: "Quêtes quotidiennes" },
-    { key: "weekly", label: "Quêtes hebdomadaires" },
-    { key: "other", label: "Autres quêtes" },
+    { key: "daily",     label: "Quêtes quotidiennes" },
+    { key: "weekly",    label: "Quêtes hebdomadaires" },
+    { key: "storyline", label: "Quêtes storyline" },
+    { key: "other",     label: "Autres quêtes" },
   ];
 
   const groups = {
     daily: [],
     weekly: [],
+    storyline: [],
     other: [],
   };
 
-  filtered.forEach((q) => {
+  filteredByType.forEach((q) => {
     if (q.quest_type === "daily") {
       groups.daily.push(q);
     } else if (q.quest_type === "weekly") {
       groups.weekly.push(q);
+    } else if (q.quest_type === "storyline") {
+      groups.storyline.push(q);
     } else {
       groups.other.push(q);
     }
@@ -188,6 +231,7 @@ function QQ_renderQuestsPanel() {
 
   container.innerHTML = htmlParts.join("");
 }
+
 
 
 /**
@@ -236,23 +280,28 @@ window.initQuestsUI = function () {
   const btn = $("btn-quests");
   const close = $("btn-quests-close");
 
-  if (btn) btn.addEventListener("click", () => {
-    console.log("[quests] Quests button clicked");
-    window.openQuestsPanel();
-  });
-  if (close) close.addEventListener("click", () => {
-    console.log("[quests] Quests close button clicked");
-    window.closeQuestsPanel();
-  });
+  if (btn) {
+    btn.addEventListener("click", () => {
+      console.log("[quests] Quests button clicked");
+      window.openQuestsPanel();
+    });
+  }
 
-    // Filtres running / completed
+  if (close) {
+    close.addEventListener("click", () => {
+      console.log("[quests] Quests close button clicked");
+      window.closeQuestsPanel();
+    });
+  }
+
+  // 1) Filtres statut : En cours / Terminées
   const filterButtons = document.querySelectorAll(".qfilter-btn");
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const mode = btn.getAttribute("data-filter") || "running";
       QQ_statusFilter = mode === "completed" ? "completed" : "running";
 
-      // mettre à jour le style actif
+      // Style actif
       filterButtons.forEach((b) => {
         if (b === btn) {
           b.classList.add("qfilter-active");
@@ -261,12 +310,31 @@ window.initQuestsUI = function () {
         }
       });
 
-      // re-render avec le filtre
       QQ_renderQuestsPanel();
     });
   });
 
+  // 2) Onglets de TYPE : Toutes / Quotidiennes / Storyline / Autres
+  const typeButtons = document.querySelectorAll(".qtype-btn");
+  typeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const qtype = btn.getAttribute("data-qtype") || "all";
+      QQ_typeFilter = qtype;
+
+      // Style actif
+      typeButtons.forEach((b) => {
+        if (b === btn) {
+          b.classList.add("qtype-active");
+        } else {
+          b.classList.remove("qtype-active");
+        }
+      });
+
+      QQ_renderQuestsPanel();
+    });
+  });
 };
+
 
 window.QQ_toggleGroup = function (groupKey) {
   const group = document.querySelector(`.quests-group[data-group="${groupKey}"]`);

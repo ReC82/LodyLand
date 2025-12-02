@@ -1,0 +1,88 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+{% endblock %}
+
+{% block title %}Marché du village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village">
+
+  <!-- Header -->
+  <header class="land-header mb-4">
+    <div class="land-header-main">
+      {% if land_logo %}
+        <img
+          src="/static/assets/img/ui/village/logo_small_village_market.png"
+          alt="Logo du Marché"
+          class="land-logo me-2"
+        />
+      {% endif %}
+      <div>
+        <h1 class="h3 mb-1">
+          {{ land_label or "Le Marché du village" }}
+        </h1>
+        <p class="text-muted mb-0">
+          Ici, tu peux vendre tes ressources aux villageois contre des coins.
+          Garde de quoi crafter et pour les quêtes, le reste peut partir !
+        </p>
+      </div>
+    </div>
+
+    <div class="land-header-actions">
+      <a href="{{ url_for('village.village_home') }}" class="btn btn-sm btn-outline-light">
+        ← Retour au village
+      </a>
+    </div>
+  </header>
+
+  <!-- Market panel -->
+  <div class="card village-panel">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 class="h5 mb-0">Vendre des ressources</h2>
+      <small class="text-muted">
+        Les prix affichés sont en coins / unité.
+      </small>
+    </div>
+
+    <div class="card-body">
+      <!-- Messages (succès / erreur) -->
+      <div id="market-messages" class="mb-3"></div>
+
+      <!-- Tableau des ressources vendables -->
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0 village-market-table">
+          <thead>
+            <tr>
+              <th style="width: 40%;">Ressource</th>
+              <th class="text-end" style="width: 15%;">En stock</th>
+              <th class="text-end" style="width: 15%;">Prix / unité</th>
+              <th class="text-end" style="width: 15%;">Qté à vendre</th>
+              <th class="text-end" style="width: 15%;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="market-rows">
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                Chargement de ton inventaire et des prix du marché...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer text-muted small">
+      Astuce : certaines ressources peuvent valoir plus cher plus tard, ne vends pas tout d'un coup.
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_market.js') }}"></script>
+{% endblock %}

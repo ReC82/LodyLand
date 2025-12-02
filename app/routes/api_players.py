@@ -22,7 +22,13 @@ from app.craft_defs import CRAFT_DEFS, ITEM_DEFS
 import app.craft_defs as craft_defs
 import datetime as dt
 
-from app.quests.service import assign_daily_quest_if_needed, serialize_quest
+from app.quests.service import (
+    assign_daily_quest_if_needed,
+    assign_weekly_quest_if_needed,
+    assign_next_storyline_quest_if_needed,
+    serialize_quest,
+)
+
 from app.services.cards import serialize_card_def
 from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
 
@@ -288,9 +294,11 @@ def get_state():
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
-        # --- NEW: ensure daily quest is assigned for today ---
+        # --- NEW: ensure daily / weekly / storyline quests are assigned ---
         now = dt.datetime.utcnow()
         assign_daily_quest_if_needed(s, me, now=now)
+        assign_weekly_quest_if_needed(s, me, now=now)
+        assign_next_storyline_quest_if_needed(s, me, now=now)
         s.commit()
         
         # --- ⚠️ IMPORTANT : résoudre les jobs de craft AVANT l'inventaire ---

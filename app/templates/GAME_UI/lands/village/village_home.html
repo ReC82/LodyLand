@@ -15,7 +15,7 @@
     <div class="land-header-main">
       {% if land_logo %}
         <img
-          src="{{ land_logo }}"
+          src="/static/assets/img/ui/village/logo_small_village.png"
           alt="Logo du Village"
           class="land-logo me-2"
         />
@@ -25,8 +25,8 @@
           {{ land_label or "Le Village" }}
         </h1>
         <p class="text-muted mb-0">
-          Ici, pas de récolte. Juste des villageois, des quêtes, une boutique
-          d’objets rares et des échanges spéciaux.
+          Ici, pas de récolte. Juste des villageois, des quêtes, un marché
+          pour vendre tes ressources et des boutiques d’objets spéciaux.
         </p>
       </div>
     </div>
@@ -39,34 +39,53 @@
     <section class="npc-card">
       <div class="npc-card-inner">
         <img
-          src="/static/assets/img/npc/villager_quest.png"
+          src="/static/assets/img/ui/npc/village/villager_quests.png"
           alt="Donneur de quêtes"
           class="npc-img"
         />
         <h2 class="h5 npc-title">Donneur de quêtes</h2>
         <p class="npc-text">
-          Reçois ta quête quotidienne et des missions spéciales. Attention, tu ne peux
-          avoir qu’un nombre limité de quêtes actives.
+          Reçois ta quête quotidienne, tes missions spéciales et avance
+          dans l’histoire du village. Attention, tu ne peux avoir qu’un
+          nombre limité de quêtes actives.
         </p>
-        <!-- Pour l'instant, ce lien pourra faire un 404 → c'est normal -->
         <a href="/village/quests" class="btn btn-sm btn-primary">
           Voir les quêtes
         </a>
       </div>
     </section>
 
-    <!-- PNJ Boutique -->
+    <!-- PNJ Marché (vente de ressources) -->
     <section class="npc-card">
       <div class="npc-card-inner">
         <img
-          src="/static/assets/img/npc/villager_shop.png"
+          src="/static/assets/img/ui/npc/village/villager_market.png"
+          alt="Marchand du village"
+          class="npc-img"
+        />
+        <h2 class="h5 npc-title">Marché du village</h2>
+        <p class="npc-text">
+          Vends tes ressources aux villageois pour obtenir des coins.
+          Les prix peuvent changer avec le temps, alors surveille bien le marché.
+        </p>
+        <a href="/village/market" class="btn btn-sm btn-success">
+          Aller au marché
+        </a>
+      </div>
+    </section>
+
+    <!-- PNJ Boutique de cartes / raretés -->
+    <section class="npc-card">
+      <div class="npc-card-inner">
+        <img
+          src="/static/assets/img/ui/npc/village/villager_shop_card.png"
           alt="Boutiquier"
           class="npc-img"
         />
         <h2 class="h5 npc-title">Boutique des raretés</h2>
         <p class="npc-text">
-          Achète des objets limités dans le temps : boosts, cartes spéciales,
-          recettes… Les stocks et les offres changent régulièrement.
+          Achète des cartes spéciales, des boosts et des recettes rares.
+          Certaines offres sont limitées dans le temps ou en quantité.
         </p>
         <a href="/village/shop" class="btn btn-sm btn-warning">
           Voir la boutique
@@ -78,16 +97,16 @@
     <section class="npc-card">
       <div class="npc-card-inner">
         <img
-          src="/static/assets/img/npc/villager_trader.png"
+          src="/static/assets/img/ui/npc/village/villager_trades.png"
           alt="Marchand d'échanges"
           class="npc-img"
         />
         <h2 class="h5 npc-title">Marchand d’échanges</h2>
         <p class="npc-text">
-          Échange certaines ressources contre des items rares ou des cartes uniques.
-          Certains trades sont limités par jour ou par rotation.
+          Échange certaines ressources contre des items rares ou des cartes
+          uniques. Certains trades sont limités par jour ou par rotation.
         </p>
-        <a href="/village/trades" class="btn btn-sm btn-success">
+        <a href="/village/trades" class="btn btn-sm btn-outline-info">
           Voir les échanges
         </a>
       </div>
@@ -97,8 +116,8 @@
 
 </div>
 {% endblock %}
+
 {% block extra_scripts %}
-  
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
 

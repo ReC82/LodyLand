@@ -1,0 +1,131 @@
+# app/data/quests/storyline/main_forest.yml
+
+quest_templates:
+
+  story_forest_01_wake_up:
+    key: "qt_story_forest_01_wake_up"
+    quest_type: "storyline"
+    category: "storyline"
+    enabled: true
+
+    storyline_id: "main_forest"
+    storyline_step: 1
+    requires_quests_completed: []
+
+    min_player_level: 1
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Où suis-je ?"
+      en: "Where am I?"
+
+    description:
+      fr: >
+        Tu te réveilles dans une forêt inconnue. Commence par ramasser quelques
+        branches pour te rassurer et faire un feu.
+      en: >
+        You wake up in an unknown forest. Start by gathering a few branches
+        to make a fire.
+
+    sources:
+      - "system_storyline"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["branch"]
+        quantity_min: 3
+        quantity_max: 3
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 0
+      coins_max: 0
+      diams_min: 0
+      diams_max: 0
+
+
+  story_forest_02_meet_villagers:
+    key: "qt_story_forest_02_meet_villagers"
+    quest_type: "storyline"
+    category: "storyline"
+    enabled: true
+
+    storyline_id: "main_forest"
+    storyline_step: 2
+    requires_quests_completed:
+      - "qt_story_forest_01_wake_up"
+
+    min_player_level: 1
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Des voix au loin"
+      en: "Voices in the distance"
+
+    description:
+      fr: >
+        Tu aperçois de la fumée au loin. Récolte quelques ressources supplémentaires
+        avant d'aller à la rencontre des villageois.
+      en: >
+        You see smoke in the distance. Gather a few more resources before
+        meeting the villagers.
+
+    sources:
+      - "system_storyline"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["wood", "small_stone"]
+        quantity_min: 10
+        quantity_max: 15
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 10
+      coins_max: 15
+      diams_min: 0
+      diams_max: 1
+
+
+  story_forest_03_prepare_cave:
+    key: "qt_story_forest_03_prepare_cave"
+    quest_type: "storyline"
+    category: "storyline"
+    enabled: true
+
+    storyline_id: "main_cave"
+    storyline_step: 1
+    requires_quests_completed:
+      - "qt_story_forest_02_meet_villagers"
+
+    min_player_level: 3
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Un passage mystérieux"
+      en: "A mysterious passage"
+
+    description:
+      fr: >
+        Les villageois parlent d'une grotte cachée. Prépare-toi en fabriquant
+        quelques torches.
+      en: >
+        Villagers whisper about a hidden cave. Get ready by crafting some torches.
+
+    sources:
+      - "system_storyline"
+
+    objective_templates:
+      - kind: "craft_item"
+        item_keys: ["item_torch_basic"]
+        quantity_min: 3
+        quantity_max: 3
+
+    reward_templates:
+      coins_min: 20
+      coins_max: 20
+      diams_min: 0
+      diams_max: 1

@@ -1,0 +1,186 @@
+# app/data/quests/daily/basic_forest.yml
+
+quest_templates:
+
+  daily_forest_wood_basic:
+    key: "qt_daily_forest_wood_basic"
+    quest_type: "daily"
+    category: "farming"
+    enabled: true
+
+    min_player_level: 1
+    max_player_level: 10
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Bois pour le feu"
+      en: "Wood for the fire"
+
+    description:
+      fr: "Le village a besoin de bois pour le feu du soir."
+      en: "The village needs wood for tonight's fire."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["branch", "wood"]
+        quantity_min: 8
+        quantity_max: 15
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 12
+      coins_max: 25
+      diams_min: 0
+      diams_max: 1
+
+
+  daily_forest_stone_small:
+    key: "qt_daily_forest_stone_small"
+    quest_type: "daily"
+    category: "mining"
+    enabled: true
+
+    min_player_level: 2
+    max_player_level: 12
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Petites pierres utiles"
+      en: "Useful small stones"
+
+    description:
+      fr: "Rassemble quelques petites pierres pour les artisans du village."
+      en: "Collect some small stones for the village crafters."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["small_stone"]
+        quantity_min: 5
+        quantity_max: 12
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 10
+      coins_max: 22
+      diams_min: 0
+      diams_max: 1
+
+
+  daily_forest_craft_rope:
+    key: "qt_daily_forest_craft_rope"
+    quest_type: "daily"
+    category: "crafting"
+    enabled: true
+
+    min_player_level: 3
+    max_player_level: 15
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Cordes pour le village"
+      en: "Ropes for the village"
+
+    description:
+      fr: "Fabrique quelques cordes à partir de lianes pour aider les villageois."
+      en: "Craft some ropes from vines to help the villagers."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "craft_item"
+        item_keys: ["item_rope"]
+        quantity_min: 1
+        quantity_max: 3
+
+    reward_templates:
+      coins_min: 15
+      coins_max: 30
+      diams_min: 0
+      diams_max: 1
+
+
+  daily_forest_leaves_and_vine:
+    key: "qt_daily_forest_leaves_and_vine"
+    quest_type: "daily"
+    category: "gathering"
+    enabled: true
+
+    min_player_level: 4
+    max_player_level: 20
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Feuilles et lianes"
+      en: "Leaves and vines"
+
+    description:
+      fr: "Les villageois ont besoin de feuilles et de lianes pour leurs constructions."
+      en: "Villagers need leaves and vines for their constructions."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["palm_leaf", "vine"]
+        quantity_min: 6
+        quantity_max: 14
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 18
+      coins_max: 32
+      diams_min: 0
+      diams_max: 1
+
+
+  daily_forest_mix_basic_resources:
+    key: "qt_daily_forest_mix_basic_resources"
+    quest_type: "daily"
+    category: "farming"
+    enabled: true
+
+    min_player_level: 5
+    max_player_level: 25
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Approvisionnement de base"
+      en: "Basic supplies"
+
+    description:
+      fr: "Prépare un stock mixte de ressources pour le village."
+      en: "Prepare a mixed stock of resources for the village."
+
+    sources:
+      - "auto_daily"
+      - "villager_generic"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["branch", "wood", "small_stone"]
+        quantity_min: 15
+        quantity_max: 30
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 20
+      coins_max: 40
+      diams_min: 0
+      diams_max: 2

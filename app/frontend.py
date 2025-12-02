@@ -270,7 +270,7 @@ def land_page(slug: str):
         # -------------------------------
         if slug == "village":
             # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
-            return render_template("GAME_UI/lands/village/village.html")
+            return render_template("GAME_UI/lands/village/village_home.html")
 
         # -------------------------------
         # Config du land via lands.yml
@@ -427,7 +427,7 @@ def land_village():
         if not player:
             return redirect(url_for("frontend.home"))
         # Optional: later, check for land_village card here.
-        return render_template("GAME_UI/lands/village/village.html")
+        return render_template("GAME_UI/lands/village/village_home.html")
     finally:
         session.close()
 

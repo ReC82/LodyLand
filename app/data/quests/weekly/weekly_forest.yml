@@ -1,0 +1,42 @@
+# app/data/quests/weekly/weekly_forest.yml
+
+quest_templates:
+  weekly_forest_supply:
+    key: "qt_weekly_forest_supply"
+    quest_type: "weekly"
+    category: "forest"
+    enabled: true
+
+    # Niveau minimum pour avoir cette hebdo
+    min_player_level: 3
+
+    title:
+      fr: "Approvisionnement hebdomadaire de la forêt"
+      en: "Weekly forest supplies"
+
+    description:
+      fr: >
+        Le village a besoin d'un gros stock de ressources de la forêt pour la semaine.
+        Apporte tout ce qu'il faut et tu seras généreusement récompensé.
+      en: >
+        The village needs a big stock of forest resources for the week.
+        Bring everything they need and you will be well rewarded.
+
+    # IMPORTANT : cette hebdo sera donnée automatiquement par le système
+    sources:
+      - "auto_weekly"
+
+    # Pour l’instant, on garde un seul objectif simple
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["branch", "palm_leaf", "vine"]
+        quantity_min: 60
+        quantity_max: 80
+        ignore_boosts: true
+
+    # V1: ton système de rewards ne gère que coins + diams
+    reward_templates:
+      coins_min: 120
+      coins_max: 160
+      diams_min: 0
+      diams_max: 2
