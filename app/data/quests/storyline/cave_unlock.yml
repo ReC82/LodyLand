@@ -1,14 +1,14 @@
 quest_templates:
-  story_cave_02_unlock:
-    key: "qt_story_cave_02_unlock"
+  story_cave_01_unlock:
+    key: "qt_story_cave_01_unlock"
     quest_type: "storyline"
     category: "storyline"
     enabled: true
 
-    storyline_id: "main_02_cave"
-    storyline_step: 2
+    storyline_id: "main_03_cave"
+    storyline_step: 3
     requires_quests_completed:
-      - "qt_story_forest_01_wake_up"
+      - "qt_story_beach_01_discover"
 
     min_player_level: 3
     required_land_keys:
