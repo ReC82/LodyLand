@@ -235,7 +235,7 @@ cards:
   - village
   card_label: Accès Village
   card_description: Un petit village où tu pourras commercer, accepter des quêtes, etc.
-  card_image: /static/assets/img/cards/lands/land_village.png
+  card_image: /static/assets/img/cards/lands/specials/land_village.png
   card_rarity: rare
   card_gameplay:
     target_land: village
@@ -420,7 +420,7 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 5
 
-- key: branch_boost_2
+- key: branch_boost_treasure_1
   enabled: true
   card_type: resource_boost
   card_category: boost
@@ -430,7 +430,7 @@ cards:
   - forest
   card_label: Booster Branches II
   card_description: +0.1 de branches récoltées.
-  card_image: /static/assets/img/cards/boosts/branch_boost_2.png
+  card_image: /static/assets/img/cards/boosts/_treasures/forest/branch_boost_treasure_1.png
   card_rarity: rare
   card_gameplay:
     target_resource: branch

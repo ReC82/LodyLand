@@ -107,3 +107,77 @@
 .vt-limit {
   margin-top: 0.25rem;
 }
+
+.village-trades-panel {
+  padding: 1rem 1.25rem;
+}
+
+.village-trades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.village-trade-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.village-trade-main {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.village-trade-left {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+}
+
+.village-trade-image-wrapper {
+  width: 64px;
+  height: 96px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.village-trade-image {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.village-trade-text {
+  flex: 1 1 auto;
+}
+
+.village-trade-right {
+  min-width: 180px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.village-trade-resource-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.village-trades-filters .village-trade-land-btn {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
+}
+
+.village-trades-filters .village-trade-land-btn.active {
+  background: #1f6feb;
+  border-color: #2a7fff;
+  color: #fff;
+}

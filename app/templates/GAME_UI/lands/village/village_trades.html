@@ -1,8 +1,12 @@
 {% extends "game_base.html" %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  {# CSS générique des lands #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/lands.css') }}">
+  {# CSS village global #}
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+  {# CSS spécifique à l'écran TRADES #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/trades.css') }}">
 {% endblock %}
 
 {% block title %}Échanges du Village — LodyLand{% endblock %}
@@ -10,29 +14,41 @@
 {% block content %}
 <div class="land-wrapper land-village">
 
-    <!-- Bouton retour -->
+  <!-- Bouton retour -->
   <div class="mb-3">
     <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
       ← Retour au village
     </a>
   </div>
 
-
+  <!-- Header -->
   <header class="land-header mb-3">
     <div class="land-header-main">
       <h1 class="h4 mb-1">{{ land_label or "Échanges du Village" }}</h1>
       <p class="text-muted mb-0">
-        Échange certaines ressources contre des objets spéciaux ou des cartes
-        uniques. (En préparation)
+        Échange tes ressources rares contre des cartes de boost uniques. Chaque land
+        possède ses propres trésors très difficiles à trouver.
       </p>
     </div>
   </header>
 
-  <div class="village-panel">
-    <p class="text-muted mb-0">
-      TODO: afficher les trades disponibles (limités par jour / rotation).
-    </p>
-  </div>
+  <section class="village-panel village-trades-panel">
+
+    <!-- Filtres par land -->
+    <div class="village-trades-filters mb-3">
+      <div class="d-flex flex-wrap gap-2" id="village-trades-land-filters">
+        <!-- Boutons de filtres injectés par JS -->
+      </div>
+    </div>
+
+    <!-- Corps : liste des trades -->
+    <div id="village-trades-list">
+      <p class="text-muted mb-0 small">
+        Chargement des offres d'échanges...
+      </p>
+    </div>
+
+  </section>
 
 </div>
 {% endblock %}
