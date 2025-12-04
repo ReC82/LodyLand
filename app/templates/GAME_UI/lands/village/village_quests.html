@@ -1,8 +1,8 @@
 {% extends "game_base.html" %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/lands.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/quests.css') }}">
 {% endblock %}
 
 {% block title %}Quêtes du village — LodyLand{% endblock %}
@@ -57,31 +57,19 @@
     </div>
 
     <!-- Onglets de TYPE de quêtes -->
-    <div class="quests-type-tabs mt-2 mb-1">
-      <button
-        type="button"
-        class="btn btn-sm qtype-btn qtype-active"
-        data-qtype="all"
-      >
-        Toutes
-      </button>
-      <button
-        type="button"
-        class="btn btn-sm qtype-btn"
-        data-qtype="daily"
-      >
-        Quotidiennes
-      </button>
-      <button
-        type="button"
-        class="btn btn-sm qtype-btn"
-        data-qtype="storyline"
-      >
-        Storyline
-      </button>
-      <button class="btn btn-sm qtype-btn" data-qtype="weekly">Hebdomadaires</button>
-      <button class="btn btn-sm qtype-btn" data-qtype="other">Autres</button>
-    </div>
+      <div class="quests-type-tabs mt-2 mb-1">
+        <button type="button" class="btn btn-sm qtype-btn qtype-active" data-qtype="all">
+          Toutes
+        </button>
+        <button type="button" class="btn btn-sm qtype-btn" data-qtype="daily">
+          Quotidiennes
+        </button>
+        <button type="button" class="btn btn-sm qtype-btn" data-qtype="storyline">
+          Storyline
+        </button>
+        <button class="btn btn-sm qtype-btn" data-qtype="weekly">Hebdomadaires</button>
+        <button class="btn btn-sm qtype-btn" data-qtype="other">Autres</button>
+      </div>
 
     <!-- Corps du panel : la liste est remplie par quests_app.js -->
     <div class="quests-panel-body">
