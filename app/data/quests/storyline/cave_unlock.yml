@@ -1,0 +1,41 @@
+quest_templates:
+  story_cave_01_unlock:
+    key: "qt_story_cave_01_unlock"
+    quest_type: "storyline"
+    category: "storyline"
+    enabled: true
+
+    storyline_id: "main_03_cave"
+    storyline_step: 3
+    requires_quests_completed:
+      - "qt_story_beach_01_discover"
+
+    min_player_level: 3
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Entrer dans la grotte"
+      en: "Enter the cave"
+
+    description:
+      fr: >
+        Tu as fabriqué tes torches. Il est temps de déverrouiller l'accès à
+        la grotte et de découvrir ce qu'elle cache.
+      en: >
+        You crafted your torches. Now unlock the cave and see what's inside.
+
+    sources:
+      - "system_storyline"
+
+    objective_templates:
+      - kind: "unlock_land"
+        land_keys: ["land_cave"]  
+        quantity_min: 1
+        quantity_max: 1
+
+    reward_templates:
+      coins_min: 30
+      coins_max: 30
+      diams_min: 0
+      diams_max: 1

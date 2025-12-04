@@ -43,14 +43,13 @@ cards:
   card_category: land
   card_tags:
   - cave
-  - lake
   - land
   card_label: Accès Grottes
   card_description: Débloque le land Grottes
   card_image: /static/assets/img/cards/lands/land_cave.png
   card_rarity: uncommon
   card_gameplay:
-    target_land: lake
+    target_land: cave
   shop:
     prices:
     - coins: 500
@@ -71,14 +70,13 @@ cards:
   card_category: land
   card_tags:
   - desert
-  - lake
   - land
   card_label: Accès Désert
   card_description: Débloque le land Désert
   card_image: /static/assets/img/cards/lands/land_desert.png
   card_rarity: uncommon
   card_gameplay:
-    target_land: lake
+    target_land: desert
   shop:
     prices:
     - coins: 500
@@ -421,6 +419,38 @@ cards:
   card_quantity: 0
   card_purchase_limit_quantity: null
   card_max_owned: 5
+
+- key: branch_boost_2
+  enabled: true
+  card_type: resource_boost
+  card_category: boost
+  card_tags:
+  - branch
+  - treasure
+  - forest
+  card_label: Booster Branches II
+  card_description: +0.1 de branches récoltées.
+  card_image: /static/assets/img/cards/boosts/branch_boost_2.png
+  card_rarity: rare
+  card_gameplay:
+    target_resource: branch
+    boost:
+      type: addition
+      amount: 0.1
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources:
+        ancien_bark: 100
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: false
+  card_quantity: 500
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
 
 - key: vine_boost_1
   enabled: true

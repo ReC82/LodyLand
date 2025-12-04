@@ -1,0 +1,31 @@
+- key: branch_boost_2
+  enabled: true
+  card_type: resource_boost
+  card_category: boost
+  card_tags:
+  - branch
+  - treasure
+  - forest
+  card_label: Booster Branches II
+  card_description: +0.1 de branches récoltées.
+  card_image: /static/assets/img/cards/boosts/branch_boost_2.png
+  card_rarity: rare
+  card_gameplay:
+    target_resource: branch
+    boost:
+      type: addition
+      amount: 0.1
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: 
+        ancien_bark: 100
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: false
+  card_quantity: 500
+  card_purchase_limit_quantity: null
+  card_max_owned: 1

@@ -1,0 +1,44 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+{% endblock %}
+
+{% block title %}Échanges du Village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village">
+
+    <!-- Bouton retour -->
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
+      ← Retour au village
+    </a>
+  </div>
+
+
+  <header class="land-header mb-3">
+    <div class="land-header-main">
+      <h1 class="h4 mb-1">{{ land_label or "Échanges du Village" }}</h1>
+      <p class="text-muted mb-0">
+        Échange certaines ressources contre des objets spéciaux ou des cartes
+        uniques. (En préparation)
+      </p>
+    </div>
+  </header>
+
+  <div class="village-panel">
+    <p class="text-muted mb-0">
+      TODO: afficher les trades disponibles (limités par jour / rotation).
+    </p>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_trades.js') }}"></script>
+{% endblock %}

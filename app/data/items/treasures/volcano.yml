@@ -1,0 +1,11 @@
+  magma_drop:
+    key: magma_drop
+    kind: treasure
+    label: Goutte de magma
+    description: Une goutte de magma en fusion, chaude au toucher.
+    icon: /static/assets/img/items/treasures/magma_drop.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les volcans.

@@ -37,14 +37,13 @@
   card_category: land
   card_tags:
   - cave
-  - lake
   - land
   card_label: Accès Grottes
   card_description: Débloque le land Grottes
   card_image: /static/assets/img/cards/lands/land_cave.png
   card_rarity: uncommon
   card_gameplay:
-    target_land: lake
+    target_land: cave
   shop:
     prices:
     - coins: 500
@@ -65,14 +64,13 @@
   card_category: land
   card_tags:
   - desert
-  - lake
   - land
   card_label: Accès Désert
   card_description: Débloque le land Désert
   card_image: /static/assets/img/cards/lands/land_desert.png
   card_rarity: uncommon
   card_gameplay:
-    target_land: lake
+    target_land: desert
   shop:
     prices:
     - coins: 500

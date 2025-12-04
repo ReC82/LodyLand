@@ -1,0 +1,191 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+{% endblock %}
+
+{% block title %}Boutique du village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village land-village-shop">
+
+  <!-- Bouton retour -->
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
+      ← Retour au village
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="land-header mb-4">
+    <div class="land-header-main">
+      <img
+        src="/static/assets/img/lands/village_logo.png"
+        alt="Boutique du village"
+        class="land-logo me-2"
+      />
+      <div>
+        <h1 class="h4 mb-1">
+          {{ land_label or "La Boutique des Raretés" }}
+        </h1>
+        <p class="text-muted mb-0">
+          Objets magiques, cartes uniques, offres limitées dans le temps.
+          Les stocks changent régulièrement, garde un œil sur cette boutique&nbsp;!
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Bandeau d'info -->
+  <div class="vs-info-bar mb-3">
+    <div class="vs-info-main">
+      <span class="vs-info-pill">Rotation hebdomadaire</span>
+      <span class="vs-info-pill">Certains objets sont en quantité limitée</span>
+    </div>
+    <div class="vs-info-side text-muted small">
+      Les prix peuvent être en <span class="ui-icon ui-icon-coin"></span> coins ou <span class="ui-icon ui-icon-diams"></span> diams.
+    </div>
+  </div>
+
+  <!-- Conteneur principal -->
+  <div class="village-panel p-3">
+
+    {% if not offers %}
+      <!-- État vide -->
+      <div class="vs-empty-state text-center py-5">
+        <div class="mb-2">🕒</div>
+        <div class="fs-5 mb-1">Aucune offre disponible pour le moment.</div>
+        <p class="text-muted mb-0">
+          Repasse plus tard, les villageois préparent de nouvelles merveilles à vendre.
+        </p>
+      </div>
+
+    {% else %}
+      <!-- Grille des offres -->
+      <div class="vs-offers-grid">
+        {% for offer in offers %}
+          {% set offer_key = offer.offer_key or offer.key or offer.item_key or ("offer_" ~ loop.index) %}
+          {% set item_type = offer.item_type or "card" %}
+          {% set rarity    = offer.rarity or offer.tier or "" %}
+          {% set title     = offer.title or offer.label or offer.item_key or offer_key %}
+          {% set subtitle  = offer.subtitle or offer.tagline or "" %}
+          {% set desc      = offer.description or "" %}
+          {% set icon      = offer.icon or "" %}
+
+          {# Prix : on part sur price_coins / price_diams, fallback vers coins / diams #}
+          {% set price_coins = offer.price_coins
+                              if offer.price_coins is not none
+                              else offer.coins %}
+          {% set price_diams = offer.price_diams
+                              if offer.price_diams is not none
+                              else offer.diams %}
+
+          {# Limites / stock #}
+          {% set limit_per_player = offer.limit_per_player or offer.max_per_player %}
+          {% set stock            = offer.stock %}
+          {% set disabled         = offer.disabled or (stock is not none and stock <= 0) %}
+
+          <article class="vs-offer-card {% if disabled %}vs-offer-disabled{% endif %}">
+            <div class="vs-offer-header">
+              <div class="vs-offer-icon-wrap">
+                {% if icon %}
+                  <img src="{{ icon }}" alt="{{ title }}" class="vs-offer-icon">
+                {% else %}
+                  <div class="vs-offer-icon vs-offer-icon-fallback">
+                    🃏
+                  </div>
+                {% endif %}
+
+                {% if rarity %}
+                  <div class="vs-offer-rarity vs-offer-rarity-{{ rarity|lower }}">
+                    {{ rarity }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="vs-offer-title-block">
+                <div class="vs-offer-title">
+                  {{ title }}
+                </div>
+                <div class="vs-offer-subtitle text-muted">
+                  {% if subtitle %}
+                    {{ subtitle }}
+                  {% else %}
+                    {% if item_type == "card" %}
+                      Carte spéciale du village
+                    {% else %}
+                      Objet spécial ({{ item_type }})
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            {% if desc %}
+              <p class="vs-offer-desc text-muted mb-2">
+                {{ desc }}
+              </p>
+            {% endif %}
+
+            <div class="vs-offer-footer">
+              <!-- Prix -->
+              <div class="vs-offer-price">
+                {% if (price_coins or 0) > 0 or (price_diams or 0) > 0 %}
+                  {% if price_coins %}
+                    <span class="vs-price-pill">
+                      {{ price_coins }} <span class="ui-icon ui-icon-coin"></span>
+                    </span>
+                  {% endif %}
+                  {% if price_diams %}
+                    <span class="vs-price-pill vs-price-pill-diams">
+                      {{ price_diams }} <span class="ui-icon ui-icon-diams"></span>
+                    </span>
+                  {% endif %}
+                {% else %}
+                  <span class="vs-price-pill vs-price-pill-free">
+                    Gratuit
+                  </span>
+                {% endif %}
+              </div>
+
+              <!-- Limites / stock -->
+              <div class="vs-offer-meta text-muted small">
+                {% if limit_per_player %}
+                  <span class="me-2">Limite par joueur : {{ limit_per_player }}</span>
+                {% endif %}
+                {% if stock is not none %}
+                  <span>Stock global : {{ stock }}</span>
+                {% endif %}
+              </div>
+
+              <!-- Bouton d'achat -->
+              <div class="vs-offer-actions">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-success vs-buy-btn"
+                  data-offer-key="{{ offer_key }}"
+                  {% if disabled %}disabled{% endif %}
+                >
+                  {% if disabled %}
+                    Indisponible
+                  {% else %}
+                    Acheter
+                  {% endif %}
+                </button>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_shop.js') }}"></script>
+{% endblock %}

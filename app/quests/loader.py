@@ -11,13 +11,22 @@ QuestTemplate = Dict[str, Any]
 
 # Base paths -------------------------------------------------------------
 
-
 # ! Adjust if your project structure is different
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 APP_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = APP_DIR / "data"
-QUESTS_YAML_PATH = DATA_DIR / "quests.yml"
 
+# OPTION 1 (recommandé, comme pour cards) :
+#   app/data/quests/quests.yml (généré par normalize_quests_yaml.py)
+QUESTS_YAML_PATH = DATA_DIR / "quests" / "quests.yml"
+
+# OPTION 2 (ancien système) :
+#   app/data/quests.yml
+# Si tu utilises encore ce chemin, remplace la ligne ci-dessus par :
+# QUESTS_YAML_PATH = DATA_DIR / "quests.yml"
+# NEW: on ajoute "storyline" aux types valides
+allowed_types = {"storyline", "daily", "weekly", "monthly", "bonus", "event"}
+valid: Dict[str, QuestTemplate] = {}
 
 def _build_default_templates() -> Dict[str, QuestTemplate]:
     """
@@ -67,7 +76,7 @@ def load_quest_templates() -> Dict[str, QuestTemplate]:
     """
     Load quest templates from quests.yml into the global QUEST_TEMPLATES dict.
 
-    - Reads config/quests.yml
+    - Reads data/quests/quests.yml (or equivalent)
     - Validates minimal required fields
     - Fallbacks to hard-coded default templates if needed
     """
@@ -95,9 +104,15 @@ def load_quest_templates() -> Dict[str, QuestTemplate]:
         QUEST_TEMPLATES = _build_default_templates()
         return QUEST_TEMPLATES
 
-    allowed_types = {"daily", "weekly", "bonus", "event"}
+    # ----------------------------------------------------
+    # 🔹 Déclaration ici : types autorisés + dict des valides
+    # ----------------------------------------------------
+    allowed_types = {"storyline", "daily", "weekly", "monthly", "bonus", "event"}
     valid: Dict[str, QuestTemplate] = {}
 
+    # ----------------------------------------------------
+    # Parcours de toutes les quêtes du YAML
+    # ----------------------------------------------------
     for yaml_key, tpl in raw_templates.items():
         if not isinstance(tpl, dict):
             print(f"Quête '{yaml_key}' ignorée (template non dict).")

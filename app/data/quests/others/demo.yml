@@ -1,0 +1,28 @@
+  demo_other_01_example:
+    key: "qt_demo_other_example"
+    quest_type: "other"
+    category: "other"
+    enabled: true
+
+    title:
+      fr: "Une petite faveur"
+      en: "A small favour"
+
+    description:
+      fr: "Une quête de test pour les quêtes 'autres'."
+      en: "A test quest for the 'other' category."
+
+    sources:
+      - "auto_other"
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["branch"]
+        quantity_min: 5
+        quantity_max: 5
+
+    reward_templates:
+      coins_min: 10
+      coins_max: 15
+      diams_min: 0
+      diams_max: 1

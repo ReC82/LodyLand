@@ -10,8 +10,8 @@
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
 
-  stone:
-    key: stone
+  small_stone:
+    key: small_stone
     kind: resource
     label: Small Stone
     description: De petites pierres, utiles pour la construction.

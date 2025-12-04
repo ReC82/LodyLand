@@ -1,0 +1,11 @@
+  ancient_bark:
+    key: ancient_bark
+    kind: treasure
+    label: Écorce ancienne
+    description: De l'écorce ancienne, rare et précieuse.
+    icon: /static/assets/img/items/resources/ancient_bark.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement en forêt.

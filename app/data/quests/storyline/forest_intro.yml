@@ -1,0 +1,43 @@
+quest_templates:
+
+  story_forest_01_wake_up:
+    key: "qt_story_forest_01_wake_up"
+    quest_type: "storyline"       # on adaptera loader.allowed_types pour l'accepter
+    category: "storyline"
+    enabled: true
+
+    storyline_id: "main_01_forest"
+    storyline_step: 1
+    requires_quests_completed: []  # première de la chaîne
+
+    min_player_level: 1
+    required_land_keys:
+      - "land_forest"
+
+    title:
+      fr: "Où suis-je ?"
+      en: "Where am I?"
+
+    description:
+      fr: >
+        Tu te réveilles dans une forêt inconnue. Commence par ramasser quelques
+        branches pour te rassurer et faire un feu.
+      en: >
+        You wake up in an unknown forest. Start by gathering a few branches to
+        make a fire.
+
+    sources:
+      - "system_storyline"         # plus tard : PNJ du tuto / script d'intro
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["branch"]
+        quantity_min: 3
+        quantity_max: 3
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 0
+      coins_max: 0
+      diams_min: 0
+      diams_max: 0

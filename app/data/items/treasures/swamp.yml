@@ -1,0 +1,11 @@
+  toxic_gland:
+    key: toxic_gland
+    kind: treasure
+    label: Glande toxique
+    description: Une glande toxique rare trouvée dans les marais.
+    icon: /static/assets/img/items/treasures/toxic_gland.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les marais.

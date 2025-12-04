@@ -1,16 +1,29 @@
 /* ============================================================
-   VILLAGE LAND — General layout & NPC cards
-   Shared by all village-related features (quests, shop, trades)
+   VILLAGE LAND — Layout & styling
+   Shared by all village-related features (quests, shop, trades, market)
    ============================================================ */
 
 /* Main container for the Village land page */
 .land-village {
-  /* Simple max width + centered content */
   max-width: 1100px;
   margin: 0 auto;
+  padding: 1.5rem 0 2.5rem;
 }
 
-/* Header for the village land (logo + title + intro) */
+/* ---------------------------------------------
+   Header (logo + title + intro + actions)
+   --------------------------------------------- */
+
+.land-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .land-header-main {
   display: flex;
   align-items: center;
@@ -22,28 +35,103 @@
   width: 48px;
   height: 48px;
   object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 200, 80, 0.45));
 }
 
-/* Grid of NPC cards (quests, shop, trades) */
+/* Title + underline accent */
+.land-header-main h1,
+.land-header-main .h3 {
+  position: relative;
+  margin-bottom: 0.15rem;
+}
+
+.land-header-main h1::after,
+.land-header-main .h3::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.25rem;
+  width: 100px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #facc15, #fb923c, transparent);
+  opacity: 0.85;
+}
+
+/* Header text below title */
+.land-village .land-header .text-muted {
+  color: #cbd5f5 !important;
+  font-size: 0.9rem;
+}
+
+/* Header actions (e.g. back button) */
+.land-header-actions {
+  margin-left: auto;
+}
+
+.land-header-actions .btn {
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.35);
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
+}
+
+/* ---------------------------------------------
+   NPC grid (hub cards)
+   --------------------------------------------- */
+
 .village-npc-grid {
-  /* 3 columns on desktop, 1 column on small screens */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
 }
 
-/* NPC card container */
+/* NPC card container (outer) */
 .npc-card {
-  /* Keeping layout flexible, inner content is styled below */
+  position: relative;
 }
 
 /* Inner card visual for a single NPC */
 .npc-card-inner {
-  background: #020617;             /* dark navy */
-  border-radius: 0.75rem;
+  position: relative;
+  background: radial-gradient(circle at top left, #0b1220 0%, #020617 52%, #020617 100%);
+  border-radius: 0.85rem;
   padding: 1rem 1.25rem;
-  border: 1px solid #1f2937;       /* dark gray */
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.45); /* slate */
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(15, 23, 42, 0.6);
+  overflow: hidden;
+  transition:
+    transform 0.18s ease-out,
+    box-shadow 0.18s ease-out,
+    border-color 0.18s ease-out,
+    background 0.2s ease-out;
+}
+
+/* Glow border accent */
+.npc-card-inner::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(circle at top right, rgba(250, 204, 21, 0.22), transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+}
+
+.npc-card-inner:hover {
+  transform: translateY(-3px);
+  border-color: rgba(251, 191, 36, 0.85);
+  box-shadow:
+    0 16px 35px rgba(0, 0, 0, 0.75),
+    0 0 16px rgba(251, 191, 36, 0.35);
+  background: radial-gradient(circle at top left, #111827 0%, #020617 55%, #020617 100%);
+}
+
+.npc-card-inner:hover::before {
+  opacity: 1;
 }
 
 /* NPC portrait image */
@@ -53,16 +141,560 @@
   height: 64px;
   margin-bottom: 0.75rem;
   object-fit: contain;
+  image-rendering: pixelated;
 }
 
 /* NPC title / role (e.g. Quests, Shop, Trades) */
 .npc-title {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
 }
 
 /* NPC short description text */
 .npc-text {
   font-size: 0.9rem;
-  color: #9ca3af;                  /* light gray */
-  margin-bottom: 0.75rem;
+  color: #9ca3af; /* light gray */
+  margin-bottom: 0.85rem;
+}
+
+/* NPC buttons */
+.npc-card-inner .btn {
+  font-size: 0.8rem;
+  border-radius: 999px;
+  padding-inline: 1rem;
+}
+
+/* ---------------------------------------------
+   Generic village panel (Market, Quests list, etc.)
+   --------------------------------------------- */
+
+.village-panel {
+  background: linear-gradient(
+    145deg,
+    rgba(15, 23, 42, 0.98),
+    rgba(15, 23, 42, 0.96),
+    rgba(30, 64, 175, 0.18)
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(15, 23, 42, 0.85);
+}
+
+/* Card header inside village panel */
+.village-panel .card-header {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), transparent 60%);
+  color: #e5e7eb;
+}
+
+/* Panel footer text */
+.village-panel .card-footer {
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+/* ---------------------------------------------
+   Market table
+   --------------------------------------------- */
+
+/* Small resource icon used in market table */
+.resource-icon-sm {
+  width: 26px;
+  height: 26px;
+  image-rendering: pixelated;
+}
+
+.resource-label {
+  font-size: 0.9rem;
+}
+
+/* Make all text inside .land-village readable */
+.land-village,
+.land-village p,
+.land-village small,
+.land-village .text-muted,
+.land-village .card,
+.land-village .card-body,
+.land-village .card-header,
+.land-village .table td,
+.land-village .table th {
+  color: #e5e5e5 !important;
+}
+
+/* Table container */
+.land-village .table {
+  color: #f9fafb !important;
+  margin-bottom: 0;
+}
+
+/* Override Bootstrap blue header */
+.land-village .table thead th {
+  background: linear-gradient(
+    180deg,
+    rgba(30, 64, 175, 0.9),
+    rgba(30, 64, 175, 0.7)
+  ) !important;
+  color: #f9fafb !important;
+  border-bottom: 1px solid rgba(191, 219, 254, 0.45);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Table body cells */
+.land-village .table tbody td {
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 1px solid rgba(30, 41, 59, 0.9);
+  font-size: 0.9rem;
+}
+
+/* Row hover */
+.village-market-table tbody tr:hover {
+  background-color: rgba(51, 65, 85, 0.85) !important;
+}
+
+/* Inputs in dark mode */
+.land-village .form-control {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  color: #f9fafb;
+  font-size: 0.85rem;
+  padding-block: 0.15rem;
+}
+
+.land-village .form-control:focus {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 0.15rem rgba(251, 146, 60, 0.45);
+}
+
+/* Buttons in market table */
+.land-village .market-sell-btn {
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
+  border-radius: 999px;
+}
+
+/* ---------------------------------------------
+   Generic dark-mode tweaks
+   --------------------------------------------- */
+
+.land-village .alert {
+  border-radius: 0.6rem;
+  padding-block: 0.35rem;
+}
+
+/* Ensure muted text remains visible on dark background */
+.land-village .text-muted {
+  color: #9ca3af !important;
+}
+
+/* Small helper spacing */
+.land-village .village-panel + .village-panel {
+  margin-top: 1.25rem;
+}
+
+/* ============================================================
+   VILLAGE SHOP — Offers list
+   ============================================================ */
+
+.land-village-shop {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Bandeau d'info en haut de la boutique */
+.vs-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 184, 91, 0.12),
+    rgba(56, 189, 248, 0.08)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vs-info-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.vs-info-pill {
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.8rem;
+}
+
+/* Grille des offres */
+.vs-offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Carte d'offre */
+.vs-offer-card {
+  background: rgba(11, 15, 25, 0.95);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vs-offer-card:hover {
+  border-color: rgba(251, 191, 36, 0.85);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65);
+}
+
+/* Version disabled (plus terne, pas de hover) */
+.vs-offer-disabled {
+  opacity: 0.6;
+  filter: grayscale(0.2);
+}
+
+.vs-offer-disabled:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* Header de la carte (icône + titre) */
+.vs-offer-header {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.vs-offer-icon-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.vs-offer-icon,
+.vs-offer-icon-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 20%, #facc15, #7c2d12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  image-rendering: pixelated;
+}
+
+/* Badge de rareté (coin en haut à gauche) */
+.vs-offer-rarity {
+  position: absolute;
+  left: -4px;
+  top: -6px;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.8);
+}
+
+/* Variantes de rareté (tu peux ajuster les couleurs) */
+.vs-offer-rarity-common {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+.vs-offer-rarity-rare {
+  background: linear-gradient(90deg, #0ea5e9, #3b82f6);
+  border-color: rgba(191, 219, 254, 0.9);
+}
+
+.vs-offer-rarity-epic {
+  background: linear-gradient(90deg, #a855f7, #6366f1);
+  border-color: rgba(221, 214, 254, 0.9);
+}
+
+.vs-offer-rarity-legendary {
+  background: linear-gradient(90deg, #f97316, #eab308);
+  border-color: rgba(254, 243, 199, 0.95);
+}
+
+/* Titre + sous-titre */
+.vs-offer-title-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.vs-offer-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.vs-offer-subtitle {
+  font-size: 0.85rem;
+}
+
+/* Description */
+.vs-offer-desc {
+  font-size: 0.88rem;
+}
+
+/* Footer : prix + méta + bouton */
+.vs-offer-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Prix */
+.vs-offer-price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.vs-price-pill {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(249, 250, 251, 0.2);
+  font-size: 0.85rem;
+}
+
+.vs-price-pill-diams {
+  border-color: rgba(129, 140, 248, 0.9);
+}
+
+.vs-price-pill-free {
+  background: rgba(22, 163, 74, 0.22);
+  border-color: rgba(34, 197, 94, 0.9);
+}
+
+/* Meta / stock, limite */
+.vs-offer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Actions */
+.vs-offer-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* État vide */
+.vs-empty-state {
+  color: #e5e7eb;
+}
+
+/* ============================================================
+   VILLAGE QUESTS
+   ============================================================ */
+
+.land-village-quests {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Panel principal */
+.quests-panel {
+  margin-top: 0.5rem;
+}
+
+/* Header du panel (titre + filtres) */
+.quests-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.quests-filters {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* Boutons de filtre En cours / Terminées */
+.qfilter-btn {
+  font-size: 0.8rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.8rem;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  color: #e5e7eb;
+}
+
+.qfilter-btn.qfilter-active {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  border-color: rgba(34, 197, 94, 0.95);
+  color: #f9fafb;
+}
+
+/* Corps du panel */
+.quests-panel-body {
+  padding: 0.75rem 0.75rem 0.85rem;
+}
+
+/* Groupes (daily / weekly / other) */
+.quests-group {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  overflow: hidden;
+}
+
+/* Header de groupe (titre + chevron) */
+.quests-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), transparent 55%);
+}
+
+.quests-group-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.quests-group-chevron {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Corps du groupe */
+.quests-group-body {
+  padding: 0.5rem 0.75rem 0.65rem;
+}
+
+/* Mode collapsed (body masqué) */
+.quests-group.collapsed .quests-group-body {
+  display: none;
+}
+
+.quests-group.collapsed .quests-group-chevron {
+  transform: rotate(-90deg);
+}
+
+/* Carte de quête */
+.quest-card {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid rgba(31, 41, 55, 0.95);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
+  margin-bottom: 0.5rem;
+}
+
+/* En-tête de la quête : badge + titre */
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+/* Badge type de quête (daily / weekly / etc.) */
+.quest-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(156, 163, 175, 0.9);
+}
+
+/* Variantes possibles (si tu veux plus tard) */
+.quest-badge.daily {
+  border-color: rgba(34, 197, 94, 0.9);
+}
+
+.quest-badge.weekly {
+  border-color: rgba(59, 130, 246, 0.9);
+}
+
+.quest-badge.storyline {
+  border-color: rgba(249, 115, 22, 0.9);
+}
+
+/* Titre et description */
+.quest-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.quest-desc {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-bottom: 0.45rem;
+}
+
+/* Objectifs */
+.quest-objective {
+  margin-bottom: 0.35rem;
+}
+
+.quest-objective-label {
+  font-size: 0.82rem;
+  margin-bottom: 0.15rem;
+}
+
+/* Barre de progression */
+.quest-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  overflow: hidden;
+  margin-bottom: 0.08rem;
+}
+
+.quest-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.quest-progress-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Récompenses (coins / diams) */
+.quest-reward-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(252, 211, 77, 0.9);
+  background: rgba(120, 53, 15, 0.45);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
 }

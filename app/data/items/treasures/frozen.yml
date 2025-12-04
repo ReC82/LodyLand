@@ -1,0 +1,11 @@
+  eternal_ice_heart:
+    key: eternal_ice_heart
+    kind: treasure
+    label: Coeur de glace éternelle
+    description: Un cœur de glace éternelle trouvé dans les profondeurs glacées.
+    icon: /static/assets/img/items/treasures/eternal_ice_heart.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les profondeurs glacées.

@@ -1,0 +1,90 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/quests.css') }}">
+{% endblock %}
+
+{% block title %}Quêtes du village — LodyLand{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village land-village-quests">
+
+  <!-- Bouton retour -->
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
+      ← Retour au village
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="land-header mb-3">
+    <div class="land-header-main">
+      <img
+        src="/static/assets/img/ui/village/logo_small_village_quests.png"
+        alt="Quêtes du village"
+        class="land-logo me-2"
+      />
+      <div>
+        <h1 class="h4 mb-1">
+          {{ land_label or "Les quêtes du village" }}
+        </h1>
+        <p class="text-muted mb-0">
+          Les villageois ont toujours besoin d’aide&nbsp;: accomplis des quêtes
+          quotidiennes, hebdomadaires et de storyline pour gagner des récompenses.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- PANEL QUÊTES (version page, pas overlay HUD) -->
+  <section class="village-panel village-quests-panel">
+
+    <!-- En-tête du panel (titre + filtres statut) -->
+    <div class="quests-panel-header">
+      <div>
+        <h2 class="quests-panel-title mb-1">Quêtes en cours &amp; terminées</h2>
+        <p class="quests-panel-subtitle mb-0">
+          Les quêtes quotidiennes se réinitialisent chaque jour, les quêtes
+          hebdomadaires chaque semaine. L’histoire principale avance une étape à la fois.
+        </p>
+      </div>
+      <div class="quests-status-filters">
+        <button class="qfilter-btn qfilter-active" data-filter="running">En cours</button>
+        <button class="qfilter-btn" data-filter="completed">Terminées</button>
+        <button class="qfilter-btn" data-filter="expired">Expirées</button>
+      </div>
+    </div>
+
+    <!-- Onglets de TYPE de quêtes -->
+      <div class="quests-type-tabs mt-2 mb-1">
+        <button type="button" class="btn btn-sm qtype-btn qtype-active" data-qtype="all">
+          Toutes
+        </button>
+        <button type="button" class="btn btn-sm qtype-btn" data-qtype="daily">
+          Quotidiennes
+        </button>
+        <button type="button" class="btn btn-sm qtype-btn" data-qtype="storyline">
+          Storyline
+        </button>
+        <button class="btn btn-sm qtype-btn" data-qtype="weekly">Hebdomadaires</button>
+        <button class="btn btn-sm qtype-btn" data-qtype="other">Autres</button>
+      </div>
+
+    <!-- Corps du panel : la liste est remplie par quests_app.js -->
+    <div class="quests-panel-body">
+      <div id="quests-list">
+        <p class="quest-desc text-muted small mb-0">
+          Chargement des quêtes en cours...
+        </p>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_quests.js') }}"></script>
+{% endblock %}

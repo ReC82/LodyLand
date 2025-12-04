@@ -1,0 +1,11 @@
+  celestial_bamboo:
+    key: celestial_bamboo
+    kind: treasure
+    label: Bambou céleste
+    description: Un bambou rare et mystique trouvé dans la forêt de bambous.
+    icon: /static/assets/img/items/treasures/celestial_bamboo.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans la forêt de bambous.

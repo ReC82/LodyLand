@@ -149,7 +149,6 @@ def _grant_resource(
 
     row.qty = (row.qty or 0.0) + float(amount)
 
-
 def _grant_card(
     session,
     player_id: int,
@@ -161,10 +160,11 @@ def _grant_card(
 
     If the PlayerCard row does not exist yet, it is created.
     """
+    from .models import PlayerCard, Player  # local import
+    from .quests import service as quests_service
+
     if not card_key or amount <= 0:
         return
-
-    from .models import PlayerCard  # local import to avoid circular deps
 
     row = (
         session.query(PlayerCard)
@@ -173,14 +173,19 @@ def _grant_card(
     )
 
     if not row:
-        row = PlayerCard(
-            player_id=player_id,
-            card_key=card_key,
-            qty=0,
-        )
+        row = PlayerCard(player_id=player_id, card_key=card_key, qty=amount)
         session.add(row)
+    else:
+        row.qty = (row.qty or 0) + amount
 
-    row.qty = (row.qty or 0) + int(amount)
+    # NEW : hook progression → quêtes
+    player = session.get(Player, player_id)
+    if player:
+        try:
+            quests_service.on_card_granted(session, player, card_key)
+        except Exception as exc:
+            print("[progression] WARNING: on_card_granted failed:", exc)
+
 
 
 def apply_level_rewards(

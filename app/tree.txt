@@ -1,0 +1,227 @@
+.
+|-- __init__.py
+|-- admin
+|   |-- __init__.py
+|   |-- static
+|   |   `-- css
+|   |       `-- admin.css
+|   `-- templates
+|       `-- ADMIN_UI
+|           |-- card_create.html
+|           |-- card_edit.html
+|           |-- cards_list.html
+|           |-- crafts_create.html
+|           |-- crafts_edit.html
+|           |-- crafts_list.html
+|           |-- dashboard.html
+|           |-- land_create.html
+|           |-- land_edit.html
+|           |-- lands_list.html
+|           |-- layout.html
+|           |-- level_edit.html
+|           |-- levels_list.html
+|           |-- player_detail.html
+|           |-- players_list.html
+|           |-- resource_create.html
+|           |-- resource_edit.html
+|           `-- resources_list.html
+|-- auth.py
+|-- craft_defs.py
+|-- data
+|   |-- cards
+|   |   |-- _README.md
+|   |   |-- boosts
+|   |   |   |-- cooldown.yml
+|   |   |   |-- land_loot.yml
+|   |   |   |-- resources.yml
+|   |   |   `-- xp.yml
+|   |   |-- buildings
+|   |   |   `-- buildings.yml
+|   |   |-- cards_readme.html
+|   |   |-- craft
+|   |   |   |-- access.yml
+|   |   |   `-- recipes
+|   |   |       |-- misc.yml
+|   |   |       |-- resources.yml
+|   |   |       |-- tools.yml
+|   |   |       `-- weapons.yml
+|   |   |-- debug
+|   |   |   `-- test_cards.yml
+|   |   |-- lands
+|   |   |   |-- access.yml
+|   |   |   |-- slots.yml
+|   |   |   `-- specials.yml
+|   |   |-- missing_card_images.txt
+|   |   |-- normalize_cards_yaml.py
+|   |   |-- packs
+|   |   |   |-- events.yml
+|   |   |   `-- starters.yml
+|   |   `-- read_me.html
+|   |-- cards.yml
+|   |-- craft_stations.yml
+|   |-- crafts
+|   |   |-- alchemy_base
+|   |   |-- cooking_base
+|   |   |-- craft_advanced_table
+|   |   |   |-- misc.yml
+|   |   |   `-- tools.yml
+|   |   |-- craft_base
+|   |   |   |-- misc.yml
+|   |   |   |-- resources.yml
+|   |   |   |-- tools.yml
+|   |   |   `-- weapons.yml
+|   |   |-- craft_building
+|   |   |-- craft_medium_table
+|   |   |   |-- resources.yml
+|   |   |   `-- tools.yml
+|   |   |-- forge_base
+|   |   |   `-- resources.yml
+|   |   `-- normalize_crafts_yaml.py
+|   |-- crafts.yml
+|   |-- items
+|   |   |-- misc.yml
+|   |   |-- normalize_items_yaml.py
+|   |   |-- resources
+|   |   |   |-- craftables.yml
+|   |   |   |-- resources_beach.yml
+|   |   |   |-- resources_cave.yml
+|   |   |   `-- resources_forest.yml
+|   |   |-- tools
+|   |   |   `-- tool_forest.yml
+|   |   |-- tools.yml
+|   |   `-- weapons.yml
+|   |-- items.yml
+|   |-- lands
+|   |   |-- beach.yml
+|   |   |-- cave.yml
+|   |   |-- forests.yml
+|   |   `-- normalize_lands_yaml.py
+|   |-- lands.yml
+|   |-- levels
+|   |   |-- 0_intro.yml
+|   |   |-- 10_temple.yml
+|   |   |-- 1_forest.yml
+|   |   |-- 2_beach.yml
+|   |   |-- 3_village.yml
+|   |   |-- 4_progress.yml
+|   |   |-- 5_cave.yml
+|   |   |-- 6_progress.yml
+|   |   `-- normalize_levels_yaml.py
+|   |-- levels.yml
+|   |-- normalize_all_yaml.py
+|   |-- quests.yml
+|   |-- resources.yml
+|   |-- resources.yml.bak
+|   |-- validation_report.html
+|   `-- village_shop.yml
+|-- db.py
+|-- debug_village_shop.py
+|-- economy.py
+|-- frontend.py
+|-- lands.py
+|-- models.py
+|-- progression.py
+|-- quests
+|   |-- __init__.py
+|   |-- loader.py
+|   `-- service.py
+|-- routes
+|   |-- __init__.py
+|   |-- api_cards.py
+|   |-- api_craft.py
+|   |-- api_daily.py
+|   |-- api_inventory.py
+|   |-- api_lands.py
+|   |-- api_misc.py
+|   |-- api_players.py
+|   |-- api_resources.py
+|   |-- api_shop.py
+|   `-- village.py
+|-- seed.py
+|-- seed_cards.py
+|-- services
+|   |-- cards.py
+|   |-- crafts.py
+|   |-- levels_loader.py
+|   `-- story_engine.py
+|-- static
+|   |-- DEV_UI
+|   |   |-- css
+|   |   |   `-- dev.css
+|   |   `-- js
+|   |       `-- dev_app.js
+|   |-- GAME_UI
+|   |   |-- css
+|   |   |   |-- auth.css
+|   |   |   |-- game.css
+|   |   |   |-- inventory.css
+|   |   |   |-- lands
+|   |   |   |   |-- lands.css
+|   |   |   |   `-- village
+|   |   |   |       |-- quests.css
+|   |   |   |       |-- shop.css
+|   |   |   |       |-- trades.css
+|   |   |   |       `-- village.css
+|   |   |   |-- lands.css.bpk
+|   |   |   |-- login.css
+|   |   |   |-- player
+|   |   |   |-- shop.css
+|   |   |   `-- ui
+|   |   `-- js
+|   |       |-- craft_app.js
+|   |       |-- game_app.js
+|   |       |-- game_menu.js
+|   |       |-- inventory_app.js
+|   |       |-- lands
+|   |       |   |-- land_common.js
+|   |       |   `-- land_tools_dropdown.js
+|   |       |-- quests_app.js
+|   |       |-- shop_app.js
+|   |       |-- story_app.js
+|   |       |-- ui
+|   |       `-- village
+|   |           |-- village_common.js
+|   |           |-- village_quests.js
+|   |           |-- village_shop.js
+|   |           `-- village_trades.js
+|   |-- common.css
+|   |-- common.js
+|   |-- favicon.png
+|   `-- play_old
+|       |-- app.js
+|       `-- index.html
+|-- templates
+|   |-- DEV_UI
+|   |   `-- index.html
+|   |-- GAME_UI
+|   |   |-- auth
+|   |   |   |-- login.html
+|   |   |   `-- register.html
+|   |   |-- index.html
+|   |   |-- inventory.html
+|   |   |-- lands
+|   |   |   |-- land_generic.html
+|   |   |   |-- select.html
+|   |   |   `-- village
+|   |   |       |-- quests.html
+|   |   |       |-- shop.html
+|   |   |       |-- trades.html
+|   |   |       |-- village.html
+|   |   |       |-- village_home.html
+|   |   |       |-- village_market.html
+|   |   |       |-- village_quests.html
+|   |   |       |-- village_shop.html
+|   |   |       `-- village_trades.html
+|   |   `-- shop
+|   |       `-- index.html
+|   |-- auth_base.html
+|   |-- dev_base.html
+|   |-- game_base.html
+|   `-- home.html
+|-- temporary_scripts
+|-- tree.txt
+|-- unlock_rules.py
+|-- village_shop.py
+`-- xp_defs.py
+
+79 directories, 398 files

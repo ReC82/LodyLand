@@ -1,0 +1,11 @@
+  rune_relic:
+    key: rune_relic
+    kind: treasure
+    label: Relique runique
+    description: Une relique runique rare trouvée dans les ruines anciennes.
+    icon: /static/assets/img/items/treasures/rune_relic.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les ruines anciennes.

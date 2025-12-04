@@ -1,0 +1,42 @@
+quest_templates:
+
+  story_beach_01_discover:
+    key: "qt_story_beach_01_discover"
+    quest_type: "storyline"       # on adaptera loader.allowed_types pour l'accepter
+    category: "storyline"
+    enabled: true
+
+    storyline_id: "main_02_beach"
+    storyline_step: 2
+    requires_quests_completed: []  # première de la chaîne
+
+    min_player_level: 1
+    required_land_keys:
+      - "land_beach"
+
+    title:
+      fr: "L'air frais de la plage."
+      en: ""
+
+    description:
+      fr: >
+        Tu as avancé jusqu'à tomber sur une plage.  Essaye de trouver quelques resources intéressantes.
+      en: >
+        You wake up in an unknown forest. Start by gathering a few branches to
+        make a fire.
+
+    sources:
+      - "system_storyline"         # plus tard : PNJ du tuto / script d'intro
+
+    objective_templates:
+      - kind: "collect_resource"
+        resource_keys: ["seashell"]
+        quantity_min: 1
+        quantity_max: 1
+        ignore_boosts: true
+
+    reward_templates:
+      coins_min: 50
+      coins_max: 75
+      diams_min: 0
+      diams_max: 0

@@ -1,0 +1,11 @@
+  raw_mythril:
+    key: raw_mythril
+    kind: treasure
+    label: Mythril brut
+    description: Un morceau brut de mythril trouvé dans les montagnes.
+    icon: /static/assets/img/items/treasures/raw_mythril.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les montagnes.
