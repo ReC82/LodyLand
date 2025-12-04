@@ -1,0 +1,24 @@
+levels:
+  - level: 10
+    xp_required: 1000
+    rewards:
+      - type: card
+        card_key: land_temple
+
+    story_events:
+      - id: "temple_first_visit"
+        trigger: "on_level_reached"
+        land_key: "land_temple"
+        show_once: true
+        modal_variant: "full"
+
+        pages:
+          - speaker: "self"
+            mood: "determined"
+            text:
+              fr: >
+                Mais quel beau temple !
+                Il a l'air si ancien…
+              en: >
+                What a beautiful temple!
+                It looks so ancient...

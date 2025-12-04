@@ -1,0 +1,11 @@
+  moon_pearl:
+    key: moon_pearl
+    kind: treasure
+    label: Perle de lune
+    description: Une perle rare trouvée dans les profondeurs du lac.
+    icon: /static/assets/img/items/treasures/moon_pearl.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les profondeurs du lac.

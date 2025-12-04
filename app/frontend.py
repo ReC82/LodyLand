@@ -3,7 +3,8 @@
 Frontend routes for LodyLand:
 - Public pages (home, login, register)
 - Lands selection and individual land pages
-- Shop pages (main shop + village shop)
+- Village pages (hub, quests, shop, trades, market)
+- Shop pages (main shop)
 - Inventory page
 """
 
@@ -14,8 +15,10 @@ from flask import (
     url_for,
     request,
     make_response,
+    g,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 from .auth import get_current_player
 from .db import SessionLocal
@@ -24,13 +27,54 @@ from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
 
 import datetime as dt
-from datetime import datetime, timezone 
+from datetime import datetime, timezone
 from .village_shop import get_active_village_offers
 
-from pathlib import Path
-import yaml
-
 frontend_bp = Blueprint("frontend", __name__)
+
+# ---------------------------------------------------------------------------
+# Helper / decorator: login_required
+# ---------------------------------------------------------------------------
+
+
+def login_required(view_fn):
+    """
+    Décorateur pour les pages de jeu qui exigent un joueur connecté.
+
+    - Ouvre une session DB
+    - Cherche le player via le cookie (get_current_player)
+    - Si pas de player -> redirect vers home
+    - Si OK -> stocke player + session dans flask.g
+    - Appelle la vue sans lui passer d'arguments supplémentaires.
+    """
+
+    @wraps(view_fn)
+    def wrapper(*args, **kwargs):
+        session = SessionLocal()
+        try:
+            player = get_current_player(session)
+            print("[login_required] player =", player)
+
+            if not player:
+                print("[login_required] redirect to home")
+                session.close()
+                return redirect(url_for("frontend.home"))
+
+            # Stocker pour usage dans la vue
+            g.player = player
+            g.db_session = session
+
+            # La vue ne reçoit pas player/session en arguments
+            response = view_fn(*args, **kwargs)
+            return response
+        finally:
+            try:
+                session.close()
+            except Exception:
+                pass
+
+    return wrapper
+
 
 # ---------------------------------------------------------------------------
 # Helpers: validation
@@ -119,16 +163,13 @@ def play_redirect():
 
 
 @frontend_bp.route("/shop")
+@login_required
 def shop():
-    """Main shop page (resource selling + card shop)."""
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
-    finally:
-        session.close()
-    # For now, the page is mostly driven by JS
+    """
+    Main shop page (resource selling + card shop).
+    Le contenu est surtout géré côté JS.
+    """
+    # player = g.player  # si tu veux l'utiliser dans le template plus tard
     return render_template("GAME_UI/shop/index.html")
 
 
@@ -137,11 +178,8 @@ def shop():
 # ---------------------------------------------------------------------------
 
 
-# ---------------------------------------------------------------------------
-# Lands selection + individual lands
-# ---------------------------------------------------------------------------
-
 @frontend_bp.get("/lands")
+@login_required
 def lands_select():
     """
     Land selection screen.
@@ -149,108 +187,103 @@ def lands_select():
     Shows all available land access cards (land_*) and which ones are unlocked
     for the current player.
     """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
+    player = g.player
+    session = g.db_session
 
-        # 1) Land access cards owned by the player (keys like "land_forest")
-        owned_land_rows = (
-            session.query(PlayerCard.card_key)
-            .filter(
-                PlayerCard.player_id == player.id,
-                PlayerCard.card_key.like("land_%"),
-                PlayerCard.qty > 0,
-            )
-            .all()
+    # 1) Land access cards owned by the player (keys like "land_forest")
+    owned_land_rows = (
+        session.query(PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player.id,
+            PlayerCard.card_key.like("land_%"),
+            PlayerCard.qty > 0,
         )
-        owned_keys = {key for (key,) in owned_land_rows}
+        .all()
+    )
+    owned_keys = {key for (key,) in owned_land_rows}
 
-        # 2) All enabled CardDef with key starting by land_*
-        land_cards = (
-            session.query(CardDef)
-            .filter(CardDef.key.like("land_%"), CardDef.enabled == True)
-            .order_by(CardDef.key.asc())
-            .all()
+    # 2) All enabled CardDef with key starting by land_*
+    land_cards = (
+        session.query(CardDef)
+        .filter(CardDef.key.like("land_%"), CardDef.enabled == True)
+        .order_by(CardDef.key.asc())
+        .all()
+    )
+
+    def make_price_text(cd: CardDef | None) -> str:
+        """
+        Build a human-readable price string for a land card.
+
+        Uses the first price option from cd.shop["prices"] if present.
+        """
+        if not cd:
+            return ""
+
+        shop_cfg = cd.shop or {}
+        prices = shop_cfg.get("prices") or []
+        if not prices:
+            return "Gratuit"
+
+        first = prices[0] or {}
+        parts: list[str] = []
+
+        coins = first.get("coins", 0)
+        diams = first.get("diams", 0)
+        res_costs: dict = first.get("resources", {}) or {}
+
+        if coins:
+            parts.append(f"{coins} 🪙")
+        if diams:
+            parts.append(f"{diams} 💎")
+
+        for res_key, qty in res_costs.items():
+            parts.append(f"{qty} {res_key}")
+
+        if not parts:
+            return "Gratuit"
+
+        return " + ".join(parts)
+
+    EMOJI_BY_SLUG = {
+        "forest": "🌲",
+        "beach": "🏝️",
+        "lake": "🏞️",
+        "mountain": "⛰️",
+        "village": "🏘️",
+        # "desert": "🏜️", etc. quand tu en ajoutes
+    }
+
+    lands: list[dict] = []
+    for cd in land_cards:
+        # key = "land_forest" -> slug = "forest"
+        slug = cd.key[len("land_") :]
+
+        # URL = route générique /land/<slug>
+        try:
+            land_url = url_for("frontend.land_page", slug=slug)
+            has_route = True
+        except Exception:
+            land_url = None
+            has_route = False
+
+        lands.append(
+            {
+                "key": slug,
+                "title": cd.card_label or slug.capitalize(),
+                "emoji": EMOJI_BY_SLUG.get(slug, "❓"),
+                "desc": cd.card_description or "",
+                "url": land_url,
+                "has_route": has_route,
+                "unlocked": cd.key in owned_keys,
+                "price_text": make_price_text(cd),
+            }
         )
-
-        def make_price_text(cd: CardDef | None) -> str:
-            """
-            Build a human-readable price string for a land card.
-
-            Uses the first price option from cd.shop["prices"] if present.
-            """
-            if not cd:
-                return ""
-
-            shop_cfg = cd.shop or {}
-            prices = shop_cfg.get("prices") or []
-            if not prices:
-                return "Gratuit"
-
-            first = prices[0] or {}
-            parts: list[str] = []
-
-            coins = first.get("coins", 0)
-            diams = first.get("diams", 0)
-            res_costs: dict = first.get("resources", {}) or {}
-
-            if coins:
-                parts.append(f"{coins} 🪙")
-            if diams:
-                parts.append(f"{diams} 💎")
-
-            for res_key, qty in res_costs.items():
-                parts.append(f"{qty} {res_key}")
-
-            if not parts:
-                return "Gratuit"
-
-            return " + ".join(parts)
-
-        EMOJI_BY_SLUG = {
-            "forest": "🌲",
-            "beach": "🏝️",
-            "lake": "🏞️",
-            "mountain": "⛰️",
-            "village": "🏘️",
-            # "desert": "🏜️", etc. quand tu en ajoutes
-        }
-
-        lands: list[dict] = []
-        for cd in land_cards:
-            # key = "land_forest" -> slug = "forest"
-            slug = cd.key[len("land_") :]
-
-            # URL = route générique /land/<slug>
-            try:
-                land_url = url_for("frontend.land_page", slug=slug)
-                has_route = True
-            except Exception:
-                land_url = None
-                has_route = False
-
-            lands.append(
-                {
-                    "key": slug,
-                    "title": cd.card_label or slug.capitalize(),
-                    "emoji": EMOJI_BY_SLUG.get(slug, "❓"),
-                    "desc": cd.card_description or "",
-                    "url": land_url,
-                    "has_route": has_route,
-                    "unlocked": cd.key in owned_keys,
-                    "price_text": make_price_text(cd),
-                }
-            )
-
-    finally:
-        session.close()
 
     return render_template("GAME_UI/lands/select.html", lands=lands)
 
 
 @frontend_bp.get("/land/<slug>")
+@login_required
 def land_page(slug: str):
     """
     Generic land page.
@@ -259,384 +292,352 @@ def land_page(slug: str):
       uses lands.yml + LandSlotState to render slots, tools, cooldowns.
     - For special lands like "village": render their own custom template.
     """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
+    player = g.player
+    session = g.db_session
 
-        # -------------------------------
-        # Special case: village
-        # -------------------------------
-        if slug == "village":
-            # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
-            return render_template("GAME_UI/lands/village/village_home.html")
+    # -------------------------------
+    # Special case: village
+    # -------------------------------
+    if slug == "village":
+        # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
+        return render_template("GAME_UI/lands/village/village_home.html")
 
-        # -------------------------------
-        # Config du land via lands.yml
-        # -------------------------------
-        conf = get_land_def(slug) or {}
-        if not conf:
-            # Land inconnu -> retour à la sélection
-            return redirect(url_for("frontend.lands_select"))
+    # -------------------------------
+    # Config du land via lands.yml
+    # -------------------------------
+    conf = get_land_def(slug) or {}
+    if not conf:
+        # Land inconnu -> retour à la sélection
+        return redirect(url_for("frontend.lands_select"))
 
-        land_key = conf.get("key") or f"land_{slug}"
-        starting_land = bool(conf.get("starting_land", False))
+    land_key = conf.get("key") or f"land_{slug}"
+    starting_land = bool(conf.get("starting_land", False))
 
-        # Si ce n'est pas un starting_land, on vérifie que le joueur a la carte
-        if not starting_land:
-            has_access = (
-                session.query(PlayerCard)
-                .filter(
-                    PlayerCard.player_id == player.id,
-                    PlayerCard.card_key == land_key,
-                    PlayerCard.qty > 0,
-                )
-                .first()
-            )
-            if not has_access:
-                return redirect(url_for("frontend.lands_select"))
-
-        # -------------------------------
-        # État des slots pour ce joueur
-        # -------------------------------
-        state = get_player_land_state(session, player.id, slug)
-
-        # -------------------------------
-        # Logo / label / tools
-        # -------------------------------
-        land_logo = conf.get("logo")
-        land_label = (
-            conf.get("label_fr")
-            or conf.get("label_en")
-            or conf.get("label")
-            or slug.capitalize()
-        )
-
-        tools_cfg = conf.get("tools") or {}
-
-        # Normalisation pour le template: [{key, label, emoji, requires_item}, ...]
-        tools = []
-        for key, cfg in tools_cfg.items():
-            if not isinstance(cfg, dict):
-                continue
-
-            label = cfg.get("label") or key
-
-            if "emoji" in cfg:
-                emoji = cfg.get("emoji") or ""
-            else:
-                emoji = "🤲" if key == "hands" else "🛠️"
-
-            # Priority to explicit requires_item in YAML.
-            requires_item = cfg.get("requires_item")
-            # Option: si pas de requires_item, on considère que l'item a le même key
-            # sauf pour "hands" qui ne demande rien.
-            if requires_item is None and key != "hands":
-                requires_item = key
-
-            tools.append(
-                {
-                    "key": key,
-                    "label": label,
-                    "emoji": emoji,
-                    "requires_item": requires_item,
-                }
-            )
-
-        # -------------------------------
-        # Carte "Free Slot" (optionnelle)
-        # Pattern: land_<slug>_free_slot si tu veux
-        # -------------------------------
-        free_card_key = f"{land_key}_free_slot"
-        has_free_slot_card = (
+    # Si ce n'est pas un starting_land, on vérifie que le joueur a la carte
+    if not starting_land:
+        has_access = (
             session.query(PlayerCard)
             .filter(
                 PlayerCard.player_id == player.id,
-                PlayerCard.card_key == free_card_key,
+                PlayerCard.card_key == land_key,
                 PlayerCard.qty > 0,
             )
-            .count()
-            > 0
+            .first()
         )
+        if not has_access:
+            return redirect(url_for("frontend.lands_select"))
 
-        # -------------------------------
-        # Cooldowns par slot (barre verte)
-        # -------------------------------
-        now = dt.datetime.now(dt.timezone.utc)
+    # -------------------------------
+    # État des slots pour ce joueur
+    # -------------------------------
+    state = get_player_land_state(session, player.id, slug)
 
-        slot_cooldowns: dict[int, dict] = {}
-        rows = (
-            session.query(LandSlotState)
-            .filter_by(player_id=player.id, land_key=slug)
-            .all()
-        )
+    # -------------------------------
+    # Logo / label / tools
+    # -------------------------------
+    land_logo = conf.get("logo")
+    land_label = (
+        conf.get("label_fr")
+        or conf.get("label_en")
+        or conf.get("label")
+        or slug.capitalize()
+    )
 
-        for st in rows:
-            cd = st.cooldown_until
-            if not cd:
-                continue
-            if cd.tzinfo is None:
-                cd = cd.replace(tzinfo=dt.timezone.utc)
-            if cd <= now:
-                continue
+    tools_cfg = conf.get("tools") or {}
 
-            tool_key = st.last_tool_key or "hands"
-            tool_cfg = tools_cfg.get(tool_key, {})
-            duration = int(tool_cfg.get("cooldown_seconds", 0))
-            if duration <= 0:
-                continue
+    # Normalisation pour le template: [{key, label, emoji, requires_item}, ...]
+    tools = []
+    for key, cfg in tools_cfg.items():
+        if not isinstance(cfg, dict):
+            continue
 
-            slot_cooldowns[st.slot_index] = {
-                "until": cd.isoformat(),
-                "duration": duration,
+        label = cfg.get("label") or key
+
+        if "emoji" in cfg:
+            emoji = cfg.get("emoji") or ""
+        else:
+            emoji = "🤲" if key == "hands" else "🛠️"
+
+        # Priority to explicit requires_item in YAML.
+        requires_item = cfg.get("requires_item")
+        # Option: si pas de requires_item, on considère que l'item a le même key
+        # sauf pour "hands" qui ne demande rien.
+        if requires_item is None and key != "hands":
+            requires_item = key
+
+        tools.append(
+            {
+                "key": key,
+                "label": label,
+                "emoji": emoji,
+                "requires_item": requires_item,
             }
-
-        # -------------------------------
-        # Rendu du template générique
-        # -------------------------------
-        return render_template(
-            "GAME_UI/lands/land_generic.html",
-            # pour le <script> global
-            land_key=slug,
-            land_label=land_label,
-            # pour le header
-            land_logo=land_logo,
-            # slots & coûts
-            state=state,
-            has_free_slot_card=has_free_slot_card,
-            # outils
-            tools=tools,
-            # cooldowns par slot
-            slot_cooldowns=slot_cooldowns,
         )
 
-    finally:
-        session.close()
+    # -------------------------------
+    # Carte "Free Slot" (optionnelle)
+    # Pattern: land_<slug>_free_slot si tu veux
+    # -------------------------------
+    free_card_key = f"{land_key}_free_slot"
+    has_free_slot_card = (
+        session.query(PlayerCard)
+        .filter(
+            PlayerCard.player_id == player.id,
+            PlayerCard.card_key == free_card_key,
+            PlayerCard.qty > 0,
+        )
+        .count()
+        > 0
+    )
 
-@frontend_bp.get("/land/village")
-def land_village():
-    """
-    Village land page.
+    # -------------------------------
+    # Cooldowns par slot (barre verte)
+    # -------------------------------
+    now = dt.datetime.now(dt.timezone.utc)
 
-    For now, no specific card check; later we can require land_village card.
-    """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
-        # Optional: later, check for land_village card here.
-        return render_template("GAME_UI/lands/village/village_home.html")
-    finally:
-        session.close()
+    slot_cooldowns: dict[int, dict] = {}
+    rows = (
+        session.query(LandSlotState)
+        .filter_by(player_id=player.id, land_key=slug)
+        .all()
+    )
+
+    for st in rows:
+        cd = st.cooldown_until
+        if not cd:
+            continue
+        if cd.tzinfo is None:
+            cd = cd.replace(tzinfo=dt.timezone.utc)
+        if cd <= now:
+            continue
+
+        tool_key = st.last_tool_key or "hands"
+        tool_cfg = tools_cfg.get(tool_key, {})
+        duration = int(tool_cfg.get("cooldown_seconds", 0))
+        if duration <= 0:
+            continue
+
+        slot_cooldowns[st.slot_index] = {
+            "until": cd.isoformat(),
+            "duration": duration,
+        }
+
+    # -------------------------------
+    # Rendu du template générique
+    # -------------------------------
+    return render_template(
+        "GAME_UI/lands/land_generic.html",
+        # pour le <script> global
+        land_key=slug,
+        land_label=land_label,
+        # pour le header
+        land_logo=land_logo,
+        # slots & coûts
+        state=state,
+        has_free_slot_card=has_free_slot_card,
+        # outils
+        tools=tools,
+        # cooldowns par slot
+        slot_cooldowns=slot_cooldowns,
+    )
 
 
 # ---------------------------------------------------------------------------
-# Village: quests / shop / trades
+# Village: hub + quests / shop / trades / market
 # ---------------------------------------------------------------------------
+
+
+@frontend_bp.get("/village")
+@login_required
+def village_home():
+    """Village hub: main NPC grid (quests / market / shop / trades)."""
+    player = g.player
+    land_logo = url_for(
+        "static",
+        filename="assets/img/lands/village_logo.png",
+    )
+    return render_template(
+        "GAME_UI/lands/village/village_home.html",
+        land_logo=land_logo,
+        land_label="Le Village",
+        player=player,
+    )
+
+
+@frontend_bp.get("/village/market")
+@login_required
+def village_market():
+    """Village Market page (UI only, resources loaded via /village/market/resources)."""
+    player = g.player
+    land_logo = url_for(
+        "static",
+        filename="assets/img/lands/village_logo.png",
+    )
+    return render_template(
+        "GAME_UI/lands/village/village_market.html",
+        land_label="Le Marché du village",
+        land_logo=land_logo,
+        player=player,
+    )
 
 
 @frontend_bp.get("/village/quests")
+@login_required
 def village_quests():
-    """Display the village quest NPC screen (daily + available quests)."""
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
+    """Village quests page (storyline + daily + weekly). UI + JS."""
+    player = g.player
 
-        # For now, we don't load real quests from DB.
-        # We'll just render a static UI that we'll wire later.
-        daily_quest = None
-        available_quests: list[dict] = []
-        active_quests: list[dict] = []
+    # Pour l'instant, les vraies données de quêtes viennent de /api/state
+    daily_quest = None
+    available_quests: list[dict] = []
+    active_quests: list[dict] = []
 
-        return render_template(
-            "GAME_UI/lands/village/quests.html",
-            player=player,
-            daily_quest=daily_quest,
-            available_quests=available_quests,
-            active_quests=active_quests,
-        )
-    finally:
-        session.close()
+    return render_template(
+        "GAME_UI/lands/village/village_quests.html",  # <-- IMPORTANT
+        player=player,
+        daily_quest=daily_quest,
+        available_quests=available_quests,
+        active_quests=active_quests,
+    )
+
 
 
 @frontend_bp.get("/village/shop")
+@login_required
 def village_shop():
     """
     Display the special village shop with limited items, loaded from YAML.
 
     This uses village_shop.yml to find active offers, then links them to CardDef.
     """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
+    player = g.player
+    session = g.db_session
 
-        today = dt.date.today()
-        offers = get_active_village_offers(today)
+    today = dt.date.today()
+    offers = get_active_village_offers(today)
 
-        shop_items: list[dict] = []
+    shop_items: list[dict] = []
 
-        for o in offers:
-            if o.get("item_type") != "card":
-                # For now we only support card offers
-                continue
+    for o in offers:
+        if o.get("item_type") != "card":
+            # For now we only support card offers
+            continue
 
-            card_key = o.get("item_key")
-            if not card_key:
-                continue
+        card_key = o.get("item_key")
+        if not card_key:
+            continue
 
-            cd = (
-                session.query(CardDef)
-                .filter(CardDef.key == card_key, CardDef.enabled == True)
-                .first()
-            )
-            if not cd:
-                continue
+        cd = (
+            session.query(CardDef)
+            .filter(CardDef.key == card_key, CardDef.enabled == True)
+            .first()
+        )
+        if not cd:
+            continue
 
-            # Shop configuration from card definition
-            shop_cfg = cd.shop or {}
+        # Shop configuration from card definition
+        shop_cfg = cd.shop or {}
 
-            # Take first price from card definition (shop.prices)
-            prices = shop_cfg.get("prices") or []
-            price_cfg = (prices[0] or {}) if prices else {}
-            coins_cost = int(price_cfg.get("coins", 0) or 0)
-            diams_cost = int(price_cfg.get("diams", 0) or 0)
-            res_costs = price_cfg.get("resources") or {}
+        # Take first price from card definition (shop.prices)
+        prices = shop_cfg.get("prices") or []
+        price_cfg = (prices[0] or {}) if prices else {}
+        coins_cost = int(price_cfg.get("coins", 0) or 0)
+        diams_cost = int(price_cfg.get("diams", 0) or 0)
+        res_costs = price_cfg.get("resources") or {}
 
-            # How many does the player already own?
-            owned_row = (
-                session.query(PlayerCard)
-                .filter_by(player_id=player.id, card_key=cd.key)
-                .first()
-            )
-            owned_qty = owned_row.qty if owned_row else 0
+        # How many does the player already own?
+        owned_row = (
+            session.query(PlayerCard)
+            .filter_by(player_id=player.id, card_key=cd.key)
+            .first()
+        )
+        owned_qty = owned_row.qty if owned_row else 0
 
-            # Purchase limits
-            limit_per_player = o.get("limit_per_player")
-            max_owned = shop_cfg.get("max_owned")
-            can_buy_reasons: list[str] = []
+        # Purchase limits
+        limit_per_player = o.get("limit_per_player")
+        max_owned = shop_cfg.get("max_owned")
+        can_buy_reasons: list[str] = []
 
-            # Limit specific to the village offer
-            if limit_per_player is not None and owned_qty >= limit_per_player:
-                can_buy_reasons.append(
-                    f"Tu as déjà acheté cette offre ({owned_qty}/{limit_per_player})."
-                )
-
-            # Global card max_owned
-            if max_owned is not None and owned_qty >= max_owned:
-                can_buy_reasons.append(
-                    "Tu as déjà atteint le nombre maximum pour cette carte."
-                )
-
-            # Currency checks
-            if player.coins < coins_cost:
-                can_buy_reasons.append("Tu n'as pas assez de coins.")
-            if player.diams < diams_cost:
-                can_buy_reasons.append("Tu n'as pas assez de diams.")
-
-            # (later we can also check resource costs in reasons)
-
-            can_buy = len(can_buy_reasons) == 0
-            cant_buy_reason = can_buy_reasons[0] if can_buy_reasons else ""
-
-            # Format end date for UI
-            end_str = o.get("end_date")
-            end_date_fmt = None
-            if end_str:
-                try:
-                    end_date = dt.date.fromisoformat(end_str)
-                    end_date_fmt = end_date.strftime("%d/%m/%Y")
-                except Exception:
-                    end_date_fmt = None
-
-            shop_items.append(
-                {
-                    "offer_key": o.get("key"),
-                    "villager": o.get("villager"),
-                    "label": cd.card_label,
-                    "description": cd.card_description,
-                    "rarity": cd.card_rarity,
-                    "price_coins": coins_cost,
-                    "price_diams": diams_cost,
-                    "price_resources": res_costs,
-                    "stock": o.get("stock_global"),
-                    "limit_until": end_date_fmt,
-                    "owned_qty": owned_qty,
-                    "can_buy": can_buy,
-                    "cant_buy_reason": cant_buy_reason,
-                }
+        # Limit specific to the village offer
+        if limit_per_player is not None and owned_qty >= limit_per_player:
+            can_buy_reasons.append(
+                f"Tu as déjà acheté cette offre ({owned_qty}/{limit_per_player})."
             )
 
-        # Group by villager, then label
-        shop_items.sort(
-            key=lambda it: ((it.get("villager") or ""), it.get("label") or "")
+        # Global card max_owned
+        if max_owned is not None and owned_qty >= max_owned:
+            can_buy_reasons.append(
+                "Tu as déjà atteint le nombre maximum pour cette carte."
+            )
+
+        # Currency checks
+        if player.coins < coins_cost:
+            can_buy_reasons.append("Tu n'as pas assez de coins.")
+        if player.diams < diams_cost:
+            can_buy_reasons.append("Tu n'as pas assez de diams.")
+
+        # (later we can also check resource costs in reasons)
+
+        can_buy = len(can_buy_reasons) == 0
+        cant_buy_reason = can_buy_reasons[0] if can_buy_reasons else ""
+
+        # Format end date for UI
+        end_str = o.get("end_date")
+        end_date_fmt = None
+        if end_str:
+            try:
+                end_date = dt.date.fromisoformat(end_str)
+                end_date_fmt = end_date.strftime("%d/%m/%Y")
+            except Exception:
+                end_date_fmt = None
+
+        shop_items.append(
+            {
+                "offer_key": o.get("key"),
+                "villager": o.get("villager"),
+                "label": cd.card_label,
+                "description": cd.card_description,
+                "rarity": cd.card_rarity,
+                "price_coins": coins_cost,
+                "price_diams": diams_cost,
+                "price_resources": res_costs,
+                "stock": o.get("stock_global"),
+                "limit_until": end_date_fmt,
+                "owned_qty": owned_qty,
+                "can_buy": can_buy,
+                "cant_buy_reason": cant_buy_reason,
+            }
         )
 
-        return render_template(
-            "GAME_UI/lands/village/shop.html",
-            player=player,
-            shop_items=shop_items,
-        )
-    finally:
-        session.close()
+    # Group by villager, then label
+    shop_items.sort(
+        key=lambda it: ((it.get("villager") or ""), it.get("label") or "")
+    )
+
+    return render_template(
+        "GAME_UI/lands/village/shop.html",
+        player=player,
+        shop_items=shop_items,
+    )
 
 
 @frontend_bp.get("/village/trades")
+@login_required
 def village_trades():
-    """
-    Display the village trading NPC screen.
+    """Village trades page (resource ↔ items/cards). For now: placeholder."""
+    player = g.player
 
-    For now this is demo-only data for the UI; real data will come from YAML/DB.
-    """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
+    land_logo = url_for(
+        "static",
+        filename="assets/img/lands/village_logo.png",
+    )
 
-        # Demo trades only for UI; real data will come from YAML/DB later.
-        trade_offers: list[dict] = [
-            {
-                "key": "demo_trade_wood_to_rope",
-                "label": "Bois contre corde (DEMO)",
-                "description": "Échange quelques branches contre une corde utile pour le craft.",
-                "give": {"branch": 5},
-                "receive": {"item_rope": 1},
-                "limit_per_day": 3,
-                "limit_per_rotation": None,
-            },
-            {
-                "key": "demo_trade_mushroom_to_card",
-                "label": "Champignons contre carte Forêt (DEMO)",
-                "description": "Échange beaucoup de champignons contre une carte slot supplémentaire en Forêt.",
-                "give": {"mushroom": 20},
-                "receive": {"card_forest_free_slot": 1},
-                "limit_per_day": 1,
-                "limit_per_rotation": None,
-            },
-            {
-                "key": "demo_trade_pearl_to_boost",
-                "label": "Perles contre Boost Lac (DEMO)",
-                "description": "Échange des perles rares contre un boost spécial au Lac.",
-                "give": {"pearl": 3},
-                "receive": {"boost_lake_x2": 1},
-                "limit_per_day": None,
-                "limit_per_rotation": 1,
-            },
-        ]
-
-        return render_template(
-            "GAME_UI/lands/village/trades.html",
-            player=player,
-            trade_offers=trade_offers,
-        )
-    finally:
-        session.close()
+    return render_template(
+        "GAME_UI/lands/village/village_trades.html",
+        land_label="Échanges du Village",
+        land_logo=land_logo,
+        player=player,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -797,16 +798,10 @@ def logout():
 
 
 @frontend_bp.get("/inventory")
+@login_required
 def inventory_page():
     """
     Inventory page (resources + cards), requires the player to be logged in.
     """
-    session = SessionLocal()
-    try:
-        player = get_current_player(session)
-        if not player:
-            return redirect(url_for("frontend.home"))
-
-        return render_template("GAME_UI/inventory.html")
-    finally:
-        session.close()
+    # player = g.player  # dispo si tu veux
+    return render_template("GAME_UI/inventory.html")

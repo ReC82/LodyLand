@@ -202,6 +202,15 @@ resources:
     icon: /static/assets/img/items/resources/seashell.png
     description: Un coquillage rare trouvé dans le sable.
     unlock_description: Trouvé très rarement en fouillant la plage.
+  - key: small_stone
+    label: Small Stone
+    base_cooldown: 10.0
+    base_sell_price: 2
+    unlock_min_level: 2
+    enabled: true
+    icon: /static/assets/img/items/resources/small_stone.png
+    description: De petites pierres, utiles pour la construction.
+    unlock_description: Récolté à la main dans la forêt.
   - key: starfish
     label: Étoile de mer
     base_cooldown: 30.0
@@ -211,15 +220,6 @@ resources:
     icon: /static/assets/img/items/resources/star.png
     description: Une étoile de mer colorée.
     unlock_description: Trouvée très rarement en fouillant la plage.
-  - key: stone
-    label: Small Stone
-    base_cooldown: 10.0
-    base_sell_price: 2
-    unlock_min_level: 2
-    enabled: true
-    icon: /static/assets/img/items/resources/small_stone.png
-    description: De petites pierres, utiles pour la construction.
-    unlock_description: Récolté à la main dans la forêt.
   - key: stone_chunk
     label: Morceau de pierre
     base_cooldown: 10.0

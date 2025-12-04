@@ -1,0 +1,11 @@
+  moon_crystal_shard:
+    key: moon_crystal_shard
+    kind: treasure
+    label: Fragment de cristal lunaire
+    description: Un fragment brillant de cristal lunaire trouvé dans les profondeurs de la caverne.
+    icon: /static/assets/img/items/treasures/moon_crystal_shard.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les profondeurs de la caverne.

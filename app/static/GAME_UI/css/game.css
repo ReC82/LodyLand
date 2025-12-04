@@ -2133,3 +2133,46 @@
   }
 }
 
+.quest-actions {
+  margin-top: 10px;
+  text-align: left;
+}
+
+.quest-claim-btn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: none;
+  background: #10b981; /* vert doux */
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
+}
+
+.quest-claim-btn:hover {
+  background: #22c55e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.quest-claim-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.quest-validity {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.quest-validity-label {
+  margin-right: 4px;
+  font-weight: 500;
+}
+
+.quest-validity-date {
+  font-family: "JetBrains Mono", monospace;
+}

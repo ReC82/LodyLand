@@ -1,0 +1,11 @@
+  pure_corruption:
+    key: pure_corruption
+    kind: treasure
+    label: Pure corruption
+    description: Une corruption pure et rare trouvée dans les terres corrompues.
+    icon: /static/assets/img/items/treasures/pure_corruption.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les terres corrompues.

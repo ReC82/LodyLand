@@ -16,6 +16,18 @@ items:
     base_sell_price: 5
     enabled: true
 
+  ancient_bark:
+    key: ancient_bark
+    kind: treasure
+    label: Écorce ancienne
+    description: De l'écorce ancienne, rare et précieuse.
+    icon: /static/assets/img/items/resources/ancient_bark.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement en forêt.
+
   ancient_relic_part:
     key: ancient_relic_part
     kind: resource
@@ -76,6 +88,18 @@ items:
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
 
+  celestial_bamboo:
+    key: celestial_bamboo
+    kind: treasure
+    label: Bambou céleste
+    description: Un bambou rare et mystique trouvé dans la forêt de bambous.
+    icon: /static/assets/img/items/treasures/celestial_bamboo.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans la forêt de bambous.
+
   clay:
     key: clay
     kind: resource
@@ -112,6 +136,18 @@ items:
     enabled: true
     unlock_description: Trouvé en utilsant une pelle.
 
+  eternal_ice_heart:
+    key: eternal_ice_heart
+    kind: treasure
+    label: Coeur de glace éternelle
+    description: Un cœur de glace éternelle trouvé dans les profondeurs glacées.
+    icon: /static/assets/img/items/treasures/eternal_ice_heart.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les profondeurs glacées.
+
   flint:
     key: flint
     kind: resource
@@ -135,6 +171,18 @@ items:
     base_sell_price: 10
     enabled: true
     unlock_description: Trouvée en explorant des cavernes profondes.
+
+  golden_blossom:
+    key: golden_blossom
+    kind: treasure
+    label: Fleur dorée
+    description: Une fleur dorée rare trouvée dans les prairies.
+    icon: /static/assets/img/items/treasures/golden_blossom.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les prairies.
 
   herbs:
     key: herbs
@@ -183,6 +231,55 @@ items:
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du minerai de fer.
+
+  magma_drop:
+    key: magma_drop
+    kind: treasure
+    label: Goutte de magma
+    description: Une goutte de magma en fusion, chaude au toucher.
+    icon: /static/assets/img/items/treasures/magma_drop.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les volcans.
+
+  moon_crystal_shard:
+    key: moon_crystal_shard
+    kind: treasure
+    label: Fragment de cristal lunaire
+    description: Un fragment brillant de cristal lunaire trouvé dans les profondeurs
+      de la caverne.
+    icon: /static/assets/img/items/treasures/moon_crystal_shard.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les profondeurs de la caverne.
+
+  moon_pearl:
+    key: moon_pearl
+    kind: treasure
+    label: Perle de lune
+    description: Une perle rare trouvée dans les profondeurs du lac.
+    icon: /static/assets/img/items/treasures/moon_pearl.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les profondeurs du lac.
+
+  nautilus_shell:
+    key: nautilus_shell
+    kind: treasure
+    label: Coquille de nautile
+    description: Une coquille de nautile rare trouvée sur la plage.
+    icon: /static/assets/img/items/resources/nautilus_shell.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement sur la plage.
 
   oak_wood:
     key: oak_wood
@@ -256,6 +353,30 @@ items:
     enabled: true
     unlock_description: Trouvée en explorant des terres anciennes.
 
+  pure_corruption:
+    key: pure_corruption
+    kind: treasure
+    label: Pure corruption
+    description: Une corruption pure et rare trouvée dans les terres corrompues.
+    icon: /static/assets/img/items/treasures/pure_corruption.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les terres corrompues.
+
+  raw_mythril:
+    key: raw_mythril
+    kind: treasure
+    label: Mythril brut
+    description: Un morceau brut de mythril trouvé dans les montagnes.
+    icon: /static/assets/img/items/treasures/raw_mythril.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les montagnes.
+
   resin:
     key: resin
     kind: resource
@@ -279,6 +400,18 @@ items:
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant des lianes.
+
+  rune_relic:
+    key: rune_relic
+    kind: treasure
+    label: Relique runique
+    description: Une relique runique rare trouvée dans les ruines anciennes.
+    icon: /static/assets/img/items/treasures/rune_relic.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les ruines anciennes.
 
   sand:
     key: sand
@@ -304,6 +437,30 @@ items:
     enabled: true
     unlock_description: Trouvé très rarement en fouillant la plage.
 
+  small_stone:
+    key: small_stone
+    kind: resource
+    label: Small Stone
+    description: De petites pierres, utiles pour la construction.
+    icon: /static/assets/img/items/resources/small_stone.png
+    unlock_min_level: 2
+    base_cooldown: 10
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Récolté à la main dans la forêt.
+
+  spectral_essence:
+    key: spectral_essence
+    kind: treasure
+    label: Essence spectrale
+    description: Une essence spectrale rare trouvée dans les bois hantés.
+    icon: /static/assets/img/items/treasures/spectral_essence.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les bois hantés.
+
   starfish:
     key: starfish
     kind: resource
@@ -316,18 +473,6 @@ items:
     enabled: true
     unlock_description: Trouvée très rarement en fouillant la plage.
 
-  stone:
-    key: stone
-    kind: resource
-    label: Small Stone
-    description: De petites pierres, utiles pour la construction.
-    icon: /static/assets/img/items/resources/small_stone.png
-    unlock_min_level: 2
-    base_cooldown: 10
-    base_sell_price: 2
-    enabled: true
-    unlock_description: Récolté à la main dans la forêt.
-
   stone_chunk:
     key: stone_chunk
     kind: resource
@@ -339,6 +484,18 @@ items:
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvé en explorant des cavernes.
+
+  time_sand:
+    key: time_sand
+    kind: treasure
+    label: Sable du temps
+    description: Du sable rare qui semble ralentir le temps autour de lui.
+    icon: /static/assets/img/items/treasures/time_sand.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans le désert.
 
   tool_rod_basic:
     key: tool_rod_basic
@@ -460,6 +617,18 @@ items:
     base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
+
+  toxic_gland:
+    key: toxic_gland
+    kind: treasure
+    label: Glande toxique
+    description: Une glande toxique rare trouvée dans les marais.
+    icon: /static/assets/img/items/treasures/toxic_gland.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les marais.
 
   vine:
     key: vine

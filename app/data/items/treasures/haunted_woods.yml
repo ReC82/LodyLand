@@ -1,0 +1,11 @@
+  spectral_essence:
+    key: spectral_essence
+    kind: treasure
+    label: Essence spectrale
+    description: Une essence spectrale rare trouvée dans les bois hantés.
+    icon: /static/assets/img/items/treasures/spectral_essence.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les bois hantés.

@@ -16,7 +16,7 @@ beach:
     hands:
       label: "Mains nues"
       emoji: "🤲"
-      cooldown_seconds: 10
+      cooldown_seconds: 20
       xp_multiplier: 1.0
       base_loot:
         - resource: sand
@@ -27,21 +27,21 @@ beach:
         - resource: seashell
           min: 1
           max: 1
-          chance: 0.0001
+          chance: 0.15
         - resource: starfish
           min: 1
           max: 1
-          chance: 0.0001
+          chance: 0.10
         - resource: pearl
           min: 1
           max: 1
-          chance: 0.0001
+          chance: 0.05
 
     tool_wooden_shovel:         # 👈 clé = item_key de ta pelle (à adapter)
       label: "Pelle de plage"
       emoji: "🪣"
       # requires_item: tool_sand_shovel  # tu peux le laisser implicite
-      cooldown_seconds: 20
+      cooldown_seconds: 25
       xp_multiplier: 1.1
       base_loot:
         - resource: sand
@@ -61,7 +61,7 @@ beach:
           min: 1
           max: 1
           chance: 0.05
-        - resource: piece_of_broken_statue
+        - resource: nautilus_shell
           min: 1
           max: 1
-          chance: 0.01         
+          chance: 0.005         

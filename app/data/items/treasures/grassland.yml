@@ -1,0 +1,11 @@
+  golden_blossom:
+    key: golden_blossom
+    kind: treasure
+    label: Fleur dorée
+    description: Une fleur dorée rare trouvée dans les prairies.
+    icon: /static/assets/img/items/treasures/golden_blossom.png
+    unlock_min_level: 1
+    base_cooldown: 10
+    base_sell_price: 0
+    enabled: true
+    unlock_description: Trouvé très rarement dans les prairies.

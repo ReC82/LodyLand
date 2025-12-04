@@ -10,6 +10,14 @@
 {% block content %}
 <div class="land-wrapper land-village">
 
+    <!-- Bouton retour -->
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
+      ← Retour au village
+    </a>
+  </div>
+
+
   <header class="land-header mb-3">
     <div class="land-header-main">
       <h1 class="h4 mb-1">{{ land_label or "Échanges du Village" }}</h1>

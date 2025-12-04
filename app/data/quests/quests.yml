@@ -152,40 +152,40 @@ quest_templates:
       coins_max: 25
       diams_min: 0
       diams_max: 1
-  qt_story_cave_01_prepare:
-    key: qt_story_cave_01_prepare
+  qt_story_cave_02_unlock:
+    key: qt_story_cave_02_unlock
     quest_type: storyline
     category: storyline
     enabled: true
     storyline_id: main_02_cave
-    storyline_step: 1
+    storyline_step: 2
     requires_quests_completed:
     - qt_story_forest_01_wake_up
     min_player_level: 3
     required_land_keys:
     - land_forest
     title:
-      fr: Un passage mystérieux
-      en: A mysterious passage
+      fr: Entrer dans la grotte
+      en: Enter the cave
     description:
-      fr: 'Les villageois parlent d''une grotte cachée. Prépare-toi en fabriquant
-        quelques torches.
+      fr: 'Tu as fabriqué tes torches. Il est temps de déverrouiller l''accès à la
+        grotte et de découvrir ce qu''elle cache.
 
         '
-      en: 'Villagers whisper about a hidden cave. Get ready by crafting some torches.
+      en: 'You crafted your torches. Now unlock the cave and see what''s inside.
 
         '
     sources:
     - system_storyline
     objective_templates:
-    - kind: craft_item
-      item_keys:
-      - item_torch_basic
-      quantity_min: 3
-      quantity_max: 3
+    - kind: unlock_land
+      land_keys:
+      - land_cave
+      quantity_min: 1
+      quantity_max: 1
     reward_templates:
-      coins_min: 20
-      coins_max: 20
+      coins_min: 30
+      coins_max: 30
       diams_min: 0
       diams_max: 1
   qt_story_forest_01_wake_up:
@@ -193,7 +193,7 @@ quest_templates:
     quest_type: storyline
     category: storyline
     enabled: true
-    storyline_id: main_forest
+    storyline_id: main_01_forest
     storyline_step: 1
     requires_quests_completed: []
     min_player_level: 1
@@ -225,81 +225,6 @@ quest_templates:
       coins_max: 0
       diams_min: 0
       diams_max: 0
-  qt_story_forest_02_meet_villagers:
-    key: qt_story_forest_02_meet_villagers
-    quest_type: storyline
-    category: storyline
-    enabled: true
-    storyline_id: main_forest
-    storyline_step: 2
-    requires_quests_completed:
-    - qt_story_forest_01_wake_up
-    min_player_level: 1
-    required_land_keys:
-    - land_forest
-    title:
-      fr: Des voix au loin
-      en: Voices in the distance
-    description:
-      fr: 'Tu aperçois de la fumée au loin. Récolte quelques ressources supplémentaires
-        avant d''aller à la rencontre des villageois.
-
-        '
-      en: 'You see smoke in the distance. Gather a few more resources before meeting
-        the villagers.
-
-        '
-    sources:
-    - system_storyline
-    objective_templates:
-    - kind: collect_resource
-      resource_keys:
-      - wood
-      - small_stone
-      quantity_min: 10
-      quantity_max: 15
-      ignore_boosts: true
-    reward_templates:
-      coins_min: 10
-      coins_max: 15
-      diams_min: 0
-      diams_max: 1
-  qt_story_forest_03_prepare_cave:
-    key: qt_story_forest_03_prepare_cave
-    quest_type: storyline
-    category: storyline
-    enabled: true
-    storyline_id: main_cave
-    storyline_step: 1
-    requires_quests_completed:
-    - qt_story_forest_02_meet_villagers
-    min_player_level: 3
-    required_land_keys:
-    - land_forest
-    title:
-      fr: Un passage mystérieux
-      en: A mysterious passage
-    description:
-      fr: 'Les villageois parlent d''une grotte cachée. Prépare-toi en fabriquant
-        quelques torches.
-
-        '
-      en: 'Villagers whisper about a hidden cave. Get ready by crafting some torches.
-
-        '
-    sources:
-    - system_storyline
-    objective_templates:
-    - kind: craft_item
-      item_keys:
-      - item_torch_basic
-      quantity_min: 3
-      quantity_max: 3
-    reward_templates:
-      coins_min: 20
-      coins_max: 20
-      diams_min: 0
-      diams_max: 1
   qt_weekly_forest_supply:
     key: qt_weekly_forest_supply
     quest_type: weekly

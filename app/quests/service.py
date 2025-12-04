@@ -88,11 +88,25 @@ def _pick_from_list_or_single(values: Any) -> Optional[str]:
     return None
 
 
-def _compute_expires_at(qtype: str, now: dt.datetime) -> Optional[dt.datetime]:
+def _compute_expires_at(
+    quest_type: str,
+    now: Optional[dt.datetime] = None,
+) -> Optional[dt.datetime]:
+    if now is None:
+        now = dt.datetime.utcnow().replace(tzinfo=dt.timezone.utc)
+
+    qtype = (quest_type or "").lower()
+
     if qtype == "daily":
         return now + dt.timedelta(days=1)
     if qtype == "weekly":
         return now + dt.timedelta(days=7)
+
+    # NEW : autres quêtes non-storyline => expiration « lambda » (ex: 30 jours)
+    if qtype in ("bonus", "event", "other"):
+        return now + dt.timedelta(days=30)
+
+    # Storyline et types inconnus : pas d'expiration
     return None
 
 
@@ -162,12 +176,23 @@ def create_quest_instance_from_template(
         if not kind:
             continue
 
+        # Valeurs "classiques"
+        resource_key = _pick_from_list_or_single(obj_tpl.get("resource_keys"))
+        item_key = _pick_from_list_or_single(obj_tpl.get("item_keys"))
+
+        # 🔹 Cas particulier : unlock_land
+        # On utilise land_keys pour remplir item_key (ex: "land_cave")
+        if kind == "unlock_land" and not item_key:
+            land_key = _pick_from_list_or_single(obj_tpl.get("land_keys"))
+            if land_key:
+                item_key = land_key
+
         obj = PlayerQuestObjective(
             player_quest_id=quest.id,
             index_in_quest=idx,
             kind=kind,
-            resource_key=_pick_from_list_or_single(obj_tpl.get("resource_keys")),
-            item_key=_pick_from_list_or_single(obj_tpl.get("item_keys")),
+            resource_key=resource_key,
+            item_key=item_key,
             target_value=_random_quantity(obj_tpl),
             current_value=0,
             ignore_boosts=bool(obj_tpl.get("ignore_boosts", False)),
@@ -347,7 +372,7 @@ def assign_next_storyline_quest_if_needed(session: Session, player: Player, now=
         session.query(PlayerQuest)
         .filter(PlayerQuest.player_id == player.id)
         .filter(PlayerQuest.quest_type == "storyline")
-        .filter(PlayerQuest.status == "active")
+        .filter(PlayerQuest.status.in_(["active", "ready"]))
         .first()
     )
     if active:
@@ -415,23 +440,44 @@ def assign_next_storyline_quest_if_needed(session: Session, player: Player, now=
 # PROGRESSION HOOKS
 # ---------------------------------------------------------------------------
 
-def try_complete_quest(session, player, quest, now=None):
+def try_complete_quest(
+    session: Session,
+    player: Player,
+    quest: PlayerQuest,
+    now: Optional[dt.datetime] = None,
+) -> bool:
+    """
+    V2 — On NE termine PLUS réellement la quête ici.
+
+    Rôle maintenant :
+      - Vérifier si tous les objectifs sont atteints
+      - Si oui, passer la quête en statut "ready"
+      - NE PAS appliquer les récompenses
+      - NE PAS consommer de ressources
+
+    La vraie "validation" (récompenses + retrait de ressources)
+    sera faite plus tard via un endpoint /api/quests/claim.
+    """
     if quest.status != "active":
         return False
 
     if now is None:
         now = dt.datetime.utcnow()
 
+    # Si un objectif n'est pas encore atteint -> on ne fait rien
     if any(obj.current_value < obj.target_value for obj in quest.objectives):
         return False
 
-    quest.status = "completed"
-    quest.completed_at = now
+    # On passe simplement la quête en "ready"
+    quest.status = "ready"
+    quest.completed_at = now  # moment où les objectifs sont remplis
 
-    rewards = quest.rewards_json or {}
-    player.coins += int(rewards.get("coins", 0))
-    player.diams += int(rewards.get("diams", 0))
+    print(
+        f"[quests] Player {player.id} finished objectives for quest {quest.id} "
+        f"({quest.template_key}), status set to 'ready'."
+    )
 
+    # IMPORTANT : pas de _apply_quest_rewards ici !
     return True
 
 
@@ -461,30 +507,216 @@ def on_resource_collected(session, player, resource_key, base_amount, now=None):
             try_complete_quest(session, player, q, now=now)
 
 
-def on_item_crafted(session, player, item_key, qty, now=None):
+def on_item_crafted(
+    session: Session,
+    player: Player,
+    item_key: str,
+    quantity: int,
+    now: Optional[dt.datetime] = None,
+) -> None:
+    """
+    Called whenever the player crafts one or more items.
+
+    - item_key: internal item key (ex: "rope")
+    - quantity: number of items crafted in this action
+    """
     if now is None:
         now = dt.datetime.utcnow()
-    if qty <= 0:
+    if quantity <= 0:
         return
 
-    quests = (
+    active_quests = (
         session.query(PlayerQuest)
-        .filter(PlayerQuest.player_id == player.id)
-        .filter(PlayerQuest.status == "active")
+        .filter(
+            PlayerQuest.player_id == player.id,
+            PlayerQuest.status == "active",
+        )
         .all()
     )
 
-    for q in quests:
+    for quest in active_quests:
         updated = False
-        for obj in q.objectives:
-            if obj.kind == "craft_item" and obj.item_key == item_key:
-                nv = min(obj.current_value + qty, obj.target_value)
-                if nv != obj.current_value:
-                    obj.current_value = nv
-                    updated = True
+
+        for obj in quest.objectives:
+            if obj.kind != "craft_item":
+                continue
+
+            # ✅ Accepter soit "rope" soit "item_rope"
+            if obj.item_key not in (item_key, f"item_{item_key}"):
+                continue
+
+            new_value = obj.current_value + quantity
+            if new_value > obj.target_value:
+                new_value = obj.target_value
+
+            if new_value != obj.current_value:
+                obj.current_value = new_value
+                updated = True
 
         if updated:
-            try_complete_quest(session, player, q, now=now)
+            try_complete_quest(session, player, quest, now=now)
+
+
+def on_land_unlocked(
+    session: Session,
+    player: Player,
+    land_key: str,
+    now: Optional[dt.datetime] = None,
+) -> None:
+    """
+    Hook générique appelé quand un land est débloqué (via carte land_*).
+
+    Il met à jour les objectifs de type "unlock_land" dont item_key == land_key.
+    """
+    if now is None:
+        now = dt.datetime.utcnow()
+
+    land_key = (land_key or "").strip()
+    if not land_key:
+        return
+
+    active_quests = (
+        session.query(PlayerQuest)
+        .filter(
+            PlayerQuest.player_id == player.id,
+            PlayerQuest.status == "active",
+        )
+        .all()
+    )
+
+    for quest in active_quests:
+        updated = False
+
+        for obj in quest.objectives:
+            if obj.kind != "unlock_land":
+                continue
+            if obj.item_key != land_key:
+                continue
+
+            new_value = obj.current_value + 1
+            if new_value > obj.target_value:
+                new_value = obj.target_value
+
+            if new_value != obj.current_value:
+                obj.current_value = new_value
+                updated = True
+
+        if updated:
+            try_complete_quest(session, player, quest, now=now)
+
+
+def on_card_granted(
+    session: Session,
+    player: Player,
+    card_key: str,
+    now: Optional[dt.datetime] = None,
+) -> None:
+    """
+    Hook appelé quand une carte est donnée au joueur (level-up, shop, etc.).
+
+    - générique : pour toute carte land_*, on met à jour les objectifs "unlock_land"
+    - spécifique : quand le joueur reçoit la carte 'land_cave', on termine
+      la quête storyline 'qt_story_cave_01_prepare' s'il l'a en cours.
+    """
+    if now is None:
+        now = dt.datetime.utcnow()
+
+    card_key = (card_key or "").strip()
+    if not card_key:
+        return
+
+    # Cas générique : toute carte land_* débloque un land
+    if card_key.startswith("land_"):
+        # land_key = card_key (même convention)
+        on_land_unlocked(session, player, land_key=card_key, now=now)
+
+    # Cas spécifique : préparer la grotte (quête cave 01)
+    if card_key == "land_cave":
+        quest = (
+            session.query(PlayerQuest)
+            .filter(
+                PlayerQuest.player_id == player.id,
+                PlayerQuest.template_key == "qt_story_cave_01_prepare",
+                PlayerQuest.status.in_(["active", "ready"]),
+            )
+            .order_by(PlayerQuest.id.desc())
+            .first()
+        )
+        if not quest:
+            return
+
+        # On la complète directement
+        quest.status = "completed"
+        quest.completed_at = now
+
+        _apply_quest_rewards(player, quest)
+
+        print(
+            f"[quests] Player {player.id} auto-completed cave storyline quest "
+            f"{quest.id} ({quest.template_key}) on land_cave unlock."
+        )
+
+
+# ---------------------------------------------------------------------------
+# REWARDS APPLICATION (réutilisé par /api/quests/claim)
+# ---------------------------------------------------------------------------
+
+def _apply_quest_rewards(player: Player, quest: PlayerQuest) -> None:
+    """
+    Applique les récompenses de la quête au joueur (coins, diams, etc.).
+    Le commit est géré par l'appelant.
+    """
+    rewards = quest.rewards_json or {}
+
+    coins = int(rewards.get("coins", 0) or 0)
+    diams = int(rewards.get("diams", 0) or 0)
+
+    if coins:
+        player.coins += coins
+    if diams:
+        player.diams += diams
+
+    # Plus tard : resources, items, cards, etc.
+
+
+# ---------------------------------------------------------------------------
+# AUTO-MARK EXPIRED QUESTS
+# ---------------------------------------------------------------------------
+
+def auto_mark_expired_quests(
+    session: Session,
+    player: Player,
+    now: Optional[dt.datetime] = None,
+) -> int:
+    """
+    Passe automatiquement en 'expired' toutes les quêtes actives ou prêtes
+    dont expires_at est dépassé.
+
+    Retourne le nombre de quêtes modifiées.
+    """
+    if now is None:
+        now = dt.datetime.utcnow()
+
+    to_expire = (
+        session.query(PlayerQuest)
+        .filter(PlayerQuest.player_id == player.id)
+        .filter(PlayerQuest.status.in_(["active", "ready"]))
+        .filter(PlayerQuest.expires_at.isnot(None))
+        .filter(PlayerQuest.expires_at < now)
+        .all()
+    )
+
+    changed = 0
+    for q in to_expire:
+        q.status = "expired"
+        if q.completed_at is None:
+            q.completed_at = now
+        changed += 1
+
+    if changed:
+        print(f"[quests] auto_mark_expired_quests: player={player.id}, changed={changed}")
+
+    return changed
 
 
 # ---------------------------------------------------------------------------
@@ -492,6 +724,10 @@ def on_item_crafted(session, player, item_key, qty, now=None):
 # ---------------------------------------------------------------------------
 
 def serialize_quest(quest: PlayerQuest) -> dict:
+
+    def _to_iso(dt_value):
+        return dt_value.isoformat() if dt_value is not None else None
+
     return {
         "id": quest.id,
         "template_key": quest.template_key,
@@ -503,6 +739,9 @@ def serialize_quest(quest: PlayerQuest) -> dict:
         "description_en": quest.description_en,
         "status": quest.status,
         "rewards": quest.rewards_json or {},
+        "started_at": _to_iso(quest.started_at),
+        "expires_at": _to_iso(quest.expires_at),
+        "completed_at": _to_iso(quest.completed_at),
         "objectives": [
             {
                 "index": o.index_in_quest,
@@ -515,5 +754,5 @@ def serialize_quest(quest: PlayerQuest) -> dict:
                 "consecutive_required": o.consecutive_required,
             }
             for o in quest.objectives
-        ]
+        ],
     }

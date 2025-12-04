@@ -12,7 +12,7 @@
 
   <!-- Bouton retour -->
   <div class="mb-3">
-    <a href="{{ url_for('village.village_home') }}" class="btn btn-sm btn-outline-light">
+    <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
       ← Retour au village
     </a>
   </div>
@@ -49,22 +49,10 @@
           hebdomadaires chaque semaine. L’histoire principale avance une étape à la fois.
         </p>
       </div>
-
-      <div class="quests-filters">
-        <button
-          type="button"
-          class="btn btn-sm qfilter-btn qfilter-active"
-          data-filter="running"
-        >
-          En cours
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm qfilter-btn"
-          data-filter="completed"
-        >
-          Terminées
-        </button>
+      <div class="quests-status-filters">
+        <button class="qfilter-btn qfilter-active" data-filter="running">En cours</button>
+        <button class="qfilter-btn" data-filter="completed">Terminées</button>
+        <button class="qfilter-btn" data-filter="expired">Expirées</button>
       </div>
     </div>
 

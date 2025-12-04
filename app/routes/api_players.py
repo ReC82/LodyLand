@@ -26,6 +26,7 @@ from app.quests.service import (
     assign_daily_quest_if_needed,
     assign_weekly_quest_if_needed,
     assign_next_storyline_quest_if_needed,
+    auto_mark_expired_quests, 
     serialize_quest,
 )
 
@@ -299,6 +300,7 @@ def get_state():
         assign_daily_quest_if_needed(s, me, now=now)
         assign_weekly_quest_if_needed(s, me, now=now)
         assign_next_storyline_quest_if_needed(s, me, now=now)
+        auto_mark_expired_quests(s, me)
         s.commit()
         
         # --- ⚠️ IMPORTANT : résoudre les jobs de craft AVANT l'inventaire ---
@@ -309,7 +311,7 @@ def get_state():
         quests = (
             s.query(PlayerQuest)
             .filter(PlayerQuest.player_id == me.id)
-            .filter(PlayerQuest.status.in_(["active", "completed"]))
+            .filter(PlayerQuest.status.in_(["active", "ready", "completed", "expired"]))
             .order_by(PlayerQuest.started_at.desc())
             .all()
         )

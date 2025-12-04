@@ -85,6 +85,36 @@ function QQ_renderRewards(rewards) {
   return `<div class="quest-rewards">${parts.join("")}</div>`;
 }
 
+function QQ_isQuestReady(q) {
+  if (q.status !== "ready") return false;
+  if (!q.objectives || !q.objectives.length) return true;
+
+  return q.objectives.every((obj) => {
+    const current = obj.current || 0;
+    const target = obj.target || 0;
+    return current >= target;
+  });
+}
+
+function QQ_formatExpiry(isoString) {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return "";
+
+  const dateStr = d.toLocaleDateString("fr-BE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const timeStr = d.toLocaleTimeString("fr-BE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${dateStr} ${timeStr}`;
+}
+
+
 function QQ_renderQuestCard(q) {
   const typeLabel = QQ_questTypeLabel(q);
   const badgeClass = `quest-badge ${q.quest_type}`;
@@ -98,6 +128,37 @@ function QQ_renderQuestCard(q) {
 
   const rewardsHtml = QQ_renderRewards(q.rewards);
 
+  // Validité (pas pour les quêtes storyline)
+  let validityHtml = "";
+  if (q.quest_type !== "storyline" && q.expires_at) {
+    const formatted = QQ_formatExpiry(q.expires_at);
+    if (formatted) {
+      validityHtml = `
+        <div class="quest-validity">
+          <span class="quest-validity-label">Valide jusqu'au</span>
+          <span class="quest-validity-date">${formatted}</span>
+        </div>
+      `;
+    }
+  }
+
+  
+  // 🔘 Boutons d'action (pour l'instant : seulement "Valider" si status=ready)
+  let actionsHtml = "";
+  if (QQ_isQuestReady(q)) {
+    actionsHtml = `
+      <div class="quest-actions">
+        <button
+          class="btn quest-claim-btn"
+          data-quest-id="${q.id}"
+        >
+          ✔ Valider
+        </button>
+      </div>
+    `;
+  }
+
+
   return `
     <div class="quest-card">
       <div class="quest-header">
@@ -106,12 +167,14 @@ function QQ_renderQuestCard(q) {
       </div>
 
       <p class="quest-desc">${desc}</p>
-
       ${objectivesHtml}
+      ${validityHtml} 
       ${rewardsHtml}
+      ${actionsHtml}
     </div>
   `;
 }
+
 
 
 /**
@@ -124,23 +187,21 @@ function QQ_renderQuestsPanel() {
     return;
   }
 
-  // 1) Filtre statut : "En cours" / "Terminées"
   const filtered = QQ_currentQuests.filter((q) => {
-    const isCompleted = q.status === "completed";
-    const isExpired = q.status === "expired";
-    const isFailed = q.status === "failed";
+    const st = q.status;
 
     if (QQ_statusFilter === "completed") {
-      // Dans l'onglet "Terminées" on montre:
-      // - completed
-      // - expired
-      // - failed
-      return isCompleted || isExpired || isFailed;
+      return st === "completed";
+    }
+    if (QQ_statusFilter === "expired") {
+      return st === "expired";
     }
 
-    // Dans l'onglet "En cours", on ne garde que les actives
-    return q.status === "active";
+    // "running" = quêtes en cours + prêtes à être validées
+    return st === "active" || st === "ready";
   });
+
+
 
   // 2) Filtre par TYPE (onglets)
   const filteredByType = filtered.filter((q) => {
@@ -299,9 +360,12 @@ window.initQuestsUI = function () {
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const mode = btn.getAttribute("data-filter") || "running";
-      QQ_statusFilter = mode === "completed" ? "completed" : "running";
+      if (mode === "completed" || mode === "expired" || mode === "running") {
+        QQ_statusFilter = mode;
+      } else {
+        QQ_statusFilter = "running";
+      }
 
-      // Style actif
       filterButtons.forEach((b) => {
         if (b === btn) {
           b.classList.add("qfilter-active");
@@ -313,6 +377,7 @@ window.initQuestsUI = function () {
       QQ_renderQuestsPanel();
     });
   });
+
 
   // 2) Onglets de TYPE : Toutes / Quotidiennes / Storyline / Autres
   const typeButtons = document.querySelectorAll(".qtype-btn");
@@ -341,3 +406,103 @@ window.QQ_toggleGroup = function (groupKey) {
   if (!group) return;
   group.classList.toggle("collapsed");
 };
+
+// ---------------------------------------------------------------------------
+// HUD helper: mettre à jour coins/diams après validation de quête
+// ---------------------------------------------------------------------------
+function QQ_updateHudFromPlayer(player) {
+  if (!player) return;
+
+  const coinEls = [
+    document.getElementById("hud-coins"),
+    document.getElementById("hud-coins-value"),
+    document.getElementById("hud-coins-amount"),
+  ];
+  coinEls.forEach((el) => {
+    if (el) el.textContent = player.coins;
+  });
+
+  const diamEls = [
+    document.getElementById("hud-diams"),
+    document.getElementById("hud-diams-value"),
+    document.getElementById("hud-diams-amount"),
+  ];
+  diamEls.forEach((el) => {
+    if (el) el.textContent = player.diams;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Valider une quête (status = "ready") via /api/quests/claim
+// ---------------------------------------------------------------------------
+window.QQ_claimQuest = function (questId) {
+  console.log("[quests] Claim quest", questId);
+
+  http("POST", "/api/quests/claim", { quest_id: questId }).then((r) => {
+    if (!r.ok) {
+      console.warn("[quests] claim failed:", r);
+
+      const err = (r.data && r.data.error) || "unknown";
+
+      if (err === "quest_not_ready") {
+        alert(
+          "Impossible de valider cette quête.\n" +
+            "Les objectifs ne sont pas encore remplis ou la quête n'est pas en statut prêt."
+        );
+      } else if (err === "quest_expired") {
+        alert(
+          "Cette quête est expirée, tu ne peux plus la valider."
+        );
+      } else if (err === "not_authenticated") {
+        alert(
+          "Tu n'es plus connecté. Recharge la page ou reconnecte-toi."
+        );
+      } else {
+        alert("Impossible de valider cette quête (erreur inconnue).");
+      }
+
+      return;
+    }
+
+    const data = r.data || {};
+    const player = data.player || null;
+    const quest = data.quest || null;
+
+    // 🔄 Mettre à jour le HUD coins/diams
+    if (player) {
+      QQ_updateHudFromPlayer(player);
+    }
+
+    // 🔄 Mettre à jour la quête dans QQ_currentQuests
+    if (quest) {
+      const idx = QQ_currentQuests.findIndex((q) => q.id === quest.id);
+      if (idx !== -1) {
+        QQ_currentQuests[idx] = quest; // status => "completed"
+      } else {
+        QQ_currentQuests.push(quest);
+      }
+    }
+
+    // 🔁 Re-render du panneau de quêtes
+    QQ_renderQuestsPanel();
+  });
+};
+
+
+// ---------------------------------------------------------------------------
+// Bouton "Valider la quête" -> /api/quests/claim
+// ---------------------------------------------------------------------------
+
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest(".quest-claim-btn");
+  if (!btn) return;
+
+  const questId = btn.getAttribute("data-quest-id");
+  if (!questId) return;
+
+  if (!confirm("Valider cette quête et recevoir la récompense ?")) {
+    return;
+  }
+
+  QQ_claimQuest(parseInt(questId, 10));
+});

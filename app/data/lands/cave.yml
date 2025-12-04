@@ -5,7 +5,7 @@ cave:
   full_description: land_cave_description
 
   starting_land: true
-  slots: 8
+  slots: 3
   slot_icon: static/assets/img/lands/cave_slot.png
   logo: static/assets/img/lands/cave_logo.png
 
@@ -18,7 +18,7 @@ cave:
     hands:
       label: "Mains nues"
       emoji: "🤲"
-      cooldown_seconds: 30
+      cooldown_seconds: 25
       xp_multiplier: 1.0
       base_loot:
         - resource: stone
@@ -30,11 +30,16 @@ cave:
           chance: 0.5
           min: 1
           max: 1
+        - resource: moon_crystal_shard
+          min: 1
+          max: 1
+          chance: 0.01         
+
 
     tool_wooden_pickaxe:
       label: "Pioche en bois"
       emoji: "⛏️"
-      cooldown_seconds: 60
+      cooldown_seconds: 50
       xp_multiplier: 1.2
       base_loot:
         - resource: stone
