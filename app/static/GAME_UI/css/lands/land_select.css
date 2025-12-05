@@ -1,0 +1,171 @@
+/* ============================================================
+   LAND SELECT SCREEN – petites tuiles carrées
+   ============================================================ */
+
+.land-select-container {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Header */
+.land-select-header {
+  margin-top: 16px;
+}
+
+.land-select-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.land-select-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------
+   Barre de recherche (style "LodyLand")
+   ------------------------------------------------------------ */
+
+.land-select-toolbar {
+  margin-top: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.land-search-input {
+  width: 100%;
+  max-width: 320px;
+
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: radial-gradient(circle at top left, #020617, #020617);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+
+  outline: none;
+  box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.6);
+  transition:
+    border-color 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.12s ease-out;
+}
+
+.land-search-input::placeholder {
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.land-search-input:focus {
+  border-color: rgba(56, 189, 248, 0.9);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.45);
+  background: radial-gradient(circle at top left, #020617, #020617);
+}
+
+/* Petit label au-dessus si tu veux en ajouter plus tard */
+/* .land-select-toolbar-label { ... } */
+
+/* ------------------------------------------------------------
+   Titres de section ("Lands", "Lieux spéciaux")
+   ------------------------------------------------------------ */
+
+.land-select-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+/* ------------------------------------------------------------
+   Grille de tuiles
+   ------------------------------------------------------------ */
+
+/* Tuiles un peu plus petites : 4 colonnes max sur large écran */
+.land-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ------------------------------------------------------------
+   Tuile de land = petit bouton
+   ------------------------------------------------------------ */
+
+.land-select-tile {
+  aspect-ratio: 5 / 4; /* légèrement rectangulaire pour être plus compacte */
+  border-radius: 14px;
+  background: rgba(10, 15, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0.45rem 0.35rem;
+  text-decoration: none;
+  color: #f9fafb;
+  cursor: pointer;
+
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.12s ease-out,
+    background 0.12s ease-out;
+}
+
+/* Hover */
+.land-select-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.65);
+  border-color: rgba(120, 220, 160, 0.9);
+  background: radial-gradient(circle at top left, #020617, #020617);
+}
+
+/* Tuile spéciale (village, etc.) */
+.land-select-tile-special {
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.25);
+}
+
+.land-select-tile-special:hover {
+  border-color: rgba(255, 230, 120, 1);
+}
+
+/* ------------------------------------------------------------
+   Icône de land
+   ------------------------------------------------------------ */
+
+/* Conteneur icône */
+.land-select-icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 0.35rem;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  image-rendering: pixelated;
+}
+
+/* Variante emoji (si pas de slot_icon) */
+.land-select-icon-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* ------------------------------------------------------------
+   Label sous l'icône
+   ------------------------------------------------------------ */
+
+.land-select-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 0.25rem;
+  word-break: break-word;
+}

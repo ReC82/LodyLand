@@ -3,8 +3,73 @@ from app.db import SessionLocal
 from app.auth import get_current_player
 from app.lands import get_player_land_state
 from app.models import PlayerLandSlots, PlayerCard, CardDef 
+from app.lands import get_land_def 
 
 bp = Blueprint("lands", __name__)
+
+def get_unlocked_lands_for_player(session, player, lang="fr"):
+    """Return a list of unlocked lands for a given player."""
+    # 1) All cards of the player
+    owned_cards = (
+        session.query(PlayerCard)
+        .filter(PlayerCard.player_id == player.id)
+        .all()
+    )
+
+    land_card_keys = [
+        pc.card_key
+        for pc in owned_cards
+        if pc.qty > 0
+        and isinstance(pc.card_key, str)
+        and pc.card_key.startswith("land_")
+    ]
+
+    if not land_card_keys:
+        return []
+
+    card_defs = (
+        session.query(CardDef)
+        .filter(CardDef.key.in_(land_card_keys))
+        .all()
+    )
+
+    lands_payload = []
+
+    for cd in card_defs:
+        base_label = getattr(cd, "card_label", cd.key)
+        label_fr = getattr(cd, "card_label_fr", None) or base_label
+        label_en = getattr(cd, "card_label_en", None) or base_label
+
+        label = label_en if lang == "en" else label_fr
+
+        card_key = cd.key          # ex: land_forest
+        land_key = card_key[len("land_"):] if card_key.startswith("land_") else card_key
+
+        # 🔹 On va chercher la définition du land pour récupérer le slot_icon
+        land_def = get_land_def(land_key)  # à adapter : dict, objet, etc.
+        slot_icon = None
+        is_special = False
+
+        if land_def:
+            # Ici j’imagine que tu as quelque chose comme land_def["slot_icon"]
+            slot_icon = getattr(land_def, "slot_icon", None) or land_def.get("slot_icon")
+            # Tag "specials" dans les tags du land (ou de la card si tu préfères)
+            tags = set(getattr(land_def, "tags", []) or land_def.get("tags", []) or [])
+            is_special = "specials" in tags
+
+        lands_payload.append(
+            {
+                "card_key": card_key,
+                "land_key": land_key,
+                "label": label,
+                "slot_icon": slot_icon,  # 🔹 utilisé par le template
+                "url": f"/land/{land_key}",
+                "is_special": is_special,
+            }
+        )
+
+    lands_payload.sort(key=lambda l: (l["label"] or "").lower())
+    return lands_payload
 
 @bp.post("/lands/<land_key>/slots/buy")
 def buy_land_slot(land_key):
@@ -99,65 +164,8 @@ def list_unlocked_lands():
         if not player:
             return jsonify({"error": "player_required"}), 401
 
-        # 1) On récupère toutes les cartes du joueur
-        owned_cards = (
-            s.query(PlayerCard)
-            .filter(PlayerCard.player_id == player.id)
-            .all()
-        )
-
-        # 2) On garde celles qui correspondent à un land (convention: card_key = land_<key>)
-        land_card_keys = [
-            pc.card_key
-            for pc in owned_cards
-            if pc.qty > 0 and isinstance(pc.card_key, str) and pc.card_key.startswith("land_")
-        ]
-
-        if not land_card_keys:
-            return jsonify({"lands": []}), 200
-
-        # 3) On récupère les définitions de cartes correspondantes
-        card_defs = (
-            s.query(CardDef)
-            .filter(CardDef.key.in_(land_card_keys))
-            .all()
-        )
-
-        # 4) On prépare le payload pour le front
-        #    (on devine le land_key à partir du card_key: "land_forest" → "forest")
-        lands_payload = []
-
-        # Langue approximative pour le label (adapte selon ton modèle exact)
         lang = (request.accept_languages.best_match(["fr", "en"]) or "fr").lower()
+        lands_payload = get_unlocked_lands_for_player(s, player, lang=lang)
 
-        for cd in card_defs:
-            # Selon ton modèle tu as peut-être card_label_fr / card_label_en
-            base_label = getattr(cd, "card_label", cd.key)
-            label_fr = getattr(cd, "card_label_fr", None) or base_label
-            label_en = getattr(cd, "card_label_en", None) or base_label
-
-            if lang == "en":
-                label = label_en
-            else:
-                label = label_fr
-
-            card_key = cd.key  # ex: "land_forest"
-            if card_key.startswith("land_"):
-                land_key = card_key[len("land_") :]  # "forest"
-            else:
-                land_key = card_key
-
-            lands_payload.append(
-                {
-                    "card_key": card_key,
-                    "land_key": land_key,
-                    "label": label,
-                    "icon": getattr(cd, "card_image", None),
-                    "url": f"/land/{land_key}",
-                }
-            )
-
-        # Petit tri par label pour l'affichage
-        lands_payload.sort(key=lambda l: (l["label"] or "").lower())
-
+        # Pour compatibilité avec ton front actuel (JS)
         return jsonify({"lands": lands_payload}), 200

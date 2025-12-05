@@ -2,50 +2,125 @@
 
 {% block title %}LodyLand – Choix du land{% endblock %}
 
+{# CSS spécifique pour cette page #}
+{% block extra_css %}
+  {{ super() }}
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='GAME_UI/css/lands/land_select.css') }}"
+  />
+{% endblock %}
+
 {% block content %}
 <div class="land-select-container">
   <div class="land-select-header">
     <h1 class="land-select-title">Choisir un land</h1>
     <p class="land-select-subtitle">
-      Tu peux te rendre sur l’un de tes lands. D’autres arriveront plus tard.
+      Tu peux te rendre sur l’un de tes lands débloqués.
     </p>
   </div>
 
-  <div class="land-select-grid">
-    {% for land in lands %}
-      {% if land.unlocked and land.has_route %}
-        <!-- Land débloqué + jouable -->
-        <a href="{{ land.url }}" class="land-card land-card-unlocked">
-          <div class="land-card-icon">{{ land.emoji }}</div>
-          <div class="land-card-title">{{ land.title }}</div>
-          <div class="land-card-desc">
-            {{ land.desc }}
-          </div>
-          <div class="land-card-tag">Débloqué</div>
-        </a>
-      {% else %}
-        <!-- Land verrouillé ou pas encore implémenté -->
-        <div class="land-card land-card-locked">
-          <div class="land-card-icon">{{ land.emoji }}</div>
-          <div class="land-card-title">{{ land.title }}</div>
-          <div class="land-card-desc">
-            {% if land.has_route %}
-              {{ land.desc }}
-            {% else %}
-              Bientôt disponible.
-            {% endif %}
-          </div>
-          <div class="land-card-tag">Verrouillé</div>
-
-          <p class="land-card-hint">
-            Carte disponible dans la boutique
-            {% if land.price_text %}
-              – <strong>{{ land.price_text }}</strong>
-            {% endif %}
-          </p>
-        </div>
-      {% endif %}
-    {% endfor %}
+  <!-- Barre de recherche -->
+  <div class="land-select-toolbar">
+    <input
+      type="search"
+      id="land-search-input"
+      class="land-search-input"
+      placeholder="Rechercher un land…"
+      autocomplete="off"
+    />
   </div>
+
+  {# --- LANDS SPÉCIAUX --- #}
+  {% if special_lands %}
+    <h2 class="land-select-section-title">Lieux spéciaux</h2>
+    <div class="land-select-grid" id="land-special-list">
+      {% for land in special_lands %}
+        <a
+          href="{{ land.url }}"
+          class="land-select-tile land-select-tile-special"
+          data-land-name="{{ land.title|lower }}"
+          data-land-key="{{ land.key|lower }}"
+          data-land-type="special"
+        >
+          {% if land.slot_icon %}
+            <div
+              class="land-select-icon"
+              style="background-image: url('{{ land.slot_icon }}');"
+            ></div>
+          {% else %}
+            <div class="land-select-icon land-select-icon-emoji">
+              {{ land.emoji }}
+            </div>
+          {% endif %}
+          <div class="land-select-label">
+            {{ land.title }}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {# --- LANDS CLASSIQUES --- #}
+  <h2 class="land-select-section-title">Lands</h2>
+  {% if lands %}
+    <div class="land-select-grid" id="land-main-list">
+      {% for land in lands %}
+        <a
+          href="{{ land.url }}"
+          class="land-select-tile"
+          data-land-name="{{ land.title|lower }}"
+          data-land-key="{{ land.key|lower }}"
+          data-land-type="normal"
+        >
+          {% if land.slot_icon %}
+            <div
+              class="land-select-icon"
+              style="background-image: url('{{ land.slot_icon }}');"
+            ></div>
+          {% else %}
+            <div class="land-select-icon land-select-icon-emoji">
+              {{ land.emoji }}
+            </div>
+          {% endif %}
+          <div class="land-select-label">
+            {{ land.title }}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="land-empty">
+      Tu n’as encore débloqué aucun land classique.
+    </p>
+  {% endif %}
 </div>
+
+<!-- Filtre simple côté front -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("land-search-input");
+    if (!input) return;
+
+    const tiles = document.querySelectorAll(".land-select-tile");
+
+    input.addEventListener("input", (e) => {
+      const q = (e.target.value || "").toLowerCase().trim();
+
+      tiles.forEach((tile) => {
+        const name = (tile.dataset.landName || "").toLowerCase();
+        const key  = (tile.dataset.landKey  || "").toLowerCase();
+        const type = (tile.dataset.landType || "").toLowerCase();
+
+        const match =
+          !q ||
+          name.includes(q) ||
+          key.includes(q) ||
+          type.includes(q);
+
+        tile.style.display = match ? "" : "none";
+      });
+    });
+  });
+</script>
 {% endblock %}
