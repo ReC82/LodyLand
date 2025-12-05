@@ -19,8 +19,8 @@
     - coins: 100
       diams: 0
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true
@@ -49,8 +49,8 @@
     - coins: 500
       diams: 1
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true
@@ -79,8 +79,8 @@
     - coins: 1000
       diams: 2
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true

@@ -346,32 +346,35 @@ cards:
 # card_type: resource_boost
 # ============================================================
 
-- key: anchovy_boost_1
+- key: anchovy_boost_treasure_1
   enabled: true
   card_type: resource_boost
   card_category: boost
   card_tags:
   - anchovy
+  - treasure
+  - beach
   card_label: Anchois +0.1
   card_description: Ajoute 0.1 a la récolte d'anchois
-  card_image: /static/assets/img/cards/boosts/card_anchovy_boost_1.png
-  card_rarity: common
+  card_image: /static/assets/img/cards/boosts/_treasures/beach/card_anchovy_boost_1.png
+  card_rarity: rare
   card_gameplay:
     target_resource: anchovy
     boost:
       type: addition
-      amount: 0.2
+      amount: 0.1
   shop:
     prices:
-    - coins: 100
+    - coins: 0
       diams: 0
-      resources: {}
+      resources:
+        nautilus_shell: 100
     show_in_main_shop: false
-    show_in_village_shop: true
+    show_in_village_shop: false
     buy_rules: null
   tradable: false
   giftable: true
-  card_quantity: 0
+  card_quantity: 500
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
@@ -674,8 +677,8 @@ cards:
     - coins: 1000
       diams: 2
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true
@@ -704,8 +707,8 @@ cards:
     - coins: 100
       diams: 0
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true
@@ -734,8 +737,8 @@ cards:
     - coins: 500
       diams: 1
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true
@@ -980,8 +983,8 @@ cards:
     - coins: 50
       diams: 0
       resources: {}
-    show_in_main_shop: true
-    show_in_village_shop: false
+    show_in_main_shop: false
+    show_in_village_shop: true
     buy_rules: null
   tradable: false
   giftable: true
