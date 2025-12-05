@@ -87,9 +87,12 @@ def _player_has_land(session, player_id: int, land_key: str) -> bool:
     return bool(row and row.qty > 0)
 
 
-def _roll_land_loot(tool_cfg: dict) -> dict[str, float]:
+def _roll_land_loot(tool_cfg: dict, any_cfg: dict | None = None) -> dict[str, float]:
     """
     Given a tool config from lands.yml, roll base_loot + extra_loot.
+
+    If any_cfg is provided, also roll its base_loot / extra_loot.
+    This allows a special 'any' tool in lands.yml that applies to all tools.
 
     Returns:
         dict {resource_key: total_amount}
@@ -99,29 +102,41 @@ def _roll_land_loot(tool_cfg: dict) -> dict[str, float]:
     def add_res(key: str, amount: float) -> None:
         loot[key] = loot.get(key, 0.0) + float(amount)
 
-    # Base loot
-    for entry in tool_cfg.get("base_loot", []) or []:
-        res = entry.get("resource")
-        if not res:
-            continue
-        chance = float(entry.get("chance", 1.0))
-        if random.random() <= chance:
-            mn = int(entry.get("min", 1))
-            mx = int(entry.get("max", mn))
-            amount = random.randint(mn, mx)
-            add_res(res, amount)
+    def apply_loot_from_cfg(cfg: dict) -> None:
+        """Apply base_loot and extra_loot from a given tool config."""
+        if not cfg:
+            return
 
-    # Extra loot
-    for entry in tool_cfg.get("extra_loot", []) or []:
-        res = entry.get("resource")
-        if not res:
-            continue
-        chance = float(entry.get("chance", 0.0))
-        if random.random() <= chance:
-            mn = int(entry.get("min", 1))
-            mx = int(entry.get("max", mn))
-            amount = random.randint(mn, mx)
-            add_res(res, amount)
+        # Base loot
+        for entry in cfg.get("base_loot", []) or []:
+            res = entry.get("resource")
+            if not res:
+                continue
+            chance = float(entry.get("chance", 1.0))
+            if random.random() <= chance:
+                mn = int(entry.get("min", 1))
+                mx = int(entry.get("max", mn))
+                amount = random.randint(mn, mx)
+                add_res(res, amount)
+
+        # Extra loot
+        for entry in cfg.get("extra_loot", []) or []:
+            res = entry.get("resource")
+            if not res:
+                continue
+            chance = float(entry.get("chance", 0.0))
+            if random.random() <= chance:
+                mn = int(entry.get("min", 1))
+                mx = int(entry.get("max", mn))
+                amount = random.randint(mn, mx)
+                add_res(res, amount)
+
+    # 1) Loot spécifique à l'outil choisi
+    apply_loot_from_cfg(tool_cfg)
+
+    # 2) Loot global "any" (appliqué à tous les outils si présent)
+    if any_cfg:
+        apply_loot_from_cfg(any_cfg)
 
     return loot
 
@@ -621,14 +636,17 @@ def collect():
 
             tools_cfg = land_def.get("tools") or {}
 
-            # Tool config pour le tool demandé
+            # Tool config for requested tool
             tool_cfg = tools_cfg.get(tool_key)
             if not tool_cfg:
                 return jsonify(
                     {"error": "tool_not_allowed", "tool": tool_key},
                 ), 400
 
-            # Check item requis (tool crafté)
+            # 🚀 NEW: optional "any" config, applied to all tools
+            any_cfg = tools_cfg.get("any")
+
+            # Check required item (crafted tool)
             required_item_key = tool_cfg.get("requires_item")
             if required_item_key:
                 if not _player_has_item(s, p.id, required_item_key):
@@ -658,14 +676,14 @@ def collect():
                 .first()
             )
 
-            # Si le slot est déjà en cooldown → on renvoie aussi la durée
+            # If the slot is already on cooldown → return remaining duration
             if slot_state and slot_state.cooldown_until:
                 cd = slot_state.cooldown_until
                 if cd.tzinfo is None:
                     cd = cd.replace(tzinfo=timezone.utc)
 
                 if cd > now:
-                    # Quel outil a été utilisé pour ce cooldown ?
+                    # Which tool was used for this cooldown?
                     used_tool_key = slot_state.last_tool_key or "hands"
                     used_tool_cfg = tools_cfg.get(used_tool_key, {})
                     used_cd = int(used_tool_cfg.get("cooldown_seconds", 10))
@@ -683,7 +701,7 @@ def collect():
                         409,
                     )
 
-            # Si pas encore de state, on le crée
+            # Create slot state if missing
             if not slot_state:
                 slot_state = LandSlotState(
                     player_id=p.id,
@@ -695,7 +713,8 @@ def collect():
             # ------------------------------------------------------------------
             # Loot computation
             # ------------------------------------------------------------------
-            raw_loot = _roll_land_loot(tool_cfg)  # {resource: base_qty}
+            # 💡 ICI la modif importante : on passe aussi any_cfg
+            raw_loot = _roll_land_loot(tool_cfg, any_cfg=any_cfg)  # {resource: base_qty}
 
             # Global land loot multiplier (cards with type "land_loot_boost")
             land_loot_mult = _compute_land_loot_multiplier(
@@ -793,7 +812,6 @@ def collect():
                 200,
             )
 
-
     # ----------------------------------------------------------------------
     # 2) Legacy mode: collect on a Tile
     # ----------------------------------------------------------------------
@@ -889,7 +907,6 @@ def collect():
                 "level_up": level_up,
             }
         )
-
 
 # ============================================================================
 # Tiles unlock + listing
