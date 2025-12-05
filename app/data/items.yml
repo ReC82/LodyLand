@@ -242,7 +242,7 @@ items:
     kind: treasure
     label: Coquille de nautile
     description: Une coquille de nautile rare trouvée sur la plage.
-    icon: /static/assets/img/items/resources/nautilus_shell.png
+    icon: /static/assets/img/items/treasures/nautilus_shell.png
     unlock_min_level: 1
     base_cooldown: 10
     base_sell_price: 0
