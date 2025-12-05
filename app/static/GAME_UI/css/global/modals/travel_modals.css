@@ -1,0 +1,96 @@
+/* ===========================
+   Generic GH modal (Travel)
+   =========================== */
+
+.gh-modal {
+  position: fixed;
+  inset: 0;                 /* top:0; right:0; bottom:0; left:0 */
+  display: none;            /* 🔥 caché par défaut */
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.gh-modal.is-open {
+  display: flex;            /* 🔥 visible quand on ajoute .is-open */
+}
+
+.gh-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.gh-modal-dialog {
+  position: relative;
+  background: rgba(20, 20, 30, 0.95);
+  border-radius: 10px;
+  padding: 12px 14px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.gh-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gh-modal-title {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.gh-modal-close-btn {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Liste travel */
+.travel-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.travel-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.travel-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.travel-item-selected {
+  border-color: #ffc107;
+  background: rgba(255, 193, 7, 0.15);
+}
+
+.travel-item-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+
+.travel-item-label {
+  flex: 1;
+}

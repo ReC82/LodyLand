@@ -1,0 +1,28 @@
+/* --- Beta reminder inside HUD --- */
+.gh-beta-tag {
+  /* Small pill near the logo */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+
+  padding: 2px 10px;
+  border-radius: 999px;
+
+  background: rgba(248, 196, 70, 0.1); /* soft amber */
+  border: 1px solid rgba(248, 196, 70, 0.6);
+  color: #facc15; /* amber-300 style */
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gh-beta-dot {
+  /* Small glowing dot to attract attention */
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #facc15;
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.9);
+}
+/* =================== END BETA REMINDER INSIDE HUD ======== */

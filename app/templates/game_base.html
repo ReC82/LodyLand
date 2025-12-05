@@ -11,12 +11,77 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     />
 
-    <!-- CSS global du jeu -->
+    <!-- =========================
+         CSS GLOBAL DU JEU
+         ========================= -->
+
+    <!-- 1) Base globale : body, typo, couleurs, icônes génériques -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/base.css') }}"
+    />
+
+    <!-- 2) HUD (barre du haut) + beta bar -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/game_hud.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/beta_bar.css') }}"
+    />
+
+    <!-- 3) Modales globales (présentes dans ce layout) -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/daily_chest_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/level_up_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/levels_list_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/quests_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/craft_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/image_viewer_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/story_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/travel_modals.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/game_menu_modal.css') }}"
+    />
+
+    <!-- 4) CSS spécifique à la page de jeu (layout, lands génériques, etc.) -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='GAME_UI/css/game.css') }}"
     />
 
+    <!-- 5) Overrides responsive globaux (HUD, modals, etc.) -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/responsive.css') }}"
+    />
+
+    <!-- 6) CSS additionnel spécifique à une page (lands, village, etc.) -->
     {% block extra_css %}{% endblock %}
   </head>
 

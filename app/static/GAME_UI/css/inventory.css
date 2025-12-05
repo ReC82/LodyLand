@@ -277,3 +277,15 @@
   font-size: 0.78rem;
   color: #facc15;
 }
+
+.inv-item-crafted .inv-resource-icon-wrapper {
+  border: 2px solid #facc15;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+  border-radius: 8px;
+}
+
+.inv-item-crafted .inv-resource-icon-wrapper {
+  border: 2px solid #facc15;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+  border-radius: 8px;
+}

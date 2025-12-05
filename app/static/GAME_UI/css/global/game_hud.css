@@ -1,0 +1,264 @@
+/* ============================================================
+   SECTION 04 — DAILY CHEST (HUD + TOOLTIP)
+   ============================================================ */
+
+.hud-daily {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
+}
+
+/* Icône de coffre dans le HUD */
+.hud-daily-icon {
+  cursor: pointer;
+  font-size: 1.3rem;
+  position: relative;
+  transition: transform 0.1s ease;
+  user-select: none;
+
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-daily-icon:hover {
+  transform: scale(1.15);
+}
+
+/* état "en cours" */
+.hud-daily-icon.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Petit badge rouge "!" */
+.daily-alert-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #e11d48;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+
+  display: block;
+  pointer-events: none;
+
+  /* on cache le texte réel "!" du span pour éviter les décalages */
+  font-size: 0;
+}
+
+.daily-alert-badge::before {
+  content: "!";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-60%, -55%);
+  font-size: 12px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+/* Infobulle du daily */
+.hud-daily-tooltip {
+  position: absolute;
+  top: 28px;
+  right: -10px;
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  min-width: 180px;
+  display: none;
+  border: 1px solid rgba(148,163,184,0.3);
+  z-index: 50;
+}
+
+.hud-daily:hover .hud-daily-tooltip {
+  display: block;
+}
+
+/* Coffre prêt : animation */
+.hud-daily-ready {
+  animation: chest-bounce 1.2s infinite ease-in-out,
+             chest-glow 1.2s infinite ease-in-out;
+}
+
+@keyframes chest-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes chest-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0.0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9));
+  }
+}
+
+/* =================== END SECTION 04 — DAILY CHEST HUD ====== */
+
+/* --- Header HUD (XP, coins, menu) + intégration du logo --- */
+
+.game-header {
+  position: relative;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: radial-gradient(circle at top, #1d283a, #020617);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  overflow: visible;
+}
+
+/* Colonnes HUD */
+.gh-left,
+.gh-center,
+.gh-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Bloc de gauche (texte / land name), avec espace réservé pour le logo */
+.gh-left {
+  position: relative;
+  padding-left: 180px;
+}
+
+/* Logo LodyLand absolu, superposé sur le header */
+.gh-logo {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-20%);
+  pointer-events: none;
+}
+
+.gh-logo-img {
+  height: 256px;
+  width: auto;
+  display: block;
+}
+
+/* Land name pill */
+.gh-land {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* --- Center: XP --- */
+
+.gh-center {
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.gh-xp-label {
+  font-size: 0.8rem;
+  color: #c4b5fd;
+}
+
+.gh-xp-bar {
+  width: 260px;
+  max-width: 40vw;
+  height: 8px;
+  border-radius: 999px;
+  background: #020617;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  overflow: hidden;
+}
+
+.gh-xp-fill {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  transition: width 0.3s ease;
+}
+
+.gh-xp-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.2rem;
+}
+
+/* --- Right: currencies + bouton menu --- */
+
+.gh-right {
+  gap: 0.75rem;
+}
+
+.gh-currency {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+.gh-coins {
+  color: #facc15;
+}
+
+.gh-diams {
+  color: #38bdf8;
+}
+
+/* Icônes HUD */
+.hud-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.hud-icon-small {
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+/* Bouton menu HUD */
+.gh-menu-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.6rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.gh-menu-btn:hover {
+  background: rgba(30, 64, 175, 0.9);
+}
+
+/* --- Zone principale du jeu --- */
+
+.game-main {
+  padding: 0.75rem;
+}

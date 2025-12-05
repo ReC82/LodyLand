@@ -31,6 +31,8 @@ function setupBuyButtons() {
  */
 async function handleBuy(btn) {
   const offerKey = btn.dataset.offerKey;
+  console.log("[village_shop] clicked offerKey =", offerKey); // DEBUG
+
   if (!offerKey) {
     console.warn("[village_shop] Missing offerKey");
     return;
@@ -41,7 +43,9 @@ async function handleBuy(btn) {
   btn.textContent = "Achat.";
 
   try {
-    const r = await http("POST", "/village/shop/buy", { offer_key: offerKey });
+    const r = await http("POST", "/api/village/cardshop/buy", {
+      offer_key: offerKey,
+    });
 
     if (!r.ok) {
       const err = r.data || {};

@@ -1,0 +1,38 @@
+/* ============================================================
+   SECTION 01 — UI ICONS (GLOBAL)
+   ============================================================ */
+
+.ui-icon {
+  display: inline-block;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+/* Coin icon (utilisé partout pour les coins) */
+.ui-icon-coin {
+  width: 16px;
+  height: 16px;
+  background-image: url("/static/assets/img/ui/coins.png");
+}
+
+.ui-icon-diam {
+  width: 16px;
+  height: 16px;
+  background-image: url("/static/assets/img/ui/diams.png");
+}
+
+.ui-icon-xp {
+  width: 16px;
+  height: 16px;
+  background-image: url("/static/assets/img/ui/xp.png");
+}
+
+/* --- Body / fond global --- */
+.game-body {
+  margin: 0;
+  background: #020617;
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}

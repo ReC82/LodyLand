@@ -1,0 +1,421 @@
+/* ============================================================
+   QUESTS PANEL (modal HUD + réutilisable dans le village)
+   ============================================================ */
+
+/* -------------------------
+   1) OVERLAY GLOBAL
+   ------------------------- */
+
+.quests-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.85); /* voile sombre */
+}
+
+/* Le JS ajoute/enlève .hidden */
+.quests-panel.hidden {
+  display: none;
+}
+
+/* Boîte principale (carte) */
+.quests-panel-dialog {
+  width: min(900px, 100% - 2rem);
+  max-height: calc(100vh - 4rem); /* laisse un peu d’air autour */
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* header fixe, body scrollable */
+}
+
+/* Mobile : le panel prend toute la hauteur/largeur */
+@media (max-width: 576px) {
+  .quests-panel-dialog {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* -------------------------
+   2) HEADER & BODY
+   ------------------------- */
+
+.quests-panel-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.quests-panel-title {
+  font-size: 1.1rem;
+  color: #f9fafb;
+}
+
+.quests-panel-subtitle {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* Corps scrollable */
+.quests-panel-body {
+  padding: 0.75rem 1rem 1rem;
+  overflow-y: auto; /* <- l’ascenseur est ici */
+}
+
+/* Container rempli par JS */
+#quests-list {
+  display: block;
+}
+
+/* -------------------------
+   3) FILTRES
+   ------------------------- */
+
+.quests-filters {
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px 4px;
+  border-bottom: 1px solid rgba(31, 41, 55, 1);
+}
+
+.qfilter-btn {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(55, 65, 81, 1);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.qfilter-btn.qfilter-active {
+  background: rgba(37, 99, 235, 0.9);
+  border-color: #3b82f6;
+}
+
+/* -------------------------
+   4) GROUPES / ACCORDÉONS
+   ------------------------- */
+
+.quests-group {
+  border-radius: 12px;
+  border: 1px solid rgba(31, 41, 55, 1);
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.quests-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  cursor: pointer;
+  user-select: none;
+  background: radial-gradient(
+    circle at top left,
+    rgba(30, 64, 175, 0.25),
+    #020617
+  );
+}
+
+.quests-group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.quests-group-chevron {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  transition: transform 0.15s ease-out;
+}
+
+.quests-group.collapsed .quests-group-chevron {
+  transform: rotate(-90deg);
+}
+
+.quests-group-body {
+  padding: 6px 8px 8px;
+}
+
+.quests-group.collapsed .quests-group-body {
+  display: none;
+}
+
+/* -------------------------
+   5) CARTES DE QUÊTES (NOUVEAU FORMAT .quests-card)
+   ------------------------- */
+
+.quests-card {
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 10px;
+  border: 1px solid rgba(75, 85, 99, 0.8);
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.quests-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.quests-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.quests-card-type {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+}
+
+.quests-card-body {
+  font-size: 0.8rem;
+  color: #d1d5db;
+}
+
+.quests-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* -------------------------
+   6) ANCIEN FORMAT .quest-card (COMPAT)
+   ------------------------- */
+
+.quest-card {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(55, 65, 81, 0.8);
+}
+
+.quest-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.quest-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin: 0;
+}
+
+.quest-desc {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0 0 8px 0;
+}
+
+/* Badges type (daily / weekly) */
+.quest-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(75, 85, 99, 1);
+  color: #9ca3af;
+}
+
+.quest-badge.daily {
+  border-color: #22c55e;
+  color: #bbf7d0;
+}
+
+.quest-badge.weekly {
+  border-color: #3b82f6;
+  color: #bfdbfe;
+}
+
+/* -------------------------
+   7) OBJECTIFS / PROGRESSION
+   ------------------------- */
+
+.quest-objective {
+  margin-bottom: 6px;
+}
+
+.quest-objective-label {
+  font-size: 0.8rem;
+  color: #cbd5f5;
+}
+
+.quest-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: #111827;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.quest-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+}
+
+.quest-progress-text {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* -------------------------
+   8) RÉCOMPENSES / BOUTON CLAIM
+   ------------------------- */
+
+.quest-rewards {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #e5e7eb;
+  display: flex;
+  gap: 12px;
+}
+
+.quest-reward-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: rgba(17, 24, 39, 1);
+}
+
+.quest-reward-pill span {
+  font-size: 0.75rem;
+}
+
+.quest-actions {
+  margin-top: 10px;
+  text-align: left;
+}
+
+.quest-claim-btn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: none;
+  background: #10b981; /* vert doux */
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    background 0.08s ease;
+}
+
+.quest-claim-btn:hover {
+  background: #22c55e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.quest-claim-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.quest-validity {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.quest-validity-label {
+  margin-right: 4px;
+  font-weight: 500;
+}
+
+.quest-validity-date {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* -------------------------
+   9) QUÊTES COMPLÉTÉES
+   ------------------------- */
+
+.quest-card.completed {
+  border-color: #22c55e;
+  background: radial-gradient(
+    circle at top left,
+    rgba(34, 197, 94, 0.15),
+    #020617
+  );
+}
+
+.quest-card.completed .quest-title {
+  color: #bbf7d0;
+}
+
+.quest-card.completed .quest-desc {
+  color: #9ca3af;
+}
+
+.quest-completed-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: rgba(22, 163, 74, 0.15);
+  border: 1px solid #22c55e;
+  color: #bbf7d0;
+  margin-left: 8px;
+}
+
+/* -------------------------
+   10) BOUTON HUD "QUÊTES"
+   ------------------------- */
+
+.gh-btn.gh-btn-quests {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(75, 85, 99, 0.9);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.gh-btn.gh-btn-quests:hover {
+  background: rgba(30, 64, 175, 0.8);
+  border-color: #3b82f6;
+}
+
+/* ============================================================
+   END QUESTS PANEL
+   ============================================================ */

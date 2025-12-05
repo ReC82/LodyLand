@@ -1,0 +1,187 @@
+/* ============================================================
+   STORY MODAL (narration / tutoriel)
+   ============================================================ */
+
+.story-modal .ll-modal-dialog {
+  max-width: 520px;
+  margin: 0 auto;
+  top: 50%;
+  transform: translateY(-50%);
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #2c2f48 0, #151626 55%, #090910 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.story-modal-header {
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 128, 0.12),
+    rgba(145, 207, 255, 0.03)
+  );
+}
+
+.story-modal-header .ll-modal-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #ffd788;
+}
+
+/* Corps du modal : texte centré avec une "boîte" lisible */
+.story-modal-body {
+  padding: 16px 18px 6px 18px;
+}
+
+.story-modal-text {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: #f5f5f7;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Petite scrollbar discrète */
+.story-modal-text::-webkit-scrollbar {
+  width: 6px;
+}
+.story-modal-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+.story-modal-text::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+}
+
+/* Indicateur de pages en bas à gauche */
+.story-modal-page-indicator {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #b8becf;
+  opacity: 0.85;
+}
+
+/* Footer avec boutons alignés à droite */
+.story-modal-footer {
+  padding: 10px 18px 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.story-modal-footer .btn {
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+/* Bouton Suivant = accent bleu, Done = accent vert déjà géré par Bootstrap */
+#storyModalNext {
+  background: linear-gradient(135deg, #4da3ff, #7bd3ff);
+  border: none;
+  color: #050814;
+  font-weight: 600;
+}
+
+#storyModalNext:hover {
+  filter: brightness(1.05);
+}
+
+#storyModalDone {
+  font-weight: 600;
+}
+
+/* Animation d'apparition douce */
+.story-modal .ll-modal-dialog {
+  animation: story-modal-pop 0.18s ease-out;
+}
+
+@keyframes story-modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-55%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}
+
+/* Mobile-friendly : un peu plus compact sur petits écrans */
+@media (max-width: 576px) {
+  .story-modal .ll-modal-dialog {
+    width: 92%;
+  }
+
+  .story-modal-text {
+    max-height: 50vh;
+  }
+}
+
+/* ================================
+   STORY MODAL — improved visuals
+   ================================ */
+
+.story-modal-content {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 12px;
+  animation: fadeStory 0.25s ease-out;
+}
+
+@keyframes fadeStory {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.story-avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.story-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: #222;
+}
+
+.story-bubble {
+  flex-grow: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.story-speaker {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.story-text {
+  font-size: 1rem;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.story-modal-page-indicator {
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  opacity: 0.6;
+}

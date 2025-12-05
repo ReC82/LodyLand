@@ -1,0 +1,119 @@
+/* ============================================================
+   GAME MENU (profil / lands / logout)
+   ============================================================ */
+
+/* -------------------------
+   1) OVERLAY CONTENEUR
+   ------------------------- */
+
+.game-menu {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  z-index: 30;
+
+  pointer-events: none;               /* inactif par défaut */
+  opacity: 0;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+/* quand ouvert */
+.game-menu.is-open {
+  pointer-events: auto;
+  opacity: 1;
+  background: radial-gradient(
+    circle at top right,
+    rgba(15, 23, 42, 0.8),
+    transparent
+  );
+}
+
+/* -------------------------
+   2) CARTE DU MENU
+   ------------------------- */
+
+.game-menu-card {
+  width: 220px;
+  max-width: 70vw;
+  background: #020617;
+  border-radius: 16px;
+  padding: 0.9rem 0.9rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  transform: translateY(8px);
+}
+
+/* Séparation entre sections */
+.game-menu-section + .game-menu-section {
+  border-top: 1px solid rgba(51, 65, 85, 0.9);
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+}
+
+/* -------------------------
+   3) HEADER DU MENU
+   ------------------------- */
+
+.game-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.game-menu-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin-bottom: 0.4rem;
+}
+
+.game-menu-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #fff;
+}
+
+/* -------------------------
+   4) ITEMS DU MENU
+   ------------------------- */
+
+.game-menu-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Hover / focus : même rendu pour souris & clavier */
+.game-menu-item:hover,
+.game-menu-item:focus-visible {
+  background: rgba(30, 64, 175, 0.9);
+  outline: none;
+}
+
+.game-menu-logout {
+  color: #fecaca;
+}
+
+.game-menu-logout:hover,
+.game-menu-logout:focus-visible {
+  background: rgba(248, 113, 113, 0.15);
+  outline: none;
+}
+
+/* ============================================================
+   END GAME MENU
+   ============================================================ */

@@ -1,0 +1,114 @@
+/* =========================================
+   RESPONSIVE HUD (tablettes + mobiles)
+   ========================================= */
+
+/* Base: allow wrapping in the header */
+.game-header {
+  /* keep your background, border, etc.
+     we only add/override flex behavior */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;   /* allow the bar to split on 2 lines */
+  height: auto;      /* no fixed height on large screens either */
+}
+
+/* Make center zone flexible */
+.gh-center {
+  flex: 1 1 260px;   /* can grow and shrink */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right zone should not explode too much */
+.gh-right {
+  flex-shrink: 0;
+}
+
+/* Medium screens (tablets) */
+@media (max-width: 992px) {
+  .gh-logo-img {
+    height: 160px;   /* smaller logo */
+  }
+
+  .gh-left {
+    padding-left: 130px; /* less reserved space for logo */
+  }
+
+  .hud-icon-img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .gh-currency {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .gh-xp-bar {
+    width: 220px;
+    max-width: 60vw;
+  }
+}
+
+/* Small screens (phones / small tablets) */
+@media (max-width: 768px) {
+  .game-header {
+    padding: 0.4rem 0.6rem;
+    gap: 0.4rem;
+  }
+
+  /* Logo: either much smaller or hidden */
+  .gh-logo-img {
+    height: 96px; /* or set display:none; if you prefer */
+  }
+
+  .gh-left {
+    padding-left: 0;       /* no reserved space */
+    order: 1;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Center (XP) takes its own line */
+  .gh-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.2rem;
+  }
+
+  .gh-level-zone {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  /* Right side (coins, diams, chest, travel, quests, burger) */
+  .gh-right {
+    order: 2;
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0.4rem;
+  }
+
+  .hud-icon-img,
+  .hud-icon-small {
+    width: 22px;
+    height: 22px;
+  }
+
+  .gh-currency {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  /* Optional: hide detailed XP text on very small screens */
+  .gh-xp-text {
+    display: none;
+  }
+
+  .gh-beta-tag {
+    font-size: 0.65rem;
+  }
+}
