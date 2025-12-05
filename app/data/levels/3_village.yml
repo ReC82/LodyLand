@@ -16,6 +16,8 @@ levels:
         key: "global_shop"         # boutique de cartes
       - type: "feature"
         key: "quest_system"      # quêtes
+      - type: "feature"
+        key: "travel_system"      # quêtes        
 
     story_events:
       - id: "village_first_visit"

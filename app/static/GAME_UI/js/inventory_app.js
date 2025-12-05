@@ -55,11 +55,15 @@ function renderResourceList(filterText = "") {
     const qty = item.qty ?? item.quantity ?? 0;
     const description = def.description || "Pas de description disponible.";
     const baseSellPrice = def.base_sell_price ?? null;
-
     const row = document.createElement("div");
+
+    if(def.icon == null)
+    {
+      console.log(def.icon);
+    }
+
     // Tile-style + tooltip
     row.className = "inv-resource-item inv-tooltip";
-
     row.innerHTML = `
       <div class="inv-resource-icon-wrapper">
         ${

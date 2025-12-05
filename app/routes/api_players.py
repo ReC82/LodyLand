@@ -11,7 +11,7 @@ from app.models import (
     ResourceDef,
     PlayerCard,
     CardDef,
-    PlayerItem, 
+    PlayerItem,
     PlayerQuest,
     PlayerCraftJob,
     PlayerStoryFlag,
@@ -26,22 +26,21 @@ from app.quests.service import (
     assign_daily_quest_if_needed,
     assign_weekly_quest_if_needed,
     assign_next_storyline_quest_if_needed,
-    auto_mark_expired_quests, 
+    auto_mark_expired_quests,
     serialize_quest,
 )
 
 from app.services.cards import serialize_card_def
 from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
 
-
-
-
 bp = Blueprint("players", __name__)
+
 
 def _round_qty(q, digits: int = 2) -> float:
     if q is None:
         q = 0.0
     return round(float(q), digits)
+
 
 def _player_to_dict(p: Player) -> dict:
     # Petit helper pour uniformiser les réponses
@@ -54,7 +53,8 @@ def _player_to_dict(p: Player) -> dict:
         "xp": p.xp,
         "next_xp": getattr(p, "next_xp", None),  # ou via progression
     }
-    
+
+
 def _compute_craft_table_level(session, player: Player) -> int:
     """
     Compute the craft table level for a player based on owned cards.
@@ -80,8 +80,8 @@ def _compute_craft_table_level(session, player: Player) -> int:
             > 0
         )
 
-    has_basic    = has_card("access_craft_table_basic")
-    has_medium   = has_card("access_craft_table_medium")
+    has_basic = has_card("access_craft_table_basic")
+    has_medium = has_card("access_craft_table_medium")
     has_advanced = has_card("access_craft_table_advanced")
 
     # Au moins une carte => niveau 1 minimum
@@ -98,8 +98,7 @@ def _compute_craft_table_level(session, player: Player) -> int:
 
     return level
 
-    
-    
+
 def _ensure_starting_land_card(session, player: Player) -> None:
     """Ensure the player owns the starting land card (forest)."""
     # Check if the player already has the card
@@ -115,8 +114,8 @@ def _ensure_starting_land_card(session, player: Player) -> None:
     pc = PlayerCard(player_id=player.id, card_key="land_forest", qty=1)
     session.add(pc)
     # No commit here: let the caller decide when to commit
-    
-    
+
+
 @bp.post("/player")
 def create_player():
     s = SessionLocal()
@@ -159,6 +158,7 @@ def create_player():
     s.close()
     return resp, 200
 
+
 @bp.get("/player/<int:player_id>")
 def get_player(player_id: int):
     """Return a player by id."""
@@ -177,6 +177,7 @@ def get_player(player_id: int):
                 "next_xp": next_threshold(p.level),
             }
         )
+
 
 # -----------------------------------------------------------------
 # Auth: register / login / logout / me
@@ -221,7 +222,8 @@ def register():
             max_age=60 * 60 * 24 * 365,
         )
         return resp, 200
-        
+
+
 @bp.post("/login")
 def login():
     """Login by id or name and set the 'player_id' cookie."""
@@ -263,11 +265,13 @@ def login():
         )
         return resp, 200
 
+
 @bp.post("/logout")
 def logout():
     resp = make_response(jsonify({"ok": True}))
     resp.set_cookie("player_id", "", max_age=0)
     return resp, 200
+
 
 @bp.get("/me")
 def whoami():
@@ -285,12 +289,13 @@ def whoami():
                 "xp": p.xp,
                 "next_xp": next_threshold(p.level),
             }
-        )     
-        
+        )
+
+
 @bp.get("/state")
 def get_state():
     """Return full player state, including cards (new format)."""
-    with SessionLocal() as s:   
+    with SessionLocal() as s:
         me = _get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
@@ -302,24 +307,28 @@ def get_state():
         assign_next_storyline_quest_if_needed(s, me, now=now)
         auto_mark_expired_quests(s, me)
         s.commit()
-        
+
         # --- ⚠️ IMPORTANT : résoudre les jobs de craft AVANT l'inventaire ---
         craft_job_payload = _update_craft_jobs_for_player(s, me)
         # (cette fonction doit elle-même faire ses commits internes si besoin)
-        
+
         # --- NEW: Load active quests ---------------------------------------
         quests = (
             s.query(PlayerQuest)
             .filter(PlayerQuest.player_id == me.id)
-            .filter(PlayerQuest.status.in_(["active", "ready", "completed", "expired"]))
+            .filter(
+                PlayerQuest.status.in_(
+                    ["active", "ready", "completed", "expired"]
+                )
+            )
             .order_by(PlayerQuest.started_at.desc())
             .all()
         )
         quests_payload = [serialize_quest(q) for q in quests]
+
         # -------------------------------------------------------------------
-        # ------------------------------
         # Tiles
-        # ------------------------------
+        # -------------------------------------------------------------------
         tiles = (
             s.query(Tile)
             .filter_by(player_id=me.id)
@@ -328,19 +337,23 @@ def get_state():
         )
         tiles_payload = []
         for t in tiles:
-            tiles_payload.append({
-                "id": t.id,
-                "playerId": t.player_id,
-                "resource": t.resource,
-                "locked": t.locked,
-                "cooldown_until": (
-                    t.cooldown_until.isoformat() if t.cooldown_until else None
-                ),
-            })
+            tiles_payload.append(
+                {
+                    "id": t.id,
+                    "playerId": t.player_id,
+                    "resource": t.resource,
+                    "locked": t.locked,
+                    "cooldown_until": (
+                        t.cooldown_until.isoformat()
+                        if t.cooldown_until
+                        else None
+                    ),
+                }
+            )
 
-        # ------------------------------
+        # -------------------------------------------------------------------
         # Resource inventory
-        # ------------------------------
+        # -------------------------------------------------------------------
         stocks = (
             s.query(ResourceStock)
             .filter_by(player_id=me.id)
@@ -352,13 +365,13 @@ def get_state():
             for rs in stocks
         ]
 
-        # ------------------------------
-        # Resource defs
-        # ------------------------------
+        # -------------------------------------------------------------------
+        # Resource defs  ✅ ADAPTÉ AU NOUVEAU MODELE
+        # -------------------------------------------------------------------
         resources_rows = (
             s.query(ResourceDef)
             .filter_by(enabled=True)
-            .order_by(ResourceDef.unlock_min_level.asc())
+            .order_by(ResourceDef.key.asc())
             .all()
         )
         resources_payload = [
@@ -366,17 +379,18 @@ def get_state():
                 "key": r.key,
                 "label": r.label,
                 "icon": r.icon,
-                "unlock_min_level": r.unlock_min_level,
-                "base_cooldown": r.base_cooldown,
+                "kind": r.kind,
                 "base_sell_price": r.base_sell_price,
                 "enabled": r.enabled,
+                "description": r.description,
+                "unlock_description": r.unlock_description,
             }
             for r in resources_rows
         ]
 
-        # ------------------------------
+        # -------------------------------------------------------------------
         # Cards (NEW) – via service
-        # ------------------------------
+        # -------------------------------------------------------------------
         card_defs = (
             s.query(CardDef)
             .filter_by(enabled=True)
@@ -403,10 +417,9 @@ def get_state():
                 )
             )
 
-
-        # ------------------------------
+        # -------------------------------------------------------------------
         # Items craftés (PlayerItem)
-        # ------------------------------
+        # -------------------------------------------------------------------
         item_rows = (
             s.query(PlayerItem)
             .filter_by(player_id=me.id)
@@ -427,19 +440,21 @@ def get_state():
             print("[DEBUG ITEM META] key =", it.item_key, "meta =", meta)
             print("[DEBUG ITEM CFG ] key =", it.item_key, "cfg  =", cfg)
 
-            items_payload.append({
-                "item_key": it.item_key,
-                "qty": it.quantity,
-                "label_fr": cfg.get("label_fr"),
-                "label_en": cfg.get("label_en"),
-                "icon": cfg.get("icon"),
-                "type": cfg.get("type"),
-                "category": cfg.get("category"),
-            })
+            items_payload.append(
+                {
+                    "item_key": it.item_key,
+                    "qty": it.quantity,
+                    "label_fr": cfg.get("label_fr"),
+                    "label_en": cfg.get("label_en"),
+                    "icon": cfg.get("icon"),
+                    "type": cfg.get("type"),
+                    "category": cfg.get("category"),
+                }
+            )
 
-        # ------------------------------
+        # -------------------------------------------------------------------
         # Craft : niveau de table + jobs en cours
-        # ------------------------------
+        # -------------------------------------------------------------------
 
         # 1) Mettre à jour les jobs en cours (donne les items terminés)
         _update_craft_jobs_for_player(s, me)
@@ -469,9 +484,7 @@ def get_state():
             total_secs = max(
                 0, int((ends_at - started_at).total_seconds())
             )
-            elapsed = max(
-                0, int((now - started_at).total_seconds())
-            )
+            elapsed = max(0, int((now - started_at).total_seconds()))
             remaining_total_secs = max(0, total_secs - elapsed)
 
             # Durée par item (approx) si on a un total non nul
@@ -486,7 +499,9 @@ def get_state():
                 units_should_be_done = min(
                     total, int(elapsed // seconds_per_unit)
                 )
-                next_threshold_time = (units_should_be_done + 1) * seconds_per_unit
+                next_threshold_time = (
+                    units_should_be_done + 1
+                ) * seconds_per_unit
                 seconds_until_next_unit = max(
                     0, int(next_threshold_time - elapsed)
                 )
@@ -512,7 +527,9 @@ def get_state():
                 "seconds_total": total_secs,
                 "seconds_elapsed": elapsed,
                 "seconds_remaining_total": remaining_total_secs,
-                "seconds_per_unit": int(seconds_per_unit) if seconds_per_unit else 0,
+                "seconds_per_unit": int(seconds_per_unit)
+                if seconds_per_unit
+                else 0,
                 "seconds_until_next_unit": seconds_until_next_unit,
                 "status": job.status,
             }
@@ -531,42 +548,44 @@ def get_state():
             "jobs": jobs_payload,
             "active_job": active_job,
         }
-        # ------------------------------
+
+        # -------------------------------------------------------------------
         # Story flags (which story events have been seen)
-        # ------------------------------
+        # -------------------------------------------------------------------
         story_flags_rows = (
-            s.query(PlayerStoryFlag)
-            .filter_by(player_id=me.id)
-            .all()
+            s.query(PlayerStoryFlag).filter_by(player_id=me.id).all()
         )
         seen_story_ids = [row.story_id for row in story_flags_rows]
-        # ------------------------------
-        # Return final state
-        # ------------------------------
-        print("DEBUG ITEM:", items_payload)
-        return jsonify({
-            "player": {
-                "id": me.id,
-                "name": me.name,
-                "level": me.level,
-                "xp": me.xp,
-                "coins": me.coins,
-                "diams": me.diams,
-                "next_xp": next_threshold(me.level),
-            },
-            "tiles": tiles_payload,
-            "inventory": inventory_payload,
-            "resources": resources_payload,
 
-            # NEW
-            "cards": cards_payload,
-            
-            "items": items_payload,
-            "craft": craft_payload,
-            
-            "quests": quests_payload, 
-            "story_flags": seen_story_ids,
-        }), 200
+        # -------------------------------------------------------------------
+        # Return final state
+        # -------------------------------------------------------------------
+        print("DEBUG ITEM:", items_payload)
+        return (
+            jsonify(
+                {
+                    "player": {
+                        "id": me.id,
+                        "name": me.name,
+                        "level": me.level,
+                        "xp": me.xp,
+                        "coins": me.coins,
+                        "diams": me.diams,
+                        "next_xp": next_threshold(me.level),
+                    },
+                    "tiles": tiles_payload,
+                    "inventory": inventory_payload,
+                    "resources": resources_payload,
+                    "cards": cards_payload,
+                    "items": items_payload,
+                    "craft": craft_payload,
+                    "quests": quests_payload,
+                    "story_flags": seen_story_ids,
+                }
+            ),
+            200,
+        )
+
 
 @bp.post("/story/seen")
 def mark_story_seen():
@@ -601,7 +620,7 @@ def mark_story_seen():
 
         return jsonify({"ok": True, "already_seen": False}), 200
 
-        
+
 # -----------------------------------------------------------------
 # Helper: cookie-based auth
 # -----------------------------------------------------------------
@@ -613,10 +632,12 @@ def _get_current_player(session):
         pid = int(pid)
     except ValueError:
         return None
-    return session.get(Player, pid)           
+    return session.get(Player, pid)
+
 
 from app.progression import LEVELS, xp_required_for
 from app.models import ResourceDef, CardDef
+
 
 @bp.get("/levels")
 def get_levels_definitions():

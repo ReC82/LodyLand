@@ -4,8 +4,6 @@
     label: Pièce de statue cassée
     description: Une pièce d'une statue ancienne et cassée.
     icon: /static/assets/img/items/resources/piece_of_broken_statue.png
-    unlock_min_level: 4
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvée en explorant des terres anciennes.
@@ -16,8 +14,6 @@
     label: Anchois
     description: Une anchois ... morte, mais elle a l'air commestible.
     icon: /static/assets/img/items/resources/anchovy.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -27,8 +23,6 @@
     label: Palm Leaf
     description: Une feuille de palmier, utile pour fabriquer des objets.
     icon: /static/assets/img/items/resources/palm_leaf.png
-    unlock_min_level: 0
-    base_cooldown: 10.0
     base_sell_price: 2
     enabled: true
     unlock_description: Toujours accessible (niveau 0).        
@@ -39,8 +33,6 @@
     label: Perle
     description: Une perle précieuse, très rare.
     icon: /static/assets/img/items/resources/pearl.png
-    unlock_min_level: 0
-    base_cooldown: 60
     base_sell_price: 20
     enabled: true
     unlock_description: Découverte exceptionnellement dans les coquillages.
@@ -51,8 +43,6 @@
     label: Sable
     description: Du sable fin, trouvé sur la plage.
     icon: /static/assets/img/items/resources/sand.png
-    unlock_min_level: 0
-    base_cooldown: 5
     base_sell_price: 1
     enabled: true
     unlock_description: Toujours accessible sur la plage.
@@ -63,8 +53,6 @@
     label: Coquillage
     description: Un coquillage rare trouvé dans le sable.
     icon: /static/assets/img/items/resources/seashell.png
-    unlock_min_level: 0
-    base_cooldown: 30
     base_sell_price: 5
     enabled: true
     unlock_description: Trouvé très rarement en fouillant la plage.
@@ -75,8 +63,6 @@
     label: Étoile de mer
     description: Une étoile de mer colorée.
     icon: /static/assets/img/items/resources/star.png
-    unlock_min_level: 0
-    base_cooldown: 30
     base_sell_price: 8
     enabled: true
     unlock_description: Trouvée très rarement en fouillant la plage.    

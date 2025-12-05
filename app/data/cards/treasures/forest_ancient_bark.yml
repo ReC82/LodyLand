@@ -20,7 +20,7 @@
     - coins: 0
       diams: 0
       resources: 
-        ancien_bark: 100
+        ancient_bark: 100
     show_in_main_shop: false
     show_in_village_shop: false
     buy_rules: null

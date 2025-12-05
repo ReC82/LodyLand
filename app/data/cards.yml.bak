@@ -100,7 +100,7 @@ cards:
   - land
   card_label: Accès Ferme
   card_description: Débloque le land Ferme
-  card_image: /static/assets/img/cards/lands/land_farm.png
+  card_image: /static/assets/img/cards/lands/specials/land_farm.png
   card_rarity: uncommon
   card_gameplay:
     target_land: farm
@@ -208,7 +208,7 @@ cards:
   - temple
   card_label: Accès Temple
   card_description: Un petit temple où tu pourras méditer, prier, etc.
-  card_image: /static/assets/img/cards/lands/land_temple.png
+  card_image: /static/assets/img/cards/lands/specials/land_temple.png
   card_rarity: rare
   card_gameplay:
     target_land: temple
@@ -442,7 +442,7 @@ cards:
     - coins: 0
       diams: 0
       resources:
-        ancien_bark: 100
+        ancient_bark: 100
     show_in_main_shop: false
     show_in_village_shop: false
     buy_rules: null

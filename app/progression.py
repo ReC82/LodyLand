@@ -362,9 +362,9 @@ def apply_xp_and_level_up(
 # =============================================================================
 # Debug information at import time (for development)
 # =============================================================================
-print(f"[progression] LEVELS_FILE = {LEVELS_FILE}")
-print(f"[progression] Loaded {len(LEVELS)} levels from YAML")
-if 1 in LEVELS:
-    print(f"[progression] Level 1 config: {LEVELS[1]}")
-else:
-    print("[progression] WARNING: level 1 not found in LEVELS")
+# print(f"[progression] LEVELS_FILE = {LEVELS_FILE}")
+# print(f"[progression] Loaded {len(LEVELS)} levels from YAML")
+# if 1 in LEVELS:
+#    print(f"[progression] Level 1 config: {LEVELS[1]}")
+#else:
+#    print("[progression] WARNING: level 1 not found in LEVELS")

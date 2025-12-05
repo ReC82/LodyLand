@@ -89,12 +89,13 @@ class ResourceDef(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     key: Mapped[str] = mapped_column(String, unique=True, index=True)   # ex: "wood"
     label: Mapped[str] = mapped_column(String)                          # ex: "Bois"
-    icon: Mapped[str | None] = mapped_column(String, nullable=True)          # ex: "wood.png"
-    unlock_min_level: Mapped[int] = mapped_column(Integer, default=0)   # ex: 2
-    base_cooldown: Mapped[float] = mapped_column(Float, default=10.0)
+    icon: Mapped[str | None] = mapped_column(String, nullable=True)  
+    kind: Mapped[str] = mapped_column(String, default="resource")# ex: "wood.png"
+    #unlock_min_level: Mapped[int] = mapped_column(Integer, default=0)   # ex: 2
+    #base_cooldown: Mapped[float] = mapped_column(Float, default=10.0)
     base_sell_price: Mapped[int] = mapped_column(Integer, default=1)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    #unlock_rules: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     unlock_description: Mapped[str | None] = mapped_column(Text, nullable=True)
    

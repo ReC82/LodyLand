@@ -11,8 +11,6 @@ items:
     label: Anchois
     description: Une anchois ... morte, mais elle a l'air commestible.
     icon: /static/assets/img/items/resources/anchovy.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -21,10 +19,8 @@ items:
     kind: treasure
     label: Écorce ancienne
     description: De l'écorce ancienne, rare et précieuse.
-    icon: /static/assets/img/items/resources/ancient_bark.png
-    unlock_min_level: 1
-    base_cooldown: 10
-    base_sell_price: 0
+    icon: /static/assets/img/items/treasures/ancient_bark.png
+    base_sell_price: null
     enabled: true
     unlock_description: Trouvé très rarement en forêt.
 
@@ -34,8 +30,6 @@ items:
     label: Ancient Relic Part
     description: Une pièce d'une relique ancienne.
     icon: /static/assets/img/items/resources/ancient_relic_part.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en fouillant le sol.
@@ -46,8 +40,6 @@ items:
     label: Apple
     description: Une pomme fraîche, bonne à manger.
     icon: /static/assets/img/items/resources/apple.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 5
     enabled: true
     unlock_description: Trouvé en fouillant coupant un arbre.
@@ -58,8 +50,6 @@ items:
     label: Écorce
     description: De l'écorce, utile pour fabriquer des colles et des encres.
     icon: /static/assets/img/items/resources/bark.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en coupant des arbres.
@@ -70,8 +60,6 @@ items:
     label: Berry
     description: Une baie juteuse, bonne à manger.
     icon: /static/assets/img/items/resources/berry.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en fouillant les buissons.
@@ -82,8 +70,6 @@ items:
     label: Branches
     description: Une branche tombée d'un arbre.  Ca peut toujours être utile.
     icon: /static/assets/img/items/resources/branch.png
-    unlock_min_level: 0
-    base_cooldown: 10.0
     base_sell_price: 2
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
@@ -106,8 +92,6 @@ items:
     label: Argile
     description: De l'argile, utile pour fabriquer des poteries.
     icon: /static/assets/img/items/resources/clay.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en fouillant le sol.
@@ -118,8 +102,6 @@ items:
     label: Charbon
     description: Du charbon, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/coal.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du bois ou trouvé dans les mines.
@@ -130,8 +112,6 @@ items:
     label: Dirt
     description: Some dirt, useful for various purposes.
     icon: /static/assets/img/items/resources/dirt.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en utilsant une pelle.
@@ -154,8 +134,6 @@ items:
     label: Flint
     description: Du silex, utile pour allumer des feux.
     icon: /static/assets/img/items/resources/flint.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en fouillant le sol.
@@ -166,8 +144,6 @@ items:
     label: Feuille d'or
     description: Une feuille d'or précieuse trouvée dans la caverne.
     icon: /static/assets/img/items/resources/gold_leaf.png
-    unlock_min_level: 4
-    base_cooldown: 10
     base_sell_price: 10
     enabled: true
     unlock_description: Trouvée en explorant des cavernes profondes.
@@ -190,8 +166,6 @@ items:
     label: Herbs
     description: Des herbes. Utile pour cuisiner ou fabriquer des potions.
     icon: /static/assets/img/items/resources/herbs.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en fouillant les plantes.
@@ -202,8 +176,6 @@ items:
     label: Lingot de fer
     description: Un lingot de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ingot.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du minerai de fer.
@@ -214,8 +186,6 @@ items:
     label: Minerai de fer
     description: Un minerai de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ore.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvé dans les mines.
@@ -226,8 +196,6 @@ items:
     label: Bâton de fer
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_stick.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du minerai de fer.
@@ -287,8 +255,6 @@ items:
     label: Bois
     description: Du bois de chêne, ressource de base pour construire et crafter.
     icon: /static/assets/img/items/resources/oak_wood_log.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Récolté avec une hache dans la forêt.
@@ -299,8 +265,6 @@ items:
     label: Palm Leaf
     description: Une feuille de palmier, utile pour fabriquer des objets.
     icon: /static/assets/img/items/resources/palm_leaf.png
-    unlock_min_level: 0
-    base_cooldown: 10.0
     base_sell_price: 2
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
@@ -311,8 +275,6 @@ items:
     label: Bois
     description: Du bois de palmier, ressource de base pour construire et crafter.
     icon: /static/assets/img/items/resources/palm_wood_log.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Récolté avec une hache dans la forêt.
@@ -323,8 +285,6 @@ items:
     label: Perle
     description: Une perle précieuse, très rare.
     icon: /static/assets/img/items/resources/pearl.png
-    unlock_min_level: 0
-    base_cooldown: 60
     base_sell_price: 20
     enabled: true
     unlock_description: Découverte exceptionnellement dans les coquillages.
@@ -335,8 +295,6 @@ items:
     label: Collier de perles
     description: Un collier fait de perles, symbole de statut.
     icon: /static/assets/img/items/misc/pearl_necklace.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant des perles et de la corde.
@@ -347,8 +305,6 @@ items:
     label: Pièce de statue cassée
     description: Une pièce d'une statue ancienne et cassée.
     icon: /static/assets/img/items/resources/piece_of_broken_statue.png
-    unlock_min_level: 4
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvée en explorant des terres anciennes.
@@ -383,8 +339,6 @@ items:
     label: Résine
     description: De la résine, utile pour fabriquer des colles et des encres.
     icon: /static/assets/img/items/resources/resin.png
-    unlock_min_level: 1
-    base_cooldown: 0
     base_sell_price: 1
     enabled: true
     unlock_description: Trouvé en coupant des arbres.
@@ -395,8 +349,6 @@ items:
     label: Corde
     description: Une corde solide, utile pour attacher des objets.
     icon: /static/assets/img/items/resources/rope.png
-    unlock_min_level: 4
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant des lianes.
@@ -419,8 +371,6 @@ items:
     label: Sable
     description: Du sable fin, trouvé sur la plage.
     icon: /static/assets/img/items/resources/sand.png
-    unlock_min_level: 0
-    base_cooldown: 5
     base_sell_price: 1
     enabled: true
     unlock_description: Toujours accessible sur la plage.
@@ -431,8 +381,6 @@ items:
     label: Coquillage
     description: Un coquillage rare trouvé dans le sable.
     icon: /static/assets/img/items/resources/seashell.png
-    unlock_min_level: 0
-    base_cooldown: 30
     base_sell_price: 5
     enabled: true
     unlock_description: Trouvé très rarement en fouillant la plage.
@@ -443,8 +391,6 @@ items:
     label: Small Stone
     description: De petites pierres, utiles pour la construction.
     icon: /static/assets/img/items/resources/small_stone.png
-    unlock_min_level: 2
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Récolté à la main dans la forêt.
@@ -467,8 +413,6 @@ items:
     label: Étoile de mer
     description: Une étoile de mer colorée.
     icon: /static/assets/img/items/resources/star.png
-    unlock_min_level: 0
-    base_cooldown: 30
     base_sell_price: 8
     enabled: true
     unlock_description: Trouvée très rarement en fouillant la plage.
@@ -479,8 +423,6 @@ items:
     label: Morceau de pierre
     description: Un morceau de pierre, utile pour la construction.
     icon: /static/assets/img/items/resources/stone_chunk.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvé en explorant des cavernes.
@@ -497,58 +439,12 @@ items:
     enabled: true
     unlock_description: Trouvé très rarement dans le désert.
 
-  tool_rod_basic:
-    key: tool_rod_basic
-    kind: tool
-    label: Basic Rod
-    description: Une canne à pêche basique, utile pour attraper des poissons.
-    icon: /static/assets/img/items/tools/rod_basic.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
-    base_sell_price: 5
-    enabled: true
-
-  tool_rod_basic_with_worm:
-    key: tool_rod_basic_with_worm
-    kind: tool
-    label: Basic Rod with Worm
-    description: Une canne à pêche basique avec un ver, utile pour attraper des poissons.
-    icon: /static/assets/img/items/tools/basic_rod_with_worm.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
-    base_sell_price: 5
-    enabled: true
-
   tool_sharp_stone:
     key: tool_sharp_stone
     kind: tool
     label: Sharp Stone
     description: Une pierre taillée, utile comme outil de base.
     icon: /static/assets/img/items/tools/tool_sharp_stone.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
-    base_sell_price: 5
-    enabled: true
-
-  tool_stone_axe:
-    key: tool_stone_axe
-    kind: tool
-    label: Stone Axe
-    description: Une hache en pierre basique, utile pour couper du bois.
-    icon: /static/assets/img/items/tools/tool_stone_axe.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
-    base_sell_price: 5
-    enabled: true
-
-  tool_vine_bascket:
-    key: tool_vine_bascket
-    kind: tool
-    label: Vine Basket
-    description: Un panier en lianes, utile pour transporter des objets.
-    icon: /static/assets/img/items/tools/tool_vine_bascket.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -558,8 +454,6 @@ items:
     label: Vine Basket
     description: Un panier en lianes, utile pour transporter des objets.
     icon: /static/assets/img/items/tools/vine_basket.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -569,19 +463,6 @@ items:
     label: Vine Net
     description: Un filet en lianes, utile pour attraper des poissons.
     icon: /static/assets/img/items/tools/tool_vine_net.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
-    base_sell_price: 5
-    enabled: true
-
-  tool_wooden_axe:
-    key: tool_wooden_axe
-    kind: tool
-    label: Wooden Axe
-    description: Une hache en bois basique, utile pour couper du bois.
-    icon: /static/assets/img/items/tools/wooden_axe.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -591,8 +472,6 @@ items:
     label: Wooden Hammer
     description: Un marteau en bois, utile comme outil de base.
     icon: /static/assets/img/items/tools/tool_wooden_hammer.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -602,19 +481,6 @@ items:
     label: Wooden Knife
     description: Un couteau en bois, utile comme outil de base.
     icon: /static/assets/img/items/tools/tool_wooden_knife.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
-    base_sell_price: 5
-    enabled: true
-
-  tool_wooden_shovel:
-    key: tool_wooden_shovel
-    kind: tool
-    label: Basic Shovel
-    description: Une pelle basique, utile pour creuser.
-    icon: /static/assets/img/items/tools/shovel_basic.png
-    unlock_min_level: 2
-    base_cooldown: 40.0
     base_sell_price: 5
     enabled: true
 
@@ -636,8 +502,6 @@ items:
     label: Lianes
     description: Des lianes qui serviront de ficelle pour fabriquer des objets.
     icon: /static/assets/img/items/resources/vine.png
-    unlock_min_level: 0
-    base_cooldown: 5
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvées parfois en fouillant la forêt.
@@ -672,8 +536,6 @@ items:
     label: Planche de bois
     description: Une planche de bois, utile pour fabriquer des objets.
     icon: /static/assets/img/items/resources/wooden_plank.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant du bois.
@@ -684,8 +546,6 @@ items:
     label: Bâton en bois
     description: Un bâton solide, utile pour fabriquer des outils simples.
     icon: /static/assets/img/items/resources/wooden_stick.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant ou en récoltant des branches.
@@ -696,8 +556,6 @@ items:
     label: Ver
     description: Un ver, utile pour attraper des poissons.
     icon: /static/assets/img/items/resources/worm.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvé en fouillant la terre.
