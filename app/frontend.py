@@ -506,46 +506,39 @@ def village_quests():
 @login_required
 def village_shop():
     """
-    Display the special village shop with limited items, loaded from YAML.
+    Card Shop du village.
 
-    This uses village_shop.yml to find active offers, then links them to CardDef.
+    Version SIMPLE : on ignore village_shop.yml et on affiche
+    toutes les cartes dont shop.show_in_village_shop == True.
     """
     player = g.player
     session = g.db_session
 
-    today = dt.date.today()
-    offers = get_active_village_offers(today)
+    # 1) Toutes les CardDef actives
+    all_defs = (
+        session.query(CardDef)
+        .filter(CardDef.enabled == True)
+        .order_by(CardDef.key.asc())
+        .all()
+    )
 
     shop_items: list[dict] = []
 
-    for o in offers:
-        if o.get("item_type") != "card":
-            # For now we only support card offers
-            continue
-
-        card_key = o.get("item_key")
-        if not card_key:
-            continue
-
-        cd = (
-            session.query(CardDef)
-            .filter(CardDef.key == card_key, CardDef.enabled == True)
-            .first()
-        )
-        if not cd:
-            continue
-
-        # Shop configuration from card definition
+    for cd in all_defs:
         shop_cfg = cd.shop or {}
 
-        # Take first price from card definition (shop.prices)
+        # On ne garde que les cartes marquées pour le Card Shop du village
+        if not shop_cfg.get("show_in_village_shop"):
+            continue
+
+        # --- Prix : on prend la première entrée de shop.prices ---
         prices = shop_cfg.get("prices") or []
         price_cfg = (prices[0] or {}) if prices else {}
         coins_cost = int(price_cfg.get("coins", 0) or 0)
         diams_cost = int(price_cfg.get("diams", 0) or 0)
         res_costs = price_cfg.get("resources") or {}
 
-        # How many does the player already own?
+        # --- Quantité possédée par le joueur ---
         owned_row = (
             session.query(PlayerCard)
             .filter_by(player_id=player.id, card_key=cd.key)
@@ -553,69 +546,71 @@ def village_shop():
         )
         owned_qty = owned_row.qty if owned_row else 0
 
-        # Purchase limits
-        limit_per_player = o.get("limit_per_player")
+        # --- Limites d’achat (max_owned) ---
         max_owned = shop_cfg.get("max_owned")
-        can_buy_reasons: list[str] = []
+        if max_owned is None:
+            max_owned = cd.card_max_owned
 
-        # Limit specific to the village offer
-        if limit_per_player is not None and owned_qty >= limit_per_player:
-            can_buy_reasons.append(
-                f"Tu as déjà acheté cette offre ({owned_qty}/{limit_per_player})."
-            )
-
-        # Global card max_owned
+        can_buy = True
+        cant_buy_reason = ""
         if max_owned is not None and owned_qty >= max_owned:
-            can_buy_reasons.append(
-                "Tu as déjà atteint le nombre maximum pour cette carte."
-            )
+            can_buy = False
+            cant_buy_reason = "Tu as déjà cette carte au maximum."
 
-        # Currency checks
-        if player.coins < coins_cost:
-            can_buy_reasons.append("Tu n'as pas assez de coins.")
-        if player.diams < diams_cost:
-            can_buy_reasons.append("Tu n'as pas assez de diams.")
+        # --- Type et catégorie de filtre pour les onglets ---
+        raw_type = (cd.card_type or "").lower()
+        # very simple mapping for tabs: access / recipe / land / boost / other
+        if "recipe" in raw_type:
+            filter_type = "recipe"
+        elif "access" in raw_type:
+            filter_type = "access"
+        elif "land" in raw_type:
+            filter_type = "land"
+        elif "boost" in raw_type:
+            filter_type = "boost"
+        else:
+            filter_type = "other"
 
-        # (later we can also check resource costs in reasons)
+        search_text = " ".join(
+            [
+                cd.card_label or "",
+                cd.card_description or "",
+                cd.key or "",
+                raw_type,
+                cd.card_category or "",
+            ]
+        ).lower()
 
-        can_buy = len(can_buy_reasons) == 0
-        cant_buy_reason = can_buy_reasons[0] if can_buy_reasons else ""
-
-        # Format end date for UI
-        end_str = o.get("end_date")
-        end_date_fmt = None
-        if end_str:
-            try:
-                end_date = dt.date.fromisoformat(end_str)
-                end_date_fmt = end_date.strftime("%d/%m/%Y")
-            except Exception:
-                end_date_fmt = None
-
+        # --- Construction de l'item pour le template ---
         shop_items.append(
             {
-                "offer_key": o.get("key"),
-                "villager": o.get("villager"),
+                "offer_key": cd.key,
+                "item_type": "card",
                 "label": cd.card_label,
+                "title": cd.card_label,
                 "description": cd.card_description,
                 "rarity": cd.card_rarity,
+                "icon": cd.card_image,
                 "price_coins": coins_cost,
                 "price_diams": diams_cost,
                 "price_resources": res_costs,
-                "stock": o.get("stock_global"),
-                "limit_until": end_date_fmt,
+                "stock": None,
+                "limit_until": None,
                 "owned_qty": owned_qty,
                 "can_buy": can_buy,
                 "cant_buy_reason": cant_buy_reason,
+                # NEW: used by filters/search
+                "card_type": raw_type,
+                "filter_type": filter_type,
+                "search_text": search_text,
             }
         )
 
-    # Group by villager, then label
-    shop_items.sort(
-        key=lambda it: ((it.get("villager") or ""), it.get("label") or "")
-    )
+    # Tri par label
+    shop_items.sort(key=lambda it: (it.get("label") or it.get("offer_key") or ""))
 
     return render_template(
-        "GAME_UI/lands/village/shop.html",
+        "GAME_UI/lands/village/village_shop.html",
         player=player,
         shop_items=shop_items,
     )

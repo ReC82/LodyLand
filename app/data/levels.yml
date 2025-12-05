@@ -171,6 +171,8 @@ levels:
     key: global_shop
   - type: feature
     key: quest_system
+  - type: feature
+    key: travel_system
   story_events:
   - id: village_first_visit
     trigger: on_level_reached
