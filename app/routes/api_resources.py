@@ -734,12 +734,12 @@ def collect():
                 p,
                 gained_xp,
             )
-
             loot_payload = []
             for res_key, base_amount in raw_loot.items():
                 per_unit = _compute_collect_amount(s, p.id, res_key)
                 amount = base_amount * per_unit * land_loot_mult
 
+                # Mise à jour du stock
                 rs = (
                     s.query(ResourceStock)
                     .filter_by(player_id=p.id, resource=res_key)
@@ -756,14 +756,23 @@ def collect():
                 new_qty = (rs.qty or 0.0) + amount
                 rs.qty = round(new_qty, 2)
 
+                # 🔍 On récupère la définition de la ressource depuis la DB
+                res_def = _get_res_def(s, res_key)
+                icon = res_def.icon if res_def else None
+                label = res_def.label if res_def else res_key
+
+                # Payload envoyée au front : toujours basée sur la DB
                 loot_payload.append(
                     {
                         "resource": res_key,
                         "base_amount": base_amount,
                         "final_amount": round(amount, 2),
+                        "icon": icon,
+                        "label": label,
                     }
                 )
 
+                # Quêtes / progression
                 on_resource_collected(
                     session=s,
                     player=p,

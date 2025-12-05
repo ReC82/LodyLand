@@ -28,6 +28,99 @@ let ACTIVE_FEATURES = new Set();
 let UNLOCKED_LANDS = []; // list of lands unlocked for the current player
 let TRAVEL_LIST_LOADED = false;
 
+// ============================================================
+// Resources registry (icons from DB via /api/resources/resources)
+// ============================================================
+let RESOURCE_DEFS_BY_KEY = {};
+
+/**
+ * Normalise un chemin icon venant de la DB / YAML.
+ * Gère :
+ *  - http(s)://...
+ *  - /static/...
+ *  - static/...
+ *  - autres chemins relatifs
+ */
+function normalizeStaticPath(path) {
+  if (!path) return null;
+
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  if (path.startsWith("/")) {
+    return path;
+  }
+
+  if (path.startsWith("static/")) {
+    return "/" + path;
+  }
+
+  // Fallback : on s'assure qu'il y a bien /static/ au début
+  return "/static/" + path.replace(/^\/?static\//, "");
+}
+
+/**
+ * Retourne l'URL d'icône pour une ressource à partir du registre.
+ * @param {string} resKey
+ * @returns {string|null}
+ */
+function getResourceIconPathFromRegistry(resKey) {
+  if (!resKey) return null;
+  const def = RESOURCE_DEFS_BY_KEY[resKey];
+  if (!def || !def.icon) return null;
+  return normalizeStaticPath(def.icon);
+}
+
+/**
+ * Version "publique" avec fallback :
+ * - d'abord DB (RESOURCE_DEFS_BY_KEY)
+ * - sinon, ancien chemin hardcodé (resources/<key>.png)
+ */
+function getResourceIconPath(resKey) {
+  const fromDb = getResourceIconPathFromRegistry(resKey);
+  if (fromDb) return fromDb;
+
+  // Fallback, au cas où la ressource n'est pas trouvée dans la DB
+  return `/static/assets/img/resources/${resKey}.png`;
+}
+
+/**
+ * Charge les ResourceDef depuis /api/resources/resources si pas déjà fait.
+ */
+async function loadResourceDefsIfNeeded() {
+  if (Object.keys(RESOURCE_DEFS_BY_KEY).length > 0) return;
+
+  try {
+    const res = await http("GET", "/api/resources");
+    if (!res.ok) {
+      console.error("[resources] Failed to load /api/resources/resources", res.status, res.data);
+      return;
+    }
+
+    const list = Array.isArray(res.data) ? res.data : [];
+    const byKey = {};
+    list.forEach((r) => {
+      if (r && r.key) {
+        byKey[r.key] = r;
+      }
+    });
+
+    RESOURCE_DEFS_BY_KEY = byKey;
+
+    // Exposé global si tu veux debug dans la console
+    window.LL_RESOURCES = list;
+    window.LL_RESOURCES_BY_KEY = byKey;
+
+    console.log("[resources] Loaded", list.length, "resources from DB");
+  } catch (err) {
+    console.error("[resources] Error while loading resource defs", err);
+  }
+}
+
+// On expose la fonction pour d'autres scripts si besoin (village, lands, etc.)
+window.getResourceIconPath = getResourceIconPath;
+
 /**
  * Calcule toutes les features débloquées jusqu'au niveau `level`.
  * Prend les données de LEVEL_DEFS (avec system_unlocks).
@@ -1109,19 +1202,35 @@ function showLootToasts(lootArray) {
       typeof entry.final_amount === "number"
         ? entry.final_amount
         : entry.base_amount;
-    const qtyText = formatLootAmount(rawAmount);
-    const resKey = entry.resource; // ex: "branch", "vine"
 
-    // On construit le chemin de l'icône à partir de la clé ressource
-    // => /static/assets/img/resources/<resource>.png
-    const iconUrl = `/static/assets/img/resources/${resKey}.png`;
+    const qtyText = formatLootAmount(rawAmount);
+    const resKey = entry.resource;            // ex: "ancient_bark"
+    const label = entry.label || resKey;      // label DB si présent
+
+    // 1️⃣ On privilégie toujours l'icône envoyée par l'API (DB)
+    let iconUrl = entry.icon || null;
+
+    // 2️⃣ Fallback possible : fonction globale getRewardIconPath (si dispo)
+    if (!iconUrl && typeof getRewardIconPath === "function") {
+      iconUrl = getRewardIconPath({
+        type: "resource",
+        key: resKey,
+        label: label,
+        icon: null,
+      });
+    }
+
+    // 3️⃣ Dernier fallback : ancien chemin (ne devrait presque jamais servir)
+    if (!iconUrl) {
+      iconUrl = `/static/assets/img/resources/${resKey}.png`;
+    }
 
     const toast = document.createElement("div");
     toast.className = "loot-toast";
 
     const img = document.createElement("img");
     img.src = iconUrl;
-    img.alt = resKey;
+    img.alt = label;
     toast.appendChild(img);
 
     const qtySpan = document.createElement("span");
@@ -1136,7 +1245,7 @@ function showLootToasts(lootArray) {
       toast.classList.add("show");
     });
 
-    const lifeTime = 2200 + index * 250; // le 2e reste un peu plus, etc.
+    const lifeTime = 2200 + index * 250;
     setTimeout(() => {
       toast.classList.remove("show");
       setTimeout(() => {
@@ -1145,6 +1254,7 @@ function showLootToasts(lootArray) {
     }, lifeTime);
   });
 }
+
 
 // ============================================================
 // Story helpers: seen / queue / run
@@ -1393,6 +1503,7 @@ window.showLootToasts = showLootToasts;
 // Initialisation
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
+  await loadResourceDefsIfNeeded();
   initLevelUpModal();
   setupGameMenu();  
   setupDailyModal();
