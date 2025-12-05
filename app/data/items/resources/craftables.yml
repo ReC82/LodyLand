@@ -4,8 +4,6 @@
     label: Bâton en bois
     description: Un bâton solide, utile pour fabriquer des outils simples.
     icon: /static/assets/img/items/resources/wooden_stick.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant ou en récoltant des branches.
@@ -16,8 +14,6 @@
     label: Planche de bois
     description: Une planche de bois, utile pour fabriquer des objets.
     icon: /static/assets/img/items/resources/wooden_plank.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant du bois.
@@ -28,8 +24,6 @@
     label: Lingot de fer
     description: Un lingot de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ingot.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du minerai de fer.
@@ -40,8 +34,6 @@
     label: Bâton de fer
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_stick.png
-    unlock_min_level: 1
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du minerai de fer.   
@@ -52,8 +44,6 @@
     label: Corde
     description: Une corde solide, utile pour attacher des objets.
     icon: /static/assets/img/items/resources/rope.png
-    unlock_min_level: 4
-    base_cooldown: 10
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant des lianes.   

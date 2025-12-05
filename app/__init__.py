@@ -58,7 +58,7 @@ def create_app() -> Flask:
         except Exception as e:
             return jsonify({"ok": False, "error": str(e)}), 500
 
-    print("=== URL MAP ===")
-    print(app.url_map)
+    #print("=== URL MAP ===")
+    #print(app.url_map)
 
     return app

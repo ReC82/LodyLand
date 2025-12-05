@@ -18,8 +18,8 @@
     />
 
     {% block extra_css %}{% endblock %}
-
   </head>
+
   <body class="{% block body_class %}game-body{% endblock %}">
     <!-- HUD joueur -->
     <header class="game-header">
@@ -36,74 +36,111 @@
         <div class="gh-beta-tag">
           <span class="gh-beta-dot"></span>
           Version bêta – données de test
-        </div>        
-</div>
-<button
-  id="hud-level-zone"
-  type="button"
-  class="gh-level-zone"
-  title="Voir la progression des niveaux"
->
-      <div class="gh-center">
-        <div class="gh-xp-label">
-          Niveau <span id="hud-level">0</span>
-        </div>
-        <div class="gh-xp-bar">
-          <div class="gh-xp-fill" id="hud-xp-fill"></div>
-        </div>
-        <div class="gh-xp-text">
-          <span id="hud-xp-current">0</span> /
-          <span id="hud-xp-next">100</span> XP
         </div>
       </div>
-</button>
+
+      <!-- CENTRE : zone niveau / XP -->
+      <div class="gh-center">
+        <button
+          id="hud-level-zone"
+          type="button"
+          class="gh-level-zone"
+          title="Voir la progression des niveaux"
+        >
+          <div class="gh-xp-label">
+            Niveau <span id="hud-level">0</span>
+          </div>
+          <div class="gh-xp-bar">
+            <div class="gh-xp-fill" id="hud-xp-fill"></div>
+          </div>
+          <div class="gh-xp-text">
+            <span id="hud-xp-current">0</span> /
+            <span id="hud-xp-next">100</span> XP
+          </div>
+        </button>
+      </div>
+
       <div class="gh-right">
-       
-        <div class="gh-currency gh-coins" data-feature="hud_currencies" data-feature-hide="0">
-            <img
-              src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
-              alt="Coins"
-              class="hud-icon-small"
-            />
-            <span id="hud-coins">0</span>
-        </div>
-        <div class="gh-currency gh-diams" data-feature="hud_currencies" data-feature-hide="0">
-            <img
-              src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
-              alt="Diamants"
-              class="hud-icon-small"
-            />
-            <span id="hud-diams">0</span>
-        </div>
-        <!-- Daily Chest (icon HUD) -->
-        <div class="hud-daily" id="hudDaily" data-feature="daily_chest" data-feature-hide="0">
-            <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
-              <img
-                src="{{ url_for('static', filename='assets/img/ui/chest.png') }}"
-                alt="Daily Chest"
-                class="hud-icon-img"
-              />
-              <span id="dailyAlert" class="daily-alert-badge">!</span>
-            </div>
-            <div class="hud-daily-tooltip" id="dailyTooltip">
-              Chargement...
-            </div>
+        <div
+          class="gh-currency gh-coins"
+          data-feature="hud_currencies"
+          data-feature-hide="0"
+        >
+          <img
+            src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
+            alt="Coins"
+            class="hud-icon-small"
+          />
+          <span id="hud-coins">0</span>
         </div>
 
+        <div
+          class="gh-currency gh-diams"
+          data-feature="hud_currencies"
+          data-feature-hide="0"
+        >
+          <img
+            src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
+            alt="Diamants"
+            class="hud-icon-small"
+          />
+          <span id="hud-diams">0</span>
+        </div>
+
+        <!-- Daily Chest (icon HUD) -->
+        <div
+          class="hud-daily"
+          id="hudDaily"
+          data-feature="daily_chest"
+          data-feature-hide="0"
+        >
+          <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
+            <img
+              src="{{ url_for('static', filename='assets/img/ui/chest.png') }}"
+              alt="Daily Chest"
+              class="hud-icon-img"
+            />
+            <span id="dailyAlert" class="daily-alert-badge">!</span>
+          </div>
+          <div class="hud-daily-tooltip" id="dailyTooltip">
+            Chargement...
+          </div>
+        </div>
+
+        <div
+          id="hud-travel-btn"
+          class="hud-icon-wrapper"
+          data-feature="travel_system"
+          data-feature-hide="0"
+          title="Voyager vers un land"
+        >
+          <img
+            src="{{ url_for('static', filename='assets/img/ui/travel.png') }}"
+            alt="Travel"
+            class="hud-icon-img"
+          />
+        </div>
+
+
         <!-- Bouton Quêtes dans le HUD -->
-        <div class="hud-quests-separator" data-feature="quest_system" data-feature-hide="0">
+        <div
+          class="hud-quests-separator"
+          data-feature="quest_system"
+          data-feature-hide="0"
+        >
           <button id="btn-quests" class="gh-btn gh-btn-quests">
             <span class="gh-btn-icon">📜</span>
-            <span class="gh-btn-label">Quêtes</span>
           </button>
         </div>
-       
-        <button class="gh-menu-btn" id="hud-menu-btn" type="button">☰</button>
+
+        <button class="gh-menu-btn" id="hud-menu-btn" type="button">
+          ☰
+        </button>
       </div>
     </header>
 
     <!-- Menu joueur déroulant -->
-      <div class="game-menu" id="game-menu">
+    <div class="game-menu" id="game-menu">
       <div class="game-menu-card">
         <div class="game-menu-header">
           <div class="game-menu-title">Menu</div>
@@ -124,22 +161,28 @@
           <button class="game-menu-item" data-action="lands">
             Lands
           </button>
-          <button class="game-menu-item" data-action="shop" data-feature="global_shop">
+          <button
+            class="game-menu-item"
+            data-action="shop"
+            data-feature="global_shop"
+          >
             Boutique
           </button>
           <button class="game-menu-item" data-action="inventory">
             Inventaire
-          </button>          
+          </button>
         </div>
 
         <div class="game-menu-section">
-          <button class="game-menu-item game-menu-logout" data-action="logout">
+          <button
+            class="game-menu-item game-menu-logout"
+            data-action="logout"
+          >
             Se déconnecter
           </button>
         </div>
       </div>
     </div>
-
 
     <!-- Contenu principal (lands, etc.) -->
     <main class="game-main">
@@ -190,14 +233,19 @@
       <div class="ll-modal-dialog ll-modal-dialog-wide">
         <header class="ll-modal-header">
           <h2 class="ll-modal-title">Progression des niveaux</h2>
-          <button id="levelsModalClose" class="ll-modal-close-btn" type="button">
+          <button
+            id="levelsModalClose"
+            class="ll-modal-close-btn"
+            type="button"
+          >
             ✕
           </button>
         </header>
 
         <div class="ll-modal-body">
           <p class="small text-muted mb-2">
-            Consulte chaque niveau et ses récompenses. Le niveau actuel est surligné.
+            Consulte chaque niveau et ses récompenses. Le niveau actuel est
+            surligné.
           </p>
           <div id="levelsModalBody" class="levels-modal-body">
             <!-- rempli par game_app.js -->
@@ -205,7 +253,6 @@
         </div>
       </div>
     </div>
-
 
     <!-- Quests panel (HUD) -->
     <div id="quests-panel" class="quests-panel hidden">
@@ -215,7 +262,8 @@
           <div>
             <h2 class="quests-panel-title mb-0">Quêtes</h2>
             <p class="quests-panel-subtitle mb-0">
-              Suis ta progression quotidienne, hebdomadaire et l’histoire principale.
+              Suis ta progression quotidienne, hebdomadaire et l’histoire
+              principale.
             </p>
           </div>
           <button
@@ -253,7 +301,9 @@
             >
               📖
             </button>
-            <button id="craft-close-btn" class="craft-close-btn">✕</button>
+            <button id="craft-close-btn" class="craft-close-btn">
+              ✕
+            </button>
           </div>
         </div>
 
@@ -261,7 +311,10 @@
           <!-- Left: ingredients + (recipes via toggle) -->
           <div class="craft-left-panel">
             <!-- Ingrédients du joueur -->
-            <div class="craft-ingredients-panel" id="craft-ingredients-panel">
+            <div
+              class="craft-ingredients-panel"
+              id="craft-ingredients-panel"
+            >
               <h3 class="craft-section-title">Ingrédients disponibles</h3>
 
               <!-- Filtre ingrédients -->
@@ -276,7 +329,10 @@
 
               <!-- Zone scrollable (max ~10 éléments) -->
               <div class="craft-list-scroll">
-                <div id="craft-ingredients-list" class="craft-ingredients-list">
+                <div
+                  id="craft-ingredients-list"
+                  class="craft-ingredients-list"
+                >
                   <!-- JS -->
                 </div>
               </div>
@@ -302,13 +358,15 @@
 
               <!-- Zone scrollable (max ~10 éléments) -->
               <div class="craft-list-scroll">
-                <div id="craft-recipes-list" class="craft-recipes-list"></div>
+                <div
+                  id="craft-recipes-list"
+                  class="craft-recipes-list"
+                ></div>
               </div>
             </div>
           </div>
 
-
-          <!-- Center: craft grid (pour l'instant juste 3 cases) -->
+          <!-- Center: craft grid -->
           <div class="craft-grid-panel">
             <h3 class="craft-section-title">
               Table (niveau <span id="craft-table-level">1</span>)
@@ -331,20 +389,38 @@
               />
             </div>
 
-            <button id="craft-perform-btn" class="craft-perform-btn" disabled>
+            <button
+              id="craft-perform-btn"
+              class="craft-perform-btn"
+              disabled
+            >
               Craft
             </button>
-            <div id="craft-job-status" class="craft-job-status d-none">
-              <div id="craft-job-status-text" class="craft-job-status-text"></div>
+
+            <div
+              id="craft-job-status"
+              class="craft-job-status d-none"
+            >
+              <div
+                id="craft-job-status-text"
+                class="craft-job-status-text"
+              ></div>
             </div>
-            <div id="craft-success" class="craft-success-msg" style="display:none;"></div>
-            <div id="craft-error" class="craft-error-msg" style="display:none;"></div>
+
+            <div
+              id="craft-success"
+              class="craft-success-msg"
+              style="display:none;"
+            ></div>
+            <div
+              id="craft-error"
+              class="craft-error-msg"
+              style="display:none;"
+            ></div>
           </div>
-          
         </div>
       </div>
     </div>
-
 
     <!-- HUD bottom-left actions -->
     <div class="hud-bottom-left">
@@ -365,49 +441,61 @@
     <div id="imgViewer" class="img-viewer">
       <div class="img-viewer-backdrop" id="imgViewerBackdrop"></div>
       <div class="img-viewer-box">
-        <button id="imgViewerClose" class="img-viewer-close">✕</button>
-        <img id="imgViewerImg" src="" alt="Aperçu" class="img-viewer-img" />
+        <button id="imgViewerClose" class="img-viewer-close">
+          ✕
+        </button>
+        <img
+          id="imgViewerImg"
+          src=""
+          alt="Aperçu"
+          class="img-viewer-img"
+        />
       </div>
     </div>
-    
-    <!-- ===========================
-         Story Modal (narration / tuto)
-         =========================== -->
+
+    <!-- Story Modal -->
     <div id="storyModal" class="ll-modal story-modal">
       <div class="ll-modal-backdrop" id="storyModalBackdrop"></div>
 
-      <div class="ll-modal-dialog story-modal-dialog story-modal-centered">
+      <div
+        class="ll-modal-dialog story-modal-dialog story-modal-centered"
+      >
         <header class="ll-modal-header story-modal-header">
           <h2 class="ll-modal-title" id="storyModalTitle">
-            <!-- Optionnel : pourra afficher le "speaker" plus tard -->
             Histoire
           </h2>
         </header>
 
         <div class="ll-modal-body story-modal-body">
-        <div class="story-modal-content">
-          <div class="story-avatar-wrapper">
-            <img id="storyModalAvatar" class="story-avatar" src="" alt="avatar" />
-          </div>
+          <div class="story-modal-content">
+            <div class="story-avatar-wrapper">
+              <img
+                id="storyModalAvatar"
+                class="story-avatar"
+                src=""
+                alt="avatar"
+              />
+            </div>
 
-          <div class="story-bubble">
-            <div id="storyModalSpeaker" class="story-speaker"></div>
-            <div id="storyModalText" class="story-text">
-              <!-- Texte de la page courante -->
+            <div class="story-bubble">
+              <div
+                id="storyModalSpeaker"
+                class="story-speaker"
+              ></div>
+              <div id="storyModalText" class="story-text">
+                <!-- Texte de la page courante -->
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="story-modal-page-indicator">
-          <span id="storyModalPageIndex">1</span>
-          /
-          <span id="storyModalPageCount">1</span>
+          <div class="story-modal-page-indicator">
+            <span id="storyModalPageIndex">1</span>
+            /
+            <span id="storyModalPageCount">1</span>
+          </div>
         </div>
-      </div>
-
 
         <footer class="ll-modal-footer story-modal-footer">
-          <!-- Bouton Suivant (page suivante) -->
           <button
             id="storyModalNext"
             type="button"
@@ -416,7 +504,6 @@
             Suivant
           </button>
 
-          <!-- Bouton Terminer (dernière page) -->
           <button
             id="storyModalDone"
             type="button"
@@ -429,6 +516,49 @@
       </div>
     </div>
 
+    <!-- Modal Travel -->
+    <div id="travelModal" class="gh-modal">
+      <div id="travelModalBackdrop" class="gh-modal-backdrop"></div>
+
+      <div class="gh-modal-dialog gh-modal-dialog-sm">
+        <div class="gh-modal-header">
+          <h2 class="gh-modal-title">Voyager</h2>
+          <button
+            id="travelModalClose"
+            type="button"
+            class="gh-modal-close-btn"
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="gh-modal-body">
+          <div class="mb-2">
+            <input
+              id="travel-search-input"
+              type="text"
+              class="form-control form-control-sm"
+              placeholder="Rechercher un land..."
+            />
+          </div>
+
+          <div id="travel-list" class="travel-list">
+            <!-- items injectés en JS -->
+          </div>
+
+          <div class="mt-2 text-end">
+            <button
+              id="travelConfirmBtn"
+              type="button"
+              class="btn btn-sm btn-primary"
+            >
+              Aller vers le land sélectionné
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
@@ -437,7 +567,6 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/craft_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/quests_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/story_app.js') }}"></script>
-    {# Scripts spécifiques à certaines pages (shop, lands spéciaux, etc.) #}
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

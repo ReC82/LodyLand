@@ -94,7 +94,7 @@
   - land
   card_label: Accès Ferme
   card_description: Débloque le land Ferme
-  card_image: /static/assets/img/cards/lands/land_farm.png
+  card_image: /static/assets/img/cards/lands/specials/land_farm.png
   card_rarity: uncommon
   card_gameplay:
     target_land: farm
@@ -193,33 +193,6 @@
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
-- key: land_village
-  enabled: true
-  card_type: land_access
-  card_category: land
-  card_tags:
-  - land
-  - village
-  card_label: Accès Village
-  card_description: Un petit village où tu pourras commercer, accepter des quêtes, etc.
-  card_image: /static/assets/img/cards/lands/land_village.png
-  card_rarity: rare
-  card_gameplay:
-    target_land: village
-  shop:
-    prices:
-    - coins: 200
-      diams: 0
-      resources: {}
-    show_in_main_shop: false
-    show_in_village_shop: false
-    buy_rules: null
-  tradable: false
-  giftable: true
-  card_quantity: 0
-  card_purchase_limit_quantity: null
-  card_max_owned: 1
-
 - key: land_temple
   enabled: true
   card_type: land_access
@@ -229,7 +202,7 @@
   - temple
   card_label: Accès Temple
   card_description: Un petit temple où tu pourras méditer, prier, etc.
-  card_image: /static/assets/img/cards/lands/land_temple.png
+  card_image: /static/assets/img/cards/lands/specials/land_temple.png
   card_rarity: rare
   card_gameplay:
     target_land: temple

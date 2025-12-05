@@ -1,0 +1,27 @@
+# app/data/village_trades.yml
+# Liste des trades disponibles au village.
+# Chaque entrée référence une carte (card_key) déjà définie dans cards.yml
+# et une ressource "trésor" (kind: treasure) utilisée comme monnaie.
+
+village_trades:
+  - key: "trade_forest_branch_boost_01"
+    enabled: true
+
+    # Land concerné (pour les filtres côté UI)
+    land_key: "land_forest"
+
+    # Carte boost à obtenir (doit exister dans CardDef)
+    card_key: "branch_boost_treasure_1"
+
+    # Ressource trésor consommée
+    required_resource: "ancient_bark"
+    required_quantity: 100
+
+    # Stock global (non persistant pour l’instant, comme la shop du village)
+    stock_global: 500
+
+    # Optionnel : texte override (sinon on prend card_label / description)
+    label_fr: "Boost de branches (Forêt)"
+    label_en: "Branch boost (Forest)"
+    description_fr: "Ajoute +0.1 branche par récolte en forêt."
+    description_en: "Adds +0.1 branch per harvest in the forest."

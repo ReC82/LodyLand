@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 from sqlalchemy.orm import Session
-from app.models import PlayerCard, CardDef
+from app.models import PlayerCard, CardDef, Player
+from app.quests import service as quests_service
 from typing import Any
 
 def set_player_card_qty(
@@ -69,6 +70,72 @@ def give_player_card(
         pc.qty += qty
 
     return pc
+
+def grant_card_to_player(
+    session: Session,
+    player_id: int,
+    card_key: str,
+    qty: int = 1,
+) -> tuple[bool, str | None]:
+    """
+    Helper générique pour donner une carte à un joueur, avec quelques vérifications.
+
+    Retourne:
+      (True, None) si OK
+      (False, "reason_code") si erreur
+    """
+    card_key = (card_key or "").strip()
+    if not card_key:
+        return False, "invalid_card_key"
+
+    if qty <= 0:
+        return False, "invalid_qty"
+
+    # Vérifier que le joueur existe
+    player = session.get(Player, player_id)
+    if not player:
+        return False, "player_not_found"
+
+    # Vérifier que la CardDef existe et est active
+    cd: CardDef | None = (
+        session.query(CardDef)
+        .filter_by(key=card_key, enabled=True)
+        .one_or_none()
+    )
+    if not cd:
+        return False, "card_not_found"
+
+    # Vérifier les limites éventuelles (max_owned / card_purchase_limit_quantity)
+    owned = (
+        session.query(PlayerCard)
+        .filter_by(player_id=player_id, card_key=card_key)
+        .one_or_none()
+    )
+    current_qty = int(owned.qty or 0) if owned else 0
+
+    max_owned = cd.card_max_owned
+    if max_owned is not None and current_qty >= int(max_owned):
+        return False, "max_owned_reached"
+
+    limit_per_player = cd.card_purchase_limit_quantity
+    if limit_per_player is not None and current_qty >= int(limit_per_player):
+        return False, "purchase_limit_reached"
+
+    # --- Donner la carte ---
+    if owned is None:
+        owned = PlayerCard(player_id=player_id, card_key=card_key, qty=qty)
+        session.add(owned)
+    else:
+        owned.qty = current_qty + qty
+
+    # Hook quêtes (même logique que dans progression._grant_card)
+    try:
+        quests_service.on_card_granted(session, player, card_key)
+    except Exception as exc:
+        print("[cards] WARNING: on_card_granted failed:", exc)
+
+    return True, None
+
 
 def serialize_card_def(cd: CardDef, owned_qty: int = 0, context: str = "inventory") -> dict[str, Any]:
     """

@@ -522,12 +522,26 @@ def _compute_land_loot_multiplier(
 
 @bp.get("/resources")
 def list_resources():
-    """Return all enabled resource definitions (for UI + tests)."""
+    """
+    Legacy endpoint: retourne les ResourceDef actifs.
+
+    Le modèle ResourceDef est maintenant très simple, dérivé de items.yml :
+      - key
+      - label
+      - kind
+      - base_sell_price
+      - enabled
+      - icon
+      - description
+      - unlock_description
+
+    On ne retourne plus unlock_min_level ni base_cooldown.
+    """
     with SessionLocal() as s:
         rows = (
             s.query(ResourceDef)
             .filter_by(enabled=True)
-            .order_by(ResourceDef.unlock_min_level.asc())
+            .order_by(ResourceDef.key.asc())
             .all()
         )
         return jsonify(
@@ -535,14 +549,17 @@ def list_resources():
                 {
                     "key": r.key,
                     "label": r.label,
-                    "unlock_min_level": r.unlock_min_level,
-                    "base_cooldown": r.base_cooldown,
+                    "kind": r.kind,
                     "base_sell_price": r.base_sell_price,
                     "enabled": r.enabled,
+                    "icon": r.icon,
+                    "description": r.description,
+                    "unlock_description": r.unlock_description,
                 }
                 for r in rows
             ]
         )
+
 
 
 # ============================================================================
@@ -804,9 +821,10 @@ def collect():
                 409,
             )
 
-        # Base cooldown from resource definition
+        # Base cooldown from resource definition (legacy)
+        # On n'a plus de base_cooldown en DB → fallback 10s.
         rd = _get_res_def(s, t.resource)
-        base_cd = rd.base_cooldown if rd else 10
+        base_cd = getattr(rd, "base_cooldown", 10) if rd else 10
 
         # Apply cooldown reduction cards (resource-specific + global)
         effective_cd = _compute_cooldown(s, t.player_id, t.resource, base_cd)
@@ -914,36 +932,29 @@ def unlock_tile():
         if not rd:
             return jsonify({"error": "resource_unknown_or_disabled"}), 400
 
-        # 3) Check unlock conditions unless player owns an unlock_resource card
-        has_unlock_card = _has_unlock_resource_card(s, p.id, resource)
+        # NOTE :
+        # On a supprimé :
+        #   - unlock_min_level
+        #   - unlock_rules
+        # Toute la logique d'unlock par niveau / règles est désormais gérée
+        # par les lands + tools (collect mode), pas par les tuiles legacy.
+        #
+        # Du coup, /tiles/unlock devient un mode "simple" : si la ressource
+        # existe et est enabled, on autorise l'unlock.
 
-        if not has_unlock_card:
-            # Minimal level check
-            if p.level < rd.unlock_min_level:
-                return jsonify(
-                    {
-                        "error": "level_too_low",
-                        "required": rd.unlock_min_level,
-                    }
-                ), 403
-
-            # Advanced unlock rules (coins, other conditions...)
-            ok, details = check_unlock_rules(p, rd.unlock_rules)
-            if not ok:
-                payload = {
-                    "error": details.get("reason", "unlock_conditions_not_met")
-                }
-                payload.update(details)
-                return jsonify(payload), 403
-        # else: player has a card, we bypass normal conditions
-
-        # 4) Create tile
+        # 3) Create tile
         t = Tile(
             player_id=p.id,
             resource=resource,
             locked=False,
             cooldown_until=None,
         )
+        s.add(t)
+        s.commit()
+        s.refresh(t)
+
+        return jsonify({"id": t.id}), 200
+
         s.add(t)
         s.commit()
         s.refresh(t)

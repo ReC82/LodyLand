@@ -24,6 +24,10 @@ let storyIsPlaying = false;     // pour éviter de lancer 2 histoires en même t
 // ============================================================
 let ACTIVE_FEATURES = new Set();
 
+// Travel / lands
+let UNLOCKED_LANDS = []; // list of lands unlocked for the current player
+let TRAVEL_LIST_LOADED = false;
+
 /**
  * Calcule toutes les features débloquées jusqu'au niveau `level`.
  * Prend les données de LEVEL_DEFS (avec system_unlocks).
@@ -1400,6 +1404,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (typeof initCraftUI === "function") {
     initCraftUI();
   }
+
+  initTravelUI();
+
   const me = await tryMe();
   if (me) {
     currentPlayer = me;
@@ -1463,6 +1470,205 @@ async function openLevelsModal() {
   renderLevelsList(levels);
   modal.classList.add("is-open");
 }
+
+// ---------------------------------------------------------------------------
+// Travel UI: quick travel between lands
+// ---------------------------------------------------------------------------
+
+async function fetchUnlockedLands() {
+  // If already loaded, do nothing
+  if (TRAVEL_LIST_LOADED && UNLOCKED_LANDS.length > 0) return;
+
+  const res = await http("GET", "/api/lands/unlocked");
+  if (!res.ok) {
+    console.error("[travel] Failed to load unlocked lands", res.status, res.data);
+    UNLOCKED_LANDS = [];
+    TRAVEL_LIST_LOADED = true;
+    return;
+  }
+
+  const data = res.data || {};
+  UNLOCKED_LANDS = Array.isArray(data.lands) ? data.lands : [];
+  TRAVEL_LIST_LOADED = true;
+}
+
+function renderTravelList(filterText = "") {
+  const listEl = document.getElementById("travel-list");
+  if (!listEl) return;
+
+  const text = (filterText || "").toLowerCase().trim();
+
+  // Filter lands by label or key
+  const filtered = UNLOCKED_LANDS.filter((land) => {
+    const label = (land.label || "").toLowerCase();
+    const key = (land.land_key || "").toLowerCase();
+    return !text || label.includes(text) || key.includes(text);
+  });
+
+  if (!filtered.length) {
+    listEl.innerHTML = `
+      <div class="travel-item-empty text-muted small">
+        Aucun land ne correspond à ta recherche.
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = filtered
+    .map((land, index) => {
+      const isSelectedClass = index === 0 ? " travel-item-selected" : "";
+      const iconHtml = land.icon
+        ? `<img src="${land.icon}" alt="${land.label}" class="travel-item-icon">`
+        : "";
+
+      return `
+        <button
+          type="button"
+          class="travel-item${isSelectedClass}"
+          data-land-key="${land.land_key}"
+          data-land-url="${land.url}"
+        >
+          ${iconHtml}
+          <span class="travel-item-label">${land.label}</span>
+        </button>
+      `;
+    })
+    .join("");
+
+  // Click = select
+  listEl.querySelectorAll(".travel-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setSelectedTravelItem(btn);
+    });
+    btn.addEventListener("dblclick", () => {
+      setSelectedTravelItem(btn);
+      confirmTravelSelection();
+    });
+  });
+}
+
+function setSelectedTravelItem(btn) {
+  const listEl = document.getElementById("travel-list");
+  if (!listEl || !btn) return;
+
+  listEl
+    .querySelectorAll(".travel-item")
+    .forEach((b) => b.classList.remove("travel-item-selected"));
+
+  btn.classList.add("travel-item-selected");
+}
+
+function getSelectedTravelItem() {
+  const listEl = document.getElementById("travel-list");
+  if (!listEl) return null;
+  return listEl.querySelector(".travel-item-selected");
+}
+
+function confirmTravelSelection() {
+  const selected = getSelectedTravelItem();
+  if (!selected) return;
+
+  const url = selected.getAttribute("data-land-url");
+  if (!url) return;
+
+  // Redirect to land
+  window.location.href = url;
+}
+
+function openTravelModal() {
+  const modal = document.getElementById("travelModal");
+  const searchInput = document.getElementById("travel-search-input");
+  if (!modal) return;
+
+  modal.classList.add("is-open");
+
+  // Reset filter + render list
+  renderTravelList("");
+
+  // Focus on search for quick typing
+  if (searchInput) {
+    searchInput.value = "";
+    searchInput.focus();
+  }
+}
+
+function closeTravelModal() {
+  const modal = document.getElementById("travelModal");
+  if (!modal) return;
+  modal.classList.remove("is-open");
+}
+
+function initTravelUI() {
+  const btn = document.getElementById("hud-travel-btn");
+  const modal = document.getElementById("travelModal");
+  const closeBtn = document.getElementById("travelModalClose");
+  const backdrop = document.getElementById("travelModalBackdrop");
+  const searchInput = document.getElementById("travel-search-input");
+  const confirmBtn = document.getElementById("travelConfirmBtn");
+
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      // Lazy load lands when opening the modal
+      await fetchUnlockedLands();
+      openTravelModal();
+    });
+  }
+
+  const close = () => {
+    closeTravelModal();
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (backdrop) backdrop.addEventListener("click", close);
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", () => {
+      confirmTravelSelection();
+    });
+  }
+
+  if (searchInput) {
+    // Filter as you type
+    searchInput.addEventListener("input", (e) => {
+      renderTravelList(e.target.value || "");
+    });
+
+    // Enter = confirm travel on selected item
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmTravelSelection();
+      }
+
+      // Bonus: navigate with arrows up/down
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        moveTravelSelection(e.key === "ArrowDown" ? 1 : -1);
+      }
+    });
+  }
+}
+
+function moveTravelSelection(direction) {
+  const listEl = document.getElementById("travel-list");
+  if (!listEl) return;
+
+  const items = Array.from(listEl.querySelectorAll(".travel-item"));
+  if (!items.length) return;
+
+  let currentIndex = items.findIndex((btn) =>
+    btn.classList.contains("travel-item-selected")
+  );
+  if (currentIndex === -1) currentIndex = 0;
+
+  let nextIndex = currentIndex + direction;
+  if (nextIndex < 0) nextIndex = items.length - 1;
+  if (nextIndex >= items.length) nextIndex = 0;
+
+  setSelectedTravelItem(items[nextIndex]);
+}
+
+
 
 function computeLevelRowProgress(levelDef) {
   if (!currentPlayer) return 0;

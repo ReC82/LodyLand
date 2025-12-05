@@ -2,35 +2,42 @@
 """
 normalize_items_yaml.py
 
-Bridge script for LodyLand items → legacy resources.yml.
+Bridge script for LodyLand items.
 
-Goals:
-  - Scan app/data/items/*.yml
-  - Collect all items with kind: resource
-  - Generate app/data/resources.yml in the LEGACY format used by:
-      - ResourceDef / seed_resources_from_yaml()
-  - DO NOT touch craft/item logic (that's handled elsewhere)
+NOUVELLE VERSION (simplifiée) :
+  - Scan app/data/items/**.yml (récursif)
+  - Fusionne tous les items dans un seul fichier :
+        app/data/items.yml
+  - NE génère PLUS app/data/resources.yml
+  - NE s’occupe PAS de ResourceDef ni du vieux système de ressources.
+  - Continue à vérifier que les icônes référencées existent bien sur le disque.
 
 Expected item structure (in app/data/items/*.yml):
 
   items:
     branch:
       key: branch
-      kind: resource
+      kind: resource | item | tool | treasure | ...
       label: Branch
       description: A small branch...
-      icon: /static/assets/img/resources/branch.png
-      unlock_min_level: 0
-      base_cooldown: 10.0
-      base_sell_price: 2
+      icon: /static/assets/img/items/resources/branch.png
       enabled: true
-      unlock_description: Always available at level 0.
 
-Only items with `kind: resource` are exported to resources.yml.
+Formats acceptés :
+  A) Avec bloc items:
+     items:
+       branch:
+         key: branch
+         ...
+
+  B) Directement un mapping:
+     branch:
+       key: branch
+       ...
 
 Extra:
-  - With the flag --json, this script outputs a JSON report instead of
-    human logs. This is used by a global “normalize_all” runner.
+  - Avec le flag --json, ce script sort un rapport JSON (utilisé
+    par un normalizer global pour agréger les résultats).
 """
 
 from __future__ import annotations
@@ -50,14 +57,14 @@ THIS_FILE = Path(__file__).resolve()
 # .../app/data/items/normalize_items_yaml.py
 DATA_ROOT = THIS_FILE.parents[2] / "data"          # app/data
 ITEMS_ROOT = DATA_ROOT / "items"                   # app/data/items
-OUTPUT_FILE = DATA_ROOT / "resources.yml"          # app/data/resources.yml
 
 # app/ (parent de data)
 APP_ROOT = DATA_ROOT.parent
 # app/static
 STATIC_ROOT = APP_ROOT / "static"
 
-ITEMS_MERGED_FILE = DATA_ROOT / "items.yml"   
+# Fichier MERGÉ de sortie
+ITEMS_MERGED_FILE = DATA_ROOT / "items.yml"
 
 # ---------------------------------------------------------------------------
 # Small reporter helper (collect logs + control printing)
@@ -235,8 +242,7 @@ def _collect_all_items(rep: Reporter) -> Dict[str, Dict[str, Any]]:
 
     rep.info(f"\nScanning item YAML under (recursive): {ITEMS_ROOT}\n")
 
-    # 🔥 AVANT : ITEMS_ROOT.glob("*.yml")
-    # 🔥 MAINTENANT : scan récursif
+    # scan récursif
     for path in sorted(ITEMS_ROOT.rglob("*.yml")):
         # Skip backup files if any
         if path.name.endswith(".bak"):
@@ -267,6 +273,7 @@ def _collect_all_items(rep: Reporter) -> Dict[str, Dict[str, Any]]:
     rep.info(f"\n→ Collected {len(all_items)} item(s) in total.\n")
     return all_items
 
+
 def _resolve_icon_path(icon: str) -> Path | None:
     """
     Convertit une chaîne icon (ex: "/static/assets/img/items/resources/foo.png"
@@ -296,15 +303,16 @@ def _resolve_icon_path(icon: str) -> Path | None:
     return STATIC_ROOT / "assets" / "img" / "items" / "resources" / icon
 
 
-def _validate_resource_icons(resources: List[Dict[str, Any]], rep: Reporter) -> None:
+def _validate_item_icons(all_items: Dict[str, Dict[str, Any]], rep: Reporter) -> None:
     """
-    Pour chaque resource, vérifie que le fichier d'icône existe physiquement.
+    Pour chaque item, vérifie que le fichier d'icône existe physiquement
+    (si un champ icon est défini).
 
     Ajoute un warning si le fichier est manquant :
       "image file not found for item 'gold_leaf' (icon=..., resolved=...)"
     """
-    for res in resources:
-        icon = (res.get("icon") or "").strip()
+    for key, cfg in all_items.items():
+        icon = (cfg.get("icon") or "").strip()
         if not icon:
             # pas d'icône définie → on ignore (tu peux en faire un warning si tu veux)
             continue
@@ -312,96 +320,9 @@ def _validate_resource_icons(resources: List[Dict[str, Any]], rep: Reporter) -> 
         resolved = _resolve_icon_path(icon)
         if resolved is None or not resolved.exists():
             rep.warn(
-                f"image file not found for item '{res.get('key')}' "
+                f"image file not found for item '{key}' "
                 f"(icon={icon}, resolved={resolved})"
             )
-
-
-
-def _build_legacy_resource_entry(item_key: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Build a single resource entry for legacy resources.yml from an item cfg.
-
-    Legacy format expects fields:
-      key, label, description, icon,
-      unlock_min_level, base_cooldown, base_sell_price,
-      enabled, unlock_description
-    """
-    label = (cfg.get("label") or item_key).strip()
-    description = cfg.get("description") or ""
-    icon = cfg.get("icon") or ""
-
-    # Default values for legacy fields
-    unlock_min_level = int(cfg.get("unlock_min_level") or 0)
-    base_cooldown = float(cfg.get("base_cooldown") or 10.0)
-    # We accept either base_sell_price or sell_price
-    base_sell_price = cfg.get("base_sell_price", cfg.get("sell_price", 0))
-
-    try:
-        base_sell_price = int(base_sell_price)
-    except Exception:
-        base_sell_price = 0
-
-    enabled = bool(cfg.get("enabled", True))
-    unlock_description = cfg.get("unlock_description") or ""
-
-    entry = {
-        "key": item_key,
-        "label": label,
-        "base_cooldown": base_cooldown,
-        "base_sell_price": base_sell_price,
-        "unlock_min_level": unlock_min_level,
-        "enabled": enabled,
-        "icon": icon,
-    }
-
-    if description:
-        entry["description"] = description
-    if unlock_description:
-        entry["unlock_description"] = unlock_description
-
-    return entry
-
-
-def _build_resources_yaml(all_items: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Create the list of legacy resources from collected items.
-
-    Only items with kind: resource are exported.
-    """
-    resources: List[Dict[str, Any]] = []
-
-    for key, cfg in sorted(all_items.items()):
-        kind = (cfg.get("kind") or "").strip().lower()
-        if kind != "resource":
-            continue
-        entry = _build_legacy_resource_entry(key, cfg)
-        resources.append(entry)
-
-    return resources
-
-
-def _resources_to_yaml_text(resources: List[Dict[str, Any]]) -> str:
-    """
-    Convert a list of resources to the final YAML text for resources.yml.
-    """
-    lines: List[str] = []
-    lines.append("# NOTE:")
-    lines.append("#   This file is GENERATED by app/data/items/normalize_items_yaml.py.")
-    lines.append("#   Do NOT edit this file by hand.")
-    lines.append("#   Edit item definitions in app/data/items/*.yml instead.")
-    lines.append("")
-    lines.append("resources:")
-    lines.append("")
-
-    yaml_block = yaml.dump(resources, sort_keys=False, allow_unicode=True)
-    for line in yaml_block.splitlines():
-        if not line.strip():
-            lines.append(line)
-        else:
-            lines.append("  " + line)
-
-    return "\n".join(lines) + "\n"
 
 
 # ---------------------------------------------------------------------------
@@ -416,7 +337,6 @@ def main(argv: List[str] | None = None) -> int:
     rep = Reporter(json_mode=json_mode)
 
     ok = True
-    resources: List[Dict[str, Any]] = []
     structural_error_msg: str | None = None
     all_items: Dict[str, Dict[str, Any]] = {}
 
@@ -426,13 +346,10 @@ def main(argv: List[str] | None = None) -> int:
 
         if not all_items:
             rep.warn("No items found at all, nothing to write.")
-            resources = []
-        else:
-            # 2) Build legacy resources from items
-            resources = _build_resources_yaml(all_items)
 
-        # 3) Validate icons for resources.yml
-        _validate_resource_icons(resources, rep)
+        else:
+            # 2) Validate icons for items.yml
+            _validate_item_icons(all_items, rep)
 
     except SystemExit as e:
         ok = False
@@ -441,28 +358,10 @@ def main(argv: List[str] | None = None) -> int:
         ok = False
         structural_error_msg = str(e)
 
-    if not ok:
-        if structural_error_msg:
-            rep.error(structural_error_msg)
+    if not ok and structural_error_msg:
+        rep.error(structural_error_msg)
 
-    resource_count = len(resources)
-
-    # 4) Write resources.yml if we have resources
-    if ok and resources:
-        yaml_text = _resources_to_yaml_text(resources)
-        rep.info(f"→ Will write {resource_count} resource(s) to {OUTPUT_FILE}")
-
-        if OUTPUT_FILE.exists():
-            backup = OUTPUT_FILE.with_suffix(".yml.bak")
-            backup.write_text(OUTPUT_FILE.read_text(encoding="utf-8"), encoding="utf-8")
-            rep.info(f"Backup created: {backup}")
-
-        OUTPUT_FILE.write_text(yaml_text, encoding="utf-8")
-        rep.info(f"✓ resources.yml generated at {OUTPUT_FILE}\n")
-    elif ok and not resources:
-        rep.warn("OK but no resources to write, resources.yml will not be updated.\n")
-
-    # 5) Always write items.yml if we collected items
+    # 3) Always write items.yml if we collected items
     if ok and all_items:
         items_yaml = _items_to_yaml_text(all_items)
         rep.info(f"→ Will write {len(all_items)} item(s) to {ITEMS_MERGED_FILE}")
@@ -476,8 +375,10 @@ def main(argv: List[str] | None = None) -> int:
 
         ITEMS_MERGED_FILE.write_text(items_yaml, encoding="utf-8")
         rep.info(f"✓ items.yml generated at {ITEMS_MERGED_FILE}\n")
+    elif ok and not all_items:
+        rep.warn("OK but no items to write, items.yml will not be updated.\n")
 
-    # 6) JSON summary for global normalizer
+    # 4) JSON summary for global normalizer
     if json_mode:
         summary = {
             "ok": ok,
@@ -489,6 +390,7 @@ def main(argv: List[str] | None = None) -> int:
         print(json.dumps(summary, ensure_ascii=True))
 
     return 0 if ok else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
