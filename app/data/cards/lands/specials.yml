@@ -5,6 +5,7 @@
   card_tags:
   - land
   - village
+  - specials
   card_label: Accès Village
   card_description: Un petit village où tu pourras commercer, accepter des quêtes, etc.
   card_image: /static/assets/img/cards/lands/specials/land_village.png
@@ -13,7 +14,7 @@
     target_land: village
   shop:
     prices:
-    - coins: 200
+    - coins: 0
       diams: 0
       resources: {}
     show_in_main_shop: false

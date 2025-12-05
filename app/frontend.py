@@ -184,13 +184,14 @@ def lands_select():
     """
     Land selection screen.
 
-    Shows all available land access cards (land_*) and which ones are unlocked
-    for the current player.
+    Montre UNIQUEMENT les lands débloqués pour le joueur courant,
+    en utilisant les cartes "land_*" et les defs de lands.yml
+    (pour récupérer slot_icon + tags).
     """
     player = g.player
     session = g.db_session
 
-    # 1) Land access cards owned by the player (keys like "land_forest")
+    # 1) Clés de cartes land_* possédées par le joueur
     owned_land_rows = (
         session.query(PlayerCard.card_key)
         .filter(
@@ -202,7 +203,7 @@ def lands_select():
     )
     owned_keys = {key for (key,) in owned_land_rows}
 
-    # 2) All enabled CardDef with key starting by land_*
+    # 2) Toutes les CardDef de type land_* (enabled)
     land_cards = (
         session.query(CardDef)
         .filter(CardDef.key.like("land_%"), CardDef.enabled == True)
@@ -211,11 +212,7 @@ def lands_select():
     )
 
     def make_price_text(cd: CardDef | None) -> str:
-        """
-        Build a human-readable price string for a land card.
-
-        Uses the first price option from cd.shop["prices"] if present.
-        """
+        """Build a human-readable price string for a land card."""
         if not cd:
             return ""
 
@@ -250,10 +247,10 @@ def lands_select():
         "lake": "🏞️",
         "mountain": "⛰️",
         "village": "🏘️",
-        # "desert": "🏜️", etc. quand tu en ajoutes
     }
 
-    lands: list[dict] = []
+    all_lands: list[dict] = []
+
     for cd in land_cards:
         # key = "land_forest" -> slug = "forest"
         slug = cd.key[len("land_") :]
@@ -266,7 +263,13 @@ def lands_select():
             land_url = None
             has_route = False
 
-        lands.append(
+        # 🔹 Conf dans lands.yml pour slot_icon + tags
+        conf = get_land_def(slug) or {}  # app/lands.py 
+        slot_icon = conf.get("slot_icon")
+        tags = conf.get("tags") or []
+        is_special = "specials" in tags
+
+        all_lands.append(
             {
                 "key": slug,
                 "title": cd.card_label or slug.capitalize(),
@@ -276,10 +279,25 @@ def lands_select():
                 "has_route": has_route,
                 "unlocked": cd.key in owned_keys,
                 "price_text": make_price_text(cd),
+                "slot_icon": slot_icon,
+                "is_special": is_special,
             }
         )
 
-    return render_template("GAME_UI/lands/select.html", lands=lands)
+    # ✅ On ne garde que les lands débloqués + qui ont une route
+    unlocked_lands = [
+        l for l in all_lands if l["unlocked"] and l["has_route"]
+    ]
+
+    normal_lands = [l for l in unlocked_lands if not l["is_special"]]
+    special_lands = [l for l in unlocked_lands if l["is_special"]]
+
+    return render_template(
+        "GAME_UI/lands/select.html",
+        lands=normal_lands,
+        special_lands=special_lands,
+    )
+
 
 
 @frontend_bp.get("/land/<slug>")

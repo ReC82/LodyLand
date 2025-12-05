@@ -178,8 +178,7 @@
   font-weight: 500;
 }
 
-/* Tools non craftés : cachés
-   (règle finale pour surcharger le style précédent) */
+/* Tools non craftés : cachés */
 .land-tool-btn.tool-locked {
   display: none !important;
   pointer-events: none;
@@ -226,7 +225,7 @@
 
 
 /* ============================================================
-   LAND SLOT ICONS
+   LAND SLOT ICONS (dans les lands, pas la sélection)
    ============================================================ */
 
 .land-slot-icon {
@@ -272,7 +271,7 @@
   opacity: 0.75;
 }
 
-/* Base cooldown visual (overridden later by more specific style) */
+/* Base cooldown visual */
 .slot-on-cooldown {
   opacity: 0.5;
 }
@@ -282,7 +281,6 @@
    LAND SLOT COOLDOWN BAR
    ============================================================ */
 
-/* Cooldown bar on land slots */
 .slot-cooldown-bar {
   width: 100%;
   height: 6px;
@@ -301,7 +299,6 @@
   transition: transform 0.25s linear;
 }
 
-/* Optionnel : style visuel pour slot en cooldown (version finale) */
 .slot-tile.slot-on-cooldown {
   opacity: 0.8;
 }
@@ -311,38 +308,6 @@
    BONUS TILE: "Add Slot" (BASE + PREMIUM)
    ============================================================ */
 
-/* Base "add slot" tile */
-.slot-tile.slot-add {
-  border: 1px solid rgba(0, 255, 128, 0.4);
-  background: rgba(0, 128, 64, 0.10);
-}
-
-.slot-tile.slot-add:hover {
-  border-color: rgba(0, 255, 128, 0.8);
-}
-
-/* Cost / card label */
-.slot-tile.slot-add .slot-label {
-  color: #7cffc4;
-}
-
-/* "Click to unlock" text */
-.slot-tile.slot-add .slot-status {
-  color: #c8ffe7;
-}
-
-.slot-add-container {
-  margin-top: 20px;
-}
-
-.slot-tile.full-width {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 18px 12px;
-}
-
-/* Premium glow for add-slot tile (final look overrides base) */
 .slot-tile.slot-add {
   background: rgba(0, 140, 90, 0.15);
   border: 1px solid rgba(0, 255, 160, 0.40);
@@ -357,7 +322,6 @@
   transform: translateY(-2px);
 }
 
-/* "+" icon with heavy glow for add-slot tile (final icon size/glow) */
 .slot-tile.slot-add .land-slot-icon {
   width: 68px;
   height: 68px;
@@ -367,7 +331,6 @@
   opacity: 0.95;
 }
 
-/* Text style for add-slot tile (final overrides base) */
 .slot-tile.slot-add .slot-label {
   color: #afffda;
   font-weight: 600;
@@ -392,7 +355,7 @@
   flex-direction: column;
   gap: 8px;
   z-index: 200;
-  pointer-events: none; /* mouse clicks pass through */
+  pointer-events: none;
 }
 
 .loot-toast {
@@ -436,7 +399,6 @@
    LAND FOOTER / MISC
    ============================================================ */
 
-/* Small land footer text */
 .land-container small.text-muted {
   color: #cfd8ff !important;
   opacity: 0.9;
@@ -445,15 +407,230 @@
   margin-top: 4px;
 }
 
-/* (Ancien style partiel des tools locked — laissé pour compatibilité
-   mais surchargé plus haut par la règle avec display:none) */
-.land-tool-btn.tool-locked {
-  opacity: 0.4;
-  cursor: not-allowed;
+/* Zone marquée comme feature-locked */
+.feature-locked {
+  opacity: 0.15;
+  pointer-events: none;
 }
 
-/* Zone marquée comme feature-locked mais qu’on ne veut pas déplacer */
-.feature-locked {
-  opacity: 0.15;         /* presque invisible */
-  pointer-events: none;  /* pas cliquable */
+
+/* ============================================================
+   LAND SELECT SCREEN (petites tuiles carrées)
+   ============================================================ */
+
+.land-select-container {
+  max-width: 520px;
+}
+
+/* Barre de recherche */
+.land-select-toolbar {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.land-search-input {
+  width: 100%;
+  max-width: 260px;
+}
+
+/* Grille de tuiles (spéciaux + classiques) */
+.land-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 2rem;
+}
+
+/* Tuile carrée */
+.land-tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  background: rgba(10, 15, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+  color: #fdfdfd;
+  padding: 0.35rem;
+
+  cursor: pointer;
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.12s ease-out,
+    background 0.12s ease-out;
+}
+
+/* Hover */
+.land-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+  border-color: rgba(120, 220, 160, 0.9);
+  background: rgba(15, 30, 45, 0.95);
+}
+
+/* Tuile spéciale */
+.land-tile-special {
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+}
+.land-tile-special:hover {
+  border-color: rgba(255, 230, 120, 1);
+}
+
+/* Conteneur icône */
+.land-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+/* Icône pour la sélection de lands
+   (on force la taille contre tout style global) */
+.land-choice-icon {
+  width: 32px !important;
+  height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  image-rendering: pixelated;
+  object-fit: contain;
+  display: block;
+}
+
+/* Titre sous l’icône */
+.land-tile-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Titre de section ("Lands", "Lieux spéciaux") */
+.land-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ============================================================
+   LAND SELECT SCREEN – petites tuiles + icônes fixes
+   ============================================================ */
+
+.land-select-container {
+  max-width: 520px;
+}
+
+/* Barre de recherche */
+.land-select-toolbar {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.land-search-input {
+  width: 100%;
+  max-width: 260px;
+}
+
+/* Grille de tuiles (spéciaux + classiques) */
+.land-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 2rem;
+}
+
+/* Tuile carrée */
+.land-tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  background: rgba(10, 15, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+  color: #fdfdfd;
+  padding: 0.35rem;
+
+  cursor: pointer;
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.12s ease-out,
+    background 0.12s ease-out;
+}
+
+/* Hover */
+.land-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+  border-color: rgba(120, 220, 160, 0.9);
+  background: rgba(15, 30, 45, 0.95);
+}
+
+/* Tuile spéciale (village, etc.) */
+.land-tile-special {
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+}
+.land-tile-special:hover {
+  border-color: rgba(255, 230, 120, 1);
+}
+
+/* Conteneur icône dans la tuile */
+.land-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+/* Icône de sélection de land (DIV avec background-image) */
+.land-choice-icon {
+  width: 32px;
+  height: 32px;
+  max-width: 32px;
+  max-height: 32px;
+  border-radius: 6px;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  image-rendering: pixelated;
+}
+
+/* Variante quand on montre un emoji à la place d'une image */
+.land-choice-icon-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+/* Texte sous l’icône */
+.land-tile-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Titre de section ("Lands", "Lieux spéciaux") */
+.land-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
 }
