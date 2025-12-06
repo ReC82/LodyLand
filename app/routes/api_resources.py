@@ -4,31 +4,33 @@ from __future__ import annotations
 import random
 from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app  # current_app kept for future use
 
+from app.auth import get_current_player
 from app.db import SessionLocal
+from app.lands import get_land_def
 from app.models import (
-    ResourceDef,
-    Tile,
-    Player,
-    ResourceStock,
     CardDef,
+    LandSlotState,
+    Player,
     PlayerCard,
     PlayerItem,
-    LandSlotState,  # NEW: per-slot land cooldown
+    PlayerLandSlots,
+    ResourceDef,
+    ResourceStock,
+    Tile,
 )
 from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
-from app.unlock_rules import check_unlock_rules
-from app.auth import get_current_player
-from app.lands import get_land_def
 from app.quests.service import on_resource_collected
+from app.unlock_rules import check_unlock_rules  # kept even if unused for now
 
 bp = Blueprint("resources", __name__)
 
 
 # ============================================================================
-# Local helpers (avoid circular imports)
+# Local helpers (kept simple to avoid circular imports)
 # ============================================================================
+
 
 def _get_res_def(session, key: str) -> ResourceDef | None:
     """Return an enabled ResourceDef by its key, or None if missing."""
@@ -40,9 +42,11 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
         .first()
     )
 
+
 # ---------------------------------------------------------------------------
 # Helper: check if player owns a crafted item (tool, etc.).
 # ---------------------------------------------------------------------------
+
 
 def _player_has_item(session, player_id: int, item_key: str) -> bool:
     """
@@ -67,7 +71,6 @@ def _player_has_item(session, player_id: int, item_key: str) -> bool:
 
     qty = row.quantity or 0
     return qty > 0
-
 
 
 def _player_has_land(session, player_id: int, land_key: str) -> bool:
@@ -131,10 +134,10 @@ def _roll_land_loot(tool_cfg: dict, any_cfg: dict | None = None) -> dict[str, fl
                 amount = random.randint(mn, mx)
                 add_res(res, amount)
 
-    # 1) Loot spécifique à l'outil choisi
+    # 1) Tool-specific loot (for the chosen tool)
     apply_loot_from_cfg(tool_cfg)
 
-    # 2) Loot global "any" (appliqué à tous les outils si présent)
+    # 2) Global "any" loot (applies to all tools if present)
     if any_cfg:
         apply_loot_from_cfg(any_cfg)
 
@@ -143,9 +146,10 @@ def _roll_land_loot(tool_cfg: dict, any_cfg: dict | None = None) -> dict[str, fl
 
 # ============================================================================
 # Card helpers (centralized logic for boosts / unlocks)
-# IMPORTANT: we avoid using CardDef.type in SQL filters (was causing AttributeError),
-#            and instead filter in Python on the loaded CardDef instances.
+# IMPORTANT: we avoid using CardDef.type in SQL filters (caused AttributeError)
+#            and instead filter in Python on loaded CardDef instances.
 # ============================================================================
+
 
 def _count_cards(
     session,
@@ -250,7 +254,7 @@ def _get_xp_boost_cards(session, player_id: int):
 
 def _get_cooldown_boost_cards(session, player_id: int, resource_key: str):
     """
-    Returns cooldown boosts for this resource OR global ones.
+    Return cooldown boost configs for this resource OR global ones.
 
     Expected structure in CardDef.gameplay:
       gameplay:
@@ -399,6 +403,11 @@ def _get_resource_boost_cards(
     return boosts
 
 
+# ============================================================================
+# Numeric helpers: compute collect amount / XP / cooldown / land multiplier
+# ============================================================================
+
+
 def _compute_collect_amount(
     session,
     player_id: int,
@@ -419,8 +428,8 @@ def _compute_collect_amount(
 
     for b in boosts:
         qty = b["qty"]
-        amount = b["amount"]     # ex: 0.10
-        btype = b["type"]        # "addition" or "multiplier"
+        amount = b["amount"]  # e.g. 0.10
+        btype = b["type"]     # "addition" or "multiplier"
 
         if qty <= 0:
             continue
@@ -440,9 +449,7 @@ def _compute_xp_gain(
     player_id: int,
     base_xp: int,
 ) -> float:
-    """
-    Compute XP gain per collect using YAML boost configs.
-    """
+    """Compute XP gain per collect using YAML boost configs."""
     xp = float(base_xp)
 
     boosts = _get_xp_boost_cards(session, player_id)
@@ -471,16 +478,14 @@ def _compute_cooldown(
     resource_key: str,
     base_cooldown: float,
 ) -> float:
-    """
-    Compute final cooldown using YAML-based cooldown boost cards.
-    """
+    """Compute final cooldown using YAML-based cooldown boost cards."""
     cooldown = float(base_cooldown)
 
     boosts = _get_cooldown_boost_cards(session, player_id, resource_key)
 
     for b in boosts:
         qty = b["qty"]
-        amount = b["amount"]    # 0.10 means 10%
+        amount = b["amount"]  # 0.10 means 10%
         btype = b["type"]
 
         if qty <= 0:
@@ -535,12 +540,13 @@ def _compute_land_loot_multiplier(
 # Resources listing (for UI + tests)
 # ============================================================================
 
+
 @bp.get("/resources")
 def list_resources():
     """
-    Legacy endpoint: retourne les ResourceDef actifs.
+    Legacy endpoint: return enabled ResourceDef rows.
 
-    Le modèle ResourceDef est maintenant très simple, dérivé de items.yml :
+    ResourceDef is now simple and derived from items.yml:
       - key
       - label
       - kind
@@ -550,7 +556,7 @@ def list_resources():
       - description
       - unlock_description
 
-    On ne retourne plus unlock_min_level ni base_cooldown.
+    We no longer return unlock_min_level or base_cooldown.
     """
     with SessionLocal() as s:
         rows = (
@@ -576,10 +582,10 @@ def list_resources():
         )
 
 
-
 # ============================================================================
 # Collect endpoint (land mode + legacy tile mode)
 # ============================================================================
+
 
 @bp.post("/collect")
 def collect():
@@ -628,10 +634,25 @@ def collect():
             if not land_def:
                 return jsonify({"error": "land_unknown"}), 400
 
-            slots = int(land_def.get("slots", 0) or 0)
+            # Base slots defined in lands.yml (same for everyone)
+            base_slots = int(land_def.get("slots", 0) or 0)
+
+            # Extra slots bought by this player on this land
+            pls = (
+                s.query(PlayerLandSlots)
+                .filter_by(player_id=p.id, land_key=land_key)
+                .first()
+            )
+            extra_slots = int(getattr(pls, "extra_slots", 0) or 0)
+
+            # Total usable slots for this player on this land
+            slots = base_slots + extra_slots
+
             if slots <= 0:
                 return jsonify({"error": "land_has_no_slots"}), 400
+
             if slot < 0 or slot >= slots:
+                # Still return max for easier frontend debugging
                 return jsonify({"error": "slot_out_of_range", "max": slots}), 400
 
             tools_cfg = land_def.get("tools") or {}
@@ -643,7 +664,7 @@ def collect():
                     {"error": "tool_not_allowed", "tool": tool_key},
                 ), 400
 
-            # 🚀 NEW: optional "any" config, applied to all tools
+            # Optional "any" config applied to all tools
             any_cfg = tools_cfg.get("any")
 
             # Check required item (crafted tool)
@@ -683,7 +704,7 @@ def collect():
                     cd = cd.replace(tzinfo=timezone.utc)
 
                 if cd > now:
-                    # Which tool was used for this cooldown?
+                    # Tool used for this cooldown
                     used_tool_key = slot_state.last_tool_key or "hands"
                     used_tool_cfg = tools_cfg.get(used_tool_key, {})
                     used_cd = int(used_tool_cfg.get("cooldown_seconds", 10))
@@ -713,7 +734,7 @@ def collect():
             # ------------------------------------------------------------------
             # Loot computation
             # ------------------------------------------------------------------
-            # 💡 ICI la modif importante : on passe aussi any_cfg
+            # Important: pass any_cfg so global loot entries apply as well
             raw_loot = _roll_land_loot(tool_cfg, any_cfg=any_cfg)  # {resource: base_qty}
 
             # Global land loot multiplier (cards with type "land_loot_boost")
@@ -734,12 +755,13 @@ def collect():
                 p,
                 gained_xp,
             )
+
             loot_payload = []
             for res_key, base_amount in raw_loot.items():
                 per_unit = _compute_collect_amount(s, p.id, res_key)
                 amount = base_amount * per_unit * land_loot_mult
 
-                # Mise à jour du stock
+                # Update resource stock
                 rs = (
                     s.query(ResourceStock)
                     .filter_by(player_id=p.id, resource=res_key)
@@ -756,12 +778,12 @@ def collect():
                 new_qty = (rs.qty or 0.0) + amount
                 rs.qty = round(new_qty, 2)
 
-                # 🔍 On récupère la définition de la ressource depuis la DB
+                # Fetch resource definition from DB (for icon/label)
                 res_def = _get_res_def(s, res_key)
                 icon = res_def.icon if res_def else None
                 label = res_def.label if res_def else res_key
 
-                # Payload envoyée au front : toujours basée sur la DB
+                # Payload for frontend: always based on DB metadata
                 loot_payload.append(
                     {
                         "resource": res_key,
@@ -772,7 +794,7 @@ def collect():
                     }
                 )
 
-                # Quêtes / progression
+                # Quests / progression hooks
                 on_resource_collected(
                     session=s,
                     player=p,
@@ -849,7 +871,7 @@ def collect():
             )
 
         # Base cooldown from resource definition (legacy)
-        # On n'a plus de base_cooldown en DB → fallback 10s.
+        # We no longer have base_cooldown in DB → fallback 10s.
         rd = _get_res_def(s, t.resource)
         base_cd = getattr(rd, "base_cooldown", 10) if rd else 10
 
@@ -917,14 +939,16 @@ def collect():
             }
         )
 
+
 # ============================================================================
-# Tiles unlock + listing
+# Tiles unlock + listing (legacy mode)
 # ============================================================================
+
 
 @bp.post("/tiles/unlock")
 def unlock_tile():
     """
-    Unlock a tile for the current player or explicit playerId.
+    Unlock a tile for the current player or an explicit playerId.
 
     Body:
       {
@@ -958,15 +982,15 @@ def unlock_tile():
         if not rd:
             return jsonify({"error": "resource_unknown_or_disabled"}), 400
 
-        # NOTE :
-        # On a supprimé :
+        # NOTE:
+        # We removed:
         #   - unlock_min_level
         #   - unlock_rules
-        # Toute la logique d'unlock par niveau / règles est désormais gérée
-        # par les lands + tools (collect mode), pas par les tuiles legacy.
+        # All unlock logic by level / rules is now handled by lands + tools
+        # (collect mode), not by legacy tiles.
         #
-        # Du coup, /tiles/unlock devient un mode "simple" : si la ressource
-        # existe et est enabled, on autorise l'unlock.
+        # So /tiles/unlock becomes a "simple" mode: if the resource exists
+        # and is enabled, we authorize the unlock.
 
         # 3) Create tile
         t = Tile(
@@ -975,12 +999,6 @@ def unlock_tile():
             locked=False,
             cooldown_until=None,
         )
-        s.add(t)
-        s.commit()
-        s.refresh(t)
-
-        return jsonify({"id": t.id}), 200
-
         s.add(t)
         s.commit()
         s.refresh(t)
