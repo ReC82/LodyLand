@@ -153,6 +153,24 @@ def _is_item_unlocked_for_player(
 
     return True
 
+def _classify_kind_for_craft(kind_raw: str) -> str:
+    """
+    Normalize a recipe ingredient kind into an inventory pool:
+      - "resource"      -> "resource"
+      - "item", "tool",
+        "powerful_item" -> "item"
+      - default         -> "resource"
+    """
+    kind = (kind_raw or "").strip().lower()
+
+    if kind in ("item", "tool", "powerful_item", "wearable"):
+        return "item"
+    if kind == "resource":
+        return "resource"
+    # Default: treat unknown kinds as resources
+    return "resource"
+
+
 def _compute_required_cost(
     recipe: Dict[str, Any],
     times: int = 1,
@@ -195,23 +213,21 @@ def _compute_required_cost(
         qty_per_slot = int(entry.get("quantity") or 1)
         total = count * qty_per_slot * max(times, 1)
 
-        # IMPORTANT : on regarde d'abord kind, puis source, on strip + lower
         kind_raw = (
-            entry.get("type")     # <--- ajouté
+            entry.get("type")
             or entry.get("kind")
             or entry.get("source")
             or "resource"
         )
 
-        kind = str(kind_raw).strip().lower()
-        print(f"[craft] Symbol '{symbol}': kind='{kind}', key='{key}', qty_per_slot={qty_per_slot}, count={count}, total={total}")
-        if kind == "item":
+        pool = _classify_kind_for_craft(kind_raw)
+
+        if pool == "item":
             required_items[key] = required_items.get(key, 0) + total
         else:
-            # tout le reste = resource
             required_resources[key] = required_resources.get(key, 0) + total
 
-    return required_resources, required_items
+            return required_resources, required_items
 
 
 

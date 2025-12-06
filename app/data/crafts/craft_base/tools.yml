@@ -73,39 +73,39 @@ tool_rod_basic_with_worm:
 
   enabled: true     
 
-  wooden_knife:
-    key: wooden_knife
-    station_key: craft_table_base
+tool_wooden_knife:
+  key: tool_wooden_knife
+  station_key: craft_table_base
 
-    required_grid:
-      tier: 1        # 1x3 (début du jeu)
+  required_grid:
+    tier: 1        # 1x3 (début du jeu)
 
-    output:
-      kind: tool
-      key: wooden_knife
-      quantity: 1
+  output:
+    kind: tool
+    key: tool_wooden_knife
+    quantity: 1
 
-    recipe:
-      pattern:
-        - "BS."
-      legend:
-        B:
-          kind: resource
-          key: small_stone
-          quantity: 1
-        S:
-          kind: resource
-          key: wooden_stick
-          quantity: 1
+  recipe:
+    pattern:
+      - "BS."
+    legend:
+      B:
+        kind: resource
+        key: small_stone
+        quantity: 1
+      S:
+        kind: item
+        key: wooden_stick
+        quantity: 1
 
-    craft_time_seconds: 10
-    xp_reward: 5
+  craft_time_seconds: 10
+  xp_reward: 5
 
-    unlock:
-    - type: card
-      key: recipe_wooden_knife
+  unlock:
+  - type: card
+    key: recipe_tool_wooden_knife
 
-    - type: level
-      min_level: 2
+  - type: level
+    min_level: 2
 
-    enabled: true     
+  enabled: true     
