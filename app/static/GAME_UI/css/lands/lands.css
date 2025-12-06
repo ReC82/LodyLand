@@ -313,30 +313,29 @@
 
 
 /* ============================================================
-   7) BONUS TILE: "Add Slot" (BASE + PREMIUM)
+   7) BONUS TILE: "Add Slot" (same size as others)
    ============================================================ */
 
 .slot-tile.slot-add {
-  background: rgba(0, 140, 90, 0.15);
-  border: 1px solid rgba(0, 255, 160, 0.4);
+  /* Same base metrics as .slot-tile, only color / glow changes */
+  background: rgba(0, 140, 90, 0.18);
+  border: 1px solid rgba(0, 255, 160, 0.5);
   box-shadow: 0 0 8px rgba(0, 255, 140, 0.25);
-  transition: 0.25s ease;
 }
 
 .slot-tile.slot-add:hover {
-  background: rgba(0, 170, 110, 0.22);
-  border-color: rgba(0, 255, 160, 0.8);
+  background: rgba(0, 170, 110, 0.26);
+  border-color: rgba(0, 255, 160, 0.9);
   box-shadow: 0 0 14px rgba(0, 255, 160, 0.35);
-  transform: translateY(-2px);
 }
 
+/* Keep same icon size as default land-slot-icon (64x64) */
 .slot-tile.slot-add .land-slot-icon {
-  width: 68px;
-  height: 68px;
+  /* Optional: slightly stronger glow, but same size */
   filter:
-    drop-shadow(0 0 5px rgba(0, 255, 170, 0.75))
-    drop-shadow(0 0 10px rgba(0, 255, 150, 0.35));
-  opacity: 0.95;
+    drop-shadow(0 0 4px rgba(0, 255, 170, 0.7))
+    drop-shadow(0 0 8px rgba(0, 255, 150, 0.3));
+  opacity: 0.98;
 }
 
 .slot-tile.slot-add .slot-label {
@@ -345,10 +344,8 @@
 }
 
 .slot-tile.slot-add .slot-index {
-  font-size: 1.1rem;
-  color: #cafff2 !important;
+  color: #cafff2;
 }
-
 
 /* ============================================================
    8) LOOT TOASTS (left side of the screen)

@@ -106,11 +106,9 @@
       </div>
     </div>
 
-
-
-
-    <!-- Grille des slots -->
+    <!-- Grille des slots (slots débloqués + tuile "+1") -->
     <div class="slot-grid">
+      {# Existing unlocked slots #}
       {% for idx in range(state.total_slots) %}
         {% set cd = slot_cooldowns.get(idx) if slot_cooldowns is defined else None %}
         <div
@@ -136,12 +134,10 @@
           </div>
         </div>
       {% endfor %}
-    </div>
 
-    <!-- Tuile +1 slot -->
-    <div class="slot-add-container">
+      {# "+1 slot" tile: same size, same grid #}
       <div
-        class="slot-tile slot-add full-width"
+        class="slot-tile slot-add"
         id="add-slot-btn"
         data-next-cost="{{ state.next_cost }}"
         data-has-free="{{ 1 if has_free_slot_card else 0 }}"
@@ -164,7 +160,6 @@
         <div class="slot-status">Clique pour débloquer</div>
       </div>
     </div>
-  </div>
 
     <!-- Slot purchase modals -->
     <!-- Confirm modal -->
