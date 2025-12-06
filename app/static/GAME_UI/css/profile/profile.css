@@ -1,0 +1,134 @@
+/* GAME_UI/css/profile/profile.css */
+
+/* Global profile page layout */
+.profile-page {
+  max-width: 1100px;
+}
+
+/* Header */
+.profile-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.5rem;
+}
+
+.profile-title {
+  font-size: 1.75rem;
+  margin: 0;
+}
+
+.profile-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  color: #a0aec0;
+}
+
+/* Cards */
+.profile-card {
+  background: rgba(15, 23, 42, 0.92);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 18px 30px rgba(15, 23, 42, 0.65);
+  padding: 1rem 1.2rem;
+}
+
+.profile-card-header {
+  margin-bottom: 0.75rem;
+}
+
+.profile-card-title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Info rows */
+.profile-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.35);
+  font-size: 0.9rem;
+}
+
+.profile-info-row:last-child {
+  border-bottom: none;
+}
+
+.profile-info-row-muted {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+.profile-info-label {
+  color: #a0aec0;
+}
+
+.profile-info-value {
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Player card */
+.profile-player-card {
+  height: 100%;
+}
+
+.profile-avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-avatar-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  border: 3px solid rgba(250, 204, 21, 0.8);
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: #020617;
+}
+
+/* Stats */
+.profile-stat {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.85rem;
+}
+
+.profile-stat-label {
+  color: #a0aec0;
+  margin-bottom: 0.15rem;
+}
+
+.profile-stat-value {
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.profile-stat-hint {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+/* History buttons grid */
+.profile-history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 991.98px) {
+  .profile-card {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .profile-avatar-img {
+    width: 96px;
+    height: 96px;
+  }
+}

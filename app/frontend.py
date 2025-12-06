@@ -818,3 +818,50 @@ def inventory_page():
     """
     # player = g.player  # dispo si tu veux
     return render_template("GAME_UI/inventory.html")
+
+# ---------------------------------------------------------------------------
+# Profile page
+# ---------------------------------------------------------------------------
+
+@frontend_bp.route("/profile")
+@login_required
+def player_profile():
+    """
+    Player profile page:
+    - Account info (email, registration date, etc.)
+    - Player info (pseudo, level, avatar placeholder)
+    - Basic statistics placeholders
+    """
+
+    player = g.player  # déjà rempli par ton décorateur login_required
+    account = getattr(player, "account", None)
+
+    # Account info
+    email = getattr(account, "email", "inconnu")
+    created_at = getattr(account, "created_at", None)
+
+    # Player info (pseudo WIP)
+    pseudo = (
+        getattr(player, "pseudo", None)
+        or getattr(player, "nickname", None)
+        or getattr(player, "display_name", None)
+        or getattr(player, "username", None)
+    )
+    level = getattr(player, "level", 0)
+
+    # Stats placeholders (on les branchera plus tard)
+    stats = {
+        "lands_unlocked": 0,   # TODO: compter les lands débloqués
+        "total_slots": 0,      # TODO: slots total du joueur
+        "quests_completed": 0, # TODO: quêtes terminées
+        "level": level,
+    }
+
+    return render_template(
+        "GAME_UI/profile/profile.html",
+        email=email,
+        created_at=created_at,
+        pseudo=pseudo,
+        level=level,
+        stats=stats,
+    )

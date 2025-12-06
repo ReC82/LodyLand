@@ -81,21 +81,28 @@ function setupGameMenu() {
       case "lands":
         window.location.href = "/lands";
         break;
-      case "logout":
-        window.location.href = "/logout";
+
+      case "inventory":
+        window.location.href = "/inventory";
         break;
+
       case "profile":
+        window.location.href = "/profile";
+        break;
+
       case "shop":
         window.location.href = "/shop";
         break;
-      case "inventory":
-        window.location.href = "/inventory";
-      break;
+
+      case "logout":
+        window.location.href = "/logout";
+        break;
+
       default:
-        // TODO: dedicated pages to come
         console.log("[GameMenu] Action not implemented:", action);
         break;
     }
+
   });
 }
 
