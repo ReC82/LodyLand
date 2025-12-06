@@ -3,7 +3,7 @@ beach:
   label_fr: Plage
   label_en: Beach
   starting_land: false
-  slots: 5
+  slots: 4
   slot_icon: static/assets/img/lands/beach_slot.png
   logo: static/assets/img/lands/beach_logo.png
   html_description: templates/GAME_UI/lands/land_beach_description.html

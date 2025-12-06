@@ -3,7 +3,7 @@ levels:
     xp_required: 800
     rewards:
       - type: coins
-        amount: 200
+        amount: 600
 
     story_events:
       - id: "level_9_short_thought"

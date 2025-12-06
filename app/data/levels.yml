@@ -280,6 +280,8 @@ levels:
 - level: 5
   xp_required: 150
   rewards:
+  - type: coins
+    amount: 200
   - type: card
     card_key: land_cave
   - type: diams
@@ -328,7 +330,7 @@ levels:
   xp_required: 200
   rewards:
   - type: coins
-    amount: 200
+    amount: 300
   story_events:
   - id: level_6_short_thought
     trigger: on_level_reached
@@ -348,7 +350,7 @@ levels:
   xp_required: 400
   rewards:
   - type: coins
-    amount: 200
+    amount: 400
   story_events:
   - id: level_7_short_thought
     trigger: on_level_reached
@@ -367,10 +369,12 @@ levels:
 - level: 8
   xp_required: 600
   rewards:
+  - type: card
+    card_key: land_desert
   - type: coins
-    amount: 200
+    amount: 500
   story_events:
-  - id: level_6_short_thought
+  - id: level_8_desert
     trigger: on_level_reached
     show_once: true
     modal_variant: toast
@@ -378,17 +382,17 @@ levels:
     - speaker: self
       mood: thinking
       text:
-        fr: 'On m''a parlé d''un temple ancien caché quelque part sur cette île. Il
-          paraît que c''est là que tout a commencé.
+        fr: 'Bon ben il va falloir traverser ce desert pour atteindre le fameux temple.
 
           '
-        en: I've heard about an ancient temple hidden somewhere on this island. They
-          say that's where it all began.
+        en: 'Bon ben il va falloir traverser ce desert pour atteindre le fameux temple.
+
+          '
 - level: 9
   xp_required: 800
   rewards:
   - type: coins
-    amount: 200
+    amount: 600
   story_events:
   - id: level_9_short_thought
     trigger: on_level_reached
@@ -407,6 +411,8 @@ levels:
 - level: 10
   xp_required: 1000
   rewards:
+  - type: coins
+    amount: 700
   - type: card
     card_key: land_temple
   story_events:

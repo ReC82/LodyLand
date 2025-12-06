@@ -89,6 +89,6 @@ forest:
           max: 1
       extra_loot:
         - resource: resin
-          chance: 0.05
+          chance: 0.2
           min: 1
           max: 1          

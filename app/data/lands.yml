@@ -8,7 +8,7 @@ beach:
   label_fr: Plage
   label_en: Beach
   starting_land: false
-  slots: 5
+  slots: 4
   slot_icon: static/assets/img/lands/beach_slot.png
   logo: static/assets/img/lands/beach_logo.png
   html_description: templates/GAME_UI/lands/land_beach_description.html
@@ -69,7 +69,7 @@ beach:
         max: 1
         chance: 0.05
 cave:
-  card_key: land_cave
+  key: land_cave
   label: Cave
   short_description: A simple cave
   full_description: land_cave_description
@@ -77,9 +77,9 @@ cave:
   slots: 3
   slot_icon: static/assets/img/lands/cave_slot.png
   logo: static/assets/img/lands/cave_logo.png
-  additional_slot_base_cost_diams: 10
+  additional_slot_base_cost_diams: 20
   additional_slot_cost_multiplier: 1.5
-  xp_per_collect: 3
+  xp_per_collect: 4
   tools:
     any:
       extra_loot:
@@ -144,7 +144,6 @@ cave:
         chance: 0.1
         min: 1
         max: 1
-  key: cave
 desert:
   card_key: land_desert
   label: Desert
@@ -303,10 +302,10 @@ forest:
       - resource: bark
         chance: 1.0
         min: 1
-        max: 2
+        max: 1
       extra_loot:
       - resource: resin
-        chance: 0.05
+        chance: 0.2
         min: 1
         max: 1
   key: forest

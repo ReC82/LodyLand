@@ -1,6 +1,6 @@
 cave:
-  card_key: land_cave
-  label: "Cave"
+  key: land_cave
+  label: Cave
   short_description: "A simple cave"
   full_description: land_cave_description
 
@@ -9,10 +9,10 @@ cave:
   slot_icon: static/assets/img/lands/cave_slot.png
   logo: static/assets/img/lands/cave_logo.png
 
-  additional_slot_base_cost_diams: 10
+  additional_slot_base_cost_diams: 20
   additional_slot_cost_multiplier: 1.5
 
-  xp_per_collect: 3   # base XP pour ce land
+  xp_per_collect: 4   # base XP pour ce land
 
   tools:
     any:

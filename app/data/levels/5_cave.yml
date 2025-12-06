@@ -2,6 +2,8 @@ levels:
   - level: 5
     xp_required: 150
     rewards:
+      - type: coins
+        amount: 200    
       - type: card
         card_key: land_cave
       - type: diams
