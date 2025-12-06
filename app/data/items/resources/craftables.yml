@@ -1,6 +1,6 @@
   wooden_stick:
     key: wooden_stick
-    kind: resource
+    kind: item
     label: Bâton en bois
     description: Un bâton solide, utile pour fabriquer des outils simples.
     icon: /static/assets/img/items/resources/wooden_stick.png
@@ -9,7 +9,7 @@
     unlock_description: Fabriqué en craftant ou en récoltant des branches.
 
   wooden_plank:
-    key: wooden_plank
+    key: item
     kind: resource
     label: Planche de bois
     description: Une planche de bois, utile pour fabriquer des objets.
@@ -20,7 +20,7 @@
 
   iron_ingot:
     key: iron_ingot
-    kind: resource
+    kind: item
     label: Lingot de fer
     description: Un lingot de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ingot.png
@@ -30,7 +30,7 @@
 
   iron_stick:
     key: iron_stick
-    kind: resource
+    kind: item
     label: Bâton de fer
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_stick.png

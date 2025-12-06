@@ -16,6 +16,15 @@
     base_sell_price: 5
     enabled: true  
 
+  tool_branch_shovel:
+    key: tool_branch_shovel
+    kind: tool
+    label: Wooden Shovel
+    description: Une pelle de base.
+    icon: /static/assets/img/items/tools/tool_branch_shovel.png
+    base_sell_price: 5
+    enabled: true      
+
   tool_wooden_hammer:
     key: tool_wooden_hammer
     kind: tool

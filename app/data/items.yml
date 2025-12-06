@@ -172,7 +172,7 @@ items:
 
   iron_ingot:
     key: iron_ingot
-    kind: resource
+    kind: item
     label: Lingot de fer
     description: Un lingot de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ingot.png
@@ -192,13 +192,23 @@ items:
 
   iron_stick:
     key: iron_stick
-    kind: resource
+    kind: item
     label: Bâton de fer
     description: Un bâton de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_stick.png
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriqué en craftant du minerai de fer.
+
+  item:
+    key: item
+    kind: resource
+    label: Planche de bois
+    description: Une planche de bois, utile pour fabriquer des objets.
+    icon: /static/assets/img/items/resources/wooden_plank.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant du bois.
 
   magma_drop:
     key: magma_drop
@@ -439,6 +449,15 @@ items:
     enabled: true
     unlock_description: Trouvé très rarement dans le désert.
 
+  tool_branch_shovel:
+    key: tool_branch_shovel
+    kind: tool
+    label: Wooden Shovel
+    description: Une pelle de base.
+    icon: /static/assets/img/items/tools/tool_branch_shovel.png
+    base_sell_price: 5
+    enabled: true
+
   tool_sharp_stone:
     key: tool_sharp_stone
     kind: tool
@@ -530,19 +549,9 @@ items:
     enabled: true
     unlock_description: Disponible dès le niveau 1.
 
-  wooden_plank:
-    key: wooden_plank
-    kind: resource
-    label: Planche de bois
-    description: Une planche de bois, utile pour fabriquer des objets.
-    icon: /static/assets/img/items/resources/wooden_plank.png
-    base_sell_price: 2
-    enabled: true
-    unlock_description: Fabriquée en craftant du bois.
-
   wooden_stick:
     key: wooden_stick
-    kind: resource
+    kind: item
     label: Bâton en bois
     description: Un bâton solide, utile pour fabriquer des outils simples.
     icon: /static/assets/img/items/resources/wooden_stick.png
