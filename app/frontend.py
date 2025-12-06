@@ -18,11 +18,20 @@ from flask import (
     g,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from sqlalchemy import select, func 
 from functools import wraps
 
 from .auth import get_current_player
 from .db import SessionLocal
-from .models import Player, Account, PlayerCard, CardDef, LandSlotState
+from .models import (
+    Player,
+    Account,
+    PlayerCard,
+    CardDef,
+    LandSlotState,
+    PlayerQuest, 
+)
 from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
 
@@ -830,30 +839,66 @@ def player_profile():
     Player profile page:
     - Account info (email, registration date, etc.)
     - Player info (pseudo, level, avatar placeholder)
-    - Basic statistics placeholders
+    - Statistics (lands, slots, quests...)
     """
 
-    player = g.player  # déjà rempli par ton décorateur login_required
+    player = g.player
     account = getattr(player, "account", None)
 
-    # Account info
+    # -----------------------
+    # Infos de compte
+    # -----------------------
     email = getattr(account, "email", "inconnu")
     created_at = getattr(account, "created_at", None)
 
-    # Player info (pseudo WIP)
+    # -----------------------
+    # Infos joueur
+    # -----------------------
     pseudo = (
-        getattr(player, "pseudo", None)
-        or getattr(player, "nickname", None)
-        or getattr(player, "display_name", None)
+        getattr(player, "name", None)        # ton modèle Player a 'name'
+        or getattr(player, "pseudo", None)
         or getattr(player, "username", None)
     )
     level = getattr(player, "level", 0)
 
-    # Stats placeholders (on les branchera plus tard)
+    # -----------------------
+    # Statistiques : quêtes, lands, slots
+    # -----------------------
+    db = SessionLocal()
+    try:
+        # 1) Quêtes terminées
+        stmt_quests_completed = (
+            select(func.count())
+            .select_from(PlayerQuest)
+            .where(
+                PlayerQuest.player_id == player.id,
+                PlayerQuest.status == "completed",
+            )
+        )
+        quests_completed: int = db.scalar(stmt_quests_completed) or 0
+
+        # 2) Lands débloqués = nombre de land_key distincts
+        stmt_lands_unlocked = (
+            select(func.count(func.distinct(LandSlotState.land_key)))
+            .where(LandSlotState.player_id == player.id)
+        )
+        lands_unlocked: int = db.scalar(stmt_lands_unlocked) or 0
+
+        # 3) Nombre total de slots = nombre de lignes LandSlotState pour ce joueur
+        stmt_total_slots = (
+            select(func.count())
+            .select_from(LandSlotState)
+            .where(LandSlotState.player_id == player.id)
+        )
+        total_slots: int = db.scalar(stmt_total_slots) or 0
+
+    finally:
+        db.close()
+
     stats = {
-        "lands_unlocked": 0,   # TODO: compter les lands débloqués
-        "total_slots": 0,      # TODO: slots total du joueur
-        "quests_completed": 0, # TODO: quêtes terminées
+        "lands_unlocked": lands_unlocked,
+        "total_slots": total_slots,
+        "quests_completed": quests_completed,
         "level": level,
     }
 
