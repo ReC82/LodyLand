@@ -526,3 +526,53 @@
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
 }
+
+/* Simple in-game modal for lands */
+.land-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.land-modal-backdrop[hidden] {
+  display: none;
+}
+
+.land-modal {
+  background: #0b1020;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  padding: 16px 20px;
+  max-width: 360px;
+  width: 100%;
+  color: #f7fafc;
+}
+
+.land-modal-header {
+  margin-bottom: 8px;
+}
+
+.land-modal-title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.land-modal-body {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.land-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.land-modal-btn {
+  min-width: 80px;
+}

@@ -166,6 +166,62 @@
     </div>
   </div>
 
+    <!-- Slot purchase modals -->
+    <!-- Confirm modal -->
+    <div class="land-modal-backdrop" id="slot-confirm-modal" hidden>
+      <div class="land-modal">
+        <div class="land-modal-header">
+          <h2 class="land-modal-title">Confirmer l'achat</h2>
+        </div>
+        <div class="land-modal-body">
+          <p id="slot-confirm-message">
+            Es-tu sûr de vouloir acheter un emplacement ?
+          </p>
+        </div>
+        <div class="land-modal-actions">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm land-modal-btn"
+            data-slot-confirm="cancel"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm land-modal-btn"
+            data-slot-confirm="ok"
+          >
+            Confirmer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result modal (success / error) -->
+    <div class="land-modal-backdrop" id="slot-result-modal" hidden>
+      <div class="land-modal">
+        <div class="land-modal-header">
+          <h2 class="land-modal-title" id="slot-result-title">
+            Emplacement débloqué
+          </h2>
+        </div>
+        <div class="land-modal-body">
+          <p id="slot-result-message">
+            Nouvel emplacement débloqué.
+          </p>
+        </div>
+        <div class="land-modal-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm land-modal-btn"
+            id="slot-result-ok"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
   <!-- Toasts de loot -->
   <div id="loot-toasts" class="loot-toasts"></div>
 
