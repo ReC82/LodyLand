@@ -18,11 +18,20 @@ from flask import (
     g,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from sqlalchemy import select, func 
 from functools import wraps
 
 from .auth import get_current_player
 from .db import SessionLocal
-from .models import Player, Account, PlayerCard, CardDef, LandSlotState
+from .models import (
+    Player,
+    Account,
+    PlayerCard,
+    CardDef,
+    LandSlotState,
+    PlayerQuest, 
+)
 from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
 
@@ -818,3 +827,86 @@ def inventory_page():
     """
     # player = g.player  # dispo si tu veux
     return render_template("GAME_UI/inventory.html")
+
+# ---------------------------------------------------------------------------
+# Profile page
+# ---------------------------------------------------------------------------
+
+@frontend_bp.route("/profile")
+@login_required
+def player_profile():
+    """
+    Player profile page:
+    - Account info (email, registration date, etc.)
+    - Player info (pseudo, level, avatar placeholder)
+    - Statistics (lands, slots, quests...)
+    """
+
+    player = g.player
+    account = getattr(player, "account", None)
+
+    # -----------------------
+    # Infos de compte
+    # -----------------------
+    email = getattr(account, "email", "inconnu")
+    created_at = getattr(account, "created_at", None)
+
+    # -----------------------
+    # Infos joueur
+    # -----------------------
+    pseudo = (
+        getattr(player, "name", None)        # ton modèle Player a 'name'
+        or getattr(player, "pseudo", None)
+        or getattr(player, "username", None)
+    )
+    level = getattr(player, "level", 0)
+
+    # -----------------------
+    # Statistiques : quêtes, lands, slots
+    # -----------------------
+    db = SessionLocal()
+    try:
+        # 1) Quêtes terminées
+        stmt_quests_completed = (
+            select(func.count())
+            .select_from(PlayerQuest)
+            .where(
+                PlayerQuest.player_id == player.id,
+                PlayerQuest.status == "completed",
+            )
+        )
+        quests_completed: int = db.scalar(stmt_quests_completed) or 0
+
+        # 2) Lands débloqués = nombre de land_key distincts
+        stmt_lands_unlocked = (
+            select(func.count(func.distinct(LandSlotState.land_key)))
+            .where(LandSlotState.player_id == player.id)
+        )
+        lands_unlocked: int = db.scalar(stmt_lands_unlocked) or 0
+
+        # 3) Nombre total de slots = nombre de lignes LandSlotState pour ce joueur
+        stmt_total_slots = (
+            select(func.count())
+            .select_from(LandSlotState)
+            .where(LandSlotState.player_id == player.id)
+        )
+        total_slots: int = db.scalar(stmt_total_slots) or 0
+
+    finally:
+        db.close()
+
+    stats = {
+        "lands_unlocked": lands_unlocked,
+        "total_slots": total_slots,
+        "quests_completed": quests_completed,
+        "level": level,
+    }
+
+    return render_template(
+        "GAME_UI/profile/profile.html",
+        email=email,
+        created_at=created_at,
+        pseudo=pseudo,
+        level=level,
+        stats=stats,
+    )
