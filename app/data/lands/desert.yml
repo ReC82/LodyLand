@@ -5,7 +5,7 @@ desert:
   full_description: land_desert_description
 
   starting_land: true
-  slots: 3
+  slots: 2
   slot_icon: static/assets/img/lands/desert_slot.png
   logo: static/assets/img/lands/desert_logo.png
 

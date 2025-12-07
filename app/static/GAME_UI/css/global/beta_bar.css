@@ -1,4 +1,62 @@
-/* --- Beta reminder inside HUD --- */
+/* ============================================================
+   FULL-WIDTH BETA BANNER (top of page)
+   ============================================================ */
+
+.beta-banner {
+  /* Hidden by default on desktop, shown on tablet/mobile */
+  display: none;             /* default, override in media query */
+  width: 100%;
+  box-sizing: border-box;
+
+  background: linear-gradient(
+    90deg,
+    rgba(248, 196, 70, 0.18),
+    rgba(248, 196, 70, 0.05)
+  );
+  border-bottom: 1px solid rgba(248, 196, 70, 0.5);
+
+  color: #facc15;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  padding: 4px 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.beta-banner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #facc15;
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.9);
+  flex-shrink: 0;
+}
+
+.beta-banner-text {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Show banner only on tablet/mobile */
+@media (max-width: 992px) {
+  .beta-banner {
+    display: flex;
+  }
+
+  /* On small screens, hide the small HUD beta pill */
+  .gh-beta-tag {
+    display: none;
+  }
+}
+
+/* ============================================================
+   SMALL HUD BETA PILL (desktop)
+   ============================================================ */
+
 .gh-beta-tag {
   /* Small pill near the logo */
   display: inline-flex;
@@ -25,4 +83,3 @@
   background: #facc15;
   box-shadow: 0 0 6px rgba(250, 204, 21, 0.9);
 }
-/* =================== END BETA REMINDER INSIDE HUD ======== */

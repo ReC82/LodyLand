@@ -86,6 +86,15 @@
   </head>
 
   <body class="{% block body_class %}game-body{% endblock %}">
+
+    <!-- Full-width beta banner (mainly for tablet/mobile) -->
+    <div class="beta-banner">
+      <span class="beta-banner-dot"></span>
+      <span class="beta-banner-text">
+        Version bêta – progression et données susceptibles de changer
+      </span>
+    </div>
+
     <!-- HUD joueur -->
     <header class="game-header">
       <div class="gh-left">
@@ -98,10 +107,6 @@
           />
         </div> -->
         <!-- Beta reminder (HUD) -->
-        <div class="gh-beta-tag">
-          <span class="gh-beta-dot"></span>
-          Version bêta – données de test
-        </div>
       </div>
 
       <!-- CENTRE : zone niveau / XP -->
@@ -120,7 +125,7 @@
           </div>
           <div class="gh-xp-text">
             <span id="hud-xp-current">0</span> /
-            <span id="hud-xp-next">100</span> XP
+            <span id="hud-xp-next">100</span>
           </div>
         </button>
       </div>

@@ -5,7 +5,7 @@ cave:
   full_description: land_cave_description
 
   starting_land: false
-  slots: 3
+  slots: 4
   slot_icon: static/assets/img/lands/cave_slot.png
   logo: static/assets/img/lands/cave_logo.png
 
