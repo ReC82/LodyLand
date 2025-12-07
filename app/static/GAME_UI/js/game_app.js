@@ -1167,9 +1167,16 @@ function updatePlayerHUD(playerData) {
 
   if (!playerData) return;
 
+  // Fix flottants type 424.50000000001
+  const curXp = Number(playerData.xp ?? 0);
+  const nextXp = Number(playerData.xp_next ?? 100);
+
+  const safeCur = Math.round(curXp);
+  const safeNext = Math.round(nextXp);
+
   if (levelEl) levelEl.textContent = playerData.level ?? 0;
-  if (xpCurEl) xpCurEl.textContent = playerData.xp ?? 0;
-  if (xpNextEl) xpNextEl.textContent = playerData.xp_next ?? 100;
+  if (xpCurEl) xpCurEl.textContent = safeCur;
+  if (xpNextEl) xpNextEl.textContent = safeNext;
   if (coinsEl) coinsEl.textContent = playerData.coins ?? 0;
   if (diamsEl) diamsEl.textContent = playerData.diams ?? 0;
   if (landNameEl) landNameEl.textContent = playerData.land_name || "";

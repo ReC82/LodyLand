@@ -8,7 +8,7 @@ beach:
   label_fr: Plage
   label_en: Beach
   starting_land: false
-  slots: 4
+  slots: 6
   slot_icon: static/assets/img/lands/beach_slot.png
   logo: static/assets/img/lands/beach_logo.png
   html_description: templates/GAME_UI/lands/land_beach_description.html
@@ -74,7 +74,7 @@ cave:
   short_description: A simple cave
   full_description: land_cave_description
   starting_land: false
-  slots: 3
+  slots: 4
   slot_icon: static/assets/img/lands/cave_slot.png
   logo: static/assets/img/lands/cave_logo.png
   additional_slot_base_cost_diams: 20
@@ -150,7 +150,7 @@ desert:
   short_description: The great desert
   full_description: land_desert_description
   starting_land: true
-  slots: 3
+  slots: 2
   slot_icon: static/assets/img/lands/desert_slot.png
   logo: static/assets/img/lands/desert_logo.png
   additional_slot_base_cost_diams: 25
@@ -227,7 +227,7 @@ forest:
   short_description: A simple forest
   full_description: land_forest_description
   starting_land: true
-  slots: 5
+  slots: 10
   slot_icon: static/assets/img/lands/forest_slot.png
   logo: static/assets/img/lands/forest_logo.png
   additional_slot_base_cost_diams: 10

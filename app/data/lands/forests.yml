@@ -5,7 +5,7 @@ forest:
   full_description: land_forest_description
 
   starting_land: true
-  slots: 5
+  slots: 10
   slot_icon: static/assets/img/lands/forest_slot.png
   logo: static/assets/img/lands/forest_logo.png
 
