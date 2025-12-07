@@ -573,3 +573,145 @@
 .land-modal-btn {
   min-width: 80px;
 }
+
+/* ============================================================
+   LAND VIEW – responsive (tablettes + smartphones)
+   ============================================================ */
+
+/* --------- Tablettes (≤ 768px) --------- */
+@media (max-width: 768px) {
+  .land-container {
+    max-width: 540px;
+    margin: 1rem auto 2rem;
+    padding: 0 0.75rem;
+  }
+
+  .land-header {
+    margin-top: 6px;
+  }
+
+  /* Logo un peu plus petit mais encore lisible */
+  .land-logo-img {
+    height: 170px;
+    max-width: 260px;
+  }
+
+  /* Slots un peu plus serrés */
+  .slot-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .slot-tile {
+    padding: 10px 6px;
+    border-radius: 10px;
+  }
+
+  .land-slot-icon {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+/* --------- Smartphones (≤ 480px) --------- */
+@media (max-width: 480px) {
+  .land-container {
+    max-width: 420px;
+    margin: 0.75rem auto 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .land-header {
+    margin-top: 4px;
+  }
+
+  /* Logo bien plus compact */
+  .land-logo-img {
+    height: 120px;
+    max-width: 200px;
+    margin-bottom: 6px;
+  }
+
+  /* 3 slots par ligne, toujours */
+  .slot-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 6px 0;
+  }
+
+  .slot-tile {
+    padding: 8px 4px;
+    border-radius: 9px;
+  }
+
+  .land-slot-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 4px;
+  }
+
+  .slot-index {
+    font-size: 0.8rem;
+  }
+
+  .slot-label {
+    font-size: 0.75rem;
+  }
+
+  .slot-status {
+    font-size: 0.7rem;
+  }
+
+  .slot-cooldown-bar {
+    height: 5px;
+    margin-top: 3px;
+  }
+}
+
+/* ============================================================
+   Loot toasts – mobile layout (top right, compacts)
+   ============================================================ */
+@media (max-width: 480px) {
+  .loot-toasts {
+    position: fixed;
+    top: 82px;              /* juste sous le HUD */
+    right: 8px;
+    left: auto;
+    bottom: auto;
+    transform: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+
+    width: 210px;           /* largeur max de la pile de toasts */
+    max-width: 60vw;
+
+    z-index: 250;           /* au-dessus des slots mais pas au-dessus des modales */
+    pointer-events: none;   /* ne bloque pas les clics derrière */
+  }
+
+  .loot-toast {
+    padding: 3px 7px;
+    font-size: 0.7rem;
+    border-radius: 999px;
+
+    max-width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55);
+    opacity: 0.95;
+  }
+
+  .loot-toast img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .loot-toast-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
