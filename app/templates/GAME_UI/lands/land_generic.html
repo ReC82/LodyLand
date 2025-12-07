@@ -18,20 +18,26 @@
 </script>
 
   <div class="land-container {{ land_key }}-land">
-    <div class="land-header d-flex justify-content-between align-items-center mb-3">
-      <div class="land-logo-block">
-        {% if land_logo %}
-          <img
-            src="{{ url_for('static', filename=land_logo.replace('static/', '')) }}"
-            alt="{{ land_label }}"
-            class="land-logo-img"
-          />
-        {% else %}
-          <h1 class="h3 mb-0">{{ land_label }}</h1>
-        {% endif %}
-      </div>
+      <div class="land-header d-flex justify-content-between align-items-center mb-3">
+      <!-- Toute cette zone devient cliquable -->
+      <a
+        href="{{ url_for('frontend.lands_select') }}"
+        class="land-header-clickable d-flex align-items-center justify-content-center flex-grow-1"
+      >
+        <div class="land-logo-block">
+          {% if land_logo %}
+            <img
+              src="{{ url_for('static', filename=land_logo.replace('static/', '')) }}"
+              alt="{{ land_label }}"
+              class="land-logo-img"
+            />
+          {% else %}
+            <h1 class="h3 mb-0">{{ land_label }}</h1>
+          {% endif %}
+        </div>
+      </a>
 
-      <!-- Bouton retour : flèche seule vers /lands -->
+      <!-- Bouton retour (utile surtout sur desktop) -->
       <a
         href="{{ url_for('frontend.lands_select') }}"
         class="btn btn-outline-secondary btn-sm land-back-btn"

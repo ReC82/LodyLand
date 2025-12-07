@@ -31,6 +31,31 @@
   font-size: 1.1rem;
 }
 
+/* Whole header logo zone is clickable (link around logo) */
+.land-header-clickable {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Center the logo inside the clickable area */
+.land-header-clickable .land-logo-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Keep logo rendering clean */
+.land-header-clickable .land-logo-img {
+  display: block;
+}
+
+/* Light feedback on tap/click */
+.land-header-clickable:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+  transition: transform 0.08s ease-out, opacity 0.08s ease-out;
+}
+
 
 /* ============================================================
    2) LAND TOOLS DROPDOWN
@@ -347,8 +372,9 @@
   color: #cafff2;
 }
 
+
 /* ============================================================
-   8) LOOT TOASTS (left side of the screen)
+   8) LOOT TOASTS (desktop / base)
    ============================================================ */
 
 .loot-toasts {
@@ -420,162 +446,7 @@
 
 
 /* ============================================================
-   10) LAND SELECT SCREEN (petites tuiles carrées)
-   ============================================================ */
-
-.land-select-container {
-  max-width: 520px;
-}
-
-/* Barre de recherche */
-.land-select-toolbar {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.land-search-input {
-  width: 100%;
-  max-width: 260px;
-}
-
-/* Grille de tuiles (spéciaux + classiques) */
-.land-tiles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 0.75rem;
-  margin: 1rem 0 2rem;
-}
-
-/* Tuile carrée */
-.land-tile {
-  aspect-ratio: 1 / 1;
-  border-radius: 12px;
-  background: rgba(10, 15, 30, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  text-decoration: none;
-  color: #fdfdfd;
-  padding: 0.35rem;
-
-  cursor: pointer;
-  transition:
-    transform 0.12s ease-out,
-    box-shadow 0.12s ease-out,
-    border-color 0.12s ease-out,
-    background 0.12s ease-out;
-}
-
-/* Hover */
-.land-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
-  border-color: rgba(120, 220, 160, 0.9);
-  background: rgba(15, 30, 45, 0.95);
-}
-
-/* Tuile spéciale (village, lieux spéciaux, etc.) */
-.land-tile-special {
-  border-color: rgba(255, 215, 0, 0.9);
-  box-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
-}
-
-.land-tile-special:hover {
-  border-color: rgba(255, 230, 120, 1);
-}
-
-/* Conteneur icône */
-.land-tile-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.25rem;
-}
-
-/* Icône pour la sélection de lands (IMG) */
-.land-choice-icon {
-  width: 32px !important;
-  height: 32px !important;
-  max-width: 32px !important;
-  max-height: 32px !important;
-  image-rendering: pixelated;
-  object-fit: contain;
-  display: block;
-}
-
-/* Texte sous l’icône */
-.land-tile-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-}
-
-/* Titre de section ("Lands", "Lieux spéciaux") */
-.land-section-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Simple in-game modal for lands */
-.land-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-.land-modal-backdrop[hidden] {
-  display: none;
-}
-
-.land-modal {
-  background: #0b1020;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  padding: 16px 20px;
-  max-width: 360px;
-  width: 100%;
-  color: #f7fafc;
-}
-
-.land-modal-header {
-  margin-bottom: 8px;
-}
-
-.land-modal-title {
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-.land-modal-body {
-  font-size: 0.95rem;
-  margin-bottom: 12px;
-}
-
-.land-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.land-modal-btn {
-  min-width: 80px;
-}
-
-/* ============================================================
-   LAND VIEW – responsive (tablettes + smartphones)
+   10) LAND VIEW – responsive (tablettes + smartphones)
    ============================================================ */
 
 /* --------- Tablettes (≤ 768px) --------- */
@@ -588,12 +459,22 @@
 
   .land-header {
     margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
   }
 
-  /* Logo un peu plus petit mais encore lisible */
   .land-logo-img {
     height: 170px;
     max-width: 260px;
+  }
+
+  .land-back-btn {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    border-radius: 999px;
+    white-space: nowrap;
   }
 
   /* Slots un peu plus serrés */
@@ -612,6 +493,11 @@
     width: 54px;
     height: 54px;
   }
+
+  /* On peut choisir de masquer le bouton retour sur tablette si tu veux */
+  .land-back-btn {
+    display: none !important;
+  }
 }
 
 /* --------- Smartphones (≤ 480px) --------- */
@@ -624,12 +510,12 @@
 
   .land-header {
     margin-top: 4px;
+    gap: 8px;
   }
 
-  /* Logo bien plus compact */
   .land-logo-img {
-    height: 120px;
-    max-width: 200px;
+    height: 110px;
+    max-width: 190px;
     margin-bottom: 6px;
   }
 
@@ -669,8 +555,9 @@
   }
 }
 
+
 /* ============================================================
-   Loot toasts – mobile layout (top right, compacts)
+   11) Loot toasts – mobile layout (top right, compacts)
    ============================================================ */
 @media (max-width: 480px) {
   .loot-toasts {
