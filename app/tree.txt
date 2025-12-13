@@ -1,7 +1,24 @@
 .
 |-- __init__.py
+|-- __pycache__
+|   |-- __init__.cpython-312.pyc
+|   |-- auth.cpython-312.pyc
+|   |-- craft_defs.cpython-312.pyc
+|   |-- db.cpython-312.pyc
+|   |-- debug_village_shop.cpython-312.pyc
+|   |-- economy.cpython-312.pyc
+|   |-- frontend.cpython-312.pyc
+|   |-- lands.cpython-312.pyc
+|   |-- models.cpython-312.pyc
+|   |-- progression.cpython-312.pyc
+|   |-- seed.cpython-312.pyc
+|   |-- seed_cards.cpython-312.pyc
+|   |-- unlock_rules.cpython-312.pyc
+|   `-- village_shop.cpython-312.pyc
 |-- admin
 |   |-- __init__.py
+|   |-- __pycache__
+|   |   `-- __init__.cpython-312.pyc
 |   |-- static
 |   |   `-- css
 |   |       `-- admin.css
@@ -28,6 +45,8 @@
 |-- auth.py
 |-- craft_defs.py
 |-- data
+|   |-- __pycache__
+|   |   `-- normalize_all_yaml.cpython-312.pyc
 |   |-- cards
 |   |   |-- _README.md
 |   |   |-- boosts
@@ -56,9 +75,14 @@
 |   |   |-- packs
 |   |   |   |-- events.yml
 |   |   |   `-- starters.yml
-|   |   `-- read_me.html
+|   |   |-- read_me.html
+|   |   `-- treasures
+|   |       |-- beach_nautilus_shell.yml
+|   |       `-- forest_ancient_bark.yml
 |   |-- cards.yml
+|   |-- cards.yml.bak
 |   |-- craft_stations.yml
+|   |-- craft_validation_report.html
 |   |-- crafts
 |   |   |-- alchemy_base
 |   |   |-- cooking_base
@@ -78,25 +102,66 @@
 |   |   |   `-- resources.yml
 |   |   `-- normalize_crafts_yaml.py
 |   |-- crafts.yml
+|   |-- crafts.yml.bak
 |   |-- items
-|   |   |-- misc.yml
+|   |   |-- miscs
+|   |   |   `-- misc.yml
 |   |   |-- normalize_items_yaml.py
 |   |   |-- resources
 |   |   |   |-- craftables.yml
 |   |   |   |-- resources_beach.yml
 |   |   |   |-- resources_cave.yml
-|   |   |   `-- resources_forest.yml
+|   |   |   |-- resources_desert.yml
+|   |   |   |-- resources_forest.yml
+|   |   |   |-- resources_frozen.yml
+|   |   |   |-- resources_haunted_woods.yml
+|   |   |   |-- resources_lake.yml
+|   |   |   |-- resources_mountain.yml
+|   |   |   |-- resources_ruins.yaml
+|   |   |   `-- resources_volcano.yml
 |   |   |-- tools
 |   |   |   `-- tool_forest.yml
-|   |   |-- tools.yml
-|   |   `-- weapons.yml
+|   |   |-- treasures
+|   |   |   |-- bamboo_forest.yml
+|   |   |   |-- beach.yml
+|   |   |   |-- burning_chasm.yml
+|   |   |   |-- cave.yml
+|   |   |   |-- corrupted_lands.yml
+|   |   |   |-- cursed_swamp.yml
+|   |   |   |-- desert.yml
+|   |   |   |-- dream_dunes.yml
+|   |   |   |-- forest.yml
+|   |   |   |-- frost_rift.yml
+|   |   |   |-- frozen.yml
+|   |   |   |-- grassland.yml
+|   |   |   |-- haunted_woods.yml
+|   |   |   |-- isle_of_the_dead.yml
+|   |   |   |-- lake.yml
+|   |   |   |-- misty_bay.yml
+|   |   |   |-- mountain.yml
+|   |   |   |-- natural_graveyard.yml
+|   |   |   |-- red_canyon.yml
+|   |   |   |-- ruins.yml
+|   |   |   |-- rune_forest.yml
+|   |   |   |-- soul_heath.yml
+|   |   |   |-- stone_teeth.yml
+|   |   |   |-- stormlands.yml
+|   |   |   |-- sunrise_cliffs.yml
+|   |   |   |-- swamp.yml
+|   |   |   `-- volcano.yml
+|   |   `-- weapons
+|   |       `-- weapons.yml
 |   |-- items.yml
+|   |-- items.yml.bak
 |   |-- lands
 |   |   |-- beach.yml
 |   |   |-- cave.yml
+|   |   |-- desert.yml
 |   |   |-- forests.yml
 |   |   `-- normalize_lands_yaml.py
 |   |-- lands.yml
+|   |-- lands.yml.bak
+|   |-- lands.yml.bkp
 |   |-- levels
 |   |   |-- 0_intro.yml
 |   |   |-- 10_temple.yml
@@ -106,14 +171,28 @@
 |   |   |-- 4_progress.yml
 |   |   |-- 5_cave.yml
 |   |   |-- 6_progress.yml
+|   |   |-- 7_progress.yml
+|   |   |-- 8_desert.yml
+|   |   |-- 9_progress.yml
 |   |   `-- normalize_levels_yaml.py
 |   |-- levels.yml
 |   |-- normalize_all_yaml.py
-|   |-- quests.yml
-|   |-- resources.yml
-|   |-- resources.yml.bak
+|   |-- quests
+|   |   |-- daily
+|   |   |   `-- basic_forest.yml
+|   |   |-- normalize_quests_yaml.py
+|   |   |-- others
+|   |   |   `-- demo.yml
+|   |   |-- quests.yml
+|   |   |-- storyline
+|   |   |   |-- beach_discover.yml
+|   |   |   |-- cave_unlock.yml
+|   |   |   `-- forest_intro.yml
+|   |   `-- weekly
+|   |       `-- weekly_forest.yml
 |   |-- validation_report.html
-|   `-- village_shop.yml
+|   |-- village_shop.yml
+|   `-- village_trades.yml
 |-- db.py
 |-- debug_village_shop.py
 |-- economy.py
@@ -123,10 +202,31 @@
 |-- progression.py
 |-- quests
 |   |-- __init__.py
+|   |-- __pycache__
+|   |   |-- __init__.cpython-312.pyc
+|   |   |-- loader.cpython-312.pyc
+|   |   `-- service.cpython-312.pyc
 |   |-- loader.py
 |   `-- service.py
 |-- routes
 |   |-- __init__.py
+|   |-- __pycache__
+|   |   |-- __init__.cpython-312.pyc
+|   |   |-- api_cards.cpython-312.pyc
+|   |   |-- api_craft.cpython-312.pyc
+|   |   |-- api_daily.cpython-312.pyc
+|   |   |-- api_inventory.cpython-312.pyc
+|   |   |-- api_lands.cpython-312.pyc
+|   |   |-- api_misc.cpython-312.pyc
+|   |   |-- api_players.cpython-312.pyc
+|   |   |-- api_quests.cpython-312.pyc
+|   |   |-- api_resources.cpython-312.pyc
+|   |   |-- api_shop.cpython-312.pyc
+|   |   |-- api_temple.cpython-312.pyc
+|   |   |-- api_tiles.cpython-312.pyc
+|   |   |-- api_village_cardshop.cpython-312.pyc
+|   |   |-- api_village_trades.cpython-312.pyc
+|   |   `-- village.cpython-312.pyc
 |   |-- api_cards.py
 |   |-- api_craft.py
 |   |-- api_daily.py
@@ -134,12 +234,19 @@
 |   |-- api_lands.py
 |   |-- api_misc.py
 |   |-- api_players.py
+|   |-- api_quests.py
 |   |-- api_resources.py
 |   |-- api_shop.py
+|   |-- api_temple.py
+|   |-- api_village_cardshop.py
+|   |-- api_village_trades.py
 |   `-- village.py
 |-- seed.py
 |-- seed_cards.py
 |-- services
+|   |-- __pycache__
+|   |   |-- cards.cpython-312.pyc
+|   |   `-- crafts.cpython-312.pyc
 |   |-- cards.py
 |   |-- crafts.py
 |   |-- levels_loader.py
@@ -154,17 +261,34 @@
 |   |   |-- css
 |   |   |   |-- auth.css
 |   |   |   |-- game.css
+|   |   |   |-- global
+|   |   |   |   |-- base.css
+|   |   |   |   |-- beta_bar.css
+|   |   |   |   |-- game_hud.css
+|   |   |   |   |-- modals
+|   |   |   |   |   |-- craft_modal.css
+|   |   |   |   |   |-- daily_chest_modal.css
+|   |   |   |   |   |-- game_menu_modal.css
+|   |   |   |   |   |-- image_viewer_modal.css
+|   |   |   |   |   |-- level_up_modal.css
+|   |   |   |   |   |-- levels_list_modal.css
+|   |   |   |   |   |-- quests_modal.css
+|   |   |   |   |   |-- story_modal.css
+|   |   |   |   |   `-- travel_modals.css
+|   |   |   |   `-- responsive.css
 |   |   |   |-- inventory.css
 |   |   |   |-- lands
+|   |   |   |   |-- land_select.css
 |   |   |   |   |-- lands.css
 |   |   |   |   `-- village
 |   |   |   |       |-- quests.css
 |   |   |   |       |-- shop.css
 |   |   |   |       |-- trades.css
 |   |   |   |       `-- village.css
-|   |   |   |-- lands.css.bpk
 |   |   |   |-- login.css
 |   |   |   |-- player
+|   |   |   |-- profile
+|   |   |   |   `-- profile.css
 |   |   |   |-- shop.css
 |   |   |   `-- ui
 |   |   `-- js
@@ -178,18 +302,248 @@
 |   |       |-- quests_app.js
 |   |       |-- shop_app.js
 |   |       |-- story_app.js
+|   |       |-- temple
+|   |       |   `-- temple_game.js
 |   |       |-- ui
 |   |       `-- village
 |   |           |-- village_common.js
+|   |           |-- village_market.js
 |   |           |-- village_quests.js
 |   |           |-- village_shop.js
 |   |           `-- village_trades.js
+|   |-- assets
+|   |   `-- img
+|   |       |-- cards
+|   |       |   |-- access
+|   |       |   |   |-- card_access_craft_table_1.png
+|   |       |   |   |-- card_access_craft_table_2.png
+|   |       |   |   `-- card_access_craft_table_3.png
+|   |       |   |-- boosts
+|   |       |   |   |-- _treasures
+|   |       |   |   |   |-- beach
+|   |       |   |   |   |   `-- anchovy_boost_treasure_1.png
+|   |       |   |   |   `-- forest
+|   |       |   |   |       `-- branch_boost_treasure_1.png
+|   |       |   |   |-- anchovy_boost_1.png
+|   |       |   |   |-- branch_boost_1.png
+|   |       |   |   |-- card_anchovy_boost_1.png
+|   |       |   |   |-- card_boost_xp_1.png
+|   |       |   |   |-- card_branch_cooldown_boost_1.png
+|   |       |   |   |-- card_global_cooldown_boost_1.png
+|   |       |   |   `-- vine_boost_1.png
+|   |       |   |-- branch_boost_1.png
+|   |       |   |-- craft_crafttable.png
+|   |       |   |-- default_card.png
+|   |       |   |-- forest_loot_boost_1.png
+|   |       |   |-- global_xp_boost_1.png
+|   |       |   |-- land_beach.png
+|   |       |   |-- land_cave.png
+|   |       |   |-- land_desert.png
+|   |       |   |-- land_farm.png
+|   |       |   |-- land_forest.png
+|   |       |   |-- land_lake.png
+|   |       |   |-- land_village.png
+|   |       |   |-- lands
+|   |       |   |   |-- land_beach.png
+|   |       |   |   |-- land_cave.png
+|   |       |   |   |-- land_desert.png
+|   |       |   |   |-- land_forest.png
+|   |       |   |   |-- land_frozen.png
+|   |       |   |   |-- land_haunted_wood.png
+|   |       |   |   |-- land_lake.png
+|   |       |   |   |-- land_mountain.png
+|   |       |   |   |-- land_volcano.png
+|   |       |   |   `-- specials
+|   |       |   |       |-- land_farm.png
+|   |       |   |       |-- land_maze.png
+|   |       |   |       |-- land_temple.png
+|   |       |   |       |-- land_tribes.png
+|   |       |   |       `-- land_village.png
+|   |       |   |-- recipe_cord.png
+|   |       |   |-- recipe_pearl_necklace.png
+|   |       |   |-- recipes
+|   |       |   |   |-- card_recipe_fish_stick.png
+|   |       |   |   |-- card_recipe_iron_ingot.png
+|   |       |   |   |-- card_recipe_pearl_necklace.png
+|   |       |   |   |-- card_recipe_rod_basic.png
+|   |       |   |   |-- card_recipe_rope.png
+|   |       |   |   |-- card_recipe_sharp_stone.png
+|   |       |   |   |-- card_recipe_shovel_basic.png
+|   |       |   |   |-- card_recipe_vine_basket.png
+|   |       |   |   |-- card_recipe_vine_net.png
+|   |       |   |   |-- card_recipe_wooden_axe.png
+|   |       |   |   |-- card_recipe_wooden_hammer.png
+|   |       |   |   |-- card_recipe_wooden_knife.png
+|   |       |   |   |-- card_recipe_wooden_stick.png
+|   |       |   |   `-- card_recipe_wooden_sword.png
+|   |       |   |-- template_boost.xcf
+|   |       |   `-- wood_boost_1.png
+|   |       |-- items
+|   |       |   |-- misc
+|   |       |   |   |-- pearl_necklace.png
+|   |       |   |   `-- piece_of_broken_statue.png
+|   |       |   |-- resources
+|   |       |   |   |-- anchovy.png
+|   |       |   |   |-- ancient_relic_part.png
+|   |       |   |   |-- apple.png
+|   |       |   |   |-- bark.png
+|   |       |   |   |-- berry.png
+|   |       |   |   |-- branch.png
+|   |       |   |   |-- clay.png
+|   |       |   |   |-- coal.png
+|   |       |   |   |-- default.png
+|   |       |   |   |-- dirt.png
+|   |       |   |   |-- flint.png
+|   |       |   |   |-- gold_leaf.png
+|   |       |   |   |-- herbs.png
+|   |       |   |   |-- iron_ingot.png
+|   |       |   |   |-- iron_ore.png
+|   |       |   |   |-- iron_stick.png
+|   |       |   |   |-- mushroom.png
+|   |       |   |   |-- oak_wood_log.png
+|   |       |   |   |-- palm_leaf.png
+|   |       |   |   |-- palm_wood_log.png
+|   |       |   |   |-- pearl.png
+|   |       |   |   |-- resin.png
+|   |       |   |   |-- rope.png
+|   |       |   |   |-- sand.png
+|   |       |   |   |-- seashell.png
+|   |       |   |   |-- small_stone.png
+|   |       |   |   |-- star.png
+|   |       |   |   |-- stone_chunk.png
+|   |       |   |   |-- vine.png
+|   |       |   |   |-- wooden_plank.png
+|   |       |   |   |-- wooden_stick.png
+|   |       |   |   `-- worm.png
+|   |       |   |-- tools
+|   |       |   |   |-- basic_rod_with_worm.png
+|   |       |   |   |-- hand.png
+|   |       |   |   |-- iron_bucket.png
+|   |       |   |   |-- rod_basic.png
+|   |       |   |   |-- saw.png
+|   |       |   |   |-- shovel_basic.png
+|   |       |   |   |-- tool_wooden_knife.png
+|   |       |   |   |-- vine_basket.png
+|   |       |   |   |-- wood_bucket.png
+|   |       |   |   `-- wooden_axe.png
+|   |       |   |-- treasures
+|   |       |   |   |-- ancient_bark.png
+|   |       |   |   |-- moon_crystal_shard.png
+|   |       |   |   `-- nautilus_shell.png
+|   |       |   `-- weapons
+|   |       |       |-- iron_spear.png
+|   |       |       |-- iron_sword.png
+|   |       |       |-- wooden_shield.png
+|   |       |       |-- wooden_spear.png
+|   |       |       `-- wooden_sword.png
+|   |       |-- lands
+|   |       |   |-- add_slot.png
+|   |       |   |-- beach_logo.png
+|   |       |   |-- beach_slot.png
+|   |       |   |-- cave_logo.png
+|   |       |   |-- cave_slot.png
+|   |       |   |-- desert_logo.png
+|   |       |   |-- desert_slot.png
+|   |       |   |-- forest_logo.png
+|   |       |   |-- forest_slot.png
+|   |       |   |-- frozen_logo.png
+|   |       |   |-- lake_logo.png
+|   |       |   `-- lake_slot.png
+|   |       |-- pnj
+|   |       |   `-- villagers
+|   |       |       |-- Anna.png
+|   |       |       |-- Cyntia.png
+|   |       |       |-- Eduardo.png
+|   |       |       |-- Emily.png
+|   |       |       |-- Gemini_Generated_Image_2h8cci2h8cci2h8c.png
+|   |       |       |-- Gemini_Generated_Image_4umg0o4umg0o4umg.png
+|   |       |       |-- Gemini_Generated_Image_512kos512kos512k.png
+|   |       |       |-- Gemini_Generated_Image_6uj86x6uj86x6uj8.png
+|   |       |       |-- Gemini_Generated_Image_72efwp72efwp72ef.png
+|   |       |       |-- Gemini_Generated_Image_7jb1y07jb1y07jb1.png
+|   |       |       |-- Gemini_Generated_Image_8npi518npi518npi.png
+|   |       |       |-- Gemini_Generated_Image_8xoutp8xoutp8xou.png
+|   |       |       |-- Gemini_Generated_Image_9yqmb79yqmb79yqm.png
+|   |       |       |-- Gemini_Generated_Image_ac2vd6ac2vd6ac2v.png
+|   |       |       |-- Gemini_Generated_Image_adyrymadyrymadyr.png
+|   |       |       |-- Gemini_Generated_Image_ayz0ohayz0ohayz0.png
+|   |       |       |-- Gemini_Generated_Image_c8gxnhc8gxnhc8gx.png
+|   |       |       |-- Gemini_Generated_Image_cfi1ixcfi1ixcfi1.png
+|   |       |       |-- Gemini_Generated_Image_cmjjykcmjjykcmjj.png
+|   |       |       |-- Gemini_Generated_Image_dbgo2zdbgo2zdbgo.png
+|   |       |       |-- Gemini_Generated_Image_ek3d98ek3d98ek3d.png
+|   |       |       |-- Gemini_Generated_Image_eyc5uueyc5uueyc5.png
+|   |       |       |-- Gemini_Generated_Image_fdgtoufdgtoufdgt.png
+|   |       |       |-- Gemini_Generated_Image_glwb45glwb45glwb.png
+|   |       |       |-- Gemini_Generated_Image_gudiqjgudiqjgudi.png
+|   |       |       |-- Gemini_Generated_Image_hnw7jvhnw7jvhnw7.png
+|   |       |       |-- Gemini_Generated_Image_hv8k6mhv8k6mhv8k.png
+|   |       |       |-- Gemini_Generated_Image_j2f11uj2f11uj2f1.png
+|   |       |       |-- Gemini_Generated_Image_kpsgspkpsgspkpsg.png
+|   |       |       |-- Gemini_Generated_Image_lqg0jnlqg0jnlqg0.png
+|   |       |       |-- Gemini_Generated_Image_moizdmoizdmoizdm.png
+|   |       |       |-- Gemini_Generated_Image_nxbizxnxbizxnxbi.png
+|   |       |       |-- Gemini_Generated_Image_p88hn7p88hn7p88h.png
+|   |       |       |-- Gemini_Generated_Image_ptol8nptol8nptol.png
+|   |       |       |-- Gemini_Generated_Image_q51uf7q51uf7q51u.png
+|   |       |       |-- Gemini_Generated_Image_r2zdpyr2zdpyr2zd.png
+|   |       |       |-- Gemini_Generated_Image_sm3kf9sm3kf9sm3k.png
+|   |       |       |-- Gemini_Generated_Image_u2zeuku2zeuku2ze.png
+|   |       |       |-- Gemini_Generated_Image_uxou0zuxou0zuxou.png
+|   |       |       |-- Gemini_Generated_Image_v9q6dhv9q6dhv9q6.png
+|   |       |       |-- Gemini_Generated_Image_vjzs71vjzs71vjzs.png
+|   |       |       |-- Gemini_Generated_Image_vr11isvr11isvr11.png
+|   |       |       |-- Gemini_Generated_Image_we91aowe91aowe91.png
+|   |       |       |-- Gemini_Generated_Image_xh9277xh9277xh92.png
+|   |       |       |-- Gemini_Generated_Image_xks5gwxks5gwxks5.png
+|   |       |       |-- Gemini_Generated_Image_xm9pncxm9pncxm9p.png
+|   |       |       |-- Jack.png
+|   |       |       |-- Jessy.png
+|   |       |       |-- Jo.png
+|   |       |       |-- Julia.png
+|   |       |       |-- Kimberly.png
+|   |       |       |-- Mark.png
+|   |       |       `-- Robert.png
+|   |       `-- ui
+|   |           |-- chest.png
+|   |           |-- coins.png
+|   |           |-- craft.png
+|   |           |-- diams.png
+|   |           |-- inventory.png
+|   |           |-- logo_home.png
+|   |           |-- logo_hud.png
+|   |           |-- npc
+|   |           |   `-- village
+|   |           |       |-- village_guide.png
+|   |           |       |-- villager_market.png
+|   |           |       |-- villager_quests.png
+|   |           |       |-- villager_shop_card.png
+|   |           |       `-- villager_trades.png
+|   |           |-- players
+|   |           |   `-- defaults
+|   |           |       |-- default_avatar_female.png
+|   |           |       |-- default_avatar_male_confused.png
+|   |           |       |-- default_avatar_male_lost.png
+|   |           |       |-- default_avatar_male_thinking.png
+|   |           |       `-- player_default_avatar.png
+|   |           |-- potion.png
+|   |           |-- travel.png
+|   |           `-- village
+|   |               |-- logo_small_village.png
+|   |               |-- logo_small_village_cardshop.png
+|   |               |-- logo_small_village_market.png
+|   |               |-- logo_small_village_quests.png
+|   |               |-- logo_small_village_trades.png
+|   |               `-- npc
 |   |-- common.css
 |   |-- common.js
 |   |-- favicon.png
-|   `-- play_old
-|       |-- app.js
-|       `-- index.html
+|   |-- play_old
+|   |   |-- app.js
+|   |   `-- index.html
+|   `-- vendor
+|       `-- phaser
+|           `-- phaser.min.js
 |-- templates
 |   |-- DEV_UI
 |   |   `-- index.html
@@ -202,16 +556,16 @@
 |   |   |-- lands
 |   |   |   |-- land_generic.html
 |   |   |   |-- select.html
+|   |   |   |-- temple
+|   |   |   |   `-- temple_home.html
 |   |   |   `-- village
-|   |   |       |-- quests.html
-|   |   |       |-- shop.html
-|   |   |       |-- trades.html
-|   |   |       |-- village.html
 |   |   |       |-- village_home.html
 |   |   |       |-- village_market.html
 |   |   |       |-- village_quests.html
 |   |   |       |-- village_shop.html
 |   |   |       `-- village_trades.html
+|   |   |-- profile
+|   |   |   `-- profile.html
 |   |   `-- shop
 |   |       `-- index.html
 |   |-- auth_base.html
@@ -219,9 +573,15 @@
 |   |-- game_base.html
 |   `-- home.html
 |-- temporary_scripts
+|-- trades
+|   |-- __init__.py
+|   |-- __pycache__
+|   |   |-- __init__.cpython-312.pyc
+|   |   `-- village_trades.cpython-312.pyc
+|   `-- village_trades.py
 |-- tree.txt
 |-- unlock_rules.py
 |-- village_shop.py
 `-- xp_defs.py
 
-79 directories, 398 files
+105 directories, 479 files

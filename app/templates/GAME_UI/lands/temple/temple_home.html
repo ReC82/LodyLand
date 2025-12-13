@@ -1,0 +1,29 @@
+{% extends "game_base.html" %}
+
+{% block title %}Temple{% endblock %}
+
+{% block content %}
+  <div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="h4 m-0">Le Temple</h1>
+
+      <a href="{{ url_for('frontend.lands_select') }}" class="btn btn-outline-light btn-sm">
+        ← Retour
+      </a>
+    </div>
+
+    <!-- Phaser will mount here in STEP 2 -->
+    <div id="phaser-temple"
+         style="width: 100%; height: 70vh; border-radius: 16px; background: #0b1020;">
+    </div>
+
+    <p class="text-muted mt-3 mb-0">
+      Chargement du Temple… (STEP 1 : page dédiée OK)
+    </p>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='vendor/phaser/phaser.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='GAME_UI/js/temple/temple_game.js') }}"></script>
+{% endblock %}
