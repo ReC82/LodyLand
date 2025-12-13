@@ -1,160 +1,175 @@
 /*
   File: static/GAME_UI/js/inventory_app.js
-  Purpose: UI Inventaire (ressources + cartes) pour le GAME_UI.
-  Notes:
-  - Utilise http() et $() de common.js
-  - Utilise currentPlayer / renderPlayer de game_app.js (si besoin plus tard)
+  Purpose: UI Inventaire (ressources + trésors + items + cartes)
+  Rules:
+  - Resources tab  : ResourceDef.kind === "resource"
+  - Treasure tab   : ResourceDef.kind === "treasure"
+  - Items tab      : non-resource items only
 */
 
 let invResources = [];
+let invTreasureResources = [];
 let invResourceDefsByKey = {};
-let invCards = [];
-// NEW: crafted items
+
 let invItems = [];
 let invItemDefsByKey = {};
 
-const INV_ITEM_LOCAL_DEFS = {
-  wooden_stick: {
-    label: "Bâton en bois",
-    type: "component",
-    icon: "/static/assets/img/items/wooden_stick.png",
-    description: "Un simple bâton en bois, utile pour fabriquer des outils ou des armes rudimentaires."
-  },
-  };
+let invCards = [];
 
-// ---------------------------------------------------------------------------
-// Helpers de rendu
-// ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
+   Helpers
+--------------------------------------------------------------------------- */
 
-function renderResourceList(filterText = "") {
-  const listEl = $("invResourcesList");
-  const emptyEl = $("invResourcesEmpty");
+function isResourceKind(kind, expected) {
+  return String(kind || "").toLowerCase() === expected;
+}
+
+/* ---------------------------------------------------------------------------
+   Cards helpers
+--------------------------------------------------------------------------- */
+
+function normalizeCardCategory(cardTypeRaw) {
+  const t = String(cardTypeRaw || "").toLowerCase();
+  if (t.includes("recipe")) return "recipe";
+  if (t.includes("land")) return "land_access";
+  if (t.includes("building")) return "building";
+  if (t.includes("boost") || t.includes("cooldown") || t.includes("xp"))
+    return "boost";
+  return "other";
+}
+
+function getCardCategoryLabel(catKey) {
+  return {
+    land_access: "Lands",
+    boost: "Boosts",
+    recipe: "Recettes",
+    building: "Bâtiments",
+    other: "Autres",
+  }[catKey] || "Autres";
+}
+
+function populateCardTypeFilterOptions() {
+  const selectEl = $("invCardTypeFilter");
+  if (!selectEl) return;
+
+  const currentValue = (selectEl.value || "all").toLowerCase();
+  const owned = invCards.filter((c) => (c.owned_qty || 0) > 0);
+
+  const present = new Set(
+    owned.map((c) => normalizeCardCategory(c.type))
+  );
+
+  const ordered = ["land_access", "boost", "recipe", "building", "other"];
+
+  selectEl.innerHTML = "";
+  selectEl.appendChild(new Option("Tous les types", "all"));
+
+  ordered.forEach((cat) => {
+    if (present.has(cat)) {
+      selectEl.appendChild(new Option(getCardCategoryLabel(cat), cat));
+    }
+  });
+
+  const exists = [...selectEl.options].some(
+    (o) => o.value === currentValue
+  );
+  selectEl.value = exists ? currentValue : "all";
+}
+
+/* ---------------------------------------------------------------------------
+   Rendering – Resources & Treasures
+--------------------------------------------------------------------------- */
+
+function renderResourceGrid(listId, emptyId, data, filterText = "") {
+  const listEl = $(listId);
+  const emptyEl = $(emptyId);
   if (!listEl || !emptyEl) return;
 
-  const term = (filterText || "").toLowerCase().trim();
+  const term = filterText.toLowerCase().trim();
 
-  const items = invResources.filter((item) => {
-    const def = invResourceDefsByKey[item.resource] || {};
-    const label = (def.label || item.resource || "").toLowerCase();
-    const key = (item.resource || "").toLowerCase();
-    if (!term) return true;
-    return label.includes(term) || key.includes(term);
+  const filtered = data.filter((it) => {
+    const def = invResourceDefsByKey[it.resource] || {};
+    const label = (def.label || "").toLowerCase();
+    return !term || label.includes(term) || it.resource.includes(term);
   });
 
   listEl.innerHTML = "";
-  if (!items.length) {
-    emptyEl.classList.remove("d-none");
-    return;
-  }
-  emptyEl.classList.add("d-none");
+  emptyEl.classList.toggle("d-none", filtered.length > 0);
 
-  items.forEach((item) => {
-    const def = invResourceDefsByKey[item.resource] || {};
-    const label = def.label || item.resource || "???";
-    const icon = def.icon || null;
-    const qty = item.qty ?? item.quantity ?? 0;
-    const description = def.description || "Pas de description disponible.";
-    const baseSellPrice = def.base_sell_price ?? null;
+  filtered.forEach((it) => {
+    const def = invResourceDefsByKey[it.resource] || {};
     const row = document.createElement("div");
-
-    if(def.icon == null)
-    {
-      console.log(def.icon);
-    }
-
-    // Tile-style + tooltip
     row.className = "inv-resource-item inv-tooltip";
+
     row.innerHTML = `
       <div class="inv-resource-icon-wrapper">
         ${
-          icon
-            ? `<img src="${icon}" alt="${label}" />`
+          def.icon
+            ? `<img src="${def.icon}" alt="${def.label}" />`
             : `<div class="inv-resource-placeholder">📦</div>`
         }
-        <span class="inv-resource-qty-badge">${qty}</span>
+        <span class="inv-resource-qty-badge">${it.qty}</span>
       </div>
 
       <div class="inv-tooltip-content">
-        <div class="inv-tooltip-title">${label}</div>
-        <div class="inv-tooltip-sub">${item.resource}</div>
+        <div class="inv-tooltip-title">${def.label}</div>
+        <div class="inv-tooltip-sub">${it.resource}</div>
         <div class="inv-tooltip-body">
-          ${description}
-          ${
-            baseSellPrice != null
-              ? `<div class="inv-tooltip-extra">Valeur de base : ${baseSellPrice} coins</div>`
-              : ""
-          }
+          ${def.description || ""}
         </div>
       </div>
     `;
-
     listEl.appendChild(row);
   });
 }
+
+function renderResourceList(term = "") {
+  renderResourceGrid("invResourcesList", "invResourcesEmpty", invResources, term);
+}
+
+function renderTreasureList(term = "") {
+  renderResourceGrid(
+    "invTreasuresList",
+    "invTreasuresEmpty",
+    invTreasureResources,
+    term
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Rendering – Items
+--------------------------------------------------------------------------- */
 
 function renderItemList(filterText = "") {
   const listEl = $("invItemsList");
   const emptyEl = $("invItemsEmpty");
   if (!listEl || !emptyEl) return;
 
-  const term = (filterText || "").toLowerCase().trim();
+  const term = filterText.toLowerCase().trim();
 
-  // Optional type filter from dropdown
-  const typeSelect = $("invItemTypeFilter");
-  const typeFilter = typeSelect ? (typeSelect.value || "all").toLowerCase() : "all";
-
-  // Build enriched items array from stacks + defs
-  const enriched = invItems.map((stack) => {
-    const key = stack.item_key;
-    const def = invItemDefsByKey[key] || {};
-    console.log("Item definition for", key, def, INV_ITEM_LOCAL_DEFS[key]);
-    
-    return {
-      key,
-      quantity: stack.quantity ?? stack.qty ?? 0,
-      label: def.label || key,
-      icon: def.icon || null,
-      type: (def.type || "misc").toLowerCase(),
-      category: def.category || null,
-      description: def.description || "Item crafté.",
-    };
-  });
-
-  // Apply filters (text + type)
-  const filtered = enriched.filter((it) => {
-    // Type filter
-    if (typeFilter !== "all" && it.type !== typeFilter) {
-      return false;
-    }
-
-    if (!term) return true;
-
-    const label = (it.label || "").toLowerCase();
-    const key = (it.key || "").toLowerCase();
-    const desc = (it.description || "").toLowerCase();
-
-    return (
-      label.includes(term) ||
-      key.includes(term) ||
-      desc.includes(term)
+  const items = invItems
+    .map((st) => {
+      const def = invItemDefsByKey[st.item_key] || {};
+      return {
+        ...def,
+        qty: st.quantity,
+        key: st.item_key,
+      };
+    })
+    .filter((it) => it.type !== "resource")
+    .filter(
+      (it) =>
+        !term ||
+        it.label?.toLowerCase().includes(term) ||
+        it.key.includes(term)
     );
-  });
 
   listEl.innerHTML = "";
-  if (!filtered.length) {
-    emptyEl.classList.remove("d-none");
-    return;
-  }
-  emptyEl.classList.add("d-none");
+  emptyEl.classList.toggle("d-none", items.length > 0);
 
-  filtered.forEach((it) => {
+  items.forEach((it) => {
     const row = document.createElement("div");
-    // Same visual style as resources: tile + tooltip
     row.className = "inv-resource-item inv-tooltip inv-item-crafted";
-
-    // Small readable tag for type/category
-    const typeLabel = it.type || "misc";
-    const categoryLabel = it.category ? ` • ${it.category}` : "";
 
     row.innerHTML = `
       <div class="inv-resource-icon-wrapper">
@@ -163,285 +178,158 @@ function renderItemList(filterText = "") {
             ? `<img src="${it.icon}" alt="${it.label}" />`
             : `<div class="inv-resource-placeholder">-</div>`
         }
-        <span class="inv-resource-qty-badge">${it.quantity}</span>
+        <span class="inv-resource-qty-badge">${it.qty}</span>
       </div>
 
       <div class="inv-tooltip-content">
         <div class="inv-tooltip-title">${it.label}</div>
-        <div class="inv-tooltip-sub">
-          ${it.key} • ${typeLabel}${categoryLabel}
-        </div>
-        <div class="inv-tooltip-body">
-          ${it.description}
-        </div>
+        <div class="inv-tooltip-sub">${it.key}</div>
+        <div class="inv-tooltip-body">${it.description || ""}</div>
       </div>
     `;
-
     listEl.appendChild(row);
   });
 }
+
+/* ---------------------------------------------------------------------------
+   Rendering – Cards
+--------------------------------------------------------------------------- */
 
 function renderCardList(filterText = "") {
   const listEl = $("invCardsList");
   const emptyEl = $("invCardsEmpty");
   if (!listEl || !emptyEl) return;
 
-  const term = (filterText || "").toLowerCase().trim();
+  const term = filterText.toLowerCase().trim();
+  const typeFilter = ($("invCardTypeFilter")?.value || "all").toLowerCase();
 
-  // Current type filter from dropdown
-  const typeSelect = $("invCardTypeFilter");
-  const typeFilter = typeSelect ? (typeSelect.value || "all").toLowerCase() : "all";
-
-  // Only owned cards
-  const owned = invCards.filter((c) => (c.owned_qty || 0) > 0);
-
-  const items = owned.filter((card) => {
-    const label = (card.label || "").toLowerCase();
-    const desc = (card.description || "").toLowerCase();
-    const type = (card.type || "").toLowerCase();
-    const key = (card.key || "").toLowerCase();
-
-    // Text search
-    if (term) {
-      const matchText =
-        label.includes(term) ||
-        desc.includes(term) ||
-        type.includes(term) ||
-        key.includes(term);
-      if (!matchText) return false;
+  const items = invCards.filter((c) => {
+    if ((c.owned_qty || 0) <= 0) return false;
+    if (term && !c.label.toLowerCase().includes(term)) return false;
+    if (typeFilter !== "all") {
+      return normalizeCardCategory(c.type) === typeFilter;
     }
-
-    // Type filter (if not "all")
-    if (typeFilter !== "all" && type !== typeFilter) {
-      return false;
-    }
-
     return true;
   });
 
   listEl.innerHTML = "";
-  if (!items.length) {
-    emptyEl.classList.remove("d-none");
-    return;
-  }
-  emptyEl.classList.add("d-none");
+  emptyEl.classList.toggle("d-none", items.length > 0);
 
-  items.forEach((card) => {
-    const icon = card.icon || null;
-    const qty = card.owned_qty || 0;
-
+  items.forEach((c) => {
     const row = document.createElement("div");
-    // Grid tile + tooltip
     row.className = "inv-card-tile inv-tooltip";
 
     row.innerHTML = `
       <div class="inv-card-image-wrapper">
-        ${
-          icon
-            ? `<img src="${icon}" alt="${card.label || card.key}" />`
-            : `<div class="inv-card-placeholder">🃏</div>`
-        }
-        <span class="inv-card-qty-badge">x${qty}</span>
+        <img src="${c.icon}" class="inv-card-clickable" />
+        <span class="inv-card-qty-badge">x${c.owned_qty}</span>
       </div>
-      <div class="inv-card-name">${card.label || card.key}</div>
-
-      <div class="inv-tooltip-content">
-        <div class="inv-tooltip-title">${card.label || card.key}</div>
-        <div class="inv-tooltip-sub">
-          Type : ${card.type || "?"}
-          ${
-            card.target_resource
-              ? ` • Cible : ${card.target_resource}`
-              : ""
-          }
-        </div>
-        ${
-          card.description
-            ? `<div class="inv-tooltip-body">${card.description}</div>`
-            : ""
-        }
-      </div>
+      <div class="inv-card-name">${c.label}</div>
     `;
-
     listEl.appendChild(row);
   });
 }
 
-
-// ---------------------------------------------------------------------------
-// Tabs + filtres
-// ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
+   Tabs & filters
+--------------------------------------------------------------------------- */
 
 function setupInventoryTabs() {
-  const tabRes = $("invTabResources");
-  const tabCards = $("invTabCards");
-  const panelRes = $("invPanelResources");
-  const panelCards = $("invPanelCards");
-  const tabItems = $("invTabItems");
-  const panelItems = $("invPanelItems");
+  const map = {
+    invTabResources: "invPanelResources",
+    invTabTreasure: "invPanelTreasure",
+    invTabItems: "invPanelItems",
+    invTabCards: "invPanelCards",
+  };
 
-  if (!tabRes || !tabCards || !panelRes || !panelCards || !tabItems || !panelItems) return;
-
-  tabRes.addEventListener("click", () => {
-    tabRes.classList.add("inv-tab-active");
-    panelRes.classList.add("inv-panel-active");
-
-    tabCards.classList.remove("inv-tab-active");
-    panelCards.classList.remove("inv-panel-active");
-    tabItems.classList.remove("inv-tab-active");
-    panelItems.classList.remove("inv-panel-active");
+  Object.entries(map).forEach(([tabId, panelId]) => {
+    $(tabId)?.addEventListener("click", () => {
+      Object.keys(map).forEach((t) =>
+        $(t)?.classList.remove("inv-tab-active")
+      );
+      Object.values(map).forEach((p) =>
+        $(p)?.classList.remove("inv-panel-active")
+      );
+      $(tabId).classList.add("inv-tab-active");
+      $(panelId).classList.add("inv-panel-active");
+    });
   });
-
-  tabCards.addEventListener("click", () => {
-    tabCards.classList.add("inv-tab-active");
-    panelCards.classList.add("inv-panel-active");
-    
-    tabRes.classList.remove("inv-tab-active");
-    panelRes.classList.remove("inv-panel-active");
-    tabItems.classList.remove("inv-tab-active");
-    panelItems.classList.remove("inv-panel-active");
-  });
-
-
-  tabItems.addEventListener("click", () => {
-    tabItems.classList.add("inv-tab-active");
-    panelItems.classList.add("inv-panel-active");
-
-    tabRes.classList.remove("inv-tab-active");
-    tabCards.classList.remove("inv-tab-active");   
-    panelRes.classList.remove("inv-panel-active");
-    panelCards.classList.remove("inv-panel-active");
-  }); 
 }
 
 function setupFilters() {
-  const resFilter = $("invResourceFilter");
-  const cardFilter = $("invCardFilter");
-  const cardTypeFilter = $("invCardTypeFilter");
-
-  const itemFilter = $("invItemFilter");
-  const itemTypeFilter = $("invItemTypeFilter");
-
-  if (resFilter) {
-    resFilter.addEventListener("input", () => {
-      renderResourceList(resFilter.value);
-    });
-  }
-
-  if (cardFilter) {
-    cardFilter.addEventListener("input", () => {
-      renderCardList(cardFilter.value);
-    });
-  }
-
-  if (cardTypeFilter) {
-    // When type changes, we re-render with current text filter
-    cardTypeFilter.addEventListener("change", () => {
-      const textTerm = cardFilter ? cardFilter.value : "";
-      renderCardList(textTerm);
-    });
-  }
-
-    if (itemFilter) {
-    itemFilter.addEventListener("input", () => {
-      renderItemList(itemFilter.value);
-    });
-  }
-
-  if (itemTypeFilter) {
-    itemTypeFilter.addEventListener("change", () => {
-      const textTerm = itemFilter ? itemFilter.value : "";
-      renderItemList(textTerm);
-    });
-  } 
-
+  $("invResourceFilter")?.addEventListener("input", (e) =>
+    renderResourceList(e.target.value)
+  );
+  $("invTreasureFilter")?.addEventListener("input", (e) =>
+    renderTreasureList(e.target.value)
+  );
+  $("invItemFilter")?.addEventListener("input", (e) =>
+    renderItemList(e.target.value)
+  );
+  $("invCardFilter")?.addEventListener("input", (e) =>
+    renderCardList(e.target.value)
+  );
+  $("invCardTypeFilter")?.addEventListener("change", () =>
+    renderCardList($("invCardFilter")?.value || "")
+  );
 }
 
-
-// ---------------------------------------------------------------------------
-// Chargement des données
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Chargement des données
-// ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
+   Data loading
+--------------------------------------------------------------------------- */
 
 async function loadInventoryData() {
-  // 1) état global pour ressources + defs + items + cartes
   const s = await http("GET", "/api/state");
-  if (!s.ok) {
-    alert("Impossible de charger l'inventaire (state).");
-    console.error("Inventory /api/state error:", s);
-    return;
-  }
+  if (!s.ok) return alert("Erreur inventaire");
 
   const state = s.data || {};
 
-  // -----------------------------
-  // RESSOURCES
-  // -----------------------------
-  invResources = state.inventory || [];
+  // Resource defs
   invResourceDefsByKey = {};
-  (state.resources || []).forEach((r) => {
-    if (!r.key) return;
-    invResourceDefsByKey[r.key] = r;
+  (state.resources || []).forEach((r) => (invResourceDefsByKey[r.key] = r));
+
+  // Inventory split by kind
+  invResources = [];
+  invTreasureResources = [];
+
+  (state.inventory || []).forEach((st) => {
+    const def = invResourceDefsByKey[st.resource];
+    if (!def) return;
+
+    if (isResourceKind(def.kind, "treasure")) {
+      invTreasureResources.push(st);
+    } else if (isResourceKind(def.kind, "resource")) {
+      invResources.push(st);
+    }
   });
 
   renderResourceList("");
+  renderTreasureList("");
 
-  // -----------------------------
-  // ITEMS (craftés)
-  // backend => items_payload:
-  // {
-  //   "item_key": it.item_key,
-  //   "qty": it.quantity,
-  //   "label_fr": ...,
-  //   "label_en": ...,
-  //   "icon": ...,
-  //   "type": ...,
-  //   "category": ...
-  // }
-  // -----------------------------
+  // Items
   invItems = [];
   invItemDefsByKey = {};
-
   (state.items || []).forEach((it) => {
-    const key = it.item_key;
-    if (!key) return;
-
-    // Stack de quantité "brut"
-    invItems.push({
-      item_key: key,
-      quantity: it.qty ?? it.quantity ?? 0,
-    });
-
-    // Déf de l'item (icône, label, type, description...)
-    invItemDefsByKey[key] = {
-      key,
-      label: it.label_fr || it.label_en || key,
-      icon: it.icon || null,
-      type: (it.type || "misc").toLowerCase(),
-      category: it.category || null,
-      description: it.description || "Item crafté.",
+    invItems.push({ item_key: it.item_key, quantity: it.qty });
+    invItemDefsByKey[it.item_key] = {
+      label: it.label_fr || it.label_en || it.item_key,
+      icon: it.icon,
+      type: it.type,
+      category: it.category,
+      description: it.description,
     };
   });
-
   renderItemList("");
 
-  // -----------------------------
-  // CARTES
-  // state.cards contient déjà toutes les infos utiles
-  // (clé, label, type, description, icon, qty_owned, etc.)
-  // -----------------------------
+  // Cards
   invCards = state.cards || [];
+  populateCardTypeFilterOptions();
   renderCardList("");
 }
 
-
-
-// ---------------------------------------------------------------------------
-// Init
-// ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
+   Init
+--------------------------------------------------------------------------- */
 
 document.addEventListener("DOMContentLoaded", async () => {
   setupInventoryTabs();
