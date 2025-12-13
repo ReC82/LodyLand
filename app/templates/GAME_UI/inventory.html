@@ -18,7 +18,7 @@
     </p>
   </div>
 
-  <!-- Onglets -->
+  <!-- Tabs -->
   <div class="inv-tabs">
     <button
       class="inv-tab inv-tab-active"
@@ -27,6 +27,15 @@
     >
       Ressources
     </button>
+
+    <button
+      class="inv-tab"
+      id="invTabTreasure"
+      data-tab="treasure"
+    >
+      Trésors
+    </button>
+
     <button
       class="inv-tab"
       id="invTabItems"
@@ -34,6 +43,7 @@
     >
       Items
     </button>
+
     <button
       class="inv-tab"
       id="invTabCards"
@@ -44,7 +54,7 @@
   </div>
 
   <div class="inv-content">
-    <!-- Panel RESSOURCES -->
+    <!-- Panel RESOURCES -->
     <section id="invPanelResources" class="inv-panel inv-panel-active">
       <div class="inv-toolbar">
         <div class="inv-toolbar-left">
@@ -58,6 +68,7 @@
             />
           </label>
         </div>
+
         <div class="inv-toolbar-right">
           <button
             type="button"
@@ -70,12 +81,40 @@
       </div>
 
       <div id="invResourcesList" class="inv-grid">
-        <!-- rempli en JS -->
+        <!-- Filled by JS -->
       </div>
+
       <div id="invResourcesEmpty" class="inv-empty d-none">
         Tu n'as pas encore de ressources.
       </div>
     </section>
+
+    <!-- Panel TREASURES -->
+    <section id="invPanelTreasure" class="inv-panel">
+      <div class="inv-toolbar">
+        <div class="inv-toolbar-left">
+          <label class="inv-filter-label">
+            Filtrer :
+            <input
+              id="invTreasureFilter"
+              type="text"
+              class="inv-filter-input"
+              placeholder="Nom ou clé de trésor…"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div id="invTreasuresList" class="inv-grid">
+        <!-- Filled by JS -->
+      </div>
+
+      <div id="invTreasuresEmpty" class="inv-empty d-none">
+        Tu n'as pas encore de trésors.
+      </div>
+    </section>
+
+    <!-- Panel ITEMS -->
     <section id="invPanelItems" class="inv-panel">
       <div class="inv-toolbar">
         <label class="inv-filter-label">
@@ -90,7 +129,7 @@
       </div>
 
       <div id="invItemsList" class="inv-grid">
-        <!-- rempli en JS -->
+        <!-- Filled by JS -->
       </div>
 
       <div id="invItemsEmpty" class="inv-empty d-none">
@@ -98,11 +137,10 @@
       </div>
     </section>
 
-    <!-- Panel CARTES -->
+    <!-- Panel CARDS -->
     <section id="invPanelCards" class="inv-panel">
       <div class="inv-toolbar">
         <div class="inv-toolbar-left">
-
           <label class="inv-filter-label">
             Type :
             <select id="invCardTypeFilter" class="inv-filter-select">
@@ -111,7 +149,6 @@
               <option value="boost">Boosts</option>
               <option value="recipe">Recettes</option>
               <option value="building">Bâtiments</option>
-              <!-- ajoute / adapte les valeurs selon tes card.type réels -->
             </select>
           </label>
 
@@ -125,6 +162,7 @@
             />
           </label>
         </div>
+
         <div class="inv-toolbar-right">
           <button
             type="button"
@@ -137,13 +175,13 @@
       </div>
 
       <div id="invCardsList" class="inv-grid">
-        <!-- rempli en JS -->
+        <!-- Filled by JS -->
       </div>
+
       <div id="invCardsEmpty" class="inv-empty d-none">
         Tu n'as pas encore de cartes.
       </div>
     </section>
-
   </div>
 </div>
 

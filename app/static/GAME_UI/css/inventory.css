@@ -1,14 +1,17 @@
+/* ==========================================================================
+   INVENTORY (GAME_UI)
+   ========================================================================== */
 
-/* ------------------------------------------------------------------
-   INVENTAIRE (GAME_UI)
-------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   1) Container & header
+   -------------------------------------------------------------------------- */
 
 .inv-container {
   max-width: 1100px;
   margin: 2.5rem auto;
   padding: 2rem 2.5rem;
   border-radius: 24px;
-  background: rgba(15, 23, 42, 0.9); /* proche de la boutique */
+  background: rgba(15, 23, 42, 0.9); /* close to shop style */
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
   color: #e5e7eb;
 }
@@ -21,7 +24,9 @@
   color: #9ca3af !important;
 }
 
-/* Onglets (même logique que la boutique) */
+/* --------------------------------------------------------------------------
+   2) Tabs
+   -------------------------------------------------------------------------- */
 
 .inv-tabs {
   display: inline-flex;
@@ -49,11 +54,13 @@
 }
 
 .inv-tab-active {
-  background: #16a34a; /* vert coins */
+  background: #16a34a; /* green accent */
   color: #041015;
 }
 
-/* Panels */
+/* --------------------------------------------------------------------------
+   3) Panels
+   -------------------------------------------------------------------------- */
 
 .inv-content {
   margin-top: 0.5rem;
@@ -67,7 +74,9 @@
   display: block;
 }
 
-/* Toolbar + filtres */
+/* --------------------------------------------------------------------------
+   4) Toolbar & filters
+   -------------------------------------------------------------------------- */
 
 .inv-toolbar {
   display: flex;
@@ -78,11 +87,14 @@
   margin-bottom: 1rem;
 }
 
+/* Label wrapper for inputs/selects (also used to position select arrow) */
 .inv-filter-label {
+  position: relative;
   font-size: 0.82rem;
   color: #9ca3af;
 }
 
+/* Text input */
 .inv-filter-input {
   margin-left: 0.5rem;
   padding: 0.3rem 0.6rem;
@@ -98,6 +110,39 @@
   border-color: #22c55e;
 }
 
+/* Select (matches site theme) */
+.inv-filter-select {
+  margin-left: 0.5rem;
+  padding: 0.3rem 2rem 0.3rem 0.8rem; /* room for arrow */
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+  font-size: 0.82rem;
+  appearance: none; /* hide native arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+.inv-filter-select:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+/* Custom arrow for select */
+.inv-filter-label .inv-filter-select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 55%,
+    calc(100% - 9px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Toolbar primary action button */
 .inv-toolbar-btn {
   border-radius: 999px;
   border: none;
@@ -117,15 +162,27 @@
   background: #16a34a;
 }
 
-/* --------- Grids --------- */
+/* --------------------------------------------------------------------------
+   5) Grids
+   -------------------------------------------------------------------------- */
 
+/* Default grid behavior (resources + items) */
 .inv-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 1rem;
 }
 
-/* --------- Ressources --------- */
+/* Ensure card tiles don't exceed the intended width */
+#invCardsList .inv-card-tile {
+  width: 100%;
+  max-width: 190px;
+}
+
+
+/* --------------------------------------------------------------------------
+   6) Resource tiles (also used for crafted items)
+   -------------------------------------------------------------------------- */
 
 .inv-resource-item {
   position: relative;
@@ -172,7 +229,16 @@
   border: 1px solid #38bdf8;
 }
 
-/* --------- Cartes --------- */
+/* Crafted items highlight */
+.inv-item-crafted .inv-resource-icon-wrapper {
+  border: 2px solid #facc15;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+  border-radius: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   7) Card tiles
+   -------------------------------------------------------------------------- */
 
 .inv-card-tile {
   position: relative;
@@ -192,9 +258,18 @@
 
 .inv-card-image-wrapper img {
   width: 100%;
-  aspect-ratio: 2 / 3; /* pour respecter tes cartes 1024x1536 */
+  aspect-ratio: 2 / 3; /* matches 1024x1536 */
   object-fit: contain;
   display: block;
+}
+
+/* Clickable image feedback (preview) */
+.inv-card-clickable {
+  cursor: pointer;
+}
+
+.inv-card-clickable:hover {
+  filter: brightness(1.05);
 }
 
 .inv-card-placeholder {
@@ -224,7 +299,9 @@
   text-align: center;
 }
 
-/* --------- Tooltips génériques --------- */
+/* --------------------------------------------------------------------------
+   8) Tooltips (generic)
+   -------------------------------------------------------------------------- */
 
 .inv-tooltip {
   position: relative;
@@ -243,17 +320,15 @@
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
   pointer-events: none;
   opacity: 0;
-  transform: translateY(4px);
+  transform-origin: top;
+  translate: -50% 8px;
   transition: opacity 0.15s ease-out, transform 0.15s ease-out;
   top: 100%;
   left: 50%;
-  transform-origin: top;
-  translate: -50% 8px;
 }
 
 .inv-tooltip:hover .inv-tooltip-content {
   opacity: 1;
-  transform: translateY(0);
   translate: -50% 4px;
 }
 
@@ -276,16 +351,4 @@
   margin-top: 0.3rem;
   font-size: 0.78rem;
   color: #facc15;
-}
-
-.inv-item-crafted .inv-resource-icon-wrapper {
-  border: 2px solid #facc15;
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
-  border-radius: 8px;
-}
-
-.inv-item-crafted .inv-resource-icon-wrapper {
-  border: 2px solid #facc15;
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
-  border-radius: 8px;
 }
