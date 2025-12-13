@@ -1,18 +1,18 @@
 /* ============================================================
-   CRAFT MODAL + BOUTON FLOTTANT
+   CRAFT MODAL + FLOATING BUTTON
    ============================================================ */
 
-/* -------------------------
-   1) MODAL CONTAINER
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   1) Modal overlay container
+   ------------------------------------------------------------ */
 .craft-modal {
   position: fixed;
   inset: 0;
-  display: none;             /* hidden by default */
+  display: none;              /* hidden by default */
   align-items: center;
   justify-content: center;
-  z-index: 90;
+  z-index: 200;
+  padding: 12px;              /* keep a soft edge on desktop */
 }
 
 .craft-modal.is-open {
@@ -26,24 +26,27 @@
   backdrop-filter: blur(2px);
 }
 
+/* ------------------------------------------------------------
+   2) Modal box (dialog)
+   ------------------------------------------------------------ */
 .craft-modal-box {
   position: relative;
   background: radial-gradient(circle at top, #0f172a, #020617);
   border-radius: 20px;
   padding: 16px 20px;
   max-width: 1100px;
-  width: 95%;
+  width: 100%;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(148, 163, 184, 0.3);
+  overflow: hidden;           /* prevent inner overflow clipping */
 }
 
-/* -------------------------
-   2) HEADER
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   3) Header (title + actions)
+   ------------------------------------------------------------ */
 .craft-modal-header {
   display: flex;
   align-items: center;
@@ -90,16 +93,16 @@
   background: rgba(30, 64, 175, 0.9);
 }
 
-/* -------------------------
-   3) LAYOUT INTERNE
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   4) Internal layout (left panel + grid panel)
+   ------------------------------------------------------------ */
 .craft-modal-body {
   display: grid;
-  grid-template-columns: 1.4fr 1.2fr;
+  grid-template-columns: 1.4fr 1.2fr; /* left + right */
   gap: 16px;
   flex: 1;
   min-height: 260px;
+  overflow: hidden;
 }
 
 .craft-section-title {
@@ -108,18 +111,19 @@
   margin-bottom: 8px;
 }
 
-/* -------------------------
-   4) PANNEAU GAUCHE (INGRÉDIENTS / RECETTES)
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   5) Left panel (ingredients / recipes)
+   ------------------------------------------------------------ */
 .craft-left-panel {
   position: relative;
-  overflow-y: visible;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
   padding-right: 12px;
 }
 
-/* panel recettes (affiché quand on toggle) */
+/* Recipes panel: same visual style, toggled by JS */
 .craft-recipes-panel {
   overflow-y: visible;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
@@ -127,7 +131,7 @@
   display: none;
 }
 
-/* Barre de filtre (ingrédients / recettes) */
+/* Search / filter row */
 .craft-filter-row {
   margin-bottom: 6px;
 }
@@ -142,17 +146,14 @@
   font-size: 0.8rem;
 }
 
-/* Conteneur scrollable (~10 éléments max) */
+/* Scroll wrapper for lists (ingredients/recipes) */
 .craft-list-scroll {
-  max-height: 320px;
+  max-height: 150px;           /* final effective value (2 lines-ish) */
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 4px;          /* space for scrollbar */
 }
 
-/* -------------------------
-   5) LISTES (INGRÉDIENTS + RECETTES)
-   ------------------------- */
-
+/* Default list layout (recipes / ingredients) */
 .craft-ingredients-list,
 .craft-recipes-list {
   display: flex;
@@ -160,35 +161,39 @@
   gap: 6px;
 }
 
-/* --- Recettes --- */
-
+/* ------------------------------------------------------------
+   5.1) Recipe list items (compact row)
+   ------------------------------------------------------------ */
 .craft-recipe-item {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.7);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.95);
   border: 1px solid transparent;
   cursor: pointer;
-  font-size: 0.9rem;
-  color: #e5e7eb;
+  transition: background 0.12s ease-out, border-color 0.12s ease-out;
 }
 
 .craft-recipe-item:hover {
-  border-color: rgba(129, 140, 248, 0.8);
+  background: rgba(30, 64, 175, 0.65);
+  border-color: rgba(129, 140, 248, 0.6);
 }
 
 .craft-recipe-item.is-selected {
-  border-color: rgba(129, 140, 248, 1);
-  background: rgba(30, 64, 175, 0.6);
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.8);
 }
 
 .craft-recipe-icon {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
-  background: rgba(15, 23, 42, 0.8);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -197,62 +202,120 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  image-rendering: pixelated;
 }
 
-/* --- Ingrédients --- */
-
-.craft-ingredient-item {
+/* Main line inside recipe row (label + time) */
+.craft-recipe-mainline {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: center;
-  padding: 5px 8px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.8);
-  font-size: 0.85rem;
+  width: 100%;
+  gap: 8px;
+}
+
+.craft-recipe-label {
+  font-size: 0.9rem;
+  font-weight: 500;
   color: #e5e7eb;
-}
-
-.craft-ingredient-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.craft-ingredient-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
   overflow: hidden;
-  background: rgba(15, 23, 42, 0.9);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.craft-recipe-time {
+  font-size: 0.8rem;
+  color: #9ca3af;
   flex-shrink: 0;
 }
 
-.craft-ingredient-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+/* ------------------------------------------------------------
+   5.2) Ingredients list (desktop default row)
+   ------------------------------------------------------------ */
+.craft-ingredient-item {
+  position: relative;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.12s ease-out, border-color 0.12s ease-out,
+    box-shadow 0.12s ease-out;
 }
 
+.craft-ingredient-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 222, 128, 0.9);
+  box-shadow: 0 0 10px rgba(22, 163, 74, 0.35);
+}
+
+/* Crafted highlight (kept for compatibility) */
+.craft-ingredient-item--crafted {
+  border: 1px solid #facc15;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+}
+
+/* Icon container */
+.craft-ingredient-icon {
+  width: 70%;
+  height: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icon image (final effective size) */
+.craft-ingredient-icon img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Quantity badge (two variants exist in codebase; keep both) */
+.craft-ingredient-qty-badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #022c22;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Alternative qty style used in some layouts */
 .craft-ingredient-qty {
   font-size: 0.8rem;
   color: #a5b4fc;
 }
 
-/* Items craftés dans le panneau d'ingrédients */
-.craft-ingredient-item--crafted {
-  border: 1px solid #facc15;
-  box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
-  border-radius: 8px;
+/* ------------------------------------------------------------
+   5.3) Ingredients grid layout (fixed squares)
+   NOTE: kept as-is, but later we force single-scrollbar via wrapper.
+   ------------------------------------------------------------ */
+.craft-ingredients-list.craft-ingredients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 72px)); /* fixed tile size */
+  grid-auto-rows: 72px;
+  gap: 8px;
+
+  max-height: calc(72px * 2 + 8px); /* 2 rows + gap */
+  overflow-y: auto;
+  padding: 6px 4px;
 }
 
-/* -------------------------
-   6) PANEL CENTRE (GRILLE)
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   6) Center panel (crafting grid)
+   ------------------------------------------------------------ */
 .craft-grid-panel {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
 
 .craft-grid {
@@ -278,20 +341,17 @@
   color: #6b7280;
 }
 
-/* image normale dans un slot */
 .craft-slot-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-/* image "ghost" (attente d'ingrédient) */
 .craft-slot-img-ghost {
   opacity: 0.45;
   filter: grayscale(0.2);
 }
 
-/* wrapper pour les slots ghost */
 .craft-slot-ghost {
   position: relative;
   width: 100%;
@@ -301,13 +361,11 @@
   justify-content: center;
 }
 
-/* placeholder texte en mode ghost si pas d'icône */
 .craft-slot-placeholder-ghost {
   font-size: 0.70rem;
   opacity: 0.6;
 }
 
-/* petit badge quantité en bas à droite du slot */
 .craft-slot-qty-badge {
   position: absolute;
   right: 2px;
@@ -315,23 +373,21 @@
   padding: 1px 4px;
   border-radius: 6px;
   font-size: 0.65rem;
-  background: rgba(15, 23, 42, 0.85);        /* bleu nuit */
-  border: 1px solid rgba(248, 250, 252, 0.25); /* léger contour clair */
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(248, 250, 252, 0.25);
   color: #e5e7eb;
   pointer-events: none;
 }
 
-/* Slot prêt à recevoir l’item draggué */
 .craft-slot--droppable {
   border-color: #22c55e;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.4);
   transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out;
 }
 
-/* -------------------------
-   7) ACTIONS / ÉTAT DU CRAFT
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   7) Actions (quantity + craft button)
+   ------------------------------------------------------------ */
 .craft-quantity-row {
   display: flex;
   align-items: center;
@@ -368,6 +424,7 @@
   cursor: not-allowed;
 }
 
+/* Legacy message blocks (kept for compatibility, even if you stop using them) */
 .craft-error-msg {
   margin-top: 6px;
   font-size: 0.75rem;
@@ -380,10 +437,9 @@
   color: #bbf7d0;
 }
 
-/* -------------------------
-   8) BOUTON FLOTTANT "CRAFT"
-   ------------------------- */
-
+/* ------------------------------------------------------------
+   8) Floating craft button (HUD)
+   ------------------------------------------------------------ */
 .craft-fab-btn {
   position: fixed;
   left: 16px;
@@ -412,4 +468,280 @@
 .craft-fab-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.65);
+}
+
+/* ------------------------------------------------------------
+   9) Mobile name tooltips / toasts (kept both class names)
+   ------------------------------------------------------------ */
+
+/* Tooltip (older naming) */
+.craft-mobile-tooltip {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f9fafb;
+  font-size: 0.8rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+  z-index: 3000;
+}
+
+.craft-mobile-tooltip.visible {
+  opacity: 1;
+}
+
+/* Toast (newer naming) */
+.craft-ingredient-toast {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f9fafb;
+  font-size: 0.8rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+  z-index: 3000;
+}
+
+.craft-ingredient-toast.is-visible {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------
+   10) Fix: single scrollbar (wrapper only)
+   ------------------------------------------------------------ */
+/* Ensure the wrapper is the ONLY scroll container */
+.craft-list-scroll {
+  overflow-y: auto;
+}
+
+/* Ensure the grid/list itself never scrolls (prevents double scrollbar) */
+#craft-ingredients-list.craft-ingredients-grid,
+.craft-ingredients-list.craft-ingredients-grid {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* ------------------------------------------------------------
+   11) Craft status (top area)
+   ------------------------------------------------------------ */
+.craft-status {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.craft-status-text {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+}
+
+/* Status tones */
+.craft-status--neutral { border-color: rgba(148, 163, 184, 0.25); }
+.craft-status--running { border-color: rgba(34, 197, 94, 0.55); }
+.craft-status--error   { border-color: rgba(239, 68, 68, 0.6); }
+.craft-status--success { border-color: rgba(250, 204, 21, 0.6); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* --------- Medium screens (<= 1024px) --------- */
+@media (max-width: 1024px) {
+  .craft-modal-box {
+    max-width: 900px;
+    padding: 14px 16px;
+  }
+
+  .craft-modal-body {
+    grid-template-columns: 1.2fr 1.1fr;
+  }
+
+  .craft-list-scroll {
+    max-height: 260px;
+  }
+}
+
+/* --------- Tablet portrait / small laptops (<= 768px) --------- */
+@media (max-width: 768px) {
+  .craft-modal {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .craft-modal-box {
+    border-radius: 0;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    padding: 14px 14px 10px;
+  }
+
+  .craft-modal-body {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    gap: 12px;
+    overflow-y: auto;
+  }
+
+  .craft-left-panel,
+  .craft-recipes-panel {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .craft-grid {
+    grid-template-columns: repeat(3, 48px);
+    gap: 6px;
+  }
+
+  .craft-slot {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+
+  /* Slightly more compact recipe rows on mobile */
+  .craft-recipe-item {
+    padding: 5px 6px;
+  }
+  .craft-recipe-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .craft-recipe-label {
+    font-size: 0.85rem;
+  }
+  .craft-recipe-time {
+    font-size: 0.75rem;
+  }
+
+  /* Ingredients grid: keep it usable on touch */
+  .craft-list-scroll {
+    max-height: 280px;
+  }
+
+  #craft-ingredients-list.craft-ingredients-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: 6px;
+    padding-right: 2px;
+  }
+
+  /* Hide text labels if you only want icons on mobile */
+  .craft-ingredient-label,
+  .craft-ingredient-qty {
+    display: none;
+  }
+}
+
+/* --------- Phones (<= 480px) --------- */
+@media (max-width: 480px) {
+  .craft-modal-box {
+    padding: 12px 10px 8px;
+  }
+
+  .craft-modal-title {
+    font-size: 1.15rem;
+  }
+
+  .craft-section-title {
+    font-size: 0.9rem;
+  }
+
+  .craft-grid {
+    grid-template-columns: repeat(3, 44px);
+    gap: 6px;
+  }
+
+  .craft-slot {
+    width: 44px;
+    height: 44px;
+  }
+
+  .craft-quantity-row input {
+    width: 64px;
+  }
+
+  .craft-list-scroll {
+    max-height: 140px;
+  }
+}
+
+/* =========================================================
+   LEFT PANEL: make ingredient list use full available height
+   ========================================================= */
+
+/* The modal body already has flex:1; we ensure the left panel stretches */
+.craft-left-panel {
+  height: 100%;
+  min-height: 0; /* critical for nested scrolling */
+}
+
+/* Ingredients panel becomes a vertical layout that can stretch */
+.craft-ingredients-panel,
+.craft-recipes-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0; /* critical */
+}
+
+/* The scroll wrapper takes all remaining height (no fixed max-height) */
+.craft-list-scroll {
+  flex: 1;
+  min-height: 0;     /* critical */
+  max-height: none;  /* remove the "boxy" cap so it can reach the bottom */
+}
+
+/* =========================================================
+   Scrollbar styling (game look)
+   ========================================================= */
+
+/* Firefox */
+.craft-list-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129, 140, 248, 0.55) rgba(15, 23, 42, 0.35);
+}
+
+/* Chromium / Safari */
+.craft-list-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.craft-list-scroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.35);
+  border-radius: 999px;
+}
+
+.craft-list-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    rgba(129, 140, 248, 0.65),
+    rgba(56, 189, 248, 0.35)
+  );
+  border-radius: 999px;
+  border: 2px solid rgba(15, 23, 42, 0.55); /* gives a "padded" look */
+}
+
+.craft-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    rgba(129, 140, 248, 0.85),
+    rgba(56, 189, 248, 0.55)
+  );
 }
