@@ -71,7 +71,7 @@ def _get_or_create_today_run(session, player_id: int) -> TempleRun:
         lives=DAILY_LIVES,
         progress_row=0,
         traps=_generate_traps(),
-        broken_tiles=[],  # NEW: persist broken tiles per day
+        broken_tiles=[],  # persist broken tiles per day
     )
     session.add(run)
     session.flush()
@@ -184,7 +184,7 @@ def temple_state():
 @bp.post("/step")
 def temple_step():
     """
-    Reveal/attempt a specific tile on the CURRENT row by stepping laterally.
+    Reveal/attempt a specific tile on a row by stepping laterally.
 
     Client sends:
       { "row_from_bottom": int, "col": int }
@@ -195,6 +195,11 @@ def temple_step():
     - checks if tile is a trap in that row
     - if trap: lives-- and persist broken tile
     - if safe: no progress change (progress is only via /advance)
+
+    IMPORTANT:
+    - We allow stepping on ANY row that has already been reached: row_from_bottom <= progress_row.
+      This enables "moving back" and revealing tiles on earlier rows.
+    - We still forbid stepping on future rows: row_from_bottom > progress_row.
     """
     data = request.get_json(silent=True) or {}
     row_from_bottom = data.get("row_from_bottom", None)
@@ -234,10 +239,9 @@ def temple_step():
                 }
             )
 
-        # Optional safety: only allow stepping on the player's current row
-        # Current row from bottom is progress_row (if progress_row==0, player is at start/outside)
-        current_row_from_bottom = int(run.progress_row or 0)
-        if current_row_from_bottom <= 0:
+        # If progress_row==0, player is at start/outside, cannot step-reveal any grid row yet.
+        current_row_reached = int(run.progress_row or 0)
+        if current_row_reached <= 0:
             return jsonify(
                 {
                     "ok": True,
@@ -248,7 +252,8 @@ def temple_step():
                 }
             )
 
-        if row_from_bottom != current_row_from_bottom:
+        # Allow stepping on any row already reached (<= progress_row); forbid future rows.
+        if row_from_bottom > current_row_reached:
             return jsonify(
                 {
                     "ok": True,
@@ -336,9 +341,7 @@ def temple_advance():
                 {
                     "ok": True,
                     "result": "no_lives",
-                    "lives": int(run.lives or 0),
-                    "progress_row": int(run.progress_row or 0),
-                    "broken_tiles": _normalize_broken_tiles(getattr(run, "broken_tiles", [])),
+                    **_public_state(run),
                 }
             )
 
@@ -347,9 +350,7 @@ def temple_advance():
                 {
                     "ok": True,
                     "result": "already_finished",
-                    "lives": int(run.lives or 0),
-                    "progress_row": int(run.progress_row or 0),
-                    "broken_tiles": _normalize_broken_tiles(getattr(run, "broken_tiles", [])),
+                    **_public_state(run),
                 }
             )
 

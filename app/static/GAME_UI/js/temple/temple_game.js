@@ -1,5 +1,11 @@
 /* File: static/GAME_UI/js/temple/temple_game.js
    Purpose: Bootstrap Phaser + Scene + wiring global
+   Notes:
+   - Preload: temple_tile + temple_tile_broken + temple_statue + tile_bg
+   - Grid uses IMAGE tiles (not rectangles)
+   - Statue uses IMAGE (aspect ratio preserved inside a square box)
+   - Broken tiles use texture swap (broken tile image) and keep same display size
+   - Background uses a repeating tileSprite (responsive-friendly)
 */
 (function () {
   "use strict";
@@ -19,6 +25,18 @@
       super("TempleScene");
     }
 
+    preload() {
+      // Background tile (same folder as others)
+      this.load.image("temple_bg_tile", "/static/assets/img/ui/temple/tile_bg.png");
+
+      // Tiles
+      this.load.image("temple_tile", "/static/assets/img/ui/temple/tile.png");
+      this.load.image("temple_tile_broken", "/static/assets/img/ui/temple/tile_broken.png");
+
+      // Statue
+      this.load.image("temple_statue", "/static/assets/img/ui/temple/statue.png");
+    }
+
     create() {
       const w = this.scale.width;
       const h = this.scale.height;
@@ -30,31 +48,51 @@
       const STATUE_ZONE_H = 120;
       const TILE_SCALE = 0.82;
 
+      const DEPTH_BG = 0;
       const DEPTH_TILES = 10;
       const DEPTH_HIGHLIGHT = 20;
       const DEPTH_PLAYER = 30;
       const DEPTH_UI = 100;
 
-      this.add.rectangle(w / 2, h / 2, w, h, 0x0b1020).setOrigin(0.5);
+      // Background (repeating tile)
+      s.gfx.bg = this.add
+        .tileSprite(0, 0, w, h, "temple_bg_tile")
+        .setOrigin(0, 0)
+        .setDepth(DEPTH_BG);
 
-      this.add.text(16, 12, "TEMPLE — STEP 7 (split files)", {
-        fontFamily: "Arial",
-        fontSize: "16px",
-        color: "#ffffff",
-      });
+      this.add
+        .text(16, 12, "TEMPLE — STEP 7 (split files)", {
+          fontFamily: "Arial",
+          fontSize: "16px",
+          color: "#ffffff",
+        })
+        .setDepth(DEPTH_UI);
 
-      // Statue placeholder
+      // Statue image (keep ratio, fit inside square box)
       const statueX = w / 2;
       const statueY = 48 + STATUE_ZONE_H / 2;
 
-      this.add
-        .rectangle(statueX, statueY, 180, 90, 0x0f172a)
+      s.gfx.statue = this.add
+        .image(statueX, statueY, "temple_statue")
         .setOrigin(0.5)
-        .setStrokeStyle(2, 0x2a3a66, 1)
         .setDepth(DEPTH_UI);
 
+      // Fit into a square box WITHOUT distortion
+      const STATUE_BOX = 96; // adjust if needed (80-120)
+      const tex = this.textures.get("temple_statue");
+      const src = tex && tex.getSourceImage ? tex.getSourceImage() : null;
+
+      if (src && src.width && src.height) {
+        const scale = Math.min(STATUE_BOX / src.width, STATUE_BOX / src.height);
+        s.gfx.statue.setScale(scale);
+      } else {
+        // Fallback (rare): still a square, may distort if we don't know ratio
+        s.gfx.statue.setDisplaySize(STATUE_BOX, STATUE_BOX);
+      }
+
+      // Optional label (debug)
       s.gfx.statueLabel = this.add
-        .text(statueX, statueY, "STATUE (placeholder)", {
+        .text(statueX, statueY + STATUE_BOX / 2 + 14, "STATUE", {
           fontFamily: "Arial",
           fontSize: "14px",
           color: "#9ca3af",
@@ -111,7 +149,16 @@
       s.geom.startY = padTop + Math.floor((availH - gridH) / 2);
 
       // compute startX
-      const gg = window.Temple.grid.computeGridGeometry(w, padTop, padBottom, padX, gap, s.rows, s.cols, s.geom.tileSize);
+      const gg = window.Temple.grid.computeGridGeometry(
+        w,
+        padTop,
+        padBottom,
+        padX,
+        gap,
+        s.rows,
+        s.cols,
+        s.geom.tileSize
+      );
       s.geom.startX = gg.startX;
 
       // Highlight + Player
@@ -126,21 +173,26 @@
         .setOrigin(0.5)
         .setDepth(DEPTH_PLAYER);
 
+      // Ensure gfx containers exist
+      s.gfx.gridObjects = s.gfx.gridObjects || [];
+      s.gfx.tilesByKey = s.gfx.tilesByKey || new Map();
+
       // Callbacks used by movement module
+      // Here: "broken" => swap texture (same size), not hide
       s._hideTile = (_scene, _s, gridRow, col) => {
         const k = window.Temple.grid.tileKey(gridRow, col);
-        const fill = _s.gfx.tileFillByKey.get(k);
-        const border = _s.gfx.tileBorderByKey.get(k);
-        if (fill) fill.setVisible(false);
-        if (border) border.setVisible(false);
+        const tile = _s.gfx.tilesByKey.get(k);
+        if (!tile) return;
+
+        tile.setTexture("temple_tile_broken");
+        tile.setDisplaySize(_s.geom.tileSize, _s.geom.tileSize);
       };
 
       s._drawGrid = (_scene, _s) => {
         // destroy old
         for (const obj of _s.gfx.gridObjects) obj.destroy();
         _s.gfx.gridObjects.length = 0;
-        _s.gfx.tileFillByKey.clear();
-        _s.gfx.tileBorderByKey.clear();
+        _s.gfx.tilesByKey.clear();
 
         const tSize = _s.geom.tileSize;
 
@@ -149,29 +201,21 @@
             const key = window.Temple.grid.tileKey(r, c);
             const { x, y } = window.Temple.grid.tileCenter(_s, r, c);
 
-            const baseColor = 0x111a33;
-            const rowTint = r * 0x030303;
-            const color = baseColor + rowTint;
-
-            const fill = _scene.add
-              .rectangle(x, y, tSize, tSize, color)
+            const tile = _scene.add
+              .image(x, y, "temple_tile")
               .setOrigin(0.5)
               .setDepth(DEPTH_TILES);
 
-            const border = _scene.add
-              .rectangle(x, y, tSize, tSize)
-              .setOrigin(0.5)
-              .setStrokeStyle(2, 0x2a3a66, 1)
-              .setDepth(DEPTH_TILES + 1);
+            // Fit to computed tileSize
+            tile.setDisplaySize(tSize, tSize);
 
-            _s.gfx.tileFillByKey.set(key, fill);
-            _s.gfx.tileBorderByKey.set(key, border);
+            _s.gfx.tilesByKey.set(key, tile);
+            _s.gfx.gridObjects.push(tile);
 
-            _s.gfx.gridObjects.push(fill, border);
-
+            // Broken tiles: swap texture (same size)
             if (_s.brokenTiles.has(key)) {
-              fill.setVisible(false);
-              border.setVisible(false);
+              tile.setTexture("temple_tile_broken");
+              tile.setDisplaySize(tSize, tSize);
             }
           }
         }
@@ -209,6 +253,20 @@
         _s.gfx.highlight.setSize(newTileSize + 6, newTileSize + 6);
         _s.gfx.player.setSize(Math.floor(newTileSize * 0.5), Math.floor(newTileSize * 0.5));
       };
+
+      // Keep background sized correctly on RESIZE (does not change any existing gameplay logic)
+      this.scale.on("resize", (gameSize) => {
+        const nw = gameSize.width;
+        const nh = gameSize.height;
+
+        if (s.gfx.bg) {
+          s.gfx.bg.setSize(nw, nh);
+        }
+
+        // Keep HUD anchored to bottom like before (only positions, no logic changes)
+        if (s.gfx.statusText) s.gfx.statusText.setPosition(16, nh - 40);
+        if (s.gfx.hudText) s.gfx.hudText.setPosition(16, nh - 18);
+      });
 
       // DEV reset
       this.input.keyboard.on("keydown-K", async () => {
@@ -261,6 +319,11 @@
           window.Temple.movement.tryAdvance(this, s);
           return;
         }
+
+        if (cursors.down && cursors.down.isDown && window.Temple.movement.tryMoveDown) {
+          window.Temple.movement.tryMoveDown(this, s);
+          return;
+        }
       });
 
       // First load
@@ -284,7 +347,11 @@
   };
 
   if (window.__TEMPLE_PHASER_GAME__) {
-    try { window.__TEMPLE_PHASER_GAME__.destroy(true); } catch (e) {}
+    try {
+      window.__TEMPLE_PHASER_GAME__.destroy(true);
+    } catch (e) {
+      // no-op
+    }
   }
   window.__TEMPLE_PHASER_GAME__ = new Phaser.Game(config);
 })();

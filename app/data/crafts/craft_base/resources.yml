@@ -3,7 +3,7 @@
     station_key: craft_table_base
 
     required_grid:
-      tier: 1        # 1x3 (début du jeu)
+      tier: 1        
 
     output:
       kind: resource

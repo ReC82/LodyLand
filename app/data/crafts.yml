@@ -4,6 +4,60 @@
 
 crafts:
 
+  basic_net:
+    key: basic_net
+    station_key: craft_table_advanced
+    output:
+      kind: resource
+      key: basic_net
+      quantity: 1
+    recipe:
+      pattern:
+      - VVV
+      - VVV
+      - VVV
+      legend:
+        V:
+          kind: resource
+          key: vine
+          quantity: 1
+      required_table_level: 3
+    craft_time_seconds: 120
+    xp_reward: 10
+    unlock:
+      recipe_card_key: recipe_basic_net
+      min_level: 2
+    enabled: true
+
+  branch_net:
+    key: branch_net
+    station_key: craft_table_advanced
+    output:
+      kind: resource
+      key: branch_net
+      quantity: 1
+    recipe:
+      pattern:
+      - BBB
+      - BNB
+      - BBB
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+        N:
+          kind: resource
+          key: basic_net
+          quantity: 1
+      required_table_level: 3
+    craft_time_seconds: 300
+    xp_reward: 15
+    unlock:
+      recipe_card_key: recipe_basic_net
+      min_level: 2
+    enabled: true
+
   iron_ingot:
     key: iron_ingot
     station_key: craft_table
@@ -167,6 +221,35 @@ crafts:
       min_level: 2
     enabled: true
 
+  tool_vine_net:
+    key: tool_vine_net
+    station_key: craft_table_advanced
+    output:
+      kind: tool
+      key: tool_vine_net
+      quantity: 1
+    recipe:
+      pattern:
+      - .N.
+      - .S.
+      - .S.
+      legend:
+        N:
+          kind: resource
+          key: branch_net
+          quantity: 1
+        S:
+          kind: resource
+          key: wooden_stick
+          quantity: 1
+      required_table_level: 3
+    craft_time_seconds: 320
+    xp_reward: 25
+    unlock:
+      recipe_card_key: recipe_tool_vine_net
+      min_level: 2
+    enabled: true
+
   tool_wooden_axe:
     key: tool_wooden_axe
     station_key: craft_table_medium
@@ -176,12 +259,16 @@ crafts:
       quantity: 1
     recipe:
       pattern:
-      - BBB
-      - B..
+      - SSS
+      - TV.
       legend:
-        B:
+        V:
           kind: resource
-          key: branch
+          key: vine
+          quantity: 1
+        T:
+          kind: resource
+          key: small_stone
           quantity: 1
         S:
           kind: resource

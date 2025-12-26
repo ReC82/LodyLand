@@ -1,15 +1,17 @@
 /* File: static/GAME_UI/js/temple/temple_movement.js
-   Purpose: Gameplay rules (lateral step reveal, jumping broken tiles, advance)
+   Purpose: Gameplay rules (lateral step reveal, jumping broken tiles, advance, move down/back)
 */
 (function () {
   "use strict";
 
   window.Temple = window.Temple || {};
 
+  const grid = () => window.Temple.grid;
+
   const canStandOn = (s, gridRow, col) => {
     if (gridRow < 0 || gridRow >= s.rows) return false;
     if (col < 0 || col >= s.cols) return false;
-    return !s.brokenTiles.has(window.Temple.grid.tileKey(gridRow, col));
+    return !s.brokenTiles.has(grid().tileKey(gridRow, col));
   };
 
   const computeJumpDestinationCol = (s, gridRow, fromCol, dir) => {
@@ -23,8 +25,21 @@
     return null;
   };
 
+  const findNearestSafeCol = (s, gridRow, preferredCol) => {
+    if (gridRow === s.rows) return preferredCol; // start zone
+    if (canStandOn(s, gridRow, preferredCol)) return preferredCol;
+
+    for (let d = 1; d < s.cols; d++) {
+      const L = preferredCol - d;
+      const R = preferredCol + d;
+      if (L >= 0 && canStandOn(s, gridRow, L)) return L;
+      if (R < s.cols && canStandOn(s, gridRow, R)) return R;
+    }
+    return null;
+  };
+
   const movePlayerTo = (scene, s, row, col, opts) => {
-    const pos = window.Temple.grid.tileCenter(s, row, col);
+    const pos = grid().tileCenter(s, row, col);
     if (s.gfx.highlight) s.gfx.highlight.setPosition(pos.x, pos.y);
 
     const duration = opts && typeof opts.duration === "number" ? opts.duration : 120;
@@ -38,12 +53,18 @@
   };
 
   const drawGridApplyBroken = (scene, s) => {
-    // this is a callback provided by temple_game.js (grid rebuild)
+    // callback provided by temple_game.js (grid rebuild)
     if (typeof s._drawGrid === "function") s._drawGrid(scene, s);
   };
 
+  // row_from_bottom for the CURRENT VISUAL ROW of the player
+  const rowFromBottomForPlayerRow = (s) => {
+    if (s.playerRow === s.rows) return 0; // start zone / outside grid
+    return s.rows - s.playerRow;          // gridRow 7 => 1, gridRow 0 => 8
+  };
+
   const syncPlayerFromProgress = (scene, s, opts) => {
-    const targetRow = window.Temple.grid.gridRowFromProgress(s, s.progressRow);
+    const targetRow = grid().gridRowFromProgress(s, s.progressRow);
 
     // start zone
     if (targetRow === s.rows) {
@@ -54,26 +75,18 @@
     }
 
     // ensure not standing on broken
-    if (!canStandOn(s, targetRow, s.playerCol)) {
-      // search nearest safe col
-      let found = null;
-      for (let d = 0; d < s.cols; d++) {
-        const L = s.playerCol - d;
-        const R = s.playerCol + d;
-        if (L >= 0 && canStandOn(s, targetRow, L)) { found = L; break; }
-        if (R < s.cols && canStandOn(s, targetRow, R)) { found = R; break; }
-      }
-      if (found === null) {
-        // row fully broken => fallback
-        s.playerRow = s.rows;
-        movePlayerTo(scene, s, s.playerRow, s.playerCol, { duration: 0 });
-        window.Temple.ui.updateHud(s);
-        return;
-      }
-      s.playerCol = found;
+    const safeCol = findNearestSafeCol(s, targetRow, s.playerCol);
+    if (safeCol === null) {
+      // row fully broken => fallback
+      s.playerRow = s.rows;
+      movePlayerTo(scene, s, s.playerRow, s.playerCol, { duration: 0 });
+      window.Temple.ui.updateHud(s);
+      return;
     }
 
     s.playerRow = targetRow;
+    s.playerCol = safeCol;
+
     movePlayerTo(scene, s, s.playerRow, s.playerCol, { duration: (opts && opts.duration) ?? 0 });
     window.Temple.ui.updateHud(s);
   };
@@ -115,8 +128,9 @@
     window.Temple.ui.setStatus(s, "Stepping…");
 
     try {
-      // IMPORTANT: server expects current row_from_bottom == run.progress_row
-      const rfb = s.progressRow;
+      // IMPORTANT: server should accept stepping on <= progressRow.
+      // We send the row we are actually on (playerRow).
+      const rfb = rowFromBottomForPlayerRow(s);
 
       const ans = await window.Temple.api.step(rfb, destCol);
       if (!ans || !ans.ok) {
@@ -125,7 +139,8 @@
         return;
       }
 
-      // handle desync responses explicitly
+      // If server still refuses "back rows", it will reply wrong_row.
+      // We'll resync, but the real fix is server patch (below).
       if (ans.result === "not_in_grid" || ans.result === "wrong_row") {
         s.requestInFlight = false;
         window.Temple.ui.setStatus(s, "Resync…");
@@ -137,7 +152,6 @@
       drawGridApplyBroken(scene, s);
 
       if (ans.result === "already_broken") {
-        // stale local cache: recompute jump and retry once
         const dir = destCol > s.playerCol ? 1 : -1;
         const retryDest = computeJumpDestinationCol(s, s.playerRow, s.playerCol, dir);
 
@@ -157,19 +171,18 @@
       if (ans.result === "trap") {
         window.Temple.ui.setStatus(s, `Trap! Lives left: ${s.lives}`);
 
-        // mark local broken & hide visuals immediately
-        const k = window.Temple.grid.tileKey(s.playerRow, destCol);
+        const k = grid().tileKey(s.playerRow, destCol);
         s.brokenTiles.add(k);
 
         if (typeof s._hideTile === "function") s._hideTile(scene, s, s.playerRow, destCol);
 
-        // snap to tile and play fall
+        // snap + fall
         s.playerCol = destCol;
         movePlayerTo(scene, s, s.playerRow, s.playerCol, { duration: 0 });
 
         await window.Temple.anim.playTrapSequenceAt(scene, s, s.playerRow, destCol);
 
-        // respawn based on progress
+        // respawn based on progress (authoritative)
         syncPlayerFromProgress(scene, s, { duration: 0 });
 
         if (s.lives <= 0) window.Temple.ui.setStatus(s, "No lives left today. Come back tomorrow.");
@@ -205,7 +218,6 @@
       return;
     }
 
-    // jump broken tiles in direction
     const dest = computeJumpDestinationCol(s, s.playerRow, s.playerCol, dir);
     if (dest === null) {
       window.Temple.ui.setStatus(s, "No available tile in that direction.");
@@ -214,6 +226,52 @@
     }
 
     await stepRevealAndMove(scene, s, dest);
+  };
+
+  // NEW: move down/back one row (client-only navigation)
+  // - does NOT change progressRow (server authority)
+  // - lets player go back to previously cleared rows and to Start
+  const tryMoveDown = async (scene, s) => {
+    if (s.requestInFlight) return;
+
+    // Already at Start
+    if (s.playerRow === s.rows) {
+      window.Temple.anim.flashBlocked(scene, s);
+      return;
+    }
+
+    // next visual row down
+    const nextRow = s.playerRow + 1;
+
+    // from bottom grid row -> Start zone
+    if (nextRow > s.rows) return;
+
+    // allow going to Start (outside grid)
+    if (nextRow === s.rows) {
+      s.playerRow = s.rows;
+      movePlayerTo(scene, s, s.playerRow, s.playerCol, { duration: 120 });
+      window.Temple.ui.setStatus(s, "");
+      window.Temple.ui.updateHud(s);
+      return;
+    }
+
+    // If you want to restrict to "already reached" area only:
+    // the lowest reachable grid row is gridRowFromProgress(progressRow)
+    // We are moving DOWN, which is always <= reached, so no restriction needed.
+
+    const safeCol = findNearestSafeCol(s, nextRow, s.playerCol);
+    if (safeCol === null) {
+      window.Temple.ui.setStatus(s, "Row fully broken.");
+      window.Temple.anim.flashBlocked(scene, s);
+      return;
+    }
+
+    s.playerRow = nextRow;
+    s.playerCol = safeCol;
+
+    movePlayerTo(scene, s, s.playerRow, s.playerCol, { duration: 120 });
+    window.Temple.ui.setStatus(s, "");
+    window.Temple.ui.updateHud(s);
   };
 
   const tryAdvance = async (scene, s) => {
@@ -257,10 +315,9 @@
         const attemptedGridRow = s.rows - attemptRow;
 
         if (attemptedGridRow >= 0 && attemptedGridRow < s.rows) {
-          const k = window.Temple.grid.tileKey(attemptedGridRow, s.playerCol);
+          const k = grid().tileKey(attemptedGridRow, s.playerCol);
           s.brokenTiles.add(k);
           if (typeof s._hideTile === "function") s._hideTile(scene, s, attemptedGridRow, s.playerCol);
-
           await window.Temple.anim.playTrapSequenceAt(scene, s, attemptedGridRow, s.playerCol);
         }
 
@@ -311,7 +368,6 @@
 
     applyServerState(s, st);
 
-    // The scene will recompute geometry when it sees rows/cols (in temple_game.js)
     if (typeof s._onServerStateLoaded === "function") s._onServerStateLoaded(scene, s);
 
     drawGridApplyBroken(scene, s);
@@ -334,6 +390,7 @@
     syncPlayerFromProgress,
     stepRevealAndMove,
     tryLateralMove,
+    tryMoveDown,   // NEW
     tryAdvance,
     loadState,
   };
