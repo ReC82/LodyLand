@@ -3,7 +3,7 @@
     kind: tool
     label: Sharp Stone
     description: Une pierre taillée, utile comme outil de base.
-    icon: /static/assets/img/items/tools/tool_sharp_stone.png
+    icon: /static/assets/img/items/tools/sharp_stone.png
     base_sell_price: 5
     enabled: true 
 
@@ -12,16 +12,25 @@
     kind: tool
     label: Wooden Knife
     description: Un couteau en bois, utile comme outil de base.
-    icon: /static/assets/img/items/tools/tool_wooden_knife.png
+    icon: /static/assets/img/items/tools/wooden_knife.png
     base_sell_price: 5
-    enabled: true  
+    enabled: true 
 
-  tool_branch_shovel:
-    key: tool_branch_shovel
+  tool_wooden_axe:
+    key: tool_wooden_axe
+    kind: tool
+    label: Wooden Axe
+    description: Un hache en bois, utile comme outil de base.
+    icon: /static/assets/img/items/tools/wooden_axe.png
+    base_sell_price: 5
+    enabled: true      
+
+  tool_wooden_shovel:
+    key: tool_wooden_shovel
     kind: tool
     label: Wooden Shovel
     description: Une pelle de base.
-    icon: /static/assets/img/items/tools/tool_branch_shovel.png
+    icon: /static/assets/img/items/tools/wooden_shovel.png
     base_sell_price: 5
     enabled: true      
 
@@ -30,7 +39,7 @@
     kind: tool
     label: Wooden Hammer
     description: Un marteau en bois, utile comme outil de base.
-    icon: /static/assets/img/items/tools/tool_wooden_hammer.png
+    icon: /static/assets/img/items/tools/wooden_hammer.png
     base_sell_price: 5
     enabled: true       
 
@@ -39,7 +48,7 @@
     kind: tool
     label: Vine Net
     description: Un filet en lianes, utile pour attraper des poissons.
-    icon: /static/assets/img/items/tools/tool_vine_net.png
+    icon: /static/assets/img/items/tools/vine_net.png
     base_sell_price: 5
     enabled: true    
 

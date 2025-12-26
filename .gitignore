@@ -13,3 +13,5 @@ venv/
 # Future
 .env
 game.db
+
+app/data/validation_report.html

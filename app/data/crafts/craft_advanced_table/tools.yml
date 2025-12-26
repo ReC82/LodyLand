@@ -30,7 +30,7 @@ tool_wooden_shovel:
 
   unlock:
   - type: card
-    key: recipe_tool_shovel_basic
+    key: recipe_tool_wooden_shovel
 
   - type: level
     min_level: 2
@@ -70,6 +70,45 @@ tool_vine_basket:
   unlock:
   - type: card
     key: recipe_tool_vine_basket
+
+  - type: level
+    min_level: 2
+
+  enabled: true
+
+tool_vine_net:
+  key: tool_vine_net
+  station_key: craft_table_advanced
+
+  required_grid:
+    tier: 3      
+
+  output:
+    kind: tool
+    key: tool_vine_net
+    quantity: 1
+
+  recipe:
+    pattern:
+      - ".N."
+      - ".S."
+      - ".S."      
+    legend:
+      N:
+        kind: resource
+        key: branch_net
+        quantity: 1
+      S:
+        kind: resource
+        key: wooden_stick
+        quantity: 1        
+
+  craft_time_seconds: 320
+  xp_reward: 25
+
+  unlock:
+  - type: card
+    key: recipe_tool_vine_net
 
   - type: level
     min_level: 2

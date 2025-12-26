@@ -54,6 +54,16 @@ items:
     enabled: true
     unlock_description: Trouvé en coupant des arbres.
 
+  basic_net:
+    key: basic_net
+    kind: item
+    label: filet basique
+    description: Un filet simple, utile pour capturer des objets.
+    icon: /static/assets/img/items/resources/basic_net.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant des lianes.
+
   berry:
     key: berry
     kind: resource
@@ -73,6 +83,16 @@ items:
     base_sell_price: 2
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
+
+  branch_net:
+    key: branch_net
+    kind: item
+    label: filet basique
+    description: Un filet simple, utile pour capturer des objets.
+    icon: /static/assets/img/items/resources/branch_net.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant des lianes.
 
   celestial_bamboo:
     key: celestial_bamboo
@@ -482,6 +502,15 @@ items:
     label: Vine Net
     description: Un filet en lianes, utile pour attraper des poissons.
     icon: /static/assets/img/items/tools/tool_vine_net.png
+    base_sell_price: 5
+    enabled: true
+
+  tool_wooden_axe:
+    key: tool_wooden_axe
+    kind: tool
+    label: Wooden Axe
+    description: Un hache en bois, utile comme outil de base.
+    icon: /static/assets/img/items/tools/tool_wooden_axe.png
     base_sell_price: 5
     enabled: true
 

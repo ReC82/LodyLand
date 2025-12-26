@@ -47,3 +47,33 @@
     base_sell_price: 2
     enabled: true
     unlock_description: Fabriquée en craftant des lianes.   
+
+  basic_net:
+    key: basic_net
+    kind: item
+    label: filet basique
+    description: Un filet simple, utile pour capturer des objets.
+    icon: /static/assets/img/items/resources/basic_net.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant des lianes.  
+
+  branch_net:
+    key: branch_net
+    kind: item
+    label: filet basique
+    description: Un filet simple, utile pour capturer des objets.
+    icon: /static/assets/img/items/resources/branch_net.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant des lianes.   
+
+  branch_plank:
+    key: branch_plank
+    kind: item
+    label: planche de branche
+    description: Une planche de branche, utile pour fabriquer des objets.
+    icon: /static/assets/img/items/resources/branch_plank.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Fabriquée en craftant des lianes.         

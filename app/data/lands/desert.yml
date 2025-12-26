@@ -35,11 +35,7 @@ desert:
         - resource: cactus_fiber
           chance: 0.2
           min: 1
-          max: 1
-        - resource: moon_crystal_shard
-          min: 1
-          max: 1
-          chance: 0.01         
+          max: 1       
 
     tool_wooden_pickaxe:
       label: "Pioche en bois"

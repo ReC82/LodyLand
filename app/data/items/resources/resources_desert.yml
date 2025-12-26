@@ -1,0 +1,9 @@
+  cactus_fiber:
+    key: cactus_fiber
+    kind: resource
+    label: Cactus Fiber
+    description: Des fibres de cactus, utiles pour fabriquer des colles et des encres.
+    icon: /static/assets/img/items/resources/cactus_fiber.png
+    base_sell_price: 1
+    enabled: true
+    unlock_description: Trouvé en coupant des arbres. 
