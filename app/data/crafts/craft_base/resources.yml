@@ -6,7 +6,7 @@
       tier: 1        
 
     output:
-      kind: resource
+      kind: item
       key: wooden_stick
       quantity: 1
 

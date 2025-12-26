@@ -6,7 +6,7 @@
       tier: 3 
 
     output:
-      kind: resource
+      kind: item
       key: basic_net
       quantity: 1
 
@@ -41,7 +41,7 @@
       tier: 3 
 
     output:
-      kind: resource
+      kind: item
       key: branch_net
       quantity: 1
 
@@ -56,7 +56,7 @@
           key: branch
           quantity: 1
         N:
-          kind: resource
+          kind: item
           key: branch_net
           quantity: 1          
 

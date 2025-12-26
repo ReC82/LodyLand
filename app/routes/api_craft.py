@@ -15,6 +15,9 @@ from app.db import SessionLocal
 from app.models import Player, PlayerCard, ResourceStock, PlayerItem, PlayerCraftJob
 from app.auth import get_current_player
 from app.quests.service import on_item_crafted
+from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
+from app.progression import next_threshold, apply_xp_and_level_up
+
 from datetime import datetime, timedelta
 import datetime as dt
 
@@ -47,44 +50,6 @@ def _player_has_card(session, player_id: int, card_key: str) -> bool:
         .count()
     )
     return count > 0
-
-
-def _compute_craft_table_level(session, player: Player) -> int:
-    """
-    Compute the craft table level for a player based on owned cards.
-
-    Cards:
-      - access_craft_table_basic
-      - access_craft_table_medium
-      - access_craft_table_advanced
-
-    Levels:
-      0 = aucune table
-      1 = basic   -> 1x3
-      2 = medium  -> 2x3
-      3 = advanced-> 3x3
-    """
-    level = 0
-
-    has_basic = _player_has_card(session, player.id, "access_craft_table_basic")
-    has_medium = _player_has_card(session, player.id, "access_craft_table_medium")
-    has_advanced = _player_has_card(session, player.id, "access_craft_table_advanced")
-
-    # Si le joueur a n'importe quelle carte, au moins niveau 1
-    if has_basic or has_medium or has_advanced:
-        level = max(level, 1)
-
-    # Medium ou advanced -> au moins niveau 2
-    if has_medium or has_advanced:
-        level = max(level, 2)
-
-    # Advanced -> niveau 3
-    if has_advanced:
-        level = max(level, 3)
-
-    return level
-
-
 
 def _is_item_unlocked_for_player(
     session,
@@ -214,8 +179,8 @@ def _compute_required_cost(
         total = count * qty_per_slot * max(times, 1)
 
         kind_raw = (
-            entry.get("type")
-            or entry.get("kind")
+            entry.get("kind")
+            or entry.get("type")
             or entry.get("source")
             or "resource"
         )
@@ -227,12 +192,7 @@ def _compute_required_cost(
         else:
             required_resources[key] = required_resources.get(key, 0) + total
 
-            return required_resources, required_items
-
-
-
-
-
+    return required_resources, required_items
 
 def _load_player_resources_map(session, player: Player) -> dict[str, ResourceStock]:
     """Load all resources for a player as a map: resource_key -> ResourceStock row."""
@@ -265,7 +225,7 @@ def _compute_player_craft_station_keys(session, player: Player) -> list[str]:
     - level 2 : medium       -> ["craft_table_base", "craft_table_medium"]
     - level 3 : advanced     -> ["craft_table_base", "craft_table_medium", "craft_table_advanced"]
     """
-    level = _compute_craft_table_level(session, player)
+    level = compute_craft_table_level(session, player)
 
     stations: set[str] = set()
     if level >= 1:
@@ -416,7 +376,7 @@ def list_craft_recipes():
         recipes: list[dict[str, Any]] = []
 
         # Niveau de table (0 / 1 / 2 / 3)
-        craft_table_level = _compute_craft_table_level(session, player)
+        craft_table_level = compute_craft_table_level(session, player)
 
         # ----------------- mapping station_key autorisées -----------------
         if craft_location == "craft_table":
@@ -520,84 +480,6 @@ def list_craft_recipes():
             }
         )
 
-def _update_craft_jobs_for_player(session, player: Player):
-    """
-    Update all active craft jobs for this player:
-      - compute how many items should be finished based on current time
-      - add missing items to inventory
-      - mark jobs as done when finished
-
-    This is called:
-      - at the beginning of perform_craft()
-      - (plus tard) depuis /api/state pour un refresh passif.
-    """
-    now = dt.datetime.utcnow()
-
-    jobs = (
-        session.query(PlayerCraftJob)
-        .filter(PlayerCraftJob.player_id == player.id)
-        .filter(PlayerCraftJob.status == "active")
-        .order_by(PlayerCraftJob.started_at.asc())
-        .all()
-    )
-
-    for job in jobs:
-        total = int(job.quantity_total or 0)
-        done = int(job.quantity_done or 0)
-
-        if total <= 0:
-            job.status = "done"
-            continue
-
-        total_duration = (job.ends_at - job.started_at).total_seconds()
-        if total_duration <= 0:
-            # Safeguard : tout est terminé instantanément
-            completed_units = total
-        else:
-            elapsed = (now - job.started_at).total_seconds()
-            if elapsed <= 0:
-                completed_units = 0
-            else:
-                per_unit = total_duration / total  # temps pour 1 item
-                # ex: 5 colliers, 60s chacun => total_duration = 300, per_unit = 60
-                completed_units = int(elapsed // per_unit)
-                if completed_units > total:
-                    completed_units = total
-
-        if completed_units > done:
-            delta = completed_units - done
-
-            # Add delta items to inventory
-            pi = (
-                session.query(PlayerItem)
-                .filter_by(player_id=player.id, item_key=job.item_key)
-                .one_or_none()
-            )
-            if pi is None:
-                pi = PlayerItem(
-                    player_id=player.id,
-                    item_key=job.item_key,
-                    quantity=delta,
-                )
-                session.add(pi)
-            else:
-                pi.quantity = int(pi.quantity) + delta
-
-            # Quest hook (on récompense pour ce qui vient d'être crafté)
-            on_item_crafted(
-                session=session,
-                player=player,
-                item_key=job.item_key,
-                quantity=delta,
-            )
-
-            job.quantity_done = completed_units
-
-        # Si tout est fini, on marque le job comme done
-        if completed_units >= total or now >= job.ends_at:
-            job.status = "done"
-
-
 # ---------------------------------------------------------------------------
 # POST /api/craft/perform
 # ---------------------------------------------------------------------------
@@ -653,9 +535,9 @@ def perform_craft():
             return jsonify({"error": "player_required"}), 400
 
         # 1) Avant tout : on met à jour les jobs en cours (crédite les crafts finis)
-        _update_craft_jobs_for_player(session, player)
+        update_craft_jobs_for_player(session, player)
 
-        table_level = _compute_craft_table_level(session, player)
+        table_level = compute_craft_table_level(session, player)
 
         if not _is_item_unlocked_for_player(session, player, item_cfg, table_level):
             return jsonify({"error": "craft_locked"}), 403
@@ -715,15 +597,35 @@ def perform_craft():
         print("[CRAFT DEBUG] missing =", missing)
 
         if missing:
+            owned_resources = {k: float(v.qty) for k, v in res_map.items()}
+            owned_items = {k: int(v.quantity) for k, v in item_map.items()}
+
+            missing_resources = {k: v for k, v in missing.items() if k in required_resources}
+            missing_items = {k: v for k, v in missing.items() if k in required_items}
+
             return (
                 jsonify(
                     {
-                        "error": "not_enough_resources",
-                        "missing": missing,
+                        "error": "not_enough_ingredients",
+                        "crafted_item_key": item_key,
+                        "times": times,
+                        "required": {
+                            "resources": required_resources,
+                            "items": required_items,
+                        },
+                        "owned": {
+                            "resources": owned_resources,
+                            "items": owned_items,
+                        },
+                        "missing": {
+                            "resources": missing_resources,
+                            "items": missing_items,
+                        },
                     }
                 ),
                 400,
             )
+
 
         # --- Deduct resources ----------------------------------------------
         for res_key, needed in required_resources.items():
@@ -747,6 +649,22 @@ def perform_craft():
         # --- Compute total output ------------------------------------------
         output_qty = int(recipe.get("output_quantity") or 1) * times
         craft_time_seconds = int(recipe.get("craft_time_seconds") or 0)
+        
+        # --- XP reward -----------------------------------------------------
+        xp_reward = float(item_cfg.get("xp_reward") or 0.0)
+
+        # Rule: XP per craft action ("times"), not per output quantity.
+        # If you want XP per produced item later, use output_qty instead of times.
+        gained_xp = xp_reward * float(times)
+
+        level_up = False
+        level_rewards = []
+        if gained_xp > 0:
+            level_up, _, level_rewards = apply_xp_and_level_up(
+                session=session,
+                player=player,
+                gained_xp=gained_xp,
+            )        
 
         now = dt.datetime.utcnow()
 
@@ -819,6 +737,18 @@ def perform_craft():
             "craft_location": craft_location,
             "times": times,
             "delayed": delayed,
+            "gained_xp": gained_xp,
+            "player": {
+                "id": player.id,
+                "name": getattr(player, "name", ""),
+                "xp": player.xp,
+                "level": player.level,
+                "next_xp": next_threshold(player.level),
+                "coins": player.coins,
+                "diams": player.diams,
+            },
+            "level_up": level_up,
+            "level_rewards": level_rewards,            
         }
 
         if delayed and job_payload:

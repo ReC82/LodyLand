@@ -20,7 +20,7 @@ tool_rod_basic:
         key: vine
         quantity: 1
       S:
-        kind: resource
+        kind: item
         key: wooden_stick
         quantity: 1
 

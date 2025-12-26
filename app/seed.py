@@ -95,7 +95,7 @@ def load_resources_config_from_items(path: Path | None = None) -> List[Dict[str,
                 "enabled": bool(cfg.get("enabled", True)),
 
                 # Front needs these:
-                "icon": cfg.get("icon") or "/static/assets/img/resources/default.png",
+                "icon": cfg.get("icon") or "/static/assets/img/items/resources/default.png",
                 "description": cfg.get("description") or "",
                 "unlock_description": cfg.get("unlock_description") or None,
 

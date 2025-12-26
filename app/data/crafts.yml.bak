@@ -8,7 +8,7 @@ crafts:
     key: basic_net
     station_key: craft_table_advanced
     output:
-      kind: resource
+      kind: item
       key: basic_net
       quantity: 1
     recipe:
@@ -33,7 +33,7 @@ crafts:
     key: branch_net
     station_key: craft_table_advanced
     output:
-      kind: resource
+      kind: item
       key: branch_net
       quantity: 1
     recipe:
@@ -47,15 +47,43 @@ crafts:
           key: branch
           quantity: 1
         N:
-          kind: resource
-          key: basic_net
+          kind: item
+          key: branch_net
           quantity: 1
       required_table_level: 3
     craft_time_seconds: 300
     xp_reward: 15
     unlock:
-      recipe_card_key: recipe_basic_net
+      recipe_card_key: recipe_branch_net
       min_level: 2
+    enabled: true
+
+  branch_plank:
+    key: branch_plank
+    station_key: craft_table_medium
+    output:
+      kind: item
+      key: branch_plank
+      quantity: 1
+    recipe:
+      pattern:
+      - BBB
+      - VV.
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+        V:
+          kind: resource
+          key: vine
+          quantity: 1
+      required_table_level: 2
+    craft_time_seconds: 30
+    xp_reward: 5
+    unlock:
+      recipe_card_key: recipe_branch_plank
+      min_level: 4
     enabled: true
 
   iron_ingot:
@@ -118,7 +146,7 @@ crafts:
     key: rope
     station_key: craft_table_medium
     output:
-      kind: resource
+      kind: item
       key: rope
       quantity: 1
     recipe:
@@ -154,7 +182,7 @@ crafts:
           key: vine
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 1
@@ -235,11 +263,11 @@ crafts:
       - .S.
       legend:
         N:
-          kind: resource
+          kind: item
           key: branch_net
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 3
@@ -271,7 +299,7 @@ crafts:
           key: small_stone
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 2
@@ -318,23 +346,23 @@ crafts:
       quantity: 1
     recipe:
       pattern:
-      - BBB
-      - .B.
-      - .B.
+      - .P.
+      - .S.
+      - .S.
       legend:
-        B:
-          kind: resource
-          key: branch
+        P:
+          kind: item
+          key: branch_plank
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 3
     craft_time_seconds: 10
     xp_reward: 8
     unlock:
-      recipe_card_key: recipe_tool_shovel_basic
+      recipe_card_key: recipe_tool_wooden_shovel
       min_level: 2
     enabled: true
 
@@ -356,7 +384,7 @@ crafts:
           key: wooden_plank
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 3
@@ -371,7 +399,7 @@ crafts:
     key: wooden_stick
     station_key: craft_table_base
     output:
-      kind: resource
+      kind: item
       key: wooden_stick
       quantity: 1
     recipe:

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+import datetime as dt
+
 from sqlalchemy.orm import Session
 
 from app import craft_defs
@@ -168,3 +170,122 @@ def list_crafts_for_location(
     # Simple sort by label for now
     results.sort(key=lambda c: c.get("label") or "")
     return results
+
+# =============================================================================
+# Craft state helpers (table level + job updates)
+# =============================================================================
+
+def compute_craft_table_level(session: Session, player: Player) -> int:
+    """
+    Compute the craft table level for a player based on owned cards.
+
+    Cards expected:
+      - access_craft_table_basic
+      - access_craft_table_medium
+      - access_craft_table_advanced
+
+    Levels:
+      0 = no table
+      1 = basic
+      2 = medium
+      3 = advanced
+    """
+    from app.models import PlayerCard  # local import to avoid circular deps
+
+    def has_card(card_key: str) -> bool:
+        return (
+            session.query(PlayerCard)
+            .filter_by(player_id=player.id, card_key=card_key)
+            .count()
+            > 0
+        )
+
+    level = 0
+    has_basic = has_card("access_craft_table_basic")
+    has_medium = has_card("access_craft_table_medium")
+    has_advanced = has_card("access_craft_table_advanced")
+
+    if has_basic or has_medium or has_advanced:
+        level = max(level, 1)
+    if has_medium or has_advanced:
+        level = max(level, 2)
+    if has_advanced:
+        level = max(level, 3)
+
+    return level
+
+
+def update_craft_jobs_for_player(session: Session, player: Player) -> None:
+    """
+    Update all active craft jobs for this player:
+      - compute how many units should be completed based on time
+      - credit missing items into PlayerItem
+      - mark job as done when finished
+
+    Notes:
+      - This function does NOT commit; caller decides transaction boundaries.
+    """
+    from app.models import PlayerCraftJob, PlayerItem  # local import to avoid circular deps
+    from app.quests.service import on_item_crafted
+
+    now = dt.datetime.utcnow()
+
+    jobs = (
+        session.query(PlayerCraftJob)
+        .filter(PlayerCraftJob.player_id == player.id)
+        .filter(PlayerCraftJob.status == "active")
+        .order_by(PlayerCraftJob.started_at.asc())
+        .all()
+    )
+
+    for job in jobs:
+        total = int(job.quantity_total or 0)
+        done = int(job.quantity_done or 0)
+
+        if total <= 0:
+            job.status = "done"
+            continue
+
+        total_duration = (job.ends_at - job.started_at).total_seconds()
+        if total_duration <= 0:
+            completed_units = total
+        else:
+            elapsed = (now - job.started_at).total_seconds()
+            if elapsed <= 0:
+                completed_units = 0
+            else:
+                per_unit = total_duration / total
+                completed_units = int(elapsed // per_unit)
+                if completed_units > total:
+                    completed_units = total
+
+        if completed_units > done:
+            delta = completed_units - done
+
+            pi = (
+                session.query(PlayerItem)
+                .filter_by(player_id=player.id, item_key=job.item_key)
+                .one_or_none()
+            )
+            if pi is None:
+                pi = PlayerItem(
+                    player_id=player.id,
+                    item_key=job.item_key,
+                    quantity=delta,
+                )
+                session.add(pi)
+            else:
+                pi.quantity = int(pi.quantity or 0) + delta
+
+            # Quest hook (reward for newly crafted units)
+            on_item_crafted(
+                session=session,
+                player=player,
+                item_key=job.item_key,
+                quantity=delta,
+            )
+
+            job.quantity_done = completed_units
+
+        if completed_units >= total or now >= job.ends_at:
+            job.status = "done"
