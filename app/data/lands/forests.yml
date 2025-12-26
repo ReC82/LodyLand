@@ -77,7 +77,7 @@ forest:
           min: 2
           max: 4    
 
-    tool_branch_shovel:
+    tool_wooden_shovel:
       label: "Pelle basique"
       emoji: "🪣"
       cooldown_seconds: 20

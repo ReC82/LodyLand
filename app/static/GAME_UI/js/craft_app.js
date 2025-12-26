@@ -1364,6 +1364,9 @@ async function onCraftPerformClicked() {
 
   if (!res.ok) {
     console.error("[craft] perform error:", res);
+    console.error("[craft] perform error data:", res.data);
+    console.error("[craft] perform error data (pretty):", JSON.stringify(res.data, null, 2));
+
 
     if (performBtn) {
       performBtn.disabled = false;

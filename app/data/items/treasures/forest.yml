@@ -4,6 +4,6 @@
     label: Écorce ancienne
     description: De l'écorce ancienne, rare et précieuse.
     icon: /static/assets/img/items/treasures/ancient_bark.png
-    base_sell_price: null
+    base_sell_price: 200
     enabled: true
     unlock_description: Trouvé très rarement en forêt.
