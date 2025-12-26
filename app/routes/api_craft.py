@@ -16,6 +16,7 @@ from app.models import Player, PlayerCard, ResourceStock, PlayerItem, PlayerCraf
 from app.auth import get_current_player
 from app.quests.service import on_item_crafted
 from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
+from app.progression import next_threshold, apply_xp_and_level_up
 
 from datetime import datetime, timedelta
 import datetime as dt
@@ -648,6 +649,22 @@ def perform_craft():
         # --- Compute total output ------------------------------------------
         output_qty = int(recipe.get("output_quantity") or 1) * times
         craft_time_seconds = int(recipe.get("craft_time_seconds") or 0)
+        
+        # --- XP reward -----------------------------------------------------
+        xp_reward = float(item_cfg.get("xp_reward") or 0.0)
+
+        # Rule: XP per craft action ("times"), not per output quantity.
+        # If you want XP per produced item later, use output_qty instead of times.
+        gained_xp = xp_reward * float(times)
+
+        level_up = False
+        level_rewards = []
+        if gained_xp > 0:
+            level_up, _, level_rewards = apply_xp_and_level_up(
+                session=session,
+                player=player,
+                gained_xp=gained_xp,
+            )        
 
         now = dt.datetime.utcnow()
 
@@ -720,6 +737,18 @@ def perform_craft():
             "craft_location": craft_location,
             "times": times,
             "delayed": delayed,
+            "gained_xp": gained_xp,
+            "player": {
+                "id": player.id,
+                "name": getattr(player, "name", ""),
+                "xp": player.xp,
+                "level": player.level,
+                "next_xp": next_threshold(player.level),
+                "coins": player.coins,
+                "diams": player.diams,
+            },
+            "level_up": level_up,
+            "level_rewards": level_rewards,            
         }
 
         if delayed and job_payload:

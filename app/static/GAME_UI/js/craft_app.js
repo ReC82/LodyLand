@@ -513,7 +513,10 @@ async function refreshCraftData() {
     return;
   }
   const state = stateRes.data || {};
-
+  // Sync global player for the main HUD (XP/level/etc.)
+  if (state.player) {
+    window.currentPlayer = state.player;
+  }
   const craftBlock = state.craft || {};
   craftState.tableLevel =
     typeof craftBlock.craft_table_level === "number"
@@ -1398,6 +1401,17 @@ async function onCraftPerformClicked() {
   const data = res.data || {};
   const crafted = data.crafted_item || {};
   const delayed = !!data.delayed;
+
+  // If backend returns rewards (xp/level), trigger global level-up UI if available
+  const rewards = data.rewards || null;
+
+  if (rewards && rewards.level_up && typeof window.handleLevelUpFront === "function") {
+    window.handleLevelUpFront(
+      rewards.old_level,
+      rewards.new_level,
+      rewards.level_rewards || []
+    );
+  }
 
   // Reset quantity input to 1 after craft
   if (qtyInput) {
