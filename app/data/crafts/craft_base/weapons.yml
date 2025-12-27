@@ -22,7 +22,7 @@ weapon_wooden_sword:
         key: wooden_plank
         quantity: 1
       S:
-        kind: resource
+        kind: item
         key: wooden_stick
         quantity: 1
 

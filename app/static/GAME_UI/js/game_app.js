@@ -82,7 +82,7 @@ function getResourceIconPath(resKey) {
   if (fromDb) return fromDb;
 
   // Fallback, au cas où la ressource n'est pas trouvée dans la DB
-  return `/static/assets/img/resources/${resKey}.png`;
+  return `/static/assets/img/items/resources/${resKey}.png`;
 }
 
 /**
@@ -263,7 +263,7 @@ function getRewardIconPath(r) {
 
   // 2) Fallbacks basés sur le type et la key
   if (r.type === "resource" && r.key) {
-    return `/static/assets/img/resources/${r.key}.png`;
+    return `/static/assets/img/items/resources/${r.key}.png`;
   }
 
   if (r.type === "card" && r.key) {
@@ -598,7 +598,7 @@ function tileIconUrl(t) {
   }
 
   // 3) Just a filename: we assume it's inside our resources folder
-  return `/static/assets/img/resources/${raw}`;
+  return `/static/assets/img/items/resources/${raw}`;
 }
 
 function renderGrid(tiles) {
@@ -1229,7 +1229,7 @@ function showLootToasts(lootArray) {
 
     // 3️⃣ Dernier fallback : ancien chemin (ne devrait presque jamais servir)
     if (!iconUrl) {
-      iconUrl = `/static/assets/img/resources/${resKey}.png`;
+      iconUrl = `/static/assets/img/items/resources/${resKey}.png`;
     }
 
     const toast = document.createElement("div");

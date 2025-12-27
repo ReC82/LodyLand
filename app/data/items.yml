@@ -5,13 +5,23 @@
 
 items:
 
+  aluminium_foil_fragment:
+    key: aluminium_foil_fragment
+    kind: resource
+    label: Fragment de feuille d'aluminium
+    description: Un fragment de feuille d'aluminium, utile pour la construction.
+    icon: /static/assets/img/items/resources/aluminium_foil_fragment.png
+    base_sell_price: 12
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.
+
   anchovy:
     key: anchovy
     kind: resource
     label: Anchois
     description: Une anchois ... morte, mais elle a l'air commestible.
     icon: /static/assets/img/items/resources/anchovy.png
-    base_sell_price: 5
+    base_sell_price: 8
     enabled: true
 
   ancient_bark:
@@ -20,7 +30,7 @@ items:
     label: Écorce ancienne
     description: De l'écorce ancienne, rare et précieuse.
     icon: /static/assets/img/items/treasures/ancient_bark.png
-    base_sell_price: null
+    base_sell_price: 200
     enabled: true
     unlock_description: Trouvé très rarement en forêt.
 
@@ -30,7 +40,7 @@ items:
     label: Ancient Relic Part
     description: Une pièce d'une relique ancienne.
     icon: /static/assets/img/items/resources/ancient_relic_part.png
-    base_sell_price: 1
+    base_sell_price: 100
     enabled: true
     unlock_description: Trouvé en fouillant le sol.
 
@@ -40,7 +50,7 @@ items:
     label: Apple
     description: Une pomme fraîche, bonne à manger.
     icon: /static/assets/img/items/resources/apple.png
-    base_sell_price: 5
+    base_sell_price: 6
     enabled: true
     unlock_description: Trouvé en fouillant coupant un arbre.
 
@@ -50,7 +60,7 @@ items:
     label: Écorce
     description: De l'écorce, utile pour fabriquer des colles et des encres.
     icon: /static/assets/img/items/resources/bark.png
-    base_sell_price: 1
+    base_sell_price: 3
     enabled: true
     unlock_description: Trouvé en coupant des arbres.
 
@@ -70,7 +80,7 @@ items:
     label: Berry
     description: Une baie juteuse, bonne à manger.
     icon: /static/assets/img/items/resources/berry.png
-    base_sell_price: 1
+    base_sell_price: 4
     enabled: true
     unlock_description: Trouvé en fouillant les buissons.
 
@@ -110,7 +120,7 @@ items:
     label: Cactus Fiber
     description: Des fibres de cactus, utiles pour fabriquer des colles et des encres.
     icon: /static/assets/img/items/resources/cactus_fiber.png
-    base_sell_price: 1
+    base_sell_price: 2
     enabled: true
     unlock_description: Trouvé en coupant des arbres.
 
@@ -132,7 +142,7 @@ items:
     label: Argile
     description: De l'argile, utile pour fabriquer des poteries.
     icon: /static/assets/img/items/resources/clay.png
-    base_sell_price: 1
+    base_sell_price: 10
     enabled: true
     unlock_description: Trouvé en fouillant le sol.
 
@@ -142,9 +152,19 @@ items:
     label: Charbon
     description: Du charbon, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/coal.png
-    base_sell_price: 2
+    base_sell_price: 3
     enabled: true
     unlock_description: Fabriqué en craftant du bois ou trouvé dans les mines.
+
+  cobalt_ore:
+    key: cobalt_ore
+    kind: resource
+    label: Minerai de cobalt
+    description: Un minerai de cobalt, utile pour fabriquer des objets en cobalt.
+    icon: /static/assets/img/items/resources/cobalt_ore.png
+    base_sell_price: 20
+    enabled: true
+    unlock_description: Trouvé dans les mines.
 
   dirt:
     key: dirt
@@ -174,9 +194,19 @@ items:
     label: Flint
     description: Du silex, utile pour allumer des feux.
     icon: /static/assets/img/items/resources/flint.png
-    base_sell_price: 1
+    base_sell_price: 5
     enabled: true
     unlock_description: Trouvé en fouillant le sol.
+
+  gold_dust:
+    key: gold_dust
+    kind: resource
+    label: Poussière d'or
+    description: Une poussière d'or, utile pour la construction.
+    icon: /static/assets/img/items/resources/gold_dust.png
+    base_sell_price: 4
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.
 
   gold_leaf:
     key: gold_leaf
@@ -184,9 +214,19 @@ items:
     label: Feuille d'or
     description: Une feuille d'or précieuse trouvée dans la caverne.
     icon: /static/assets/img/items/resources/gold_leaf.png
-    base_sell_price: 10
+    base_sell_price: 25
     enabled: true
     unlock_description: Trouvée en explorant des cavernes profondes.
+
+  gold_ore:
+    key: gold_ore
+    kind: resource
+    label: Minerai d'or
+    description: Un minerai d'or, utile pour fabriquer des objets en or.
+    icon: /static/assets/img/items/resources/gold_ore.png
+    base_sell_price: 15
+    enabled: true
+    unlock_description: Trouvé dans les mines.
 
   golden_blossom:
     key: golden_blossom
@@ -206,7 +246,7 @@ items:
     label: Herbs
     description: Des herbes. Utile pour cuisiner ou fabriquer des potions.
     icon: /static/assets/img/items/resources/herbs.png
-    base_sell_price: 1
+    base_sell_price: 2
     enabled: true
     unlock_description: Trouvé en fouillant les plantes.
 
@@ -226,7 +266,7 @@ items:
     label: Minerai de fer
     description: Un minerai de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ore.png
-    base_sell_price: 2
+    base_sell_price: 15
     enabled: true
     unlock_description: Trouvé dans les mines.
 
@@ -269,9 +309,7 @@ items:
     description: Un fragment brillant de cristal lunaire trouvé dans les profondeurs
       de la caverne.
     icon: /static/assets/img/items/treasures/moon_crystal_shard.png
-    unlock_min_level: 1
-    base_cooldown: 10
-    base_sell_price: 0
+    base_sell_price: 300
     enabled: true
     unlock_description: Trouvé très rarement dans les profondeurs de la caverne.
 
@@ -293,9 +331,7 @@ items:
     label: Coquille de nautile
     description: Une coquille de nautile rare trouvée sur la plage.
     icon: /static/assets/img/items/treasures/nautilus_shell.png
-    unlock_min_level: 1
-    base_cooldown: 10
-    base_sell_price: 0
+    base_sell_price: 250
     enabled: true
     unlock_description: Trouvé très rarement sur la plage.
 
@@ -305,7 +341,7 @@ items:
     label: Bois
     description: Du bois de chêne, ressource de base pour construire et crafter.
     icon: /static/assets/img/items/resources/oak_wood_log.png
-    base_sell_price: 2
+    base_sell_price: 5
     enabled: true
     unlock_description: Récolté avec une hache dans la forêt.
 
@@ -315,7 +351,7 @@ items:
     label: Palm Leaf
     description: Une feuille de palmier, utile pour fabriquer des objets.
     icon: /static/assets/img/items/resources/palm_leaf.png
-    base_sell_price: 2
+    base_sell_price: 3
     enabled: true
     unlock_description: Toujours accessible (niveau 0).
 
@@ -325,7 +361,7 @@ items:
     label: Bois
     description: Du bois de palmier, ressource de base pour construire et crafter.
     icon: /static/assets/img/items/resources/palm_wood_log.png
-    base_sell_price: 2
+    base_sell_price: 5
     enabled: true
     unlock_description: Récolté avec une hache dans la forêt.
 
@@ -355,7 +391,7 @@ items:
     label: Pièce de statue cassée
     description: Une pièce d'une statue ancienne et cassée.
     icon: /static/assets/img/items/resources/piece_of_broken_statue.png
-    base_sell_price: 2
+    base_sell_price: 75
     enabled: true
     unlock_description: Trouvée en explorant des terres anciennes.
 
@@ -389,7 +425,7 @@ items:
     label: Résine
     description: De la résine, utile pour fabriquer des colles et des encres.
     icon: /static/assets/img/items/resources/resin.png
-    base_sell_price: 1
+    base_sell_price: 6
     enabled: true
     unlock_description: Trouvé en coupant des arbres.
 
@@ -421,7 +457,7 @@ items:
     label: Sable
     description: Du sable fin, trouvé sur la plage.
     icon: /static/assets/img/items/resources/sand.png
-    base_sell_price: 1
+    base_sell_price: 1.5
     enabled: true
     unlock_description: Toujours accessible sur la plage.
 
@@ -441,7 +477,7 @@ items:
     label: Small Stone
     description: De petites pierres, utiles pour la construction.
     icon: /static/assets/img/items/resources/small_stone.png
-    base_sell_price: 2
+    base_sell_price: 5
     enabled: true
     unlock_description: Récolté à la main dans la forêt.
 
@@ -467,12 +503,32 @@ items:
     enabled: true
     unlock_description: Trouvée très rarement en fouillant la plage.
 
+  stone:
+    key: stone
+    kind: resource
+    label: Morceau de pierre
+    description: Un morceau de pierre, utile pour la construction.
+    icon: /static/assets/img/items/resources/stone.png
+    base_sell_price: 7
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.
+
   stone_chunk:
     key: stone_chunk
     kind: resource
     label: Morceau de pierre
     description: Un morceau de pierre, utile pour la construction.
     icon: /static/assets/img/items/resources/stone_chunk.png
+    base_sell_price: 7
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.
+
+  stone_dust:
+    key: stone_dust
+    kind: resource
+    label: Poussière de pierre
+    description: Une poussière de pierre, utile pour la construction.
+    icon: /static/assets/img/items/resources/stone_dust.png
     base_sell_price: 2
     enabled: true
     unlock_description: Trouvé en explorant des cavernes.
@@ -483,9 +539,7 @@ items:
     label: Sable du temps
     description: Du sable rare qui semble ralentir le temps autour de lui.
     icon: /static/assets/img/items/treasures/time_sand.png
-    unlock_min_level: 1
-    base_cooldown: 10
-    base_sell_price: 0
+    base_sell_price: 350
     enabled: true
     unlock_description: Trouvé très rarement dans le désert.
 
@@ -570,7 +624,7 @@ items:
     label: Lianes
     description: Des lianes qui serviront de ficelle pour fabriquer des objets.
     icon: /static/assets/img/items/resources/vine.png
-    base_sell_price: 2
+    base_sell_price: 3
     enabled: true
     unlock_description: Trouvées parfois en fouillant la forêt.
 

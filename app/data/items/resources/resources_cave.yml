@@ -1,10 +1,20 @@
+  stone:
+    key: stone
+    kind: resource
+    label: Morceau de pierre
+    description: Un morceau de pierre, utile pour la construction.
+    icon: /static/assets/img/items/resources/stone.png
+    base_sell_price: 7
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes. 
+
   gold_leaf:
     key: gold_leaf
     kind: resource
     label: Feuille d'or
     description: Une feuille d'or précieuse trouvée dans la caverne.
     icon: /static/assets/img/items/resources/gold_leaf.png
-    base_sell_price: 10
+    base_sell_price: 25
     enabled: true
     unlock_description: Trouvée en explorant des cavernes profondes.
 
@@ -14,9 +24,29 @@
     label: Minerai de fer
     description: Un minerai de fer, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/iron_ore.png
-    base_sell_price: 2
+    base_sell_price: 15
     enabled: true
     unlock_description: Trouvé dans les mines.
+
+  gold_ore:
+    key: gold_ore
+    kind: resource
+    label: Minerai d'or
+    description: Un minerai d'or, utile pour fabriquer des objets en or.
+    icon: /static/assets/img/items/resources/gold_ore.png
+    base_sell_price: 15
+    enabled: true
+    unlock_description: Trouvé dans les mines.
+
+  cobalt_ore:
+    key: cobalt_ore
+    kind: resource
+    label: Minerai de cobalt
+    description: Un minerai de cobalt, utile pour fabriquer des objets en cobalt.
+    icon: /static/assets/img/items/resources/cobalt_ore.png
+    base_sell_price: 20
+    enabled: true
+    unlock_description: Trouvé dans les mines.     
 
   coal:
     key: coal
@@ -24,7 +54,7 @@
     label: Charbon
     description: Du charbon, utile pour fabriquer des objets en fer.
     icon: /static/assets/img/items/resources/coal.png
-    base_sell_price: 2
+    base_sell_price: 3
     enabled: true
     unlock_description: Fabriqué en craftant du bois ou trouvé dans les mines.      
 
@@ -34,6 +64,36 @@
     label: Morceau de pierre
     description: Un morceau de pierre, utile pour la construction.
     icon: /static/assets/img/items/resources/stone_chunk.png
-    base_sell_price: 2
+    base_sell_price: 7
     enabled: true
     unlock_description: Trouvé en explorant des cavernes.   
+
+  stone_dust:
+    key: stone_dust
+    kind: resource
+    label: Poussière de pierre
+    description: Une poussière de pierre, utile pour la construction.
+    icon: /static/assets/img/items/resources/stone_dust.png
+    base_sell_price: 2
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.  
+
+  gold_dust:
+    key: gold_dust
+    kind: resource
+    label: Poussière d'or
+    description: Une poussière d'or, utile pour la construction.
+    icon: /static/assets/img/items/resources/gold_dust.png
+    base_sell_price: 4
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.      
+
+  aluminium_foil_fragment:
+    key: aluminium_foil_fragment
+    kind: resource
+    label: Fragment de feuille d'aluminium
+    description: Un fragment de feuille d'aluminium, utile pour la construction.
+    icon: /static/assets/img/items/resources/aluminium_foil_fragment.png
+    base_sell_price: 12
+    enabled: true
+    unlock_description: Trouvé en explorant des cavernes.

@@ -8,7 +8,7 @@ crafts:
     key: basic_net
     station_key: craft_table_advanced
     output:
-      kind: resource
+      kind: item
       key: basic_net
       quantity: 1
     recipe:
@@ -33,7 +33,7 @@ crafts:
     key: branch_net
     station_key: craft_table_advanced
     output:
-      kind: resource
+      kind: item
       key: branch_net
       quantity: 1
     recipe:
@@ -47,7 +47,7 @@ crafts:
           key: branch
           quantity: 1
         N:
-          kind: resource
+          kind: item
           key: branch_net
           quantity: 1
       required_table_level: 3
@@ -62,7 +62,7 @@ crafts:
     key: branch_plank
     station_key: craft_table_medium
     output:
-      kind: resource
+      kind: item
       key: branch_plank
       quantity: 1
     recipe:
@@ -146,7 +146,7 @@ crafts:
     key: rope
     station_key: craft_table_medium
     output:
-      kind: resource
+      kind: item
       key: rope
       quantity: 1
     recipe:
@@ -182,7 +182,7 @@ crafts:
           key: vine
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 1
@@ -263,11 +263,11 @@ crafts:
       - .S.
       legend:
         N:
-          kind: resource
+          kind: item
           key: branch_net
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 3
@@ -299,7 +299,7 @@ crafts:
           key: small_stone
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 2
@@ -346,16 +346,16 @@ crafts:
       quantity: 1
     recipe:
       pattern:
-      - BBB
-      - .B.
-      - .B.
+      - .P.
+      - .S.
+      - .S.
       legend:
-        B:
-          kind: resource
-          key: branch
+        P:
+          kind: item
+          key: branch_plank
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 3
@@ -384,7 +384,7 @@ crafts:
           key: wooden_plank
           quantity: 1
         S:
-          kind: resource
+          kind: item
           key: wooden_stick
           quantity: 1
       required_table_level: 3
@@ -399,7 +399,7 @@ crafts:
     key: wooden_stick
     station_key: craft_table_base
     output:
-      kind: resource
+      kind: item
       key: wooden_stick
       quantity: 1
     recipe:

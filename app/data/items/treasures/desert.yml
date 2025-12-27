@@ -4,8 +4,6 @@
     label: Sable du temps
     description: Du sable rare qui semble ralentir le temps autour de lui.
     icon: /static/assets/img/items/treasures/time_sand.png
-    unlock_min_level: 1
-    base_cooldown: 10
-    base_sell_price: 0
+    base_sell_price: 350
     enabled: true
     unlock_description: Trouvé très rarement dans le désert.

@@ -6,7 +6,7 @@
       tier: 2        # 2x3 (milieu du jeu)
 
     output:
-      kind: resource
+      kind: item
       key: rope
       quantity: 1
 
@@ -40,7 +40,7 @@
       tier: 2        # 2x3 (milieu du jeu)
 
     output:
-      kind: resource
+      kind: item
       key: branch_plank
       quantity: 1
 

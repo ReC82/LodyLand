@@ -12,16 +12,16 @@ tool_wooden_shovel:
 
   recipe:
     pattern:
-      - "BBB"
-      - ".B."
-      - ".B."      
+      - ".P."
+      - ".S."
+      - ".S."      
     legend:
-      B:
-        kind: resource
-        key: branch
+      P:
+        kind: item
+        key: branch_plank
         quantity: 1
       S:
-        kind: resource
+        kind: item
         key: wooden_stick
         quantity: 1
 
@@ -95,11 +95,11 @@ tool_vine_net:
       - ".S."      
     legend:
       N:
-        kind: resource
+        kind: item
         key: branch_net
         quantity: 1
       S:
-        kind: resource
+        kind: item
         key: wooden_stick
         quantity: 1        
 
