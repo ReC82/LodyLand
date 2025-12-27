@@ -14,4 +14,10 @@ venv/
 .env
 game.db
 
+*.yml.bak
+game.db.level10
+app/data/*.bak
+app/data/craft_validation_report.html
 app/data/validation_report.html
+ssh-lodyland.pem
+tree.txt

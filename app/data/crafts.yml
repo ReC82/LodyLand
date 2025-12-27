@@ -48,14 +48,42 @@ crafts:
           quantity: 1
         N:
           kind: resource
-          key: basic_net
+          key: branch_net
           quantity: 1
       required_table_level: 3
     craft_time_seconds: 300
     xp_reward: 15
     unlock:
-      recipe_card_key: recipe_basic_net
+      recipe_card_key: recipe_branch_net
       min_level: 2
+    enabled: true
+
+  branch_plank:
+    key: branch_plank
+    station_key: craft_table_medium
+    output:
+      kind: resource
+      key: branch_plank
+      quantity: 1
+    recipe:
+      pattern:
+      - BBB
+      - VV.
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+        V:
+          kind: resource
+          key: vine
+          quantity: 1
+      required_table_level: 2
+    craft_time_seconds: 30
+    xp_reward: 5
+    unlock:
+      recipe_card_key: recipe_branch_plank
+      min_level: 4
     enabled: true
 
   iron_ingot:
@@ -334,7 +362,7 @@ crafts:
     craft_time_seconds: 10
     xp_reward: 8
     unlock:
-      recipe_card_key: recipe_tool_shovel_basic
+      recipe_card_key: recipe_tool_wooden_shovel
       min_level: 2
     enabled: true
 

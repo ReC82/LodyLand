@@ -158,8 +158,12 @@ levels:
 - level: 3
   xp_required: 60
   rewards:
+  - type: coins
+    amount: 100
   - type: card
     card_key: land_village
+  - type: diams
+    amount: 1
   system_unlocks:
   - type: feature
     key: hud_currencies
