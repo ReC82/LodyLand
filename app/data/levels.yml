@@ -64,6 +64,9 @@ levels:
 - level: 1
   xp_required: 10
   rewards: []
+  system_unlocks:
+  - type: feature
+    key: notebook
   story_events:
   - id: level_1_explain_progress
     trigger: on_level_reached
@@ -83,14 +86,10 @@ levels:
     - speaker: self
       mood: explaining
       text:
-        fr: 'En ramassant des ressources, je gagne de l’XP. Quand je monte de niveau,
-          je reçois des récompenses… Et parfois, je peux débloquer de nouveaux endroits.
+        fr: 'Mais, qu''est ce que c''est ? On dirait un vieux carnet de notes.
 
           '
-        en: 'By gathering resources, I gain XP. When I level up, I get rewards… And
-          sometimes I unlock new places.
-
-          '
+        en: ''
     - speaker: self
       mood: curious
       text:

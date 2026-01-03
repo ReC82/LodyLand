@@ -68,6 +68,11 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='GAME_UI/css/global/modals/game_menu_modal.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/notebook_modal.css') }}"
+    />
+
 
     <!-- 4) CSS spécifique à la page de jeu (layout, lands génériques, etc.) -->
     <link
@@ -98,15 +103,18 @@
     <!-- HUD joueur -->
     <header class="game-header">
       <div class="gh-left">
-        <!--
-        <div class="gh-logo">
-          <img
-            src="{{ url_for('static', filename='assets/img/ui/logo_hud.png') }}"
-            alt="LodyLand"
-            class="gh-logo-img"
-          />
-        </div> -->
-        <!-- Beta reminder (HUD) -->
+        <!-- Notebook (HUD icon) -->
+        <div
+          id="hud-notebook-btn"
+          class="hud-icon-wrapper"
+          data-feature="notebook"
+          data-feature-hide="0"
+          title="Notebook"
+        >
+          <!-- Option A (safe) : emoji, aucun asset requis -->
+          <span class="hud-icon-emoji" aria-hidden="true">📘</span>
+        </div>
+
       </div>
 
       <!-- CENTRE : zone niveau / XP -->
@@ -607,6 +615,76 @@
       </div>
     </div>
 
+    <!-- Notebook (fullscreen modal) -->
+    <div id="notebookModal" class="ll-modal notebook-modal" aria-hidden="true">
+      <div id="notebookModalBackdrop" class="ll-modal-backdrop"></div>
+
+      <div class="notebook-dialog" role="dialog" aria-modal="true" aria-labelledby="notebookTitle">
+        <header class="notebook-header">
+          <div class="notebook-header-left">
+            <div class="notebook-badge">📘</div>
+            <div>
+              <h2 id="notebookTitle" class="notebook-title">Notebook</h2>
+              <div class="notebook-subtitle">Guides, lands, récoltes, crafts…</div>
+            </div>
+          </div>
+
+          <div class="notebook-header-right">
+            <button id="notebookCloseBtn" class="notebook-close-btn" type="button" aria-label="Fermer">
+              ✕
+            </button>
+          </div>
+        </header>
+
+        <div class="notebook-body">
+          <!-- Nav (tabs) -->
+          <nav class="notebook-tabs" aria-label="Notebook sections">
+            <button type="button" class="notebook-tab is-active" data-tab="lands">Lands</button>
+            <button type="button" class="notebook-tab" data-tab="crafts">Crafts</button>
+            <button type="button" class="notebook-tab" data-tab="tips">Tips</button>
+          </nav>
+
+          <!-- Content -->
+          <section class="notebook-panel is-active" data-panel="lands">
+            <div class="notebook-panel-inner">
+              <h3 class="notebook-h3">Lands</h3>
+              <p class="notebook-muted">
+                Ici tu verras ce qu’on peut récolter par land (et ce qui reste à débloquer).
+              </p>
+
+              <div id="notebookLandsList" class="notebook-cards">
+                <!-- rendu par notebook_app.js -->
+              </div>
+            </div>
+          </section>
+
+          <section class="notebook-panel" data-panel="crafts">
+            <div class="notebook-panel-inner">
+              <h3 class="notebook-h3">Crafts</h3>
+              <p class="notebook-muted">
+                Ici tu verras les recettes disponibles et celles encore verrouillées.
+              </p>
+
+              <div class="notebook-empty">
+                WIP (Step suivant : brancher tes defs de craft + gating par progression)
+              </div>
+            </div>
+          </section>
+
+          <section class="notebook-panel" data-panel="tips">
+            <div class="notebook-panel-inner">
+              <h3 class="notebook-h3">Tips</h3>
+              <div class="notebook-empty">
+                WIP (Step suivant : mini-guides contextuels, objectifs, etc.)
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+
+
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
@@ -614,6 +692,7 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/craft_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/quests_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/story_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/notebook_app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

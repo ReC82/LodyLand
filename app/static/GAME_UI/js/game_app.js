@@ -224,13 +224,6 @@ function applyFeatureVisibility() {
 // On expose le testeur global pour d'autres scripts (village, etc.)
 window.isFeatureUnlocked = isFeatureUnlocked;
 
-
-function baseUrl() {
-  return `${location.protocol}//${location.host}`;
-}
-
-const $ = (id) => document.getElementById(id);
-
 function formatRewardLabel(r) {
   const amount = r.amount ?? 0;
 
@@ -407,21 +400,6 @@ function initLevelUpModal() {
 
   if (closeBtn) closeBtn.addEventListener("click", close);
   if (backdrop) backdrop.addEventListener("click", close);
-}
-
-async function http(method, path, body) {
-  const res = await fetch(`${baseUrl()}${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  let data = null;
-  const isJson = res.headers.get("content-type")?.includes("application/json");
-  data = isJson ? await res.json() : await res.text();
-
-  return { ok: res.ok, status: res.status, data };
 }
 
 // ---------------------------------------------------------------------------
@@ -1512,6 +1490,7 @@ window.showLootToasts = showLootToasts;
 document.addEventListener("DOMContentLoaded", async () => {
   await loadResourceDefsIfNeeded();
   initLevelUpModal();
+  initNotebookUI();
   setupGameMenu();  
   setupDailyModal();
   refreshDailyStatus();
@@ -1956,4 +1935,9 @@ function setupLevelsAccordion() {
       }
     });
   });
+}
+
+function initNotebookUI() {
+  // Notebook is fully handled by static/GAME_UI/js/notebook_app.js
+  // Keep this no-op to avoid double event wiring.
 }
