@@ -20,6 +20,7 @@ from .api_quests import bp as quests_bp
 from .api_village_trades import bp as village_trades_bp
 from .api_village_cardshop import bp as village_cardshop_bp
 from .api_temple import bp as temple_bp
+from .api_notebook import bp as notebook_bp
 
 def register_routes(app: Flask) -> None:
     """Enregistre tous les blueprints API sur l'app Flask."""
@@ -39,4 +40,5 @@ def register_routes(app: Flask) -> None:
     app.register_blueprint(village_cardshop_bp, url_prefix="/api")
     
     app.register_blueprint(temple_bp, url_prefix="/temple")
+    app.register_blueprint(notebook_bp, url_prefix="/api")
     

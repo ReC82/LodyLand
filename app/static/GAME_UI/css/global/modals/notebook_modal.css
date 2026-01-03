@@ -1,0 +1,674 @@
+/* ============================================================
+   NOTEBOOK (FULLSCREEN MODAL)
+   File: static/GAME_UI/css/global/modals/notebook_modal.css
+   Purpose: Fullscreen Notebook modal styling
+   ============================================================ */
+
+/* Root modal wrapper (uses ll-modal base elsewhere) */
+#notebookModal {
+  display: none;
+  z-index: 260; /* above other modals if needed */
+}
+
+#notebookModal.is-open {
+  display: block;
+}
+
+/* Dialog (true fullscreen-ish, with safe inset on desktop) */
+.notebook-dialog {
+  position: fixed;
+  inset: 12px;
+  z-index: 1200;
+
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 16px;
+  overflow: hidden;
+
+  background: rgba(2, 6, 23, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* Edge-to-edge on small screens */
+@media (max-width: 640px) {
+  .notebook-dialog {
+    inset: 0;
+    border-radius: 0;
+  }
+}
+
+/* Header */
+.notebook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(30, 41, 59, 0.85),
+    rgba(2, 6, 23, 0.85)
+  );
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.notebook-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.notebook-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.notebook-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #e2e8f0;
+  line-height: 1.1;
+}
+
+.notebook-subtitle {
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.notebook-close-btn {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.75);
+  color: #e2e8f0;
+
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.notebook-close-btn:hover {
+  background: rgba(99, 102, 241, 0.18);
+}
+
+/* Body layout */
+.notebook-body {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Tabs */
+.notebook-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.notebook-tab {
+  cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(2, 6, 23, 0.35);
+  color: rgba(226, 232, 240, 0.85);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.notebook-tab.is-active {
+  border-color: rgba(99, 102, 241, 0.55);
+  background: rgba(99, 102, 241, 0.18);
+  color: #e2e8f0;
+}
+
+/* Panels */
+.notebook-panel {
+  display: none;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.notebook-panel.is-active {
+  display: block;
+}
+
+.notebook-panel-inner {
+  padding: 14px;
+  height: 100%;
+  overflow: auto;
+}
+
+.notebook-h3 {
+  margin: 0 0 6px 0;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.notebook-muted {
+  margin: 0 0 12px 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.notebook-empty {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.9rem;
+}
+
+/* Cards list */
+.notebook-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .notebook-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.notebook-card {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+/* Locked state (aligned with JS: is-locked) */
+.notebook-card.is-locked {
+  opacity: 0.72;
+  filter: grayscale(0.25);
+}
+
+/* Card layout used by notebook_app.js */
+.notebook-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.notebook-land-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.notebook-land-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.notebook-land-thumb-locked {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.notebook-card-main {
+  min-width: 0;
+}
+
+.notebook-card-title {
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 2px;
+}
+
+.notebook-card-desc {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+/* Meta */
+.notebook-land-meta {
+  margin-top: 10px;
+}
+
+.notebook-meta-row {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.8);
+  margin-top: 6px;
+}
+
+.notebook-meta-label {
+  display: inline-block;
+  min-width: 70px;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.notebook-locked-hint {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+/* Pills */
+.notebook-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin: 6px 6px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+
+  background: rgba(2, 6, 23, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.notebook-pill.is-loot {
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+/* ============================================================
+   NOTEBOOK - LANDS as list + accordion details
+   Add this at the end of notebook_modal.css
+   ============================================================ */
+
+/* Override: Lands list should be 1 column list (not grid) */
+#notebookLandsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Row container */
+.nb-land-row {
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+}
+
+/* Clickable header line */
+.nb-land-head {
+  width: 100%;
+  cursor: pointer;
+
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  gap: 12px;
+  align-items: center;
+
+  padding: 10px 12px;
+
+  background: rgba(2, 6, 23, 0.10);
+}
+
+.nb-land-head:hover {
+  background: rgba(99, 102, 241, 0.10);
+}
+
+/* Thumbnail */
+.nb-land-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nb-land-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Title block */
+.nb-land-title {
+  font-weight: 800;
+  color: #e2e8f0;
+  line-height: 1.1;
+}
+
+.nb-land-sub {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+/* Right meta (slots + cost) */
+.nb-land-meta {
+  text-align: right;
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.85);
+  white-space: nowrap;
+}
+
+.nb-land-meta .muted {
+  color: rgba(226, 232, 240, 0.6);
+}
+
+/* Locked look */
+.nb-land-row.is-locked {
+  opacity: 0.72;
+  filter: grayscale(0.25);
+}
+
+.nb-land-lock-hint {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+/* Chevron */
+.nb-land-chevron {
+  margin-left: 10px;
+  display: inline-block;
+  transform: rotate(0deg);
+  transition: transform 180ms ease;
+  color: rgba(226, 232, 240, 0.75);
+  font-weight: 900;
+}
+
+.nb-land-row.is-open .nb-land-chevron {
+  transform: rotate(180deg);
+}
+
+/* Details panel */
+.nb-land-details {
+  display: none;
+  padding: 10px 12px 12px 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(2, 6, 23, 0.20);
+}
+
+.nb-land-row.is-open .nb-land-details {
+  display: block;
+}
+
+.nb-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.nb-details-section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #e2e8f0;
+  margin-bottom: 6px;
+}
+
+.nb-tool-block {
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.nb-tool-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.nb-tool-name {
+  font-weight: 800;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.nb-tool-cd {
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+/* Loot lines */
+.nb-loot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nb-loot-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.10);
+
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.nb-loot-item .pct {
+  color: rgba(34, 197, 94, 0.9);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.nb-loot-item .range {
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.78rem;
+}
+
+/* Small info line (when no loot) */
+.nb-muted-line {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+/* =========================
+   TOOL ACCORDION
+   ========================= */
+
+.nb-tool-row {
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  overflow: hidden;
+}
+
+.nb-tool-btn {
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-align: left;
+}
+
+.nb-tool-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nb-tool-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.nb-tool-ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nb-tool-name {
+  font-weight: 850;
+  color: rgba(226, 232, 240, 0.92);
+  line-height: 1.1;
+}
+
+.nb-tool-meta {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.nb-tool-right {
+  text-align: right;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.70);
+}
+
+.nb-tool-chevron {
+  margin-left: 10px;
+  display: inline-block;
+  transition: transform 180ms ease;
+  color: rgba(226, 232, 240, 0.75);
+  font-weight: 900;
+}
+
+.nb-tool-row.is-open .nb-tool-chevron {
+  transform: rotate(180deg);
+}
+
+.nb-tool-body {
+  display: none;
+  padding: 0 10px 10px 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.10);
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.nb-tool-row.is-open .nb-tool-body {
+  display: block;
+}
+
+/* =========================
+   LOOT GRID (icon tiles)
+   ========================= */
+
+.nb-loot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.nb-loot-tile {
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.10);
+  padding: 8px;
+  text-align: center;
+}
+
+.nb-loot-ico {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 6px auto;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nb-loot-ico img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nb-loot-line1 {
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.88);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.nb-loot-line2 {
+  margin-top: 2px;
+  font-size: 0.74rem;
+  color: rgba(226, 232, 240, 0.65);
+  line-height: 1.1;
+}
+
+.nb-loot-pct {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: rgba(34, 197, 94, 0.9);
+  font-weight: 900;
+}
+
+/* =========================
+   SEARCH
+   ========================= */
+
+.nb-search-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.nb-search-input {
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(2, 6, 23, 0.35);
+  color: rgba(226, 232, 240, 0.9);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.nb-search-input:focus {
+  border-color: rgba(99, 102, 241, 0.55);
+}
+
+.nb-search-clear {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.45);
+  color: rgba(226, 232, 240, 0.85);
+  padding: 10px 12px;
+  cursor: pointer;
+}
