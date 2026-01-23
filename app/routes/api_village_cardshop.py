@@ -65,8 +65,8 @@ def api_village_cardshop_buy():
         # 2) Prix : même logique que dans frontend.village_shop()
         prices = shop_cfg.get("prices") or []
         price_cfg = (prices[0] or {}) if prices else {}
-        price_coins = int(price_cfg.get("shards", 0) or 0)
-        price_diams = int(price_cfg.get("essence", 0) or 0)
+        price_shards = int(price_cfg.get("shards", 0) or 0)
+        price_essence = int(price_cfg.get("essence", 0) or 0)
         res_costs = price_cfg.get("resources") or {}
 
         # 3) Quantité possédée + max_owned
@@ -91,12 +91,12 @@ def api_village_cardshop_buy():
             # TODO: vérifier les ressources du joueur
             pass
 
-        # 4) Vérifier les coins/diams du joueur
-        if player.coins < price_coins:
-            return jsonify({"ok": False, "error": "not_enough_coins"}), 400
+        # 4) Vérifier les shards/essence du joueur
+        if player.shards < price_shards:
+            return jsonify({"ok": False, "error": "not_enough_shards"}), 400
 
-        if player.diams < price_diams:
-            return jsonify({"ok": False, "error": "not_enough_diams"}), 400
+        if player.essence < price_essence:
+            return jsonify({"ok": False, "error": "not_enough_essence"}), 400
 
         # 5) Item type : ici, uniquement des cartes
         item_type = "card"
@@ -111,8 +111,8 @@ def api_village_cardshop_buy():
             ), 400
 
         # 6) Déduction du prix
-        player.coins -= price_coins
-        player.diams -= price_diams
+        player.shards -= price_shards
+        player.essence -= price_essence
 
         session.commit()
         session.refresh(player)

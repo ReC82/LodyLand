@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request
 from app.db import SessionLocal
 from app.models import Player
 from app.progression import next_threshold
-from app.economy import DAILY_REWARD_COINS
+from app.economy import DAILY_REWARD_shards
 from app.auth import get_current_player 
 
 bp = Blueprint("daily", __name__) 
@@ -55,8 +55,8 @@ def claim_daily():
         else:
             me.best_streak = current_best
 
-        # Créditer les coins
-        me.coins = (me.coins or 0) + DAILY_REWARD_COINS
+        # Créditer les shards
+        me.shards = (me.shards or 0) + DAILY_REWARD_shards
 
         s.commit()
         s.refresh(me)
@@ -67,7 +67,7 @@ def claim_daily():
 
         return jsonify({
             "ok": True,
-            "reward": DAILY_REWARD_COINS,
+            "reward": DAILY_REWARD_shards,
             "player": {
                 "id": me.id,
                 "name": me.name,

@@ -77,8 +77,8 @@ def buy_land_slot(land_key):
     Unlock one extra slot for a land.
 
     Logic:
-    - If player has a matching 'free slot' card, consume it and add slot (no diams).
-    - Else, pay with diams using next_cost from land_state.
+    - If player has a matching 'free slot' card, consume it and add slot (no essence).
+    - Else, pay with essence using next_cost from land_state.
     """
     data = request.get_json(silent=True) or {}
 
@@ -109,10 +109,10 @@ def buy_land_slot(land_key):
                 s.delete(free_card)
             used_free_card = True
         else:
-            # Pas de carte → on paie en diams
-            if player.diams < cost:
-                return jsonify({"error": "not_enough_diams"}), 400
-            player.diams -= cost
+            # Pas de carte → on paie en essence
+            if player.essence < cost:
+                return jsonify({"error": "not_enough_essence"}), 400
+            player.essence -= cost
 
         # 2) Ajouter le slot (quel que soit le mode de paiement)
         pls = (

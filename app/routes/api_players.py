@@ -644,7 +644,7 @@ def get_levels_definitions():
     """
     Return the list of level definitions for the UI:
       - xp_min / xp_max (pour afficher la barre)
-      - normalized rewards (coins/diams/resources/cards)
+      - normalized rewards (shards/essence/resources/cards)
       - story_events (brut depuis levels.yml)
       - system_unlocks (brut depuis levels.yml)
     """
@@ -692,8 +692,8 @@ def get_levels_definitions():
                         {
                             "type": "shards",
                             "amount": amount,
-                            "label": "Coins",
-                            "icon": "/static/GAME_UI/img/ui/coins.png",
+                            "label": "shards",
+                            "icon": "/static/GAME_UI/img/ui/shards.png",
                         }
                     )
 
@@ -703,8 +703,8 @@ def get_levels_definitions():
                         {
                             "type": "essence",
                             "amount": amount,
-                            "label": "Diams",
-                            "icon": "/static/GAME_UI/img/ui/diams.png",
+                            "label": "essence",
+                            "icon": "/static/GAME_UI/img/ui/essence.png",
                         }
                     )
 

@@ -21,12 +21,12 @@ def get_prices():
     return jsonify({"prices": list_prices()})
 
 # -----------------------------------------------------------------
-# Vendre une ressource contre des coins
+# Vendre une ressource contre des shards
 # -----------------------------------------------------------------
 @bp.post("/sell")
 def sell():
     """
-    Vendre une ressource du joueur contre des coins.
+    Vendre une ressource du joueur contre des shards.
 
     JSON attendu :
     {
@@ -88,7 +88,7 @@ def sell():
         # Calcul du gain + mise à jour
         rs.qty -= qty
         gain = unit_price * qty
-        p.coins = (p.coins or 0) + gain
+        p.shards = (p.shards or 0) + gain
 
         s.commit()
         s.refresh(rs)

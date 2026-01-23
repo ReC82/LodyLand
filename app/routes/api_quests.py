@@ -46,7 +46,7 @@ def claim_quest():
       - La quête doit appartenir au joueur courant.
       - status doit être 'ready'.
       - Si la quête est expirée, on la marque 'expired' et on refuse.
-      - On applique les récompenses (coins, diams) et on passe en 'completed'.
+      - On applique les récompenses (shards, essence) et on passe en 'completed'.
     """
     data = request.get_json(silent=True) or {}
     quest_id = data.get("quest_id")
@@ -104,7 +104,7 @@ def claim_quest():
             return jsonify({"error": "quest_expired"}), 400
 
         # 👉 Baby step 2 : on NE touche pas encore aux ressources.
-        # On applique juste les récompenses (coins / diams)
+        # On applique juste les récompenses (shards / essence)
         _apply_quest_rewards(me, quest)
 
         quest.status = "completed"
