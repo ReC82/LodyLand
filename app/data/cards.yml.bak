@@ -357,7 +357,7 @@ cards:
   - beach
   card_label: Anchois +0.1
   card_description: Ajoute 0.1 a la récolte d'anchois
-  card_image: /static/assets/img/cards/boosts/_treasures/beach/card_anchovy_boost_1.png
+  card_image: /static/assets/img/cards/boosts/_treasures/beach/anchovy_boost_treasure_1.png
   card_rarity: rare
   card_gameplay:
     target_resource: anchovy
