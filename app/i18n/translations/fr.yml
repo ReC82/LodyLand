@@ -1,0 +1,273 @@
+# app/i18n/translations/fr.yml
+# Traductions françaises pour LodyLand
+
+# =============================================================================
+# UI général
+# =============================================================================
+ui:
+  welcome: "Bienvenue dans LodyLand"
+  loading: "Chargement..."
+  error: "Une erreur s'est produite"
+  success: "Succès !"
+  
+  # Actions
+  confirm: "Confirmer"
+  cancel: "Annuler"
+  close: "Fermer"
+  save: "Sauvegarder"
+  delete: "Supprimer"
+  buy: "Acheter"
+  sell: "Vendre"
+  craft: "Fabriquer"
+  unlock: "Débloquer"
+  claim: "Réclamer"
+  
+  # Navigation
+  back: "Retour"
+  next: "Suivant"
+  home: "Accueil"
+  inventory: "Inventaire"
+  shop: "Boutique"
+  quests: "Quêtes"
+  profile: "Profil"
+  
+  # Auth
+  login: "Se connecter"
+  register: "S'inscrire"
+  logout: "Se déconnecter"
+  username: "Nom d'utilisateur"
+  password: "Mot de passe"
+  email: "Email"
+
+# =============================================================================
+# HUD (Heads-Up Display)
+# =============================================================================
+hud:
+  level: "Niveau"
+  xp: "XP"
+  xp_short: "XP"
+  next_level: "Prochain niveau"
+  daily_chest: "Coffre journalier"
+  travel: "Voyager"
+  menu: "Menu"
+  
+  # Tooltips
+  tooltip:
+    level: "Niveau {level} • {xp}/{next_xp} XP"
+    daily_available: "Coffre disponible !"
+    daily_claimed: "Revenez demain"
+    daily_streak: "Série : {streak} jours"
+
+# =============================================================================
+# Gameplay
+# =============================================================================
+game:
+  # Récolte
+  collect:
+    success: "Vous avez trouvé"
+    nothing: "Rien trouvé..."
+    cooldown: "Disponible dans {seconds}s"
+    locked: "Case verrouillée"
+    
+  # Craft
+  craft:
+    title: "Fabrication"
+    available: "Recettes disponibles"
+    locked: "Recette verrouillée"
+    craft_button: "Fabriquer"
+    craft_success: "Objet fabriqué !"
+    not_enough_resources: "Ressources insuffisantes"
+    requirements: "Requis"
+    
+  # Progression
+  level_up:
+    title: "Montée de niveau !"
+    new_level: "Niveau {level}"
+    rewards: "Récompenses"
+    continue: "Continuer"
+    
+  # Quêtes
+  quests:
+    title: "Quêtes"
+    active: "En cours"
+    completed: "Terminées"
+    available: "Disponibles"
+    claim_reward: "Réclamer la récompense"
+    objectives: "Objectifs"
+    rewards: "Récompenses"
+    progress: "{current}/{target}"
+    expired: "Expirée"
+    
+    types:
+      daily: "Quête journalière"
+      weekly: "Quête hebdomadaire"
+      storyline: "Quête principale"
+      
+  # Lands
+  lands:
+    title: "Voyager"
+    select: "Sélectionner une destination"
+    locked: "Verrouillé"
+    unlock_with: "Débloquer avec"
+    slots: "Emplacements"
+    buy_slot: "Acheter un emplacement"
+    
+  # Market
+  market:
+    title: "Marché"
+    sell_price: "Prix de vente"
+    quantity: "Quantité"
+    sell_button: "Vendre"
+    total: "Total"
+    transaction_success: "Vente réussie !"
+    
+  # Shop
+  shop:
+    title: "Boutique"
+    buy_button: "Acheter"
+    owned: "Possédé"
+    purchase_limit: "Limite d'achat"
+    purchase_success: "Achat réussi !"
+    not_enough_currency: "Pas assez de {currency}"
+
+# =============================================================================
+# Erreurs
+# =============================================================================
+errors:
+  not_found: "Introuvable"
+  not_authenticated: "Non authentifié"
+  not_authorized: "Non autorisé"
+  invalid_input: "Entrée invalide"
+  server_error: "Erreur serveur"
+  network_error: "Erreur réseau"
+  
+  # Gameplay errors
+  cooldown_active: "Action en cooldown"
+  insufficient_resources: "Ressources insuffisantes"
+  insufficient_currency: "Pas assez de {currency}"
+  level_required: "Niveau {level} requis"
+  item_locked: "Objet verrouillé"
+  quest_not_ready: "Quête pas encore terminée"
+  already_owned: "Déjà possédé"
+
+# =============================================================================
+# Story / Dialogues
+# =============================================================================
+story:
+  continue: "Continuer"
+  skip: "Passer"
+  understood: "J'ai compris"
+  
+  speakers:
+    self: "Moi"
+    mysterious_voice: "Voix mystérieuse"
+    npc_villager_guide: "Guide du village"
+    
+  moods:
+    confused: "Confus"
+    lost: "Perdu"
+    thinking: "Pensif"
+    surprised: "Surpris"
+    determined: "Déterminé"
+    worried: "Inquiet"
+    curious: "Curieux"
+    friendly: "Amical"
+    explaining: "Expliquant"
+
+# =============================================================================
+# Items & Resources
+# =============================================================================
+resources:
+  categories:
+    basic: "Basique"
+    rare: "Rare"
+    treasure: "Trésor"
+    
+  # Note: Les labels spécifiques sont dans items.yml
+  # Ici on met juste les messages génériques
+  collected: "Récolté"
+  crafted: "Fabriqué"
+  received: "Reçu"
+
+# =============================================================================
+# Cards
+# =============================================================================
+cards:
+  types:
+    resource_boost: "Boost de ressources"
+    xp_boost: "Boost d'XP"
+    cooldown_boost: "Réduction de cooldown"
+    land_loot_boost: "Boost de loot"
+    unlock_land: "Déblocage de land"
+    
+  rarity:
+    common: "Commun"
+    uncommon: "Peu commun"
+    rare: "Rare"
+    epic: "Épique"
+    legendary: "Légendaire"
+
+# =============================================================================
+# Time & Dates
+# =============================================================================
+time:
+  seconds: "secondes"
+  minutes: "minutes"
+  hours: "heures"
+  days: "jours"
+  
+  ago: "il y a {time}"
+  in: "dans {time}"
+  
+  # Relative
+  just_now: "À l'instant"
+  today: "Aujourd'hui"
+  yesterday: "Hier"
+  tomorrow: "Demain"
+
+# =============================================================================
+# Numbers & Quantities
+# =============================================================================
+numbers:
+  none: "Aucun"
+  unlimited: "Illimité"
+  max: "Max"
+  
+  # Plurals
+  items:
+    one: "{count} objet"
+    other: "{count} objets"
+  
+  resources:
+    one: "{count} ressource"
+    other: "{count} ressources"
+    
+  cards:
+    one: "{count} carte"
+    other: "{count} cartes"
+
+# =============================================================================
+# Notifications / Toasts
+# =============================================================================
+notifications:
+  quest_completed: "Quête terminée !"
+  quest_available: "Nouvelle quête disponible"
+  level_up: "Montée de niveau !"
+  daily_chest_available: "Coffre journalier disponible"
+  achievement_unlocked: "Succès débloqué"
+  item_crafted: "Objet fabriqué"
+  purchase_complete: "Achat effectué"
+  
+# =============================================================================
+# Settings
+# =============================================================================
+settings:
+  title: "Paramètres"
+  language: "Langue"
+  sound: "Son"
+  music: "Musique"
+  notifications: "Notifications"
+  
+  sound_effects: "Effets sonores"
+  background_music: "Musique de fond"
+  volume: "Volume"
