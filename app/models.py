@@ -21,13 +21,34 @@ from datetime import datetime
 from .db import Base
 class Player(Base):
     __tablename__ = "players"
-
+    
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-
-    # economy
-    coins: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    diams: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    
+    # New currency columns (after DB migration)
+    shards: Mapped[int] = mapped_column(Integer, default=0)
+    essence: Mapped[int] = mapped_column(Integer, default=0)
+    
+    # Backward compatibility properties (temporary)
+    @property
+    def coins(self) -> int:
+        """Legacy property: maps to shards"""
+        return self.shards
+    
+    @coins.setter
+    def coins(self, value: int):
+        """Legacy setter: maps to shards"""
+        self.shards = value
+    
+    @property
+    def diams(self) -> int:
+        """Legacy property: maps to essence"""
+        return self.essence
+    
+    @diams.setter
+    def diams(self, value: int):
+        """Legacy setter: maps to essence"""
+        self.essence = value
 
     # progression
     level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
