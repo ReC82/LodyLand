@@ -112,8 +112,8 @@ def sell():
                     "name": p.name,
                     "level": p.level,
                     "xp": p.xp,
-                    "coins": p.coins,
-                    "diams": p.diams,
+                    "shards": p.shards,
+                    "essence": p.essence,
                     "next_xp": next_threshold(p.level),
                 },
             }

@@ -47,8 +47,8 @@ def _player_to_dict(p: Player) -> dict:
     return {
         "id": p.id,
         "name": p.name,
-        "coins": p.coins,
-        "diams": p.diams,
+        "shards": p.shards,
+        "essence": p.essence,
         "level": p.level,
         "xp": p.xp,
         "next_xp": getattr(p, "next_xp", None),  # ou via progression
@@ -132,8 +132,8 @@ def create_player():
                 "id": p.id,
                 "name": p.name,
                 "level": p.level,
-                "coins": p.coins,
-                "diams": p.diams,
+                "shards": p.shards,
+                "essence": p.essence,
                 "xp": p.xp,
                 "next_xp": next_threshold(p.level),
             }
@@ -149,8 +149,8 @@ def create_player():
             "id": p.id,
             "name": p.name,
             "level": p.level,
-            "coins": p.coins,
-            "diams": p.diams,
+            "shards": p.shards,
+            "essence": p.essence,
             "xp": p.xp,
             "next_xp": next_threshold(p.level),
         }
@@ -171,8 +171,8 @@ def get_player(player_id: int):
                 "id": p.id,
                 "name": p.name,
                 "level": p.level,
-                "coins": p.coins,
-                "diams": p.diams,
+                "shards": p.shards,
+                "essence": p.essence,
                 "xp": p.xp,
                 "next_xp": next_threshold(p.level),
             }
@@ -207,8 +207,8 @@ def register():
                     "id": p.id,
                     "name": p.name,
                     "level": p.level,
-                    "coins": p.coins,
-                    "diams": p.diams,
+                    "shards": p.shards,
+                    "essence": p.essence,
                     "xp": p.xp,
                     "next_xp": next_threshold(p.level),
                 }
@@ -249,8 +249,8 @@ def login():
                     "id": p.id,
                     "name": p.name,
                     "level": p.level,
-                    "coins": p.coins,
-                    "diams": p.diams,
+                    "shards": p.shards,
+                    "essence": p.essence,
                     "xp": p.xp,
                     "next_xp": next_threshold(p.level),
                 }
@@ -284,8 +284,8 @@ def whoami():
                 "id": p.id,
                 "name": p.name,
                 "level": p.level,
-                "coins": p.coins,
-                "diams": p.diams,
+                "shards": p.shards,
+                "essence": p.essence,
                 "xp": p.xp,
                 "next_xp": next_threshold(p.level),
             }
@@ -569,8 +569,8 @@ def get_state():
                         "name": me.name,
                         "level": me.level,
                         "xp": me.xp,
-                        "coins": me.coins,
-                        "diams": me.diams,
+                        "shards": me.shards,
+                        "essence": me.essence,
                         "next_xp": next_threshold(me.level),
                     },
                     "tiles": tiles_payload,
@@ -686,22 +686,22 @@ def get_levels_definitions():
             for r in rewards_cfg:
                 r_type = r.get("type")
 
-                if r_type == "coins":
+                if r_type == "shards":
                     amount = int(r.get("amount", 0))
                     normalized_rewards.append(
                         {
-                            "type": "coins",
+                            "type": "shards",
                             "amount": amount,
                             "label": "Coins",
                             "icon": "/static/GAME_UI/img/ui/coins.png",
                         }
                     )
 
-                elif r_type == "diams":
+                elif r_type == "essence":
                     amount = int(r.get("amount", 0))
                     normalized_rewards.append(
                         {
-                            "type": "diams",
+                            "type": "essence",
                             "amount": amount,
                             "label": "Diams",
                             "icon": "/static/GAME_UI/img/ui/diams.png",

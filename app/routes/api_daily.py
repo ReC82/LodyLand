@@ -71,8 +71,8 @@ def claim_daily():
             "player": {
                 "id": me.id,
                 "name": me.name,
-                "coins": me.coins,
-                "diams": me.diams,
+                "shards": me.shards,
+                "essence": me.essence,
                 "xp": me.xp,
                 "level": me.level,
                 "next_xp": next_threshold(me.level),

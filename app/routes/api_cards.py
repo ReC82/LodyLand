@@ -214,8 +214,8 @@ def buy_card():
                 return jsonify({"error": "purchase_expired"}), 400
 
         # --- Validate payment option ---
-        coins_cost = int(price_cfg.get("coins", 0) or 0)
-        diams_cost = int(price_cfg.get("diams", 0) or 0)
+        coins_cost = int(price_cfg.get("shards", 0) or 0)
+        diams_cost = int(price_cfg.get("essence", 0) or 0)
         res_costs = price_cfg.get("resources") or {}
 
         # Coins
@@ -278,8 +278,8 @@ def buy_card():
             "owned_qty": new_qty,
             "player": {
                 "id": p.id,
-                "coins": p.coins,
-                "diams": p.diams,
+                "shards": p.shards,
+                "essence": p.essence,
             }
         })
 
@@ -368,8 +368,8 @@ def buy_village_offer():
             return jsonify({"error": "no_price_defined_for_card"}), 500
 
         price_cfg = prices[0] or {}
-        coins_cost = int(price_cfg.get("coins", 0) or 0)
-        diams_cost = int(price_cfg.get("diams", 0) or 0)
+        coins_cost = int(price_cfg.get("shards", 0) or 0)
+        diams_cost = int(price_cfg.get("essence", 0) or 0)
         res_costs: dict = price_cfg.get("resources") or {}
 
         # 6) Check currencies
@@ -429,8 +429,8 @@ def buy_village_offer():
                 "owned_qty": new_qty,
                 "player": {
                     "id": p.id,
-                    "coins": p.coins,
-                    "diams": p.diams,
+                    "shards": p.shards,
+                    "essence": p.essence,
                 },
             }
         ), 200

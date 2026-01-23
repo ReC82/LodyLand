@@ -122,8 +122,8 @@ def claim_quest():
                     "name": me.name,
                     "level": me.level,
                     "xp": me.xp,
-                    "coins": me.coins,
-                    "diams": me.diams,
+                    "shards": me.shards,
+                    "essence": me.essence,
                 },
                 "quest": serialize_quest(quest),
             }

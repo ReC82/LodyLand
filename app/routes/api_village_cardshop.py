@@ -65,8 +65,8 @@ def api_village_cardshop_buy():
         # 2) Prix : même logique que dans frontend.village_shop()
         prices = shop_cfg.get("prices") or []
         price_cfg = (prices[0] or {}) if prices else {}
-        price_coins = int(price_cfg.get("coins", 0) or 0)
-        price_diams = int(price_cfg.get("diams", 0) or 0)
+        price_coins = int(price_cfg.get("shards", 0) or 0)
+        price_diams = int(price_cfg.get("essence", 0) or 0)
         res_costs = price_cfg.get("resources") or {}
 
         # 3) Quantité possédée + max_owned
@@ -127,8 +127,8 @@ def api_village_cardshop_buy():
                     "name": player.name,
                     "level": player.level,
                     "xp": player.xp,
-                    "coins": player.coins,
-                    "diams": player.diams,
+                    "shards": player.shards,
+                    "essence": player.essence,
                 },
                 "item": {
                     "item_type": item_type,

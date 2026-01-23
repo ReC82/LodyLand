@@ -150,7 +150,7 @@ def buy_land_slot(land_key):
                 "remaining_free_cards": remaining_free,
                 "player": {
                     "id": player.id,
-                    "diams": player.diams,
+                    "essence": player.essence,
                 },
                 "land_state": land_state,
             }

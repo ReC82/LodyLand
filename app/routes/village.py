@@ -63,8 +63,8 @@ def api_village_market_resources():
                         "name": player.name,
                         "level": player.level,
                         "xp": player.xp,
-                        "coins": player.coins,
-                        "diams": player.diams,
+                        "shards": player.shards,
+                        "essence": player.essence,
                         "next_xp": next_threshold(player.level),
                     },
                     "resources": [],
@@ -113,8 +113,8 @@ def api_village_market_resources():
                     "name": player.name,
                     "level": player.level,
                     "xp": player.xp,
-                    "coins": player.coins,
-                    "diams": player.diams,
+                    "shards": player.shards,
+                    "essence": player.essence,
                     "next_xp": next_threshold(player.level),
                 },
                 "resources": rows,
@@ -169,8 +169,8 @@ def api_village_shop_buy():
             return jsonify({"ok": False, "error": "out_of_stock"}), 400
 
         # 3) Déterminer prix
-        price_coins = offer.get("price_coins") or offer.get("coins") or 0
-        price_diams = offer.get("price_diams") or offer.get("diams") or 0
+        price_coins = offer.get("price_coins") or offer.get("shards") or 0
+        price_diams = offer.get("price_diams") or offer.get("essence") or 0
 
         # 4) Vérifier que le joueur peut payer
         if player.coins < price_coins:
@@ -221,8 +221,8 @@ def api_village_shop_buy():
                     "name": player.name,
                     "level": player.level,
                     "xp": player.xp,
-                    "coins": player.coins,
-                    "diams": player.diams,
+                    "shards": player.shards,
+                    "essence": player.essence,
                 },
                 "item": {
                     "item_type": item_type,
