@@ -1,0 +1,91 @@
+# app/data/currencies.yml
+# Configuration des devises du jeu avec support i18n
+
+currencies:
+  
+  # Devise principale (actuellement "coins")
+  primary:
+    key: "shards"                    # Identifiant technique
+    icon: "/static/assets/img/ui/shards.png"
+    
+    labels:
+      fr:
+        singular: "Éclat"
+        plural: "Éclats"
+        short: "É"                   # Pour affichage compact
+      en:
+        singular: "Shard"
+        plural: "Shards"
+        short: "S"
+      es:
+        singular: "Fragmento"
+        plural: "Fragmentos"
+        short: "F"
+    
+    descriptions:
+      fr: "Fragments d'un cristal ancien. Monnaie principale de l'île."
+      en: "Fragments of an ancient crystal. Main currency of the island."
+      es: "Fragmentos de un cristal antiguo. Moneda principal de la isla."
+    
+    # Gameplay
+    base_rewards:
+      collect: 1                     # Par action de récolte
+      quest_easy: 10
+      quest_medium: 50
+      quest_hard: 200
+      daily_chest: 20
+    
+    # UI display
+    color: "#fbbf24"                 # amber-400 (Tailwind)
+    rarity: "common"
+
+  # Devise premium (actuellement "diams")
+  premium:
+    key: "essence"
+    icon: "/static/assets/img/ui/essence.png"
+    
+    labels:
+      fr:
+        singular: "Essence"
+        plural: "Essences"
+        short: "E"
+      en:
+        singular: "Essence"
+        plural: "Essences"
+        short: "E"
+      es:
+        singular: "Esencia"
+        plural: "Esencias"
+        short: "E"
+    
+    descriptions:
+      fr: "Énergie pure de l'île. Très rare et précieuse."
+      en: "Pure energy of the island. Very rare and precious."
+      es: "Energía pura de la isla. Muy rara y preciosa."
+    
+    # Gameplay
+    base_rewards:
+      level_milestone: 1             # Tous les 5 niveaux
+      quest_weekly: 2
+      daily_chest_streak_7: 1
+      achievement: 1
+    
+    # Monetization (optionnel)
+    shop_packs:
+      - quantity: 10
+        price_usd: 0.99
+      - quantity: 50
+        price_usd: 3.99
+      - quantity: 150
+        price_usd: 9.99
+      - quantity: 500
+        price_usd: 29.99
+    
+    # UI display
+    color: "#a78bfa"                 # violet-400
+    rarity: "rare"
+
+# Future: XP currency (si besoin)
+# experience:
+#   key: "xp"
+#   labels: {...}
