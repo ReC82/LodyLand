@@ -234,7 +234,7 @@ const $ = (id) => document.getElementById(id);
 function formatRewardLabel(r) {
   const amount = r.amount ?? 0;
 
-  if (r.type === "coins" || r.type === "diams") {
+  if (r.type === "shards" || r.type === "essence") {
     return `${amount} ${r.label || r.type}`;
   }
 
@@ -270,12 +270,12 @@ function getRewardIconPath(r) {
     return `/static/assets/img/cards/${r.key}.png`;
   }
 
-  if (r.type === "coins") {
-    return `/static/assets/img/ui/coins.png`;
+  if (r.type === "shards") {
+    return `/static/assets/img/ui/shards.png`;
   }
 
-  if (r.type === "diams") {
-    return `/static/assets/img/ui/diams.png`;
+  if (r.type === "essence") {
+    return `/static/assets/img/ui/essence.png`;
   }
 
   return null;
@@ -468,8 +468,8 @@ function renderPlayer(p) {
   const xpLeft = $("xpLabelLeft");
   const xpRight = $("xpLabelRight");
   const headerName = $("currentPlayerName");
-  const hudCoins = $("hudCoins");
-  const hudDiams = $("hudDiams");
+  const hudshards = $("hudshards");
+  const hudessence = $("hudessence");
 
   // 🔥 NEW: garder currentPlayer en phase avec ce qui est affiché (et accessible aux autres scripts)
   if (!p) {
@@ -487,16 +487,16 @@ function renderPlayer(p) {
     if (xpLeft) xpLeft.textContent = "XP: 0 • Level: 0";
     if (xpRight) xpRight.textContent = "0%";
     if (headerName) headerName.textContent = "—";
-    if (hudCoins) hudCoins.textContent = "0";
-    if (hudDiams) hudDiams.textContent = "0";
+    if (hudshards) hudshards.textContent = "0";
+    if (hudessence) hudessence.textContent = "0";
     
     // HUD moderne à zéro
     updatePlayerHUD({
       level: 0,
       xp: 0,
       xp_next: 100,
-      coins: 0,
-      diams: 0,
+      shards: 0,
+      essence: 0,
       land_name: window.LAND_NAME || "",
     });
 
@@ -510,14 +510,14 @@ function renderPlayer(p) {
 
   const xp = Number(p.xp ?? 0);
   const level = Number(p.level ?? 0);
-  const coins = Number(p.coins ?? 0);
-  const diams = Number(p.diams ?? 0);
+  const shards = Number(p.shards ?? 0);
+  const essence = Number(p.essence ?? 0);
   const next = p.next_xp ?? p.nextXp ?? null;
 
   if (header) {
     header.textContent =
       `id=${p.id} • ${p.name} • lvl=${level} ` +
-      `• XP=${xp} • coins=${coins}`;
+      `• XP=${xp} • shards=${shards}`;
   }
 
   let pct = 0;
@@ -531,8 +531,8 @@ function renderPlayer(p) {
   if (xpLeft) xpLeft.textContent = `XP: ${xp} • Level: ${level}`;
   if (xpRight) xpRight.textContent = `${pct}%`;
   if (headerName) headerName.textContent = p.name ?? "—";
-  if (hudCoins) hudCoins.textContent = coins;
-  if (hudDiams) hudDiams.textContent = diams;
+  if (hudshards) hudshards.textContent = shards;
+  if (hudessence) hudessence.textContent = essence;
 
 
   
@@ -541,8 +541,8 @@ function renderPlayer(p) {
     level,
     xp,
     xp_next: next ?? 100,
-    coins,
-    diams,
+    shards,
+    essence,
     land_name: window.LAND_NAME || "",
   });
 }
@@ -822,8 +822,8 @@ function renderCardShop(cards) {
 
   const html = cards.map((c) => {
     const priceParts = [];
-    if (c.price_coins > 0) priceParts.push(`${c.price_coins} coins`);
-    if (c.price_diams > 0) priceParts.push(`${c.price_diams} diams`);
+    if (c.price_shards > 0) priceParts.push(`${c.price_shards} shards`);
+    if (c.price_essence > 0) priceParts.push(`${c.price_essence} essence`);
     const priceText = priceParts.length ? priceParts.join(" + ") : "Gratuit";
 
     const owned = c.owned_qty || 0;
@@ -951,15 +951,15 @@ async function buyCard(cardKey) {
   const d = r.data || {};
   if (status) status.textContent = `Achat réussi : ${d.card?.label || cardKey}`;
 
-  // refresh player coins/diams + shop
+  // refresh player shards/essence + shop
   if (d.player) {
     renderPlayer({
       ...currentPlayer,
-      coins: d.player.coins,
-      diams: d.player.diams,
+      shards: d.player.shards,
+      essence: d.player.essence,
     });
-    currentPlayer.coins = d.player.coins;
-    currentPlayer.diams = d.player.diams;
+    currentPlayer.shards = d.player.shards;
+    currentPlayer.essence = d.player.essence;
   }
 
   await loadCardShop();
@@ -1156,13 +1156,13 @@ async function resetCardDev(cardKey) {
 // ---------------------------------------------------------------------------
 
 function updatePlayerHUD(playerData) {
-  // playerData attendu: { level, xp, xp_next, coins, diams, land_name }
+  // playerData attendu: { level, xp, xp_next, shards, essence, land_name }
   const levelEl = document.getElementById("hud-level");
   const xpFillEl = document.getElementById("hud-xp-fill");
   const xpCurEl = document.getElementById("hud-xp-current");
   const xpNextEl = document.getElementById("hud-xp-next");
-  const coinsEl = document.getElementById("hud-coins");
-  const diamsEl = document.getElementById("hud-diams");
+  const shardsEl = document.getElementById("hud-shards");
+  const essenceEl = document.getElementById("hud-essence");
   const landNameEl = document.getElementById("gh-land-name");
 
   if (!playerData) return;
@@ -1177,8 +1177,8 @@ function updatePlayerHUD(playerData) {
   if (levelEl) levelEl.textContent = playerData.level ?? 0;
   if (xpCurEl) xpCurEl.textContent = safeCur;
   if (xpNextEl) xpNextEl.textContent = safeNext;
-  if (coinsEl) coinsEl.textContent = playerData.coins ?? 0;
-  if (diamsEl) diamsEl.textContent = playerData.diams ?? 0;
+  if (shardsEl) shardsEl.textContent = playerData.shards ?? 0;
+  if (essenceEl) essenceEl.textContent = playerData.essence ?? 0;
   if (landNameEl) landNameEl.textContent = playerData.land_name || "";
 
   if (xpFillEl) {
@@ -1402,7 +1402,7 @@ function enqueueInitialStoriesOnLogin() {
  * reçue dans les récompenses de level.
  *
  * - oldLevel / newLevel : niveaux avant/après
- * - levelRewards : array de récompenses du level up (coins, diams, card, ...)
+ * - levelRewards : array de récompenses du level up (shards, essence, card, ...)
  *
  * On va chercher dans LEVEL_STORY_INDEX[lvl] les events:
  *   trigger === "on_land_unlocked"

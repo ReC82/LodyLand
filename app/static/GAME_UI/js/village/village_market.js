@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const d = r.data || {};
           const sold = d.sold || {};
 
-          // Update HUD via VillageCommon helper (XP, coins, diams, etc.)
+          // Update HUD via VillageCommon helper (XP, shards, essence, etc.)
           if (
             window.VillageCommon &&
             typeof VillageCommon.handlePlayerAndLevelFromResponse ===
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           showMessage(
             "success",
-            `Vente réussie : +${sold.gain || qty * (sold.unit_price || 0)} coins pour ${sold.qty || qty} × ${sold.resource || key}.`
+            `Vente réussie : +${sold.gain || qty * (sold.unit_price || 0)} shards pour ${sold.qty || qty} × ${sold.resource || key}.`
           );
         } catch (e) {
           console.error("[village_market] network error", e);

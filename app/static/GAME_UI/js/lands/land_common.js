@@ -768,7 +768,7 @@
         if (hasFree) {
           message =
             `Utiliser une carte emplacement gratuit pour débloquer un emplacement sur ${landLabel} ? ` +
-            "(Cela ne coûtera pas de diams.)";
+            `(${I18n.t("game.lands.unlock_with")} ${I18n.currencyLabel("premium", 0).toLowerCase()}.)`;
         } else {
           message = `Confirmer l'achat d'un emplacement sur ${landLabel} pour ${nextCost} 💎 ?`;
         }

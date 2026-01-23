@@ -126,7 +126,7 @@ async function claimDaily() {
     if (r.ok) {
       const d = r.data || {};
 
-      const reward = d.reward ?? d.coins_awarded ?? 0;
+      const reward = d.reward ?? d.shards_awarded ?? 0;
       const streak = d.streak || {};
       const cur = streak.current ?? "?";
       const best = streak.best ?? "?";
@@ -136,7 +136,7 @@ async function claimDaily() {
 
       tooltip.innerHTML =
         `Coffre ouvert 🎁<br>` +
-        `+${reward} coins<br>` +
+        `+${reward} shards<br>` +
         `<small>Streak: ${cur} (meilleur: ${best})</small>`;
 
       // Mise à jour HUD player si le backend renvoie un player
@@ -225,7 +225,7 @@ async function refreshDailyStatus() {
 
   if (d.eligible) {
     html += `<div><b>Coffre disponible</b> 🎁</div>`;
-    html += `<div>Récompense : quelques coins</div>`;
+    html += `<div>Récompense : quelques shards</div>`;
   } else {
     html += `<div><b>Déjà ouvert aujourd'hui</b></div>`;
   }

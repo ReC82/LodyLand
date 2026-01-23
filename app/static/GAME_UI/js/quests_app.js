@@ -60,23 +60,23 @@ function QQ_renderObjective(obj) {
 function QQ_renderRewards(rewards) {
   if (!rewards) return "";
 
-  const coins = rewards.coins || 0;
-  const diams = rewards.diams || 0;
+  const shards = rewards.shards || 0;
+  const essence = rewards.essence || 0;
   const parts = [];
 
-  if (coins > 0) {
+  if (shards > 0) {
     parts.push(`
       <div class="quest-reward-pill">
         <span>🪙</span>
-        <span>+${coins} coins</span>
+        <span>+${shards} shards</span>
       </div>
     `);
   }
-  if (diams > 0) {
+  if (essence > 0) {
     parts.push(`
       <div class="quest-reward-pill">
         <span>💎</span>
-        <span>+${diams} diams</span>
+        <span>+${essence} essence</span>
       </div>
     `);
   }
@@ -408,27 +408,27 @@ window.QQ_toggleGroup = function (groupKey) {
 };
 
 // ---------------------------------------------------------------------------
-// HUD helper: mettre à jour coins/diams après validation de quête
+// HUD helper: mettre à jour shards/essence après validation de quête
 // ---------------------------------------------------------------------------
 function QQ_updateHudFromPlayer(player) {
   if (!player) return;
 
   const coinEls = [
-    document.getElementById("hud-coins"),
-    document.getElementById("hud-coins-value"),
-    document.getElementById("hud-coins-amount"),
+    document.getElementById("hud-shards"),
+    document.getElementById("hud-shards-value"),
+    document.getElementById("hud-shards-amount"),
   ];
   coinEls.forEach((el) => {
-    if (el) el.textContent = player.coins;
+    if (el) el.textContent = player.shards;
   });
 
   const diamEls = [
-    document.getElementById("hud-diams"),
-    document.getElementById("hud-diams-value"),
-    document.getElementById("hud-diams-amount"),
+    document.getElementById("hud-essence"),
+    document.getElementById("hud-essence-value"),
+    document.getElementById("hud-essence-amount"),
   ];
   diamEls.forEach((el) => {
-    if (el) el.textContent = player.diams;
+    if (el) el.textContent = player.essence;
   });
 }
 
@@ -468,7 +468,7 @@ window.QQ_claimQuest = function (questId) {
     const player = data.player || null;
     const quest = data.quest || null;
 
-    // 🔄 Mettre à jour le HUD coins/diams
+    // 🔄 Mettre à jour le HUD shards/essence
     if (player) {
       QQ_updateHudFromPlayer(player);
     }

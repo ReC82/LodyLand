@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>{% block title %}LodyLand{% endblock %}</title>
+    <title>{% block title %}LodyLands{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <script src="{{ url_for('static', filename='GAME_UI/js/i18n.js') }}"></script>
@@ -134,29 +134,29 @@
 
       <div class="gh-right">
         <div
-          class="gh-currency gh-coins"
+          class="gh-currency gh-shards"
           data-feature="hud_currencies"
           data-feature-hide="0"
         >
           <img
             src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
-            alt="Coins"
+            alt="Shards"
             class="hud-icon-small"
           />
-          <span id="hud-coins">0</span>
+          <span id="hud-shards">0</span>
         </div>
 
         <div
-          class="gh-currency gh-diams"
+          class="gh-currency gh-essence"
           data-feature="hud_currencies"
           data-feature-hide="0"
         >
           <img
-            src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
+            src="{{ url_for('static', filename='assets/img/ui/essence.png') }}"
             alt="Diamants"
             class="hud-icon-small"
           />
-          <span id="hud-diams">0</span>
+          <span id="hud-essence">0</span>
         </div>
 
         <!-- Daily Chest (icon HUD) -->
@@ -261,7 +261,7 @@
         <div class="daily-modal-icon">🎁</div>
         <h2 class="daily-modal-title">Coffre ouvert !</h2>
         <p class="daily-modal-reward">
-          Tu reçois <span id="dailyModalReward">0</span> coins.
+          Tu reçois <span id="dailyModalReward">0</span> shards.
         </p>
         <p class="daily-modal-streak">
           Streak actuel : <span id="dailyModalStreakCurrent">0</span><br />

@@ -1,6 +1,6 @@
 /*
   File: static/GAME_UI/js/shop_app.js
-  Purpose: Logic for the Shop page (selling resources for coins).
+  Purpose: Logic for the Shop page (selling resources for shards).
   Notes:
   - Uses http() and $() helpers from common.js
   - Uses renderPlayer() / currentPlayer from game_app.js to refresh HUD
@@ -14,16 +14,16 @@ let SHOP_STATE_DEFS_BY_KEY = {};
 let SHOP_STATE_CARDS_ALL = [];
 
 function formatPriceOption(price) {
-  // price = { coins, diams, resources: { key: qty } }
+  
   if (!price) return "Gratuit";
 
   const parts = [];
-  const coins = price.coins || 0;
-  const diams = price.diams || 0;
+  const shards = price.shards || 0;
+  const essence = price.essence || 0;
   const resCosts = price.resources || {};
 
-  if (coins) parts.push(`${coins} coins`);
-  if (diams) parts.push(`${diams} 💎`);
+  if (shards) parts.push(`${shards} shards`);
+  if (essence) parts.push(`${essence} 💎`);
 
   Object.entries(resCosts).forEach(([resKey, qty]) => {
     parts.push(`${qty} ${resKey}`);
@@ -268,7 +268,7 @@ async function sellResource(resourceKey, amount) {
   // Utiliser d.sold.* (nouvelle structure)
   const sold = d.sold || {};
   alert(
-    `Tu as vendu ${sold.qty}x ${sold.resource} pour +${sold.gain} coins.`
+    `Tu as vendu ${sold.qty}x ${sold.resource} pour +${sold.gain} shards.`
   );
 
   // MAJ HUD joueur
@@ -367,8 +367,8 @@ function renderCardShopList(cards) {
     return;
   }
 
-  const coins = currentPlayer?.coins ?? 0;
-  const diams = currentPlayer?.diams ?? 0;
+  const shards = currentPlayer?.shards ?? 0;
+  const essence = currentPlayer?.essence ?? 0;
 
   const html = cards
     .map((card) => {
@@ -389,7 +389,7 @@ function renderCardShopList(cards) {
       let btnLabel = "Acheter";
 
       // On ne bloque que si tu as atteint le max_owned.
-      // Les vérifs de coins/diams/ressources sont faites par le backend.
+      // Les vérifs de shards/essence/ressources sont faites par le backend.
       if (maxOwned !== null && maxOwned !== undefined && owned >= maxOwned) {
         canBuy = false;
         btnLabel = "Max atteint";
@@ -489,10 +489,14 @@ async function buyCard(cardKey, priceIndex = 0) {
     const err = r.data || {};
     let msg = `Achat impossible : ${err.error || `Erreur serveur (${r.status})`}`;
 
-    if (err.error === "not_enough_coins") {
-      msg = "Tu n'as pas assez de coins.";
-    } else if (err.error === "not_enough_diams") {
-      msg = "Tu n'as pas assez de diams.";
+    if (err.error === "not_enough_shards") {
+        msg = I18n.t("errors.insufficient_currency", { 
+          currency: I18n.currencyLabel("primary", 2).toLowerCase()
+        });
+    } else if (err.error === "not_enough_essence") {
+        msg = I18n.t("errors.insufficient_currency", { 
+          currency: I18n.currencyLabel("premium", 2).toLowerCase()
+        });
     } else if (err.error === "max_owned_reached") {
       msg = "Tu possèdes déjà le nombre maximum de cette carte.";
     }
@@ -511,8 +515,8 @@ async function buyCard(cardKey, priceIndex = 0) {
   if (d.player) {
     currentPlayer = {
       ...currentPlayer,
-      coins: d.player.coins,
-      diams: d.player.diams,
+      shards: d.player.shards,
+      essence: d.player.essence,
     };
     renderPlayer(currentPlayer);
   }

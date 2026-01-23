@@ -60,7 +60,6 @@ async function handleBuy(btn) {
 
     const data = r.data;
 
-    // Update HUD (XP, coins, diams)
     if (
       window.VillageCommon &&
       typeof VillageCommon.handlePlayerAndLevelFromResponse === "function"
