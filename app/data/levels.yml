@@ -252,7 +252,8 @@ levels:
 - level: 4
   xp_required: 100
   rewards:
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 100
   - type: resource
     resource_key: branch
@@ -280,11 +281,13 @@ levels:
 - level: 5
   xp_required: 150
   rewards:
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 200
   - type: card
     card_key: land_cave
-  - type: diams
+  - type: currency
+    currency: premium
     amount: 1
   story_events:
   - id: unlock_cave_card
@@ -329,7 +332,8 @@ levels:
 - level: 6
   xp_required: 200
   rewards:
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 300
   story_events:
   - id: level_6_short_thought
@@ -349,7 +353,8 @@ levels:
 - level: 7
   xp_required: 400
   rewards:
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 400
   story_events:
   - id: level_7_short_thought
@@ -371,7 +376,8 @@ levels:
   rewards:
   - type: card
     card_key: land_desert
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 500
   story_events:
   - id: level_8_desert
@@ -391,7 +397,8 @@ levels:
 - level: 9
   xp_required: 800
   rewards:
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 600
   story_events:
   - id: level_9_short_thought
@@ -411,7 +418,8 @@ levels:
 - level: 10
   xp_required: 1000
   rewards:
-  - type: coins
+  - type: currency
+    currency: primary
     amount: 700
   - type: card
     card_key: land_temple

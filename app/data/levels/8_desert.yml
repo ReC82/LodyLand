@@ -1,24 +1,24 @@
 levels:
-  - level: 8
-    xp_required: 600
-    rewards:
-      - type: card
-        card_key: land_desert    
-      - type: coins
-        amount: 500
+- level: 8
+  xp_required: 600
+  rewards:
+  - type: card
+    card_key: land_desert
+  - type: currency
+    currency: primary
+    amount: 500
+  story_events:
+  - id: level_8_desert
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: 'Bon ben il va falloir traverser ce desert pour atteindre le fameux temple.
 
-    story_events:
-      - id: "level_8_desert"
-        trigger: "on_level_reached"
-        show_once: true
-        modal_variant: "toast"
+          '
+        en: 'Bon ben il va falloir traverser ce desert pour atteindre le fameux temple.
 
-        pages:
-          - speaker: "self"
-            mood: "thinking"
-            text:
-              fr: >
-                Bon ben il va falloir traverser ce desert pour atteindre le fameux temple.
-              en: >
-                Bon ben il va falloir traverser ce desert pour atteindre le fameux temple.
-                
+          '
