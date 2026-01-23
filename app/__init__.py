@@ -8,6 +8,7 @@ from .frontend import frontend_bp
 from .progression import LEVELS
 from .craft_defs import load_craft_defs
 from app.quests.loader import load_quest_templates
+from app.i18n import init_i18n, register_i18n_helpers
 
 from app.admin import admin_bp
 
@@ -19,6 +20,9 @@ def create_app() -> Flask:
     # =====================================    
 
     init_db()
+    init_i18n()
+    register_i18n_helpers(app)
+
     seed_cards_from_yaml()
     ensure_resources_seeded()
     reseed_resources()
