@@ -328,6 +328,12 @@ def land_page(slug: str):
     if slug == "village":
         # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
         return render_template("GAME_UI/lands/village/village_home.html")
+    
+    # -------------------------------
+    # Special case: temple
+    # -------------------------------
+    if slug == "temple":
+        return render_template("GAME_UI/lands/temple/temple_home.html")    
 
     # -------------------------------
     # Config du land via lands.yml

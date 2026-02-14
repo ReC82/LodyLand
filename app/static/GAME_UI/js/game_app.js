@@ -82,7 +82,7 @@ function getResourceIconPath(resKey) {
   if (fromDb) return fromDb;
 
   // Fallback, au cas où la ressource n'est pas trouvée dans la DB
-  return `/static/assets/img/resources/${resKey}.png`;
+  return `/static/assets/img/items/resources/${resKey}.png`;
 }
 
 /**
@@ -224,13 +224,6 @@ function applyFeatureVisibility() {
 // On expose le testeur global pour d'autres scripts (village, etc.)
 window.isFeatureUnlocked = isFeatureUnlocked;
 
-
-function baseUrl() {
-  return `${location.protocol}//${location.host}`;
-}
-
-const $ = (id) => document.getElementById(id);
-
 function formatRewardLabel(r) {
   const amount = r.amount ?? 0;
 
@@ -263,7 +256,7 @@ function getRewardIconPath(r) {
 
   // 2) Fallbacks basés sur le type et la key
   if (r.type === "resource" && r.key) {
-    return `/static/assets/img/resources/${r.key}.png`;
+    return `/static/assets/img/items/resources/${r.key}.png`;
   }
 
   if (r.type === "card" && r.key) {
@@ -407,21 +400,6 @@ function initLevelUpModal() {
 
   if (closeBtn) closeBtn.addEventListener("click", close);
   if (backdrop) backdrop.addEventListener("click", close);
-}
-
-async function http(method, path, body) {
-  const res = await fetch(`${baseUrl()}${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  let data = null;
-  const isJson = res.headers.get("content-type")?.includes("application/json");
-  data = isJson ? await res.json() : await res.text();
-
-  return { ok: res.ok, status: res.status, data };
 }
 
 // ---------------------------------------------------------------------------
@@ -598,7 +576,7 @@ function tileIconUrl(t) {
   }
 
   // 3) Just a filename: we assume it's inside our resources folder
-  return `/static/assets/img/resources/${raw}`;
+  return `/static/assets/img/items/resources/${raw}`;
 }
 
 function renderGrid(tiles) {
@@ -1229,7 +1207,7 @@ function showLootToasts(lootArray) {
 
     // 3️⃣ Dernier fallback : ancien chemin (ne devrait presque jamais servir)
     if (!iconUrl) {
-      iconUrl = `/static/assets/img/resources/${resKey}.png`;
+      iconUrl = `/static/assets/img/items/resources/${resKey}.png`;
     }
 
     const toast = document.createElement("div");
@@ -1512,6 +1490,7 @@ window.showLootToasts = showLootToasts;
 document.addEventListener("DOMContentLoaded", async () => {
   await loadResourceDefsIfNeeded();
   initLevelUpModal();
+  initNotebookUI();
   setupGameMenu();  
   setupDailyModal();
   refreshDailyStatus();
@@ -1956,4 +1935,9 @@ function setupLevelsAccordion() {
       }
     });
   });
+}
+
+function initNotebookUI() {
+  // Notebook is fully handled by static/GAME_UI/js/notebook_app.js
+  // Keep this no-op to avoid double event wiring.
 }

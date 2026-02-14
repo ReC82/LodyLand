@@ -410,7 +410,8 @@ def _load_craft_item_defs(
 
             # normalisation pattern / legend / width / height / defaults
             _normalize_recipe(output_key, recipe)
-
+            if output_key in ("tool_wooden_shovel", "tool_wooden_axe"):
+                print("[DEBUG LEGEND AFTER NORMALIZE]", output_key, recipe.get("legend"))
             merged["recipe"] = recipe
             merged["xp_reward"] = int(cfg.get("xp_reward") or 0)
             merged["enabled"] = bool(cfg.get("enabled", True))
@@ -562,7 +563,7 @@ def _normalize_recipe(item_key: str, recipe: Dict[str, Any]) -> None:
             )
             continue
 
-        res_type = (entry.get("type") or "resource").strip()
+        res_type = (entry.get("kind") or entry.get("type") or "resource").strip().lower()
         res_key = (entry.get("key") or "").strip()
         qty = int(entry.get("quantity") or 1)
 
@@ -574,6 +575,7 @@ def _normalize_recipe(item_key: str, recipe: Dict[str, Any]) -> None:
             continue
 
         normalized_legend[str(symbol)] = {
+            "kind": res_type,             
             "type": res_type,
             "key": res_key,
             "quantity": max(qty, 1),

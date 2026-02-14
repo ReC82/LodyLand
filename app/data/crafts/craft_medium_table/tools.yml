@@ -12,15 +12,19 @@ tool_wooden_axe:
 
   recipe:
     pattern:
-      - "BBB"
-      - "B.."
+      - "SSS"
+      - "TV."
     legend:
-      B:
+      V:
         kind: resource
-        key: branch
+        key: vine
         quantity: 1
-      S:
+      T:
         kind: resource
+        key: small_stone
+        quantity: 1        
+      S:
+        kind: item
         key: wooden_stick
         quantity: 1
 

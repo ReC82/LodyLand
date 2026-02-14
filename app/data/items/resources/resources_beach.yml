@@ -4,7 +4,7 @@
     label: Pièce de statue cassée
     description: Une pièce d'une statue ancienne et cassée.
     icon: /static/assets/img/items/resources/piece_of_broken_statue.png
-    base_sell_price: 2
+    base_sell_price: 75
     enabled: true
     unlock_description: Trouvée en explorant des terres anciennes.
 
@@ -14,7 +14,7 @@
     label: Anchois
     description: Une anchois ... morte, mais elle a l'air commestible.
     icon: /static/assets/img/items/resources/anchovy.png
-    base_sell_price: 5
+    base_sell_price: 8
     enabled: true
 
   palm_leaf:
@@ -23,7 +23,7 @@
     label: Palm Leaf
     description: Une feuille de palmier, utile pour fabriquer des objets.
     icon: /static/assets/img/items/resources/palm_leaf.png
-    base_sell_price: 2
+    base_sell_price: 3
     enabled: true
     unlock_description: Toujours accessible (niveau 0).        
 
@@ -43,7 +43,7 @@
     label: Sable
     description: Du sable fin, trouvé sur la plage.
     icon: /static/assets/img/items/resources/sand.png
-    base_sell_price: 1
+    base_sell_price: 1.5
     enabled: true
     unlock_description: Toujours accessible sur la plage.
 
