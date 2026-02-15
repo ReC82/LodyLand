@@ -481,3 +481,35 @@ inventory:
     boost: "Boosts"
     recipe: "Recettes"
     building: "Bâtiments"
+
+village:
+  home:
+    tab_title: "Le Village — LodyLand"
+    title: "Le Village"
+    logo_alt: "Logo du Village"
+    subtitle: "Ici, pas de récolte. Juste des villageois, des quêtes, un marché pour vendre tes ressources et des boutiques d’objets spéciaux."
+
+    npcs:
+      quests:
+        alt: "Donneur de quêtes"
+        title: "Donneur de quêtes"
+        text: "Reçois ta quête quotidienne, tes missions spéciales et avance dans l’histoire du village. Attention, tu ne peux avoir qu’un nombre limité de quêtes actives."
+        button: "Voir les quêtes"
+
+      market:
+        alt: "Marchand du village"
+        title: "Marché du village"
+        text: "Vends tes ressources aux villageois pour obtenir des coins. Les prix peuvent changer avec le temps, alors surveille bien le marché."
+        button: "Aller au marché"
+
+      shop_card:
+        alt: "Boutiquier"
+        title: "Boutique des raretés"
+        text: "Achète des cartes spéciales, des boosts et des recettes rares. Certaines offres sont limitées dans le temps ou en quantité."
+        button: "Voir la boutique"
+
+      trades:
+        alt: "Marchand d'échanges"
+        title: "Marchand d’échanges"
+        text: "Échange certaines ressources contre des items rares ou des cartes uniques. Certains trades sont limités par jour ou par rotation."
+        button: "Voir les échanges"

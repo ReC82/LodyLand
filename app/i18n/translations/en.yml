@@ -432,3 +432,36 @@ inventory:
     boost: "Boosts"
     recipe: "Recipes"
     building: "Buildings"
+
+village:
+  home:
+    tab_title: "The Village — LodyLand"
+    title: "The Village"
+    logo_alt: "Village logo"
+    subtitle: "No gathering here. Just villagers, quests, a market to sell your resources, and shops with special items."
+
+    npcs:
+      quests:
+        alt: "Quest giver"
+        title: "Quest giver"
+        text: "Get your daily quest, special missions, and progress through the village story. Note: you can only have a limited number of active quests."
+        button: "View quests"
+
+      market:
+        alt: "Village merchant"
+        title: "Village market"
+        text: "Sell your resources to villagers to earn coins. Prices may change over time, so keep an eye on the market."
+        button: "Go to market"
+
+      shop_card:
+        alt: "Shopkeeper"
+        title: "Rarities shop"
+        text: "Buy special cards, boosts, and rare recipes. Some offers are limited in time or quantity."
+        button: "View shop"
+
+      trades:
+        alt: "Trade merchant"
+        title: "Trade merchant"
+        text: "Trade certain resources for rare items or unique cards. Some trades are limited per day or per rotation."
+        button: "View trades"
+
