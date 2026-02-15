@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="fr">
+<html lang="{{ current_lang or 'fr' }}">
+
   <head>
     <meta charset="utf-8" />
     <title>{% block title %}LodyLand{% endblock %}</title>
@@ -96,7 +97,7 @@
     <div class="beta-banner">
       <span class="beta-banner-dot"></span>
       <span class="beta-banner-text">
-        Version bêta – progression et données susceptibles de changer
+        {{ t("base.beta_banner") }}
       </span>
     </div>
 
@@ -123,10 +124,10 @@
           id="hud-level-zone"
           type="button"
           class="gh-level-zone"
-          title="Voir la progression des niveaux"
+          title="{{ t('base.level_zone.title') }}"
         >
           <div class="gh-xp-label">
-            Niveau <span id="hud-level">0</span>
+            {{ t('base.level_zone.level') }} <span id="hud-level">0</span>
           </div>
           <div class="gh-xp-bar">
             <div class="gh-xp-fill" id="hud-xp-fill"></div>
@@ -159,13 +160,13 @@
           <div class="hud-daily-icon" id="dailyIcon" onclick="claimDaily()">
             <img
               src="{{ url_for('static', filename='assets/img/ui/chest.png') }}"
-              alt="Daily Chest"
+              alt="{{ t('base.daily_chest.alt') }}"
               class="hud-icon-img"
             />
             <span id="dailyAlert" class="daily-alert-badge">!</span>
           </div>
           <div class="hud-daily-tooltip" id="dailyTooltip">
-            Chargement...
+            {{ t("base.loading") }}
           </div>
         </div>
 
@@ -174,11 +175,11 @@
           class="hud-icon-wrapper"
           data-feature="travel_system"
           data-feature-hide="0"
-          title="Voyager vers un land"
+          title="{{ t('base.travel.title') }}"
         >
           <img
             src="{{ url_for('static', filename='assets/img/ui/travel.png') }}"
-            alt="Travel"
+            alt="{{ t('base.travel.alt') }}"
             class="hud-icon-img"
           />
         </div>
@@ -205,12 +206,12 @@
     <div class="game-menu" id="game-menu">
       <div class="game-menu-card">
         <div class="game-menu-header">
-          <div class="game-menu-title">Menu</div>
+          <div class="game-menu-title">{{ t("base.menu.title") }}</div>
           <button
             class="game-menu-close"
             id="game-menu-close"
             type="button"
-            aria-label="Fermer le menu"
+            aria-label="{{ t('base.menu.close_aria') }}"
           >
             ✕
           </button>
@@ -218,13 +219,13 @@
 
         <div class="game-menu-section">
           <button class="game-menu-item" data-action="profile">
-            Profil (WIP)
+            {{ t("base.menu.profile_wip") }}
           </button>
           <button class="game-menu-item" data-action="lands">
-            Lands
+            {{ t("base.menu.lands") }}
           </button>
           <button class="game-menu-item" data-action="inventory">
-            Inventaire
+            {{ t("base.menu.inventory") }}
           </button>
         </div>
 
@@ -233,7 +234,7 @@
             class="game-menu-item game-menu-logout"
             data-action="logout"
           >
-            Se déconnecter
+            {{ t("base.menu.logout") }}
           </button>
         </div>
       </div>
@@ -249,16 +250,18 @@
       <div class="daily-modal-backdrop"></div>
       <div class="daily-modal-box">
         <div class="daily-modal-icon">🎁</div>
-        <h2 class="daily-modal-title">Coffre ouvert !</h2>
+        <h2 class="daily-modal-title">{{ t("base.daily_modal.title") }}</h2>
         <p class="daily-modal-reward">
-          Tu reçois <span id="dailyModalReward">0</span> coins.
+          {{ t("base.daily_modal.reward_prefix") }}
+          <span id="dailyModalReward">0</span>
+          {{ t("base.daily_modal.reward_suffix") }}
         </p>
         <p class="daily-modal-streak">
-          Streak actuel : <span id="dailyModalStreakCurrent">0</span><br />
-          Meilleur streak : <span id="dailyModalStreakBest">0</span>
+          {{ t("base.daily_modal.streak_current") }} : <span id="dailyModalStreakCurrent">0</span><br />
+          {{ t("base.daily_modal.streak_best") }} : <span id="dailyModalStreakBest">0</span>
         </p>
         <button id="dailyModalClose" class="daily-modal-close">
-          OK
+          {{ t("base.ok") }}
         </button>
       </div>
     </div>
@@ -269,7 +272,9 @@
       <div class="daily-modal-box">
         <div class="daily-modal-icon">⭐</div>
         <h2 class="daily-modal-title">
-          Niveau <span id="levelUpModalLevel">1</span> atteint !
+          {{ t("base.levelup_modal.title_prefix") }}
+          <span id="levelUpModalLevel">1</span>
+          {{ t("base.levelup_modal.title_suffix") }}
         </h2>
 
         <div class="levelup-modal-rewards" id="levelUpModalRewards">
@@ -277,7 +282,7 @@
         </div>
 
         <button id="levelUpModalClose" class="daily-modal-close">
-          OK
+          {{ t("base.ok") }}
         </button>
       </div>
     </div>
@@ -287,7 +292,7 @@
       <div id="levelsModalBackdrop" class="ll-modal-backdrop"></div>
       <div class="ll-modal-dialog ll-modal-dialog-wide">
         <header class="ll-modal-header">
-          <h2 class="ll-modal-title">Progression des niveaux</h2>
+          <h2 class="ll-modal-title">{{ t("base.levels_modal.title") }}</h2>
           <button
             id="levelsModalClose"
             class="ll-modal-close-btn"
@@ -299,8 +304,7 @@
 
         <div class="ll-modal-body">
           <p class="small text-muted mb-2">
-            Consulte chaque niveau et ses récompenses. Le niveau actuel est
-            surligné.
+            {{ t("base.levels_modal.subtitle") }}
           </p>
           <div id="levelsModalBody" class="levels-modal-body">
             <!-- rempli par game_app.js -->
@@ -315,10 +319,9 @@
         <!-- Header du panel -->
         <div class="quests-panel-header">
           <div>
-            <h2 class="quests-panel-title mb-0">Quêtes</h2>
+            <h2 class="quests-panel-title mb-0">{{ t("base.quests.title") }}</h2>
             <p class="quests-panel-subtitle mb-0">
-              Suis ta progression quotidienne, hebdomadaire et l’histoire
-              principale.
+              {{ t("base.quests.subtitle") }}
             </p>
           </div>
           <button
@@ -347,12 +350,12 @@
       <div class="craft-modal-box">
         <!-- Header -->
         <div class="craft-modal-header">
-          <h2 class="craft-modal-title">Table de craft</h2>
+          <h2 class="craft-modal-title">{{ t("base.craft.title") }}</h2>
           <div class="craft-modal-header-actions">
             <button
               id="craft-recipes-toggle-btn"
               class="craft-recipes-toggle-btn"
-              title="Voir les recettes"
+              title="{{ t('base.craft.view_recipes') }}"
             >
               📖
             </button>
@@ -364,7 +367,7 @@
         <!-- Craft status (always visible) -->
         <div id="craft-status" class="craft-status">
           <div id="craft-status-text" class="craft-status-text">
-            Aucun craft en cours.
+            {{ t("base.craft.no_job") }}
           </div>
         </div>
         <div class="craft-modal-body">
@@ -375,7 +378,7 @@
               class="craft-ingredients-panel"
               id="craft-ingredients-panel"
             >
-              <h3 class="craft-section-title">Ingrédients disponibles</h3>
+              <h3 class="craft-section-title">{{ t("base.craft.ingredients") }}</h3>
 
               <!-- Filtre ingrédients -->
               <div class="craft-filter-row">
@@ -383,7 +386,7 @@
                   id="craft-ingredients-filter"
                   type="text"
                   class="craft-filter-input"
-                  placeholder="Filtrer les ingrédients..."
+                  placeholder="{{ t('base.craft.filter_ingredients') }}"
                 />
               </div>
 
@@ -404,7 +407,7 @@
               id="craft-recipes-panel"
               style="display:none;"
             >
-              <h3 class="craft-section-title">Recettes</h3>
+              <h3 class="craft-section-title">{{ t("base.craft.recipes") }}</h3>
 
               <!-- Filtre recettes -->
               <div class="craft-filter-row">
@@ -412,7 +415,7 @@
                   id="craft-recipes-filter"
                   type="text"
                   class="craft-filter-input"
-                  placeholder="Filtrer les recettes..."
+                  placeholder="{{ t('base.craft.filter_recipes') }}"
                 />
               </div>
 
@@ -429,7 +432,7 @@
           <!-- Center: craft grid -->
           <div class="craft-grid-panel">
             <h3 class="craft-section-title">
-              Table (niveau <span id="craft-table-level">1</span>)
+              {{ t("base.craft.table") }} ({{ t("base.craft.level") }} <span id="craft-table-level">1</span>)
             </h3>
 
             <div class="craft-grid">
@@ -439,7 +442,7 @@
             </div>
 
             <div class="craft-quantity-row">
-              <label for="craft-quantity-input">Quantité</label>
+              <label for="craft-quantity-input">{{ t("base.craft.quantity") }}</label>
               <input
                 id="craft-quantity-input"
                 type="number"
@@ -454,7 +457,7 @@
               class="craft-perform-btn"
               disabled
             >
-              Craft
+              {{ t("base.craft.perform") }}
             </button>
           </div>
         </div>
@@ -467,11 +470,11 @@
       <button
         id="craft-open-btn"
         class="craft-fab-btn"
-        title="Table de craft"
+        title="{{ t('base.craft.title') }}"
       >
         <img
           src="{{ url_for('static', filename='assets/img/ui/craft.png') }}"
-          alt="Craft"
+          alt="{{ t('base.craft.alt') }}"
         />
       </button>
     </div>
@@ -486,7 +489,7 @@
         <img
           id="imgViewerImg"
           src=""
-          alt="Aperçu"
+          alt="{{ t('base.image_viewer.preview_alt') }}"
           class="img-viewer-img"
         />
       </div>
@@ -501,7 +504,7 @@
       >
         <header class="ll-modal-header story-modal-header">
           <h2 class="ll-modal-title" id="storyModalTitle">
-            Histoire
+            {{ t("base.story.title") }}
           </h2>
         </header>
 
@@ -512,7 +515,7 @@
                 id="storyModalAvatar"
                 class="story-avatar"
                 src=""
-                alt="avatar"
+                alt="{{ t('base.story.avatar_alt') }}"
               />
             </div>
 
@@ -540,7 +543,7 @@
             type="button"
             class="btn btn-primary btn-sm"
           >
-            Suivant
+            {{ t("base.story.next") }}
           </button>
 
           <button
@@ -549,7 +552,7 @@
             class="btn btn-success btn-sm"
             style="display:none;"
           >
-            J’ai compris
+            {{ t("base.story.done") }}
           </button>
         </footer>
       </div>
@@ -561,12 +564,12 @@
 
       <div class="gh-modal-dialog gh-modal-dialog-sm">
         <div class="gh-modal-header">
-          <h2 class="gh-modal-title">Voyager</h2>
+          <h2 class="gh-modal-title">{{ t("base.travel.modal_title") }}</h2>
           <button
             id="travelModalClose"
             type="button"
             class="gh-modal-close-btn"
-            aria-label="Fermer"
+            aria-label="{{ t('base.close') }}"
           >
             ✕
           </button>
@@ -578,7 +581,7 @@
               id="travel-search-input"
               type="text"
               class="form-control form-control-sm"
-              placeholder="Rechercher un land..."
+              placeholder="{{ t('base.travel.search_placeholder') }}"
             />
           </div>
 
@@ -592,7 +595,7 @@
               type="button"
               class="btn btn-sm btn-primary"
             >
-              Aller vers le land sélectionné
+              {{ t("base.travel.confirm") }}
             </button>
           </div>
         </div>
@@ -608,13 +611,13 @@
           <div class="notebook-header-left">
             <div class="notebook-badge">📘</div>
             <div>
-              <h2 id="notebookTitle" class="notebook-title">Notebook</h2>
-              <div class="notebook-subtitle">Guides, lands, récoltes, crafts…</div>
+              <h2 id="notebookTitle" class="notebook-title">{{ t("base.notebook.title") }}</h2>
+              <div class="notebook-subtitle">{{ t("base.notebook.subtitle") }}</div>
             </div>
           </div>
 
           <div class="notebook-header-right">
-            <button id="notebookCloseBtn" class="notebook-close-btn" type="button" aria-label="Fermer">
+            <button id="notebookCloseBtn" class="notebook-close-btn" type="button" aria-label="{{ t('base.close') }}">
               ✕
             </button>
           </div>
@@ -623,17 +626,17 @@
         <div class="notebook-body">
           <!-- Nav (tabs) -->
           <nav class="notebook-tabs" aria-label="Notebook sections">
-            <button type="button" class="notebook-tab is-active" data-tab="lands">Lands</button>
-            <button type="button" class="notebook-tab" data-tab="crafts">Crafts</button>
-            <button type="button" class="notebook-tab" data-tab="tips">Tips</button>
+            <button type="button" class="notebook-tab is-active" data-tab="lands">{{ t("base.notebook.tabs.lands") }}</button>
+            <button type="button" class="notebook-tab" data-tab="crafts">{{ t("base.notebook.tabs.crafts") }}</button>
+            <button type="button" class="notebook-tab" data-tab="tips">{{ t("base.notebook.tabs.tips") }}</button>
           </nav>
 
           <!-- Content -->
           <section class="notebook-panel is-active" data-panel="lands">
             <div class="notebook-panel-inner">
-              <h3 class="notebook-h3">Lands</h3>
+              <h3 class="notebook-h3">{{ t("base.notebook.sections.lands") }}</h3>
               <p class="notebook-muted">
-                Ici tu verras ce qu’on peut récolter par land (et ce qui reste à débloquer).
+                I{{ t("base.notebook.lands_desc") }}
               </p>
 
               <div id="notebookLandsList" class="notebook-cards">
@@ -644,22 +647,24 @@
 
           <section class="notebook-panel" data-panel="crafts">
             <div class="notebook-panel-inner">
-              <h3 class="notebook-h3">Crafts</h3>
+              <h3 class="notebook-h3">{{ t("base.notebook.sections.crafts") }}</h3>
               <p class="notebook-muted">
-                Ici tu verras les recettes disponibles et celles encore verrouillées.
+                {{ t("base.notebook.wip_crafts") }}
               </p>
 
               <div class="notebook-empty">
-                WIP (Step suivant : brancher tes defs de craft + gating par progression)
+                <!-- IP (Step suivant : brancher tes defs de craft + gating par progression) -->
+                {{ t("base.notebook.wip_crafts_desc") }}
               </div>
             </div>
           </section>
 
           <section class="notebook-panel" data-panel="tips">
             <div class="notebook-panel-inner">
-              <h3 class="notebook-h3">Tips</h3>
+              <h3 class="notebook-h3">{{ t("base.notebook.sections.tips") }}</h3>
               <div class="notebook-empty">
-                WIP (Step suivant : mini-guides contextuels, objectifs, etc.)
+                <!-- WIP (Step suivant : mini-guides contextuels, objectifs, etc.) -->
+                {{ t("base.notebook.wip_tips") }}
               </div>
             </div>
           </section>

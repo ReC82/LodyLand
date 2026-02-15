@@ -297,3 +297,89 @@ lands:
         title_success: "Slot unlocked"
         message_success: "New slot unlocked."
         ok: "OK"
+
+base:
+  ok: "OK"
+  close: "Close"
+  loading: "Loading..."
+
+  beta_banner: "Beta version – progression and data may change"
+
+  level_zone:
+    title: "View level progression"
+    level: "Level"
+
+  daily_chest:
+    alt: "Daily chest"
+
+  daily_modal:
+    title: "Chest opened!"
+    reward_prefix: "You receive"
+    reward_suffix: "coins."
+    streak_current: "Current streak"
+    streak_best: "Best streak"
+
+  levelup_modal:
+    title_prefix: "Level"
+    title_suffix: "reached!"
+
+  levels_modal:
+    title: "Level progression"
+    subtitle: "Check each level and its rewards. The current level is highlighted."
+
+  quests:
+    title: "Quests"
+    subtitle: "Track your daily, weekly, and main story progression."
+
+  menu:
+    title: "Menu"
+    close_aria: "Close menu"
+    profile_wip: "Profile (WIP)"
+    lands: "Lands"
+    inventory: "Inventory"
+    logout: "Log out"
+
+  travel:
+    title: "Travel to a land"
+    alt: "Travel"
+    modal_title: "Travel"
+    search_placeholder: "Search a land..."
+    confirm: "Go to selected land"
+
+  craft:
+    title: "Crafting table"
+    alt: "Craft"
+    view_recipes: "View recipes"
+    no_job: "No craft in progress."
+    ingredients: "Available ingredients"
+    filter_ingredients: "Filter ingredients..."
+    recipes: "Recipes"
+    filter_recipes: "Filter recipes..."
+    table: "Table"
+    level: "level"
+    quantity: "Quantity"
+    perform: "Craft"
+
+  image_viewer:
+    preview_alt: "Preview"
+
+  story:
+    title: "Story"
+    avatar_alt: "avatar"
+    next: "Next"
+    done: "Got it"
+
+  notebook:
+    title: "Notebook"
+    subtitle: "Guides, lands, gathering, crafts…"
+    tabs:
+      lands: "Lands"
+      crafts: "Crafts"
+      tips: "Tips"
+    sections:
+      lands: "Lands"
+      crafts: "Crafts"
+      tips: "Tips"
+    lands_desc: "Here you’ll see what you can gather per land (and what’s still locked)."
+    wip_crafts: "WIP (Next step: connect your craft defs + progression gating)"
+    wip_tips: "WIP (Next step: contextual mini-guides, objectives, etc.)"
