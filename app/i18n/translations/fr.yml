@@ -513,3 +513,22 @@ village:
         title: "Marchand d’échanges"
         text: "Échange certaines ressources contre des items rares ou des cartes uniques. Certains trades sont limités par jour ou par rotation."
         button: "Voir les échanges"
+  market:
+    tab_title: "Marché du village — LodyLand"
+    title: "Le Marché du village"
+    logo_alt: "Logo du Marché"
+    subtitle: "Ici, tu peux vendre tes ressources aux villageois contre des coins. Garde de quoi crafter et pour les quêtes, le reste peut partir !"
+    back_to_village: "← Retour au village"
+
+    panel_title: "Vendre des ressources"
+    prices_hint: "Les prix affichés sont en coins / unité."
+
+    table:
+      resource: "Ressource"
+      stock: "En stock"
+      price_per_unit: "Prix / unité"
+      qty_to_sell: "Qté à vendre"
+      action: "Action"
+
+    loading_row: "Chargement de ton inventaire et des prix du marché..."
+    tip: "Astuce : certaines ressources peuvent valoir plus cher plus tard, ne vends pas tout d'un coup."

@@ -464,4 +464,23 @@ village:
         title: "Trade merchant"
         text: "Trade certain resources for rare items or unique cards. Some trades are limited per day or per rotation."
         button: "View trades"
+        
+  market:
+    tab_title: "Village market — LodyLand"
+    title: "Village market"
+    logo_alt: "Market logo"
+    subtitle: "Here you can sell your resources to villagers for coins. Keep what you need for crafting and quests — the rest can go!"
+    back_to_village: "← Back to village"
 
+    panel_title: "Sell resources"
+    prices_hint: "Displayed prices are coins per unit."
+
+    table:
+      resource: "Resource"
+      stock: "In stock"
+      price_per_unit: "Price / unit"
+      qty_to_sell: "Qty to sell"
+      action: "Action"
+
+    loading_row: "Loading your inventory and current market prices..."
+    tip: "Tip: some resources may be worth more later — don’t sell everything at once."
