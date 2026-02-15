@@ -269,3 +269,31 @@ settings:
   language: "Language"
   language_description: "Choose your preferred language for the game interface."
   language_saved: "Language saved"
+
+lands:
+  generic:
+    tab_title: "Land – {land}"
+
+    back_to_select_aria: "Back to land selection"
+
+    tools:
+      hands_label: "Bare hands"
+      hands_alt: "Bare hands"
+
+    slot:
+      click_to_search: "Tap to search"
+      add_one: "+1 slot"
+      free_card_available: "1 free card available 🎟️"
+      current_cost: "Current cost: {cost} 💎"
+      click_to_unlock: "Tap to unlock"
+
+    modal:
+      confirm:
+        title: "Confirm purchase"
+        message: "Are you sure you want to buy a slot?"
+        cancel: "Cancel"
+        ok: "Confirm"
+      result:
+        title_success: "Slot unlocked"
+        message_success: "New slot unlocked."
+        ok: "OK"

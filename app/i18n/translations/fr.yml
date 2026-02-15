@@ -317,3 +317,31 @@ settings:
   language: "Langue"
   language_description: "Choisis ta langue préférée pour l'interface du jeu."
   language_saved: "Langue sauvegardée"
+
+lands:
+  generic:
+    tab_title: "Land – {land}"
+
+    back_to_select_aria: "Retour à la sélection des lands"
+
+    tools:
+      hands_label: "Mains nues"
+      hands_alt: "Mains nues"
+
+    slot:
+      click_to_search: "Clique pour fouiller"
+      add_one: "+1 emplacement"
+      free_card_available: "1 carte gratuite dispo 🎟️"
+      current_cost: "Coût actuel : {cost} 💎"
+      click_to_unlock: "Clique pour débloquer"
+
+    modal:
+      confirm:
+        title: "Confirmer l'achat"
+        message: "Es-tu sûr de vouloir acheter un emplacement ?"
+        cancel: "Annuler"
+        ok: "Confirmer"
+      result:
+        title_success: "Emplacement débloqué"
+        message_success: "Nouvel emplacement débloqué."
+        ok: "OK"
