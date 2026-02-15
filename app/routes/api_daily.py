@@ -67,7 +67,7 @@ def claim_daily():
 
         return jsonify({
             "ok": True,
-            "reward": DAILY_REWARD_shards,
+            "reward": DAILY_REWARD_SHARDS,
             "player": {
                 "id": me.id,
                 "name": me.name,
