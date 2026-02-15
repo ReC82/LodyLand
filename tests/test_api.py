@@ -118,7 +118,7 @@ def test_sell_flow(client):
     # Inventory decreased (au moins 0, on ne teste pas plus finement ici)
     assert data["stock"]["qty"] >= 0
     # Coins increased
-    assert data["player"]["essence"] >= data["sold"]["gain"]
+    assert data["player"]["shards"] >= data["sold"]["gain"]
 
 
 def test_daily_chest_once_per_day(client):
@@ -140,7 +140,7 @@ def test_daily_chest_once_per_day(client):
     data = rv.get_json()
     assert data["ok"] is True
     assert data["reward"] >= 1
-    coins_after = data["player"]["coins"]
+    coins_after = data["player"]["shards"]
 
     # Second claim same day -> 409
     rv = client.post("/api/daily")
@@ -165,4 +165,4 @@ def test_daily_chest_once_per_day(client):
     assert rv.status_code == 200
     data3 = rv.get_json()
     assert data3["ok"] is True
-    assert data3["player"]["coins"] >= coins_after + data3["reward"]
+    assert data3["player"]["shards"] >= coins_after + data3["reward"]
