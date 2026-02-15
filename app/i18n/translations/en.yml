@@ -394,4 +394,41 @@ base:
     wip_crafts: "WIP (Next step: connect your craft defs + progression gating)"
     wip_tips: "WIP (Next step: contextual mini-guides, objectives, etc.)"
 
+inventory:
+  tab_title: "Inventory — LodyLand"
+  title: "Inventory"
+  subtitle: "All your resources and cards in one place."
 
+  tabs:
+    resources: "Resources"
+    treasure: "Treasures"
+    items: "Items"
+    cards: "Cards"
+
+  filters:
+    filter: "Filter"
+    search: "Search"
+    type: "Type"
+
+  placeholders:
+    resource: "Resource name or key…"
+    treasure: "Treasure name or key…"
+    item: "Name or key…"
+    card: "Name, type, or description…"
+
+  actions:
+    sell_resources: "Sell resources"
+    shop_cards: "View cards in the shop"
+
+  empty:
+    resources: "You don't have any resources yet."
+    treasure: "You don't have any treasures yet."
+    items: "You don't have any items yet."
+    cards: "You don't have any cards yet."
+
+  card_types:
+    all: "All types"
+    land_access: "Lands"
+    boost: "Boosts"
+    recipe: "Recipes"
+    building: "Buildings"

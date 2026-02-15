@@ -442,3 +442,42 @@ base:
     lands_desc: "Ici tu verras ce qu’on peut récolter par land (et ce qui reste à débloquer)."
     wip_crafts: "WIP (Step suivant : brancher tes defs de craft + gating par progression)"
     wip_tips: "WIP (Step suivant : mini-guides contextuels, objectifs, etc.)"
+
+inventory:
+  tab_title: "Inventaire — LodyLand"
+  title: "Inventaire"
+  subtitle: "Toutes tes ressources et tes cartes au même endroit."
+
+  tabs:
+    resources: "Ressources"
+    treasure: "Trésors"
+    items: "Items"
+    cards: "Cartes"
+
+  filters:
+    filter: "Filtrer"
+    search: "Rechercher"
+    type: "Type"
+
+  placeholders:
+    resource: "Nom ou clé de ressource…"
+    treasure: "Nom ou clé de trésor…"
+    item: "Nom ou clé…"
+    card: "Nom, type ou description…"
+
+  actions:
+    sell_resources: "Vendre des ressources"
+    shop_cards: "Voir les cartes en boutique"
+
+  empty:
+    resources: "Tu n'as pas encore de ressources."
+    treasure: "Tu n'as pas encore de trésors."
+    items: "Tu n'as pas encore d'items."
+    cards: "Tu n'as pas encore de cartes."
+
+  card_types:
+    all: "Tous les types"
+    land_access: "Lands"
+    boost: "Boosts"
+    recipe: "Recettes"
+    building: "Bâtiments"

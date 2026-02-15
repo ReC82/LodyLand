@@ -7,14 +7,15 @@
   />
 {% endblock %}
 
-{% block title %}Inventaire — LodyLand{% endblock %}
+{% block title %}{{ t("inventory.tab_title") }}{% endblock %}
+
 
 {% block content %}
 <div class="inv-container">
   <div class="inv-header">
-    <h1 class="h3 mb-1">Inventaire</h1>
+    <h1 class="h3 mb-1">{{ t("inventory.title") }}</h1>
     <p class="text-muted mb-0">
-      Toutes tes ressources et tes cartes au même endroit.
+      {{ t("inventory.subtitle") }}
     </p>
   </div>
 
@@ -25,7 +26,7 @@
       id="invTabResources"
       data-tab="resources"
     >
-      Ressources
+      {{ t("inventory.tabs.resources") }}
     </button>
 
     <button
@@ -33,7 +34,7 @@
       id="invTabTreasure"
       data-tab="treasure"
     >
-      Trésors
+      {{ t("inventory.tabs.treasure") }}
     </button>
 
     <button
@@ -41,7 +42,7 @@
       id="invTabItems"
       data-tab="items"
     >
-      Items
+      {{ t("inventory.tabs.items") }}
     </button>
 
     <button
@@ -49,7 +50,7 @@
       id="invTabCards"
       data-tab="cards"
     >
-      Cartes
+      {{ t("inventory.tabs.cards") }}
     </button>
   </div>
 
@@ -59,12 +60,12 @@
       <div class="inv-toolbar">
         <div class="inv-toolbar-left">
           <label class="inv-filter-label">
-            Filtrer :
+            {{ t("inventory.filters.filter") }}
             <input
               id="invResourceFilter"
               type="text"
               class="inv-filter-input"
-              placeholder="Nom ou clé de ressource…"
+              placeholder="{{ t('inventory.placeholders.resource') }}"
             />
           </label>
         </div>
@@ -75,7 +76,7 @@
             class="inv-toolbar-btn"
             onclick="window.location.href='{{ url_for('frontend.village_market') }}'"
           >
-            Vendre des ressources
+            {{ t("inventory.actions.sell_resources") }}
           </button>
         </div>
       </div>
@@ -85,7 +86,7 @@
       </div>
 
       <div id="invResourcesEmpty" class="inv-empty d-none">
-        Tu n'as pas encore de ressources.
+        {{ t("inventory.empty.resources") }}
       </div>
     </section>
 
@@ -94,12 +95,12 @@
       <div class="inv-toolbar">
         <div class="inv-toolbar-left">
           <label class="inv-filter-label">
-            Filtrer :
+            {{ t("inventory.filters.filter") }}
             <input
               id="invTreasureFilter"
               type="text"
               class="inv-filter-input"
-              placeholder="Nom ou clé de trésor…"
+              placeholder="{{ t('inventory.placeholders.treasure') }}"
             />
           </label>
         </div>
@@ -110,7 +111,7 @@
       </div>
 
       <div id="invTreasuresEmpty" class="inv-empty d-none">
-        Tu n'as pas encore de trésors.
+        {{ t("inventory.empty.treasure") }}
       </div>
     </section>
 
@@ -118,12 +119,12 @@
     <section id="invPanelItems" class="inv-panel">
       <div class="inv-toolbar">
         <label class="inv-filter-label">
-          Rechercher :
+          {{ t("inventory.filters.search") }}
           <input
             id="invItemFilter"
             type="text"
             class="inv-filter-input"
-            placeholder="Nom ou clé…"
+            placeholder="{{ t('inventory.placeholders.item') }}"
           />
         </label>
       </div>
@@ -133,7 +134,7 @@
       </div>
 
       <div id="invItemsEmpty" class="inv-empty d-none">
-        Tu n'as pas encore d'items.
+        {{ t("inventory.empty.items") }}
       </div>
     </section>
 
@@ -142,23 +143,23 @@
       <div class="inv-toolbar">
         <div class="inv-toolbar-left">
           <label class="inv-filter-label">
-            Type :
+            {{ t("inventory.filters.type") }}
             <select id="invCardTypeFilter" class="inv-filter-select">
-              <option value="all">Tous les types</option>
-              <option value="land_access">Lands</option>
-              <option value="boost">Boosts</option>
-              <option value="recipe">Recettes</option>
-              <option value="building">Bâtiments</option>
+              <option value="all">{{ t("inventory.card_types.all") }}</option>
+              <option value="land_access">{{ t("inventory.card_types.land_access") }}</option>
+              <option value="boost">{{ t("inventory.card_types.boost") }}</option>
+              <option value="recipe">{{ t("inventory.card_types.recipe") }}</option>
+              <option value="building">{{ t("inventory.card_types.building") }}</option>
             </select>
           </label>
 
           <label class="inv-filter-label">
-            Rechercher :
+            {{ t("inventory.filters.search") }}
             <input
               id="invCardFilter"
               type="text"
               class="inv-filter-input"
-              placeholder="Nom, type ou description…"
+              placeholder="{{ t('inventory.placeholders.card') }}"
             />
           </label>
         </div>
@@ -169,7 +170,7 @@
             class="inv-toolbar-btn"
             onclick="window.location.href='{{ url_for('frontend.village_market') }}'"
           >
-            Voir les cartes en boutique
+            {{ t("inventory.actions.shop_cards") }}
           </button>
         </div>
       </div>
@@ -179,7 +180,7 @@
       </div>
 
       <div id="invCardsEmpty" class="inv-empty d-none">
-        Tu n'as pas encore de cartes.
+        {{ t("inventory.empty.cards") }}
       </div>
     </section>
   </div>
