@@ -5,7 +5,7 @@
 {% endblock %}
 
 {# Titre onglet #}
-{% block title %}Land – {{ land_label }}{% endblock %}
+{% block title %}{{ t("lands.generic.tab_title", land=land_label) }}{% endblock %}
 
 {# Body class dynamique : game-body + {land_key}-body #}
 {% block body_class %}game-body {{ land_key }}-body{% endblock %}
@@ -41,7 +41,7 @@
       <a
         href="{{ url_for('frontend.lands_select') }}"
         class="btn btn-outline-secondary btn-sm land-back-btn"
-        aria-label="Retour à la sélection des lands"
+        aria-label="{{ t('lands.generic.back_to_select_aria') }}"
       >
         ←
       </a>
@@ -62,12 +62,12 @@
           <span class="land-tool-toggle-icon-wrapper">
             <img
               src="{{ url_for('static', filename='assets/img/items/tools/hand.png') }}"
-              alt="Mains nues"
+              alt="{{ t('lands.generic.tools.hands_alt') }}"
               class="land-tool-toggle-icon"
             />
           </span>
           <span class="land-tool-toggle-text">
-            <span class="land-tool-toggle-label-main">Mains nues</span>
+            <span class="land-tool-toggle-label-main">{{ t('lands.generic.tools.hands_label') }}</span>
           </span>
           <span class="land-tool-toggle-caret">▾</span>
         </button>
@@ -132,7 +132,7 @@
             />
           </div>
           <div class="slot-index">{{ idx + 1 }}</div>
-          <div class="slot-status">Clique pour fouiller</div>
+          <div class="slot-status">{{ t("lands.generic.slot.click_to_search") }}</div>
 
           <!-- Barre de cooldown -->
           <div class="slot-cooldown-bar">
@@ -155,15 +155,16 @@
             class="land-slot-icon"
           />
         </div>
-        <div class="slot-index">+1 emplacement</div>
+        <div class="slot-index">{{ t("lands.generic.slot.add_one") }}</div>
         <div class="slot-label">
           {% if has_free_slot_card %}
-            1 carte gratuite dispo 🎟️
+            {{ t("lands.generic.slot.free_card_available") }}
           {% else %}
-            Coût actuel : {{ state.next_cost }} 💎
+            {{ t("lands.generic.slot.current_cost", cost=state.next_cost) }}
           {% endif %}
         </div>
-        <div class="slot-status">Clique pour débloquer</div>
+        
+        <div class="slot-status">{{ t("lands.generic.slot.click_to_unlock") }}</div>
       </div>
     </div>
 
@@ -172,11 +173,11 @@
     <div class="land-modal-backdrop" id="slot-confirm-modal" hidden>
       <div class="land-modal">
         <div class="land-modal-header">
-          <h2 class="land-modal-title">Confirmer l'achat</h2>
+          <h2 class="land-modal-title">{{ t("lands.generic.modal.confirm.title") }}</h2>
         </div>
         <div class="land-modal-body">
           <p id="slot-confirm-message">
-            Es-tu sûr de vouloir acheter un emplacement ?
+            {{ t("lands.generic.modal.confirm.message") }}
           </p>
         </div>
         <div class="land-modal-actions">
@@ -185,14 +186,14 @@
             class="btn btn-secondary btn-sm land-modal-btn"
             data-slot-confirm="cancel"
           >
-            Annuler
+            {{ t("lands.generic.modal.confirm.cancel") }}
           </button>
           <button
             type="button"
             class="btn btn-primary btn-sm land-modal-btn"
             data-slot-confirm="ok"
           >
-            Confirmer
+            {{ t("lands.generic.modal.confirm.ok") }}
           </button>
         </div>
       </div>
@@ -203,12 +204,12 @@
       <div class="land-modal">
         <div class="land-modal-header">
           <h2 class="land-modal-title" id="slot-result-title">
-            Emplacement débloqué
+            {{ t("lands.generic.modal.result.title_success") }}
           </h2>
         </div>
         <div class="land-modal-body">
           <p id="slot-result-message">
-            Nouvel emplacement débloqué.
+            {{ t("lands.generic.modal.result.message_success") }}
           </p>
         </div>
         <div class="land-modal-actions">
@@ -217,7 +218,7 @@
             class="btn btn-primary btn-sm land-modal-btn"
             id="slot-result-ok"
           >
-            OK
+            {{ t("lands.generic.modal.result.ok") }}
           </button>
         </div>
       </div>
