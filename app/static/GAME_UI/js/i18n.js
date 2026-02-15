@@ -222,6 +222,8 @@ const I18n = (() => {
     }
     
     try {
+      console.log(`[i18n] Setting language to: ${lang}`);
+      
       const response = await fetch("/api/i18n/set-language", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -229,13 +231,20 @@ const I18n = (() => {
       });
       
       if (!response.ok) {
+        console.error(`[i18n] Server returned error: ${response.status}`);
         return false;
       }
       
-      // Reload translations
-      await init();
+      const data = await response.json();
       
-      // Reload page to apply new language
+      if (!data.ok) {
+        console.error(`[i18n] Server rejected language change:`, data);
+        return false;
+      }
+      
+      console.log(`[i18n] Language saved successfully: ${data.lang}`);
+      
+      // Important: Reload AFTER successful save
       window.location.reload();
       
       return true;

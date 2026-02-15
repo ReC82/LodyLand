@@ -14,6 +14,11 @@ from app.admin import admin_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    
+    # ⬇️ AJOUTER ÇA : Désactiver le cache Jinja en dev
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.jinja_env.auto_reload = True
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     # dans create_app(), après register_routes(app)
     # ===== Admin Panel activé en dev =====
     app.config["ADMIN_ENABLED"] = True

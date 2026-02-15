@@ -36,7 +36,13 @@ def get_translations():
           "currencies": { ... }
         }
     """
-    lang = get_user_language(request)
+    from app.auth import get_current_player
+    from app.db import SessionLocal
+    
+    # Get player to detect language preference from DB
+    with SessionLocal() as session:
+        player = get_current_player(session)
+        lang = get_user_language(request, player=player)  # ← CORRECTION ICI
     
     translations = get_translations_for_js(lang)
     
@@ -87,10 +93,14 @@ def set_language():
         player = get_current_player(session)
         
         if player:
+            print(f"[i18n] Before: player.lang = {player.lang}")  # DEBUG
             player.lang = lang
             session.commit()
+            print(f"[i18n] After: player.lang = {player.lang}")   # DEBUG
             print(f"[i18n] Saved language preference for {player.name}: {lang}")
-    
+        else:
+            print(f"[i18n] WARNING: No player logged in, only setting cookie")
+            
     # Also set cookie as fallback
     resp = make_response(jsonify({"ok": True, "lang": lang}))
     resp.set_cookie("lang", lang, max_age=365*24*60*60)  # 1 year
