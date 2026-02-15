@@ -164,6 +164,11 @@ def home():
 
     return render_template("home.html")
 
+# Dans app/routes/__init__.py ou routes/frontend.py
+
+@frontend_bp.route('/static-config.js')
+def static_config():
+    return render_template('config.js.html'), 200, {'Content-Type': 'application/javascript'}
 
 @frontend_bp.get("/play")
 def play_redirect():

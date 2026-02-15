@@ -5,9 +5,11 @@
 // - Uses /village/market/resources to list sellable resources
 // - Uses /api/sell to perform sales (same logic as shop_app.js)
 // - Uses VillageCommon.handlePlayerAndLevelFromResponse to refresh HUD
+// - Uses window.getResourceIconPath from game_app.js for resource icons
+// - Uses window.CurrencyHelpers for currency icons
 // ============================================================
 
-/* global http, $ */
+/* global http, $, CurrencyHelpers */
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[village_market] init");
@@ -42,10 +44,24 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
+  /**
+   * Get resource icon path from global registry (game_app.js)
+   * Falls back to configured path or default
+   */
   function resourceIconPath(key) {
-    // Simple convention: /static/assets/img/resources/<key>.png
-    // Adapt if your project uses another naming strategy.
-    return `/static/assets/img/resources/${key}.png`;
+    // Use the global function from game_app.js if available
+    if (window.getResourceIconPath && typeof window.getResourceIconPath === 'function') {
+      return window.getResourceIconPath(key);
+    }
+    
+    // Fallback to window variable configured in static-config.js
+    if (window.RESOURCE_IMG_PATH) {
+      return `${window.RESOURCE_IMG_PATH}${key}.png`;
+    }
+    
+    // Last resort fallback
+    console.warn('[village_market] Resource paths not configured, using fallback');
+    return `/static/assets/img/items/resources/${key}.png`;
   }
 
   // ----------------------------------------------------------
@@ -100,6 +116,11 @@ document.addEventListener("DOMContentLoaded", () => {
               .replace(/\.00$/, "");
 
             const label = r.label || r.resource;
+            
+            // Use CurrencyHelpers for coin icon (from common.js)
+            const priceDisplay = window.CurrencyHelpers 
+              ? CurrencyHelpers.formatPrice(displayPrice, 'small')
+              : `${displayPrice} 🪙`;
 
             return `
               <tr data-res="${r.resource}">
@@ -109,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       src="${resourceIconPath(r.resource)}"
                       alt="${label}"
                       class="resource-icon-sm"
+                      onerror="this.src='${window.RESOURCE_IMG_PATH || '/static/assets/img/items/resources/'}default.png'"
                     />
                     <span class="resource-label">
                       ${r.emoji ? `${r.emoji} ` : ""}${label}
@@ -124,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <td class="text-end">
                   <span class="market-price">
-                    ${displayPrice} 🪙
+                    ${priceDisplay}
                   </span>
                 </td>
 
