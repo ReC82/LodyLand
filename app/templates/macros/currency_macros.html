@@ -1,0 +1,47 @@
+{# 
+  File: app/templates/macros/currency.html
+  Purpose: Centralized currency icon macros for coins and diams
+  Usage: {% from 'macros/currency.html' import coin_icon, diam_icon %}
+#}
+
+{# Macro for coin icon #}
+{% macro coin_icon(size='small', alt='Coins', class='') %}
+  <img
+    src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
+    alt="{{ alt }}"
+    class="currency-icon currency-icon-{{ size }} {{ class }}"
+  />
+{% endmacro %}
+
+{# Macro for diam icon #}
+{% macro diam_icon(size='small', alt='Diamants', class='') %}
+  <img
+    src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
+    alt="{{ alt }}"
+    class="currency-icon currency-icon-{{ size }} {{ class }}"
+  />
+{% endmacro %}
+
+{# Macro for coin display with amount #}
+{% macro coins_display(amount, size='small') %}
+  <div class="currency-display currency-display-coins">
+    {{ coin_icon(size=size) }}
+    <span class="currency-amount">{{ amount }}</span>
+  </div>
+{% endmacro %}
+
+{# Macro for diam display with amount #}
+{% macro diams_display(amount, size='small') %}
+  <div class="currency-display currency-display-diams">
+    {{ diam_icon(size=size) }}
+    <span class="currency-amount">{{ amount }}</span>
+  </div>
+{% endmacro %}
+
+{# Macro for both currencies side by side #}
+{% macro currencies_display(coins, diams, size='small') %}
+  <div class="currencies-display">
+    {{ coins_display(coins, size=size) }}
+    {{ diams_display(diams, size=size) }}
+  </div>
+{% endmacro %}

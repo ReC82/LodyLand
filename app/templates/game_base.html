@@ -91,7 +91,7 @@
   </head>
 
   <body class="{% block body_class %}game-body{% endblock %}">
-
+  {% from 'macros/currency_macros.html' import coin_icon, diam_icon %}
     <!-- Full-width beta banner (mainly for tablet/mobile) -->
     <div class="beta-banner">
       <span class="beta-banner-dot"></span>
@@ -139,31 +139,15 @@
       </div>
 
       <div class="gh-right">
-        <div
-          class="gh-currency gh-coins"
-          data-feature="hud_currencies"
-          data-feature-hide="0"
-        >
-          <img
-            src="{{ url_for('static', filename='assets/img/ui/coins.png') }}"
-            alt="Coins"
-            class="hud-icon-small"
-          />
+        <div class="gh-currency gh-coins" data-feature="hud_currencies" data-feature-hide="0">
+          {{ coin_icon(size='small', class='hud-icon-small') }}
           <span id="hud-coins">0</span>
         </div>
 
-        <div
-          class="gh-currency gh-diams"
-          data-feature="hud_currencies"
-          data-feature-hide="0"
-        >
-          <img
-            src="{{ url_for('static', filename='assets/img/ui/diams.png') }}"
-            alt="Diamants"
-            class="hud-icon-small"
-          />
-          <span id="hud-diams">0</span>
-        </div>
+      <div class="gh-currency gh-diams" data-feature="hud_currencies" data-feature-hide="0">
+        {{ diam_icon(size='small', class='hud-icon-small') }}
+        <span id="hud-diams">0</span>
+      </div>
 
         <!-- Daily Chest (icon HUD) -->
         <div
@@ -686,6 +670,10 @@
 
 
     <!-- JS commun -->
+
+    <!-- Config dynamique -->
+    <script src="{{ url_for('frontend.static_config') }}"></script>
+
     <script src="{{ url_for('static', filename='common.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_menu.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/game_app.js') }}"></script>
