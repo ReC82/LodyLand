@@ -200,11 +200,46 @@ def get_currency_key(currency_type: str) -> str:
 
 def register_i18n_helpers(app) -> None:
     """Register i18n functions as Jinja2 globals."""
-    app.jinja_env.globals["t"] = t
+    from flask import g, request, has_request_context
+    
+    # Wrapper pour t() qui détecte la langue à chaque appel
+    def t_auto(key: str, **kwargs) -> str:
+        """Translate with automatic language detection"""
+        if not has_request_context():
+            return t(key, lang=_STATE.default_lang, **kwargs)
+        
+        player = getattr(g, 'player', None)
+        lang = get_user_language(request, player=player)
+        
+        # DEBUG
+        if key == "profile.title":  # Log seulement pour un cas spécifique
+            print(f"[t_auto] key={key}, player={player}, lang={lang}")
+        
+        return t(key, lang=lang, **kwargs)
+    
+    # Wrappers pour les autres fonctions
+    def currency_label_auto(currency_type: str, count: int = 1, short: bool = False):
+        if not has_request_context():
+            lang = _STATE.default_lang
+        else:
+            player = getattr(g, 'player', None)
+            lang = get_user_language(request, player=player)
+        return get_currency_label(currency_type, count, lang, short)
+    
+    def format_currency_auto(amount: int, currency_type: str, with_label: bool = True, short: bool = False):
+        if not has_request_context():
+            lang = _STATE.default_lang
+        else:
+            player = getattr(g, 'player', None)
+            lang = get_user_language(request, player=player)
+        return format_currency(amount, currency_type, lang, with_label, short)
+    
+    # Enregistrer les wrappers
+    app.jinja_env.globals["t"] = t_auto
     app.jinja_env.globals["t_plural"] = t_plural
-    app.jinja_env.globals["currency_label"] = get_currency_label
+    app.jinja_env.globals["currency_label"] = currency_label_auto
     app.jinja_env.globals["currency_icon"] = get_currency_icon
-    app.jinja_env.globals["format_currency"] = format_currency
+    app.jinja_env.globals["format_currency"] = format_currency_auto
 
 
 # =============================================================================
@@ -218,44 +253,47 @@ def get_translations_for_js(lang: str) -> Dict[str, Any]:
     
     return _STATE.translations.get(lang, {})
 
-
 def get_user_language(request, player=None) -> str:
-    """
-    Detect user's preferred language from request.
+    print(f"[i18n] === get_user_language called ===")
+    print(f"[i18n]   player object: {player}")
+    print(f"[i18n]   player.id: {player.id if player else 'N/A'}")
+    print(f"[i18n]   player.name: {player.name if player else 'N/A'}")
     
-    Priority:
-    1. Player's saved preference in DB (if logged in)
-    2. Query param ?lang=fr
-    3. Cookie (lang)
-    4. Accept-Language header
-    5. Default (fr)
-    
-    Args:
-        request: Flask request object
-        player: Optional Player object (if logged in)
-    """
     # 1. Player preference in DB (highest priority)
     if player is not None:
         player_lang = getattr(player, "lang", None)
+        print(f"[i18n]   player.lang from getattr: {player_lang}")
+        print(f"[i18n]   type(player_lang): {type(player_lang)}")
+        print(f"[i18n]   _STATE.available_langs: {_STATE.available_langs}")
+        print(f"[i18n]   player_lang in available_langs: {player_lang in _STATE.available_langs if player_lang else 'N/A'}")
+        
         if player_lang and player_lang in _STATE.available_langs:
+            print(f"[i18n]   ✓✓✓ USING PLAYER DB LANG: {player_lang}")
             return player_lang
+        else:
+            print(f"[i18n]   ✗ Player lang invalid or empty")
     
     # 2. Query param
     lang = request.args.get("lang")
     if lang in _STATE.available_langs:
+        print(f"[i18n]   ✓ Using query param: {lang}")
         return lang
     
     # 3. Cookie
     lang = request.cookies.get("lang")
+    print(f"[i18n]   Cookie lang: {lang}")
     if lang in _STATE.available_langs:
+        print(f"[i18n]   ✓ Using cookie: {lang}")
         return lang
     
-    # 4. Accept-Language header
+    # 4. Accept-Language
     lang = request.accept_languages.best_match(_STATE.available_langs)
     if lang:
+        print(f"[i18n]   ✓ Using Accept-Language: {lang}")
         return lang
     
     # 5. Default
+    print(f"[i18n]   ✓ Using default: {_STATE.default_lang}")
     return _STATE.default_lang
 
 
