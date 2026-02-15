@@ -118,7 +118,7 @@ def test_sell_flow(client):
     # Inventory decreased (au moins 0, on ne teste pas plus finement ici)
     assert data["stock"]["qty"] >= 0
     # Coins increased
-    assert data["player"]["coins"] >= data["sold"]["gain"]
+    assert data["player"]["essence"] >= data["sold"]["gain"]
 
 
 def test_daily_chest_once_per_day(client):
