@@ -532,3 +532,28 @@ village:
 
     loading_row: "Chargement de ton inventaire et des prix du marché..."
     tip: "Astuce : certaines ressources peuvent valoir plus cher plus tard, ne vends pas tout d'un coup."
+
+  quests_page:
+    tab_title: "Quêtes du village — LodyLand"
+    title: "Les quêtes du village"
+    logo_alt: "Quêtes du village"
+    back_to_village: "← Retour au village"
+    subtitle: "Les villageois ont toujours besoin d’aide : accomplis des quêtes quotidiennes, hebdomadaires et de storyline pour gagner des récompenses."
+
+    panel:
+      title: "Quêtes en cours & terminées"
+      subtitle: "Les quêtes quotidiennes se réinitialisent chaque jour, les quêtes hebdomadaires chaque semaine. L’histoire principale avance une étape à la fois."
+
+    filters:
+      running: "En cours"
+      completed: "Terminées"
+      expired: "Expirées"
+
+    types:
+      all: "Toutes"
+      daily: "Quotidiennes"
+      storyline: "Storyline"
+      weekly: "Hebdomadaires"
+      other: "Autres"
+
+    loading: "Chargement des quêtes en cours..."

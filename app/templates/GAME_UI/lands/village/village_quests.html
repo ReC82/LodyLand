@@ -5,7 +5,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/quests.css') }}">
 {% endblock %}
 
-{% block title %}Quêtes du village — LodyLand{% endblock %}
+{% block title %}{{ t("village.quests_page.tab_title") }}{% endblock %}
 
 {% block content %}
 <div class="land-wrapper land-village land-village-quests">
@@ -13,7 +13,7 @@
   <!-- Bouton retour -->
   <div class="mb-3">
     <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
-      ← Retour au village
+      {{ t("village.quests_page.back_to_village") }}
     </a>
   </div>
 
@@ -22,16 +22,15 @@
     <div class="land-header-main">
       <img
         src="/static/assets/img/ui/village/logo_small_village_quests.png"
-        alt="Quêtes du village"
+        alt="{{ t('village.quests_page.logo_alt') }}"
         class="land-logo me-2"
       />
       <div>
         <h1 class="h4 mb-1">
-          {{ land_label or "Les quêtes du village" }}
+          {{ land_label or t("village.quests_page.title") }}
         </h1>
         <p class="text-muted mb-0">
-          Les villageois ont toujours besoin d’aide&nbsp;: accomplis des quêtes
-          quotidiennes, hebdomadaires et de storyline pour gagner des récompenses.
+          {{ t("village.quests_page.subtitle") }}
         </p>
       </div>
     </div>
@@ -43,39 +42,38 @@
     <!-- En-tête du panel (titre + filtres statut) -->
     <div class="quests-panel-header">
       <div>
-        <h2 class="quests-panel-title mb-1">Quêtes en cours &amp; terminées</h2>
+        <h2 class="quests-panel-title mb-1">{{ t("village.quests_page.panel.title") }}</h2>
         <p class="quests-panel-subtitle mb-0">
-          Les quêtes quotidiennes se réinitialisent chaque jour, les quêtes
-          hebdomadaires chaque semaine. L’histoire principale avance une étape à la fois.
+          {{ t("village.quests_page.panel.subtitle") }}
         </p>
       </div>
       <div class="quests-status-filters">
-        <button class="qfilter-btn qfilter-active" data-filter="running">En cours</button>
-        <button class="qfilter-btn" data-filter="completed">Terminées</button>
-        <button class="qfilter-btn" data-filter="expired">Expirées</button>
+        <button class="qfilter-btn qfilter-active" data-filter="running">{{ t("village.quests_page.filters.running") }}</button>
+        <button class="qfilter-btn" data-filter="completed">{{ t("village.quests_page.filters.completed") }}</button>
+        <button class="qfilter-btn" data-filter="expired">{{ t("village.quests_page.filters.expired") }}</button>
       </div>
     </div>
 
     <!-- Onglets de TYPE de quêtes -->
       <div class="quests-type-tabs mt-2 mb-1">
         <button type="button" class="btn btn-sm qtype-btn qtype-active" data-qtype="all">
-          Toutes
+          {{ t("village.quests_page.types.all") }}
         </button>
         <button type="button" class="btn btn-sm qtype-btn" data-qtype="daily">
-          Quotidiennes
+          {{ t("village.quests_page.types.daily") }}
         </button>
         <button type="button" class="btn btn-sm qtype-btn" data-qtype="storyline">
-          Storyline
+          {{ t("village.quests_page.types.storyline") }}
         </button>
-        <button class="btn btn-sm qtype-btn" data-qtype="weekly">Hebdomadaires</button>
-        <button class="btn btn-sm qtype-btn" data-qtype="other">Autres</button>
+        <button class="btn btn-sm qtype-btn" data-qtype="weekly">{{ t("village.quests_page.types.weekly") }}</button>
+        <button class="btn btn-sm qtype-btn" data-qtype="other">{{ t("village.quests_page.types.other") }}</button>
       </div>
 
     <!-- Corps du panel : la liste est remplie par quests_app.js -->
     <div class="quests-panel-body">
       <div id="quests-list">
         <p class="quest-desc text-muted small mb-0">
-          Chargement des quêtes en cours...
+          {{ t("village.quests_page.loading") }}
         </p>
       </div>
     </div>

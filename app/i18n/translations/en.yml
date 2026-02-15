@@ -464,7 +464,7 @@ village:
         title: "Trade merchant"
         text: "Trade certain resources for rare items or unique cards. Some trades are limited per day or per rotation."
         button: "View trades"
-        
+
   market:
     tab_title: "Village market — LodyLand"
     title: "Village market"
@@ -484,3 +484,28 @@ village:
 
     loading_row: "Loading your inventory and current market prices..."
     tip: "Tip: some resources may be worth more later — don’t sell everything at once."
+
+  quests_page:
+    tab_title: "Village quests — LodyLand"
+    title: "Village quests"
+    logo_alt: "Village quests"
+    back_to_village: "← Back to village"
+    subtitle: "Villagers always need help: complete daily, weekly, and storyline quests to earn rewards."
+
+    panel:
+      title: "Running & completed quests"
+      subtitle: "Daily quests reset every day, weekly quests every week. The main story progresses one step at a time."
+
+    filters:
+      running: "Running"
+      completed: "Completed"
+      expired: "Expired"
+
+    types:
+      all: "All"
+      daily: "Daily"
+      storyline: "Storyline"
+      weekly: "Weekly"
+      other: "Other"
+
+    loading: "Loading active quests..."
