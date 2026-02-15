@@ -54,11 +54,6 @@ async function changeLanguage(lang) {
       console.log("[Profile] Language change successful, showing toast");
       showToast('Language saved: ' + lang, 'success');
       
-      // Wait 500ms before reload
-      setTimeout(() => {
-        console.log("[Profile] Reloading page...");
-        window.location.reload();
-      }, 500);
     } else {
       console.error("[Profile] Language change failed");
       showLanguageError();
