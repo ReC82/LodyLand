@@ -557,3 +557,10 @@ village:
       other: "Autres"
 
     loading: "Chargement des quêtes en cours..."
+
+  trades_page:
+    tab_title: "Échanges du Village — LodyLand"
+    title: "Échanges du Village"
+    back_to_village: "← Retour au village"
+    subtitle: "Échange tes ressources rares contre des cartes de boost uniques. Chaque land possède ses propres trésors très difficiles à trouver."
+    loading: "Chargement des offres d'échanges..."

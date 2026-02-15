@@ -509,3 +509,10 @@ village:
       other: "Other"
 
     loading: "Loading active quests..."
+
+  trades_page:
+    tab_title: "Village trades — LodyLand"
+    title: "Village trades"
+    back_to_village: "← Back to village"
+    subtitle: "Trade your rare resources for unique boost cards. Each land has its own treasures that are very hard to find."
+    loading: "Loading trade offers..."
