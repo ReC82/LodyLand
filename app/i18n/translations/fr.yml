@@ -259,18 +259,61 @@ notifications:
   item_crafted: "Objet fabriqué"
   purchase_complete: "Achat effectué"
   
-# =============================================================================
-# Settings
-# =============================================================================
+# Ajoutez ces sections
+
+profile:
+  title: "Mon profil"
+  subtitle: "Consulte et gère les informations de ton compte LodyLand."
+  
+  sections:
+    player: "Joueur"
+    account: "Compte"
+    statistics: "Statistiques"
+    history: "Historique"
+  
+  labels:
+    pseudo: "Pseudo"
+    level: "Niveau"
+    title: "Titre"
+    email: "Email"
+    password: "Mot de passe"
+    registration_date: "Date d'inscription"
+    email_verification: "Vérification email"
+    
+  values:
+    undefined: "Non défini"
+    unknown: "Inconnue"
+    in_progress: "En cours de mise en place"
+    wip: "(WIP)"
+    
+  buttons:
+    change_avatar: "Changer d'avatar"
+    change_avatar_coming: "Changer d'avatar (à venir)"
+    modify_password: "Modifier"
+    modify_password_coming: "Modifier (à venir)"
+    
+  stats:
+    lands_unlocked: "Lands débloqués"
+    slots: "Slots"
+    quests_completed: "Quêtes terminées"
+    level: "Niveau"
+    playtime: "Temps de jeu"
+    total_xp: "XP totale"
+    to_implement: "À implémenter"
+    coming_soon: "à venir"
+    quest_types: "Histoire / daily / weekly"
+    
+  titles:
+    beginner_explorer: "Explorateur débutant"
+    
+  history:
+    description: "Accède à l'historique de tes achats et ventes dans le jeu."
+    resources_sold: "Ressources vendues (à venir)"
+    cards_bought: "Cartes achetées (à venir)"
+    slots_bought: "Slots achetés (à venir)"
+    other_transactions: "Autres transactions (à venir)"
+
 settings:
-  title: "Paramètres"
   language: "Langue"
   language_description: "Choisis ta langue préférée pour l'interface du jeu."
-  
-  sound: "Son"
-  music: "Musique"
-  notifications: "Notifications"
-  
-  sound_effects: "Effets sonores"
-  background_music: "Musique de fond"
-  volume: "Volume"
+  language_saved: "Langue sauvegardée"

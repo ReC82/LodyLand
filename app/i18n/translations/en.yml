@@ -213,14 +213,59 @@ notifications:
   item_crafted: "Item crafted"
   purchase_complete: "Purchase complete"
   
-settings:
-  title: "Settings"
-  language: "Language"
-  sound: "Sound"
-  music: "Music"
-  notifications: "Notifications"
-  language_description: "Choose your preferred language for the game interface."
+profile:
+  title: "My Profile"
+  subtitle: "View and manage your LodyLand account information."
   
-  sound_effects: "Sound effects"
-  background_music: "Background music"
-  volume: "Volume"
+  sections:
+    player: "Player"
+    account: "Account"
+    statistics: "Statistics"
+    history: "History"
+  
+  labels:
+    pseudo: "Username"
+    level: "Level"
+    title: "Title"
+    email: "Email"
+    password: "Password"
+    registration_date: "Registration date"
+    email_verification: "Email verification"
+    
+  values:
+    undefined: "Not defined"
+    unknown: "Unknown"
+    in_progress: "In progress"
+    wip: "(WIP)"
+    
+  buttons:
+    change_avatar: "Change avatar"
+    change_avatar_coming: "Change avatar (coming soon)"
+    modify_password: "Modify"
+    modify_password_coming: "Modify (coming soon)"
+    
+  stats:
+    lands_unlocked: "Lands unlocked"
+    slots: "Slots"
+    quests_completed: "Quests completed"
+    level: "Level"
+    playtime: "Playtime"
+    total_xp: "Total XP"
+    to_implement: "To implement"
+    coming_soon: "coming soon"
+    quest_types: "Story / daily / weekly"
+    
+  titles:
+    beginner_explorer: "Beginner Explorer"
+    
+  history:
+    description: "Access the history of your purchases and sales in the game."
+    resources_sold: "Resources sold (coming soon)"
+    cards_bought: "Cards bought (coming soon)"
+    slots_bought: "Slots bought (coming soon)"
+    other_transactions: "Other transactions (coming soon)"
+
+settings:
+  language: "Language"
+  language_description: "Choose your preferred language for the game interface."
+  language_saved: "Language saved"
