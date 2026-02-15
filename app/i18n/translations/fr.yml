@@ -564,3 +564,40 @@ village:
     back_to_village: "← Retour au village"
     subtitle: "Échange tes ressources rares contre des cartes de boost uniques. Chaque land possède ses propres trésors très difficiles à trouver."
     loading: "Chargement des offres d'échanges..."
+
+  shop_page:
+    tab_title: "Card Shop du village — LodyLand"
+    title: "Card Shop du village"
+    logo_alt: "Card Shop du village"
+    back_to_village: "← Retour au village"
+    subtitle: "Cartes spéciales, offres limitées dans le temps, stocks rares. Les offres changent régulièrement, garde un œil sur ce Card Shop !"
+
+    info:
+      rotation_weekly: "Rotation hebdomadaire"
+      limited_qty: "Certaines cartes sont en quantité limitée"
+      prices_hint_prefix: "Les prix peuvent être en"
+      coins: "coins"
+      diams: "diams"
+      or: "ou"
+
+    filters:
+      all: "Tous"
+      access: "Access"
+      recipes: "Recipes"
+      lands: "Lands"
+      boosts: "Boosts"
+      other: "Autres"
+
+    search_placeholder: "Rechercher une carte..."
+
+    empty:
+      title: "Aucune offre disponible pour le moment."
+      subtitle: "Repasse plus tard, les villageois préparent de nouvelles merveilles à vendre."
+
+    offer:
+      subtitle_card: "Carte spéciale du village"
+      subtitle_item: "Objet spécial ({item_type})"
+      free: "Gratuit"
+      owned_qty: "Tu en possèdes"
+      buy: "Acheter"
+      unavailable: "Indisponible"

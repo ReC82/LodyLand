@@ -516,3 +516,40 @@ village:
     back_to_village: "← Back to village"
     subtitle: "Trade your rare resources for unique boost cards. Each land has its own treasures that are very hard to find."
     loading: "Loading trade offers..."
+
+  shop_page:
+    tab_title: "Village card shop — LodyLand"
+    title: "Village card shop"
+    logo_alt: "Village card shop"
+    back_to_village: "← Back to village"
+    subtitle: "Special cards, limited-time offers, rare stock. Offers change regularly—keep an eye on the shop!"
+
+    info:
+      rotation_weekly: "Weekly rotation"
+      limited_qty: "Some cards are limited in quantity"
+      prices_hint_prefix: "Prices can be in"
+      coins: "coins"
+      diams: "diams"
+      or: "or"
+
+    filters:
+      all: "All"
+      access: "Access"
+      recipes: "Recipes"
+      lands: "Lands"
+      boosts: "Boosts"
+      other: "Other"
+
+    search_placeholder: "Search a card..."
+
+    empty:
+      title: "No offers available right now."
+      subtitle: "Come back later—villagers are preparing new wonders to sell."
+
+    offer:
+      subtitle_card: "Special village card"
+      subtitle_item: "Special item ({item_type})"
+      free: "Free"
+      owned_qty: "You own"
+      buy: "Buy"
+      unavailable: "Unavailable"
