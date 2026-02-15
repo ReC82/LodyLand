@@ -298,6 +298,16 @@ lands:
         message_success: "New slot unlocked."
         ok: "OK"
 
+  select:
+    tab_title: "LodyLand – Land selection"
+    title: "Choose a land"
+    subtitle: "You can travel to one of your unlocked lands."
+    search_placeholder: "Search a land…"
+    sections:
+      special: "Special places"
+      normal: "Lands"
+    empty_normal: "You haven't unlocked any normal land yet."
+
 base:
   ok: "OK"
   close: "Close"
@@ -383,3 +393,5 @@ base:
     lands_desc: "Here you’ll see what you can gather per land (and what’s still locked)."
     wip_crafts: "WIP (Next step: connect your craft defs + progression gating)"
     wip_tips: "WIP (Next step: contextual mini-guides, objectives, etc.)"
+
+

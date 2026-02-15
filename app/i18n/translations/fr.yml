@@ -346,6 +346,17 @@ lands:
         message_success: "Nouvel emplacement débloqué."
         ok: "OK"
 
+  select:
+    tab_title: "LodyLand – Choix du land"
+    title: "Choisir un land"
+    subtitle: "Tu peux te rendre sur l’un de tes lands débloqués."
+    search_placeholder: "Rechercher un land…"
+    sections:
+      special: "Lieux spéciaux"
+      normal: "Lands"
+    empty_normal: "Tu n’as encore débloqué aucun land classique."
+
+
 base:
   ok: "OK"
   close: "Fermer"
