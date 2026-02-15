@@ -58,6 +58,8 @@ class Player(Base):
     last_daily: Mapped[dt.date | None] = mapped_column(Date, nullable=True)
     daily_streak: Mapped[int] = mapped_column(Integer, default=0)
     best_streak: Mapped[int] = mapped_column(Integer, default=0)
+    
+    lang: Mapped[str] = mapped_column(String(5), default="fr", nullable=False)
 
     account: Mapped["Account"] = relationship(
         "Account",

@@ -170,7 +170,33 @@
           </div>
         </div>
       </section>
+      <!-- Paramètres de langue -->
+      <section class="profile-card mt-3 mt-md-4">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">{{ t("settings.language") }}</h2>
+        </div>
+        <div class="profile-card-body">
+          <p class="mb-3">
+            {{ t("settings.language_description") }}
+          </p>
 
+          <div class="language-selector">
+            <label class="language-option">
+              <input type="radio" name="language" value="fr" 
+                    {% if current_lang == 'fr' %}checked{% endif %}>
+              <span class="language-flag">🇫🇷</span>
+              <span class="language-name">Français</span>
+            </label>
+            
+            <label class="language-option">
+              <input type="radio" name="language" value="en"
+                    {% if current_lang == 'en' %}checked{% endif %}>
+              <span class="language-flag">🇬🇧</span>
+              <span class="language-name">English</span>
+            </label>
+          </div>
+        </div>
+      </section>
       <!-- Historique -->
       <section class="profile-card mt-3 mt-md-4">
         <div class="profile-card-header">
@@ -201,4 +227,7 @@
   </div>
 
 </div>
+{% endblock %}
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/ui/profile_app.js') }}"></script>
 {% endblock %}

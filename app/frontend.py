@@ -840,10 +840,19 @@ def player_profile():
     - Account info (email, registration date, etc.)
     - Player info (pseudo, level, avatar placeholder)
     - Statistics (lands, slots, quests...)
+    - Language preference
     """
+    from app.i18n import get_user_language
+    from flask import request
 
     player = g.player
     account = getattr(player, "account", None)
+
+    # -----------------------
+    # Langue actuelle
+    # -----------------------
+    # Langue actuelle (priorité à la DB)
+    current_lang = get_user_language(request, player=player)  # ← Passer player
 
     # -----------------------
     # Infos de compte
@@ -909,4 +918,5 @@ def player_profile():
         pseudo=pseudo,
         level=level,
         stats=stats,
+        current_lang=current_lang,  # ← AJOUTÉ pour le sélecteur de langue
     )

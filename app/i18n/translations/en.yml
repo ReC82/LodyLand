@@ -125,6 +125,7 @@ errors:
   item_locked: "Item locked"
   quest_not_ready: "Quest not ready yet"
   already_owned: "Already owned"
+  language_change_failed: "Failed to change language. Please try again."
 
 story:
   continue: "Continue"
@@ -218,6 +219,7 @@ settings:
   sound: "Sound"
   music: "Music"
   notifications: "Notifications"
+  language_description: "Choose your preferred language for the game interface."
   
   sound_effects: "Sound effects"
   background_music: "Background music"

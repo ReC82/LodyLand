@@ -219,24 +219,43 @@ def get_translations_for_js(lang: str) -> Dict[str, Any]:
     return _STATE.translations.get(lang, {})
 
 
-def get_user_language(request) -> str:
-    """Detect user's preferred language from request."""
-    # 1. Query param
+def get_user_language(request, player=None) -> str:
+    """
+    Detect user's preferred language from request.
+    
+    Priority:
+    1. Player's saved preference in DB (if logged in)
+    2. Query param ?lang=fr
+    3. Cookie (lang)
+    4. Accept-Language header
+    5. Default (fr)
+    
+    Args:
+        request: Flask request object
+        player: Optional Player object (if logged in)
+    """
+    # 1. Player preference in DB (highest priority)
+    if player is not None:
+        player_lang = getattr(player, "lang", None)
+        if player_lang and player_lang in _STATE.available_langs:
+            return player_lang
+    
+    # 2. Query param
     lang = request.args.get("lang")
     if lang in _STATE.available_langs:
         return lang
     
-    # 2. Cookie
+    # 3. Cookie
     lang = request.cookies.get("lang")
     if lang in _STATE.available_langs:
         return lang
     
-    # 3. Accept-Language header
+    # 4. Accept-Language header
     lang = request.accept_languages.best_match(_STATE.available_langs)
     if lang:
         return lang
     
-    # 4. Default
+    # 5. Default
     return _STATE.default_lang
 
 

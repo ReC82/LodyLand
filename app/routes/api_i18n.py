@@ -65,7 +65,7 @@ def get_translations():
 @bp.post("/i18n/set-language")
 def set_language():
     """
-    Set user's preferred language (stored in cookie).
+    Set user's preferred language (stored in DB + cookie).
     
     Body:
         { "lang": "fr" }
@@ -73,13 +73,25 @@ def set_language():
     Response:
         { "ok": true, "lang": "fr" }
     """
+    from app.auth import get_current_player
+    from app.db import SessionLocal
+    
     data = request.get_json(silent=True) or {}
     lang = data.get("lang", "en")
     
     if lang not in _AVAILABLE_LANGS:
         return jsonify({"ok": False, "error": "invalid_language"}), 400
     
-    # Create response with cookie
+    # Save to DB if user is logged in
+    with SessionLocal() as session:
+        player = get_current_player(session)
+        
+        if player:
+            player.lang = lang
+            session.commit()
+            print(f"[i18n] Saved language preference for {player.name}: {lang}")
+    
+    # Also set cookie as fallback
     resp = make_response(jsonify({"ok": True, "lang": lang}))
     resp.set_cookie("lang", lang, max_age=365*24*60*60)  # 1 year
     

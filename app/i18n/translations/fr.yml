@@ -140,7 +140,8 @@ errors:
   invalid_input: "Entrée invalide"
   server_error: "Erreur serveur"
   network_error: "Erreur réseau"
-  
+  language_change_failed: "Erreur lors du changement de langue. Veuillez réessayer."  
+
   # Gameplay errors
   cooldown_active: "Action en cooldown"
   insufficient_resources: "Ressources insuffisantes"
@@ -264,6 +265,8 @@ notifications:
 settings:
   title: "Paramètres"
   language: "Langue"
+  language_description: "Choisis ta langue préférée pour l'interface du jeu."
+  
   sound: "Son"
   music: "Musique"
   notifications: "Notifications"
