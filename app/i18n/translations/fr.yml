@@ -1,92 +1,90 @@
 # app/i18n/translations/fr.yml
-# Traductions françaises pour LodyLand
+# Traductions françaises pour LodyLand (nettoyé : chaînes UI génériques centralisées)
 
-# =============================================================================
-# UI général
-# =============================================================================
 ui:
-  welcome: "Bienvenue dans LodyLand"
-  loading: "Chargement..."
-  error: "Une erreur s'est produite"
-  success: "Succès !"
-  
-  # Actions
-  confirm: "Confirmer"
-  cancel: "Annuler"
-  close: "Fermer"
-  save: "Sauvegarder"
-  delete: "Supprimer"
-  buy: "Acheter"
-  sell: "Vendre"
-  craft: "Fabriquer"
-  unlock: "Débloquer"
-  claim: "Réclamer"
-  
-  # Navigation
-  back: "Retour"
-  next: "Suivant"
-  home: "Accueil"
-  inventory: "Inventaire"
-  shop: "Boutique"
-  quests: "Quêtes"
-  profile: "Profil"
-  
-  # Auth
-  login: "Se connecter"
-  register: "S'inscrire"
-  logout: "Se déconnecter"
-  username: "Nom d'utilisateur"
-  password: "Mot de passe"
-  email: "Email"
+  brand:
+    welcome: "Bienvenue sur LodyLand"
 
-# =============================================================================
-# HUD (Heads-Up Display)
-# =============================================================================
+  states:
+    loading: "Chargement..."
+    wip: "En cours"
+    error: "Une erreur est survenue"
+    success: "Succès !"
+
+  actions:
+    ok: "OK"
+    confirm: "Confirmer"
+    cancel: "Annuler"
+    close: "Fermer"
+    save: "Enregistrer"
+    delete: "Supprimer"
+    buy: "Acheter"
+    sell: "Vendre"
+    craft: "Craft"
+    unlock: "Débloquer"
+    claim: "Réclamer"
+
+  nav:
+    back: "Retour"
+    next: "Suivant"
+    home: "Accueil"
+
+  sections:
+    inventory: "Inventaire"
+    shop: "Boutique"
+    quests: "Quêtes"
+    profile: "Profil"
+    menu: "Menu"
+
+  auth:
+    login: "Se connecter"
+    register: "S'inscrire"
+    logout: "Se déconnecter"
+    username: "Nom d'utilisateur"
+    password: "Mot de passe"
+    email: "Email"
+
+  fields:
+    search: "Rechercher"
+    quantity: "Quantité"
+    type: "Type"
+    total: "Total"
+
 hud:
   level: "Niveau"
   xp: "XP"
   xp_short: "XP"
-  next_level: "Prochain niveau"
-  daily_chest: "Coffre journalier"
+  next_level: "Niveau suivant"
+  daily_chest: "Coffre quotidien"
   travel: "Voyager"
   menu: "Menu"
-  
-  # Tooltips
+
   tooltip:
     level: "Niveau {level} • {xp}/{next_xp} XP"
     daily_available: "Coffre disponible !"
-    daily_claimed: "Revenez demain"
+    daily_claimed: "Reviens demain"
     daily_streak: "Série : {streak} jours"
 
-# =============================================================================
-# Gameplay
-# =============================================================================
 game:
-  # Récolte
   collect:
-    success: "Vous avez trouvé"
+    success: "Tu as trouvé"
     nothing: "Rien trouvé..."
     cooldown: "Disponible dans {seconds}s"
-    locked: "Case verrouillée"
-    
-  # Craft
+    locked: "Tuile verrouillée"
+
   craft:
-    title: "Fabrication"
+    title: "Craft"
     available: "Recettes disponibles"
     locked: "Recette verrouillée"
-    craft_button: "Fabriquer"
-    craft_success: "Objet fabriqué !"
+    craft_success: "Objet crafté !"
     not_enough_resources: "Ressources insuffisantes"
-    requirements: "Requis"
-    
-  # Progression
+    requirements: "Pré-requis"
+
   level_up:
-    title: "Montée de niveau !"
+    title: "Niveau supérieur !"
     new_level: "Niveau {level}"
     rewards: "Récompenses"
-    continue: "Continuer"
-    
-  # Quêtes
+
   quests:
     title: "Quêtes"
     active: "En cours"
@@ -97,42 +95,32 @@ game:
     rewards: "Récompenses"
     progress: "{current}/{target}"
     expired: "Expirée"
-    
+
     types:
-      daily: "Quête journalière"
+      daily: "Quête quotidienne"
       weekly: "Quête hebdomadaire"
       storyline: "Quête principale"
-      
-  # Lands
+
   lands:
-    title: "Voyager"
-    select: "Sélectionner une destination"
+    title: "Voyage"
+    select: "Choisir une destination"
     locked: "Verrouillé"
     unlock_with: "Débloquer avec"
     slots: "Emplacements"
     buy_slot: "Acheter un emplacement"
-    
-  # Market
+
   market:
     title: "Marché"
     sell_price: "Prix de vente"
-    quantity: "Quantité"
-    sell_button: "Vendre"
-    total: "Total"
     transaction_success: "Vente réussie !"
-    
-  # Shop
+
   shop:
     title: "Boutique"
-    buy_button: "Acheter"
     owned: "Possédé"
     purchase_limit: "Limite d'achat"
     purchase_success: "Achat réussi !"
     not_enough_currency: "Pas assez de {currency}"
 
-# =============================================================================
-# Erreurs
-# =============================================================================
 errors:
   not_found: "Introuvable"
   not_authenticated: "Non authentifié"
@@ -140,67 +128,53 @@ errors:
   invalid_input: "Entrée invalide"
   server_error: "Erreur serveur"
   network_error: "Erreur réseau"
-  language_change_failed: "Erreur lors du changement de langue. Veuillez réessayer."  
 
-  # Gameplay errors
   cooldown_active: "Action en cooldown"
   insufficient_resources: "Ressources insuffisantes"
   insufficient_currency: "Pas assez de {currency}"
   level_required: "Niveau {level} requis"
   item_locked: "Objet verrouillé"
-  quest_not_ready: "Quête pas encore terminée"
+  quest_not_ready: "Quête pas encore disponible"
   already_owned: "Déjà possédé"
+  language_change_failed: "Impossible de changer la langue. Réessaie."
 
-# =============================================================================
-# Story / Dialogues
-# =============================================================================
 story:
-  continue: "Continuer"
   skip: "Passer"
-  understood: "J'ai compris"
-  
+
   speakers:
     self: "Moi"
     mysterious_voice: "Voix mystérieuse"
     npc_villager_guide: "Guide du village"
-    
+
   moods:
     confused: "Confus"
     lost: "Perdu"
-    thinking: "Pensif"
+    thinking: "En réflexion"
     surprised: "Surpris"
     determined: "Déterminé"
     worried: "Inquiet"
     curious: "Curieux"
     friendly: "Amical"
-    explaining: "Expliquant"
+    explaining: "Explique"
 
-# =============================================================================
-# Items & Resources
-# =============================================================================
 resources:
   categories:
     basic: "Basique"
     rare: "Rare"
     treasure: "Trésor"
-    
-  # Note: Les labels spécifiques sont dans items.yml
-  # Ici on met juste les messages génériques
+
   collected: "Récolté"
-  crafted: "Fabriqué"
+  crafted: "Crafté"
   received: "Reçu"
 
-# =============================================================================
-# Cards
-# =============================================================================
 cards:
   types:
-    resource_boost: "Boost de ressources"
+    resource_boost: "Boost de ressource"
     xp_boost: "Boost d'XP"
     cooldown_boost: "Réduction de cooldown"
     land_loot_boost: "Boost de loot"
     unlock_land: "Déblocage de land"
-    
+
   rarity:
     common: "Commun"
     uncommon: "Peu commun"
@@ -208,120 +182,107 @@ cards:
     epic: "Épique"
     legendary: "Légendaire"
 
-# =============================================================================
-# Time & Dates
-# =============================================================================
 time:
-  seconds: "secondes"
-  minutes: "minutes"
-  hours: "heures"
-  days: "jours"
-  
+  units:
+    seconds: "secondes"
+    minutes: "minutes"
+    hours: "heures"
+    days: "jours"
+
   ago: "il y a {time}"
   in: "dans {time}"
-  
-  # Relative
+
   just_now: "À l'instant"
   today: "Aujourd'hui"
   yesterday: "Hier"
   tomorrow: "Demain"
 
-# =============================================================================
-# Numbers & Quantities
-# =============================================================================
 numbers:
   none: "Aucun"
   unlimited: "Illimité"
   max: "Max"
-  
-  # Plurals
+
   items:
     one: "{count} objet"
     other: "{count} objets"
-  
+
   resources:
     one: "{count} ressource"
     other: "{count} ressources"
-    
+
   cards:
     one: "{count} carte"
     other: "{count} cartes"
 
-# =============================================================================
-# Notifications / Toasts
-# =============================================================================
 notifications:
   quest_completed: "Quête terminée !"
   quest_available: "Nouvelle quête disponible"
-  level_up: "Montée de niveau !"
-  daily_chest_available: "Coffre journalier disponible"
+  level_up: "Niveau supérieur !"
+  daily_chest_available: "Coffre quotidien disponible"
   achievement_unlocked: "Succès débloqué"
-  item_crafted: "Objet fabriqué"
-  purchase_complete: "Achat effectué"
-  
-# Ajoutez ces sections
+  item_crafted: "Objet crafté"
+  purchase_complete: "Achat terminé"
 
 profile:
   title: "Mon profil"
   subtitle: "Consulte et gère les informations de ton compte LodyLand."
-  
+
   sections:
     player: "Joueur"
     account: "Compte"
     statistics: "Statistiques"
     history: "Historique"
-  
+
   labels:
-    pseudo: "Pseudo"
+    pseudo: "Nom d'utilisateur"
     level: "Niveau"
     title: "Titre"
     email: "Email"
     password: "Mot de passe"
     registration_date: "Date d'inscription"
     email_verification: "Vérification email"
-    
+
   values:
     undefined: "Non défini"
-    unknown: "Inconnue"
-    in_progress: "En cours de mise en place"
-    wip: "(WIP)"
-    
+    unknown: "Inconnu"
+    in_progress: "En cours"
+    wip: "(En cours)"
+
   buttons:
     change_avatar: "Changer d'avatar"
-    change_avatar_coming: "Changer d'avatar (à venir)"
+    change_avatar_coming: "Changer d'avatar (bientôt)"
     modify_password: "Modifier"
-    modify_password_coming: "Modifier (à venir)"
-    
+    modify_password_coming: "Modifier (bientôt)"
+
   stats:
     lands_unlocked: "Lands débloqués"
-    slots: "Slots"
+    slots: "Emplacements"
     quests_completed: "Quêtes terminées"
     level: "Niveau"
     playtime: "Temps de jeu"
     total_xp: "XP totale"
     to_implement: "À implémenter"
-    coming_soon: "à venir"
-    quest_types: "Histoire / daily / weekly"
-    
+    coming_soon: "bientôt"
+    quest_types: "Histoire / quotidien / hebdo"
+
   titles:
     beginner_explorer: "Explorateur débutant"
-    
+
   history:
     description: "Accède à l'historique de tes achats et ventes dans le jeu."
-    resources_sold: "Ressources vendues (à venir)"
-    cards_bought: "Cartes achetées (à venir)"
-    slots_bought: "Slots achetés (à venir)"
-    other_transactions: "Autres transactions (à venir)"
+    resources_sold: "Ressources vendues (bientôt)"
+    cards_bought: "Cartes achetées (bientôt)"
+    slots_bought: "Emplacements achetés (bientôt)"
+    other_transactions: "Autres transactions (bientôt)"
 
 settings:
   language: "Langue"
-  language_description: "Choisis ta langue préférée pour l'interface du jeu."
-  language_saved: "Langue sauvegardée"
+  language_description: "Choisis ta langue préférée pour l’interface du jeu."
+  language_saved: "Langue enregistrée"
 
 lands:
   generic:
     tab_title: "Land – {land}"
-
     back_to_select_aria: "Retour à la sélection des lands"
 
     tools:
@@ -331,7 +292,7 @@ lands:
     slot:
       click_to_search: "Clique pour fouiller"
       add_one: "+1 emplacement"
-      free_card_available: "1 carte gratuite dispo 🎟️"
+      free_card_available: "1 carte gratuite disponible 🎟️"
       current_cost: "Coût actuel : {cost} 💎"
       click_to_unlock: "Clique pour débloquer"
 
@@ -339,29 +300,21 @@ lands:
       confirm:
         title: "Confirmer l'achat"
         message: "Es-tu sûr de vouloir acheter un emplacement ?"
-        cancel: "Annuler"
-        ok: "Confirmer"
       result:
         title_success: "Emplacement débloqué"
         message_success: "Nouvel emplacement débloqué."
-        ok: "OK"
 
   select:
-    tab_title: "LodyLand – Choix du land"
+    tab_title: "LodyLand – Sélection des lands"
     title: "Choisir un land"
-    subtitle: "Tu peux te rendre sur l’un de tes lands débloqués."
+    subtitle: "Tu peux voyager vers l’un de tes lands débloqués."
     search_placeholder: "Rechercher un land…"
     sections:
       special: "Lieux spéciaux"
       normal: "Lands"
     empty_normal: "Tu n’as encore débloqué aucun land classique."
 
-
 base:
-  ok: "OK"
-  close: "Fermer"
-  loading: "Chargement..."
-
   beta_banner: "Version bêta – progression et données susceptibles de changer"
 
   level_zone:
@@ -369,14 +322,14 @@ base:
     level: "Niveau"
 
   daily_chest:
-    alt: "Coffre journalier"
+    alt: "Coffre quotidien"
 
   daily_modal:
     title: "Coffre ouvert !"
     reward_prefix: "Tu reçois"
     reward_suffix: "coins."
-    streak_current: "Streak actuel"
-    streak_best: "Meilleur streak"
+    streak_current: "Série actuelle"
+    streak_best: "Meilleure série"
 
   levelup_modal:
     title_prefix: "Niveau"
@@ -393,10 +346,7 @@ base:
   menu:
     title: "Menu"
     close_aria: "Fermer le menu"
-    profile_wip: "Profil (WIP)"
-    lands: "Lands"
-    inventory: "Inventaire"
-    logout: "Se déconnecter"
+    profile_wip: "Profil (En cours)"
 
   travel:
     title: "Voyager vers un land"
@@ -416,7 +366,6 @@ base:
     filter_recipes: "Filtrer les recettes..."
     table: "Table"
     level: "niveau"
-    quantity: "Quantité"
     perform: "Craft"
 
   image_viewer:
@@ -425,7 +374,6 @@ base:
   story:
     title: "Histoire"
     avatar_alt: "avatar"
-    next: "Suivant"
     done: "J’ai compris"
 
   notebook:
@@ -434,30 +382,19 @@ base:
     tabs:
       lands: "Lands"
       crafts: "Crafts"
-      tips: "Tips"
+      tips: "Conseils"
     sections:
       lands: "Lands"
       crafts: "Crafts"
-      tips: "Tips"
+      tips: "Conseils"
     lands_desc: "Ici tu verras ce qu’on peut récolter par land (et ce qui reste à débloquer)."
-    wip_crafts: "WIP (Step suivant : brancher tes defs de craft + gating par progression)"
-    wip_tips: "WIP (Step suivant : mini-guides contextuels, objectifs, etc.)"
+    wip_crafts: "En cours (prochaine étape : connecter les defs de craft + progression)"
+    wip_tips: "En cours (mini-guides contextuels, objectifs, etc.)"
 
 inventory:
   tab_title: "Inventaire — LodyLand"
   title: "Inventaire"
   subtitle: "Toutes tes ressources et tes cartes au même endroit."
-
-  tabs:
-    resources: "Ressources"
-    treasure: "Trésors"
-    items: "Items"
-    cards: "Cartes"
-
-  filters:
-    filter: "Filtrer"
-    search: "Rechercher"
-    type: "Type"
 
   placeholders:
     resource: "Nom ou clé de ressource…"
@@ -486,20 +423,20 @@ village:
   home:
     tab_title: "Le Village — LodyLand"
     title: "Le Village"
-    logo_alt: "Logo du Village"
+    logo_alt: "Logo du village"
     subtitle: "Ici, pas de récolte. Juste des villageois, des quêtes, un marché pour vendre tes ressources et des boutiques d’objets spéciaux."
 
     npcs:
       quests:
         alt: "Donneur de quêtes"
         title: "Donneur de quêtes"
-        text: "Reçois ta quête quotidienne, tes missions spéciales et avance dans l’histoire du village. Attention, tu ne peux avoir qu’un nombre limité de quêtes actives."
+        text: "Reçois ta quête quotidienne, tes missions spéciales et avance dans l’histoire du village. Attention : tu ne peux avoir qu’un nombre limité de quêtes actives."
         button: "Voir les quêtes"
 
       market:
         alt: "Marchand du village"
         title: "Marché du village"
-        text: "Vends tes ressources aux villageois pour obtenir des coins. Les prix peuvent changer avec le temps, alors surveille bien le marché."
+        text: "Vends tes ressources aux villageois pour obtenir des coins. Les prix peuvent changer avec le temps, surveille bien le marché."
         button: "Aller au marché"
 
       shop_card:
@@ -509,19 +446,19 @@ village:
         button: "Voir la boutique"
 
       trades:
-        alt: "Marchand d'échanges"
+        alt: "Marchand d’échanges"
         title: "Marchand d’échanges"
-        text: "Échange certaines ressources contre des items rares ou des cartes uniques. Certains trades sont limités par jour ou par rotation."
+        text: "Échange certaines ressources contre des items rares ou des cartes uniques. Certains échanges sont limités par jour ou par rotation."
         button: "Voir les échanges"
+
   market:
     tab_title: "Marché du village — LodyLand"
-    title: "Le Marché du village"
-    logo_alt: "Logo du Marché"
+    title: "Marché du village"
+    logo_alt: "Logo du marché"
     subtitle: "Ici, tu peux vendre tes ressources aux villageois contre des coins. Garde de quoi crafter et pour les quêtes, le reste peut partir !"
-    back_to_village: "← Retour au village"
+    back_to_village: "Retour au village"
 
-    panel_title: "Vendre des ressources"
-    prices_hint: "Les prix affichés sont en coins / unité."
+    prices_hint: "Les prix affichés sont en coins par unité."
 
     table:
       resource: "Ressource"
@@ -535,33 +472,21 @@ village:
 
   quests_page:
     tab_title: "Quêtes du village — LodyLand"
-    title: "Les quêtes du village"
+    title: "Quêtes du village"
     logo_alt: "Quêtes du village"
-    back_to_village: "← Retour au village"
+    back_to_village: "Retour au village"
     subtitle: "Les villageois ont toujours besoin d’aide : accomplis des quêtes quotidiennes, hebdomadaires et de storyline pour gagner des récompenses."
 
     panel:
       title: "Quêtes en cours & terminées"
       subtitle: "Les quêtes quotidiennes se réinitialisent chaque jour, les quêtes hebdomadaires chaque semaine. L’histoire principale avance une étape à la fois."
 
-    filters:
-      running: "En cours"
-      completed: "Terminées"
-      expired: "Expirées"
-
-    types:
-      all: "Toutes"
-      daily: "Quotidiennes"
-      storyline: "Storyline"
-      weekly: "Hebdomadaires"
-      other: "Autres"
-
     loading: "Chargement des quêtes en cours..."
 
   trades_page:
-    tab_title: "Échanges du Village — LodyLand"
-    title: "Échanges du Village"
-    back_to_village: "← Retour au village"
+    tab_title: "Échanges du village — LodyLand"
+    title: "Échanges du village"
+    back_to_village: "Retour au village"
     subtitle: "Échange tes ressources rares contre des cartes de boost uniques. Chaque land possède ses propres trésors très difficiles à trouver."
     loading: "Chargement des offres d'échanges..."
 
@@ -569,7 +494,7 @@ village:
     tab_title: "Card Shop du village — LodyLand"
     title: "Card Shop du village"
     logo_alt: "Card Shop du village"
-    back_to_village: "← Retour au village"
+    back_to_village: "Retour au village"
     subtitle: "Cartes spéciales, offres limitées dans le temps, stocks rares. Les offres changent régulièrement, garde un œil sur ce Card Shop !"
 
     info:
@@ -579,14 +504,6 @@ village:
       coins: "coins"
       diams: "diams"
       or: "ou"
-
-    filters:
-      all: "Tous"
-      access: "Access"
-      recipes: "Recipes"
-      lands: "Lands"
-      boosts: "Boosts"
-      other: "Autres"
 
     search_placeholder: "Rechercher une carte..."
 
@@ -599,5 +516,4 @@ village:
       subtitle_item: "Objet spécial ({item_type})"
       free: "Gratuit"
       owned_qty: "Tu en possèdes"
-      buy: "Acheter"
       unavailable: "Indisponible"

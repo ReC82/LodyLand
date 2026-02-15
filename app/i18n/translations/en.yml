@@ -1,37 +1,54 @@
 # app/i18n/translations/en.yml
-# English translations for LodyLand
+# English translations for LodyLand (cleaned: generic UI strings centralized; page keys keep only page-specific text)
 
 ui:
-  welcome: "Welcome to LodyLand"
-  loading: "Loading..."
-  error: "An error occurred"
-  success: "Success!"
-  
-  confirm: "Confirm"
-  cancel: "Cancel"
-  close: "Close"
-  save: "Save"
-  delete: "Delete"
-  buy: "Buy"
-  sell: "Sell"
-  craft: "Craft"
-  unlock: "Unlock"
-  claim: "Claim"
-  
-  back: "Back"
-  next: "Next"
-  home: "Home"
-  inventory: "Inventory"
-  shop: "Shop"
-  quests: "Quests"
-  profile: "Profile"
-  
-  login: "Log in"
-  register: "Sign up"
-  logout: "Log out"
-  username: "Username"
-  password: "Password"
-  email: "Email"
+  brand:
+    welcome: "Welcome to LodyLand"
+
+  states:
+    loading: "Loading..."
+    wip: "WIP"
+    error: "An error occurred"
+    success: "Success!"
+
+  actions:
+    ok: "OK"
+    confirm: "Confirm"
+    cancel: "Cancel"
+    close: "Close"
+    save: "Save"
+    delete: "Delete"
+    buy: "Buy"
+    sell: "Sell"
+    craft: "Craft"
+    unlock: "Unlock"
+    claim: "Claim"
+
+  nav:
+    back: "Back"
+    next: "Next"
+    home: "Home"
+
+  sections:
+    inventory: "Inventory"
+    shop: "Shop"
+    quests: "Quests"
+    profile: "Profile"
+    menu: "Menu"
+
+  auth:
+    login: "Log in"
+    register: "Sign up"
+    logout: "Log out"
+    username: "Username"
+    password: "Password"
+    email: "Email"
+
+  fields:
+    search: "Search"
+    quantity: "Quantity"
+    type: "Type"
+    total: "Total"
 
 hud:
   level: "Level"
@@ -41,7 +58,7 @@ hud:
   daily_chest: "Daily chest"
   travel: "Travel"
   menu: "Menu"
-  
+
   tooltip:
     level: "Level {level} • {xp}/{next_xp} XP"
     daily_available: "Chest available!"
@@ -54,22 +71,20 @@ game:
     nothing: "Found nothing..."
     cooldown: "Available in {seconds}s"
     locked: "Tile locked"
-    
+
   craft:
     title: "Crafting"
     available: "Available recipes"
     locked: "Recipe locked"
-    craft_button: "Craft"
     craft_success: "Item crafted!"
     not_enough_resources: "Insufficient resources"
     requirements: "Requirements"
-    
+
   level_up:
     title: "Level Up!"
     new_level: "Level {level}"
     rewards: "Rewards"
-    continue: "Continue"
-    
+
   quests:
     title: "Quests"
     active: "Active"
@@ -80,12 +95,12 @@ game:
     rewards: "Rewards"
     progress: "{current}/{target}"
     expired: "Expired"
-    
+
     types:
       daily: "Daily quest"
       weekly: "Weekly quest"
       storyline: "Main quest"
-      
+
   lands:
     title: "Travel"
     select: "Select a destination"
@@ -93,18 +108,14 @@ game:
     unlock_with: "Unlock with"
     slots: "Slots"
     buy_slot: "Buy slot"
-    
+
   market:
     title: "Market"
     sell_price: "Sell price"
-    quantity: "Quantity"
-    sell_button: "Sell"
-    total: "Total"
     transaction_success: "Sale successful!"
-    
+
   shop:
     title: "Shop"
-    buy_button: "Buy"
     owned: "Owned"
     purchase_limit: "Purchase limit"
     purchase_success: "Purchase successful!"
@@ -117,7 +128,7 @@ errors:
   invalid_input: "Invalid input"
   server_error: "Server error"
   network_error: "Network error"
-  
+
   cooldown_active: "Action on cooldown"
   insufficient_resources: "Insufficient resources"
   insufficient_currency: "Not enough {currency}"
@@ -128,15 +139,12 @@ errors:
   language_change_failed: "Failed to change language. Please try again."
 
 story:
-  continue: "Continue"
   skip: "Skip"
-  understood: "Got it"
-  
   speakers:
     self: "Me"
     mysterious_voice: "Mysterious voice"
     npc_villager_guide: "Village guide"
-    
+
   moods:
     confused: "Confused"
     lost: "Lost"
@@ -153,7 +161,7 @@ resources:
     basic: "Basic"
     rare: "Rare"
     treasure: "Treasure"
-    
+
   collected: "Collected"
   crafted: "Crafted"
   received: "Received"
@@ -165,7 +173,7 @@ cards:
     cooldown_boost: "Cooldown reduction"
     land_loot_boost: "Loot boost"
     unlock_land: "Land unlock"
-    
+
   rarity:
     common: "Common"
     uncommon: "Uncommon"
@@ -174,14 +182,15 @@ cards:
     legendary: "Legendary"
 
 time:
-  seconds: "seconds"
-  minutes: "minutes"
-  hours: "hours"
-  days: "days"
-  
+  units:
+    seconds: "seconds"
+    minutes: "minutes"
+    hours: "hours"
+    days: "days"
+
   ago: "{time} ago"
   in: "in {time}"
-  
+
   just_now: "Just now"
   today: "Today"
   yesterday: "Yesterday"
@@ -191,15 +200,15 @@ numbers:
   none: "None"
   unlimited: "Unlimited"
   max: "Max"
-  
+
   items:
     one: "{count} item"
     other: "{count} items"
-  
+
   resources:
     one: "{count} resource"
     other: "{count} resources"
-    
+
   cards:
     one: "{count} card"
     other: "{count} cards"
@@ -212,17 +221,17 @@ notifications:
   achievement_unlocked: "Achievement unlocked"
   item_crafted: "Item crafted"
   purchase_complete: "Purchase complete"
-  
+
 profile:
   title: "My Profile"
   subtitle: "View and manage your LodyLand account information."
-  
+
   sections:
     player: "Player"
     account: "Account"
     statistics: "Statistics"
     history: "History"
-  
+
   labels:
     pseudo: "Username"
     level: "Level"
@@ -231,19 +240,19 @@ profile:
     password: "Password"
     registration_date: "Registration date"
     email_verification: "Email verification"
-    
+
   values:
     undefined: "Not defined"
     unknown: "Unknown"
     in_progress: "In progress"
     wip: "(WIP)"
-    
+
   buttons:
     change_avatar: "Change avatar"
     change_avatar_coming: "Change avatar (coming soon)"
     modify_password: "Modify"
     modify_password_coming: "Modify (coming soon)"
-    
+
   stats:
     lands_unlocked: "Lands unlocked"
     slots: "Slots"
@@ -254,10 +263,10 @@ profile:
     to_implement: "To implement"
     coming_soon: "coming soon"
     quest_types: "Story / daily / weekly"
-    
+
   titles:
     beginner_explorer: "Beginner Explorer"
-    
+
   history:
     description: "Access the history of your purchases and sales in the game."
     resources_sold: "Resources sold (coming soon)"
@@ -273,7 +282,6 @@ settings:
 lands:
   generic:
     tab_title: "Land – {land}"
-
     back_to_select_aria: "Back to land selection"
 
     tools:
@@ -291,12 +299,9 @@ lands:
       confirm:
         title: "Confirm purchase"
         message: "Are you sure you want to buy a slot?"
-        cancel: "Cancel"
-        ok: "Confirm"
       result:
         title_success: "Slot unlocked"
         message_success: "New slot unlocked."
-        ok: "OK"
 
   select:
     tab_title: "LodyLand – Land selection"
@@ -309,10 +314,6 @@ lands:
     empty_normal: "You haven't unlocked any normal land yet."
 
 base:
-  ok: "OK"
-  close: "Close"
-  loading: "Loading..."
-
   beta_banner: "Beta version – progression and data may change"
 
   level_zone:
@@ -345,9 +346,6 @@ base:
     title: "Menu"
     close_aria: "Close menu"
     profile_wip: "Profile (WIP)"
-    lands: "Lands"
-    inventory: "Inventory"
-    logout: "Log out"
 
   travel:
     title: "Travel to a land"
@@ -367,7 +365,6 @@ base:
     filter_recipes: "Filter recipes..."
     table: "Table"
     level: "level"
-    quantity: "Quantity"
     perform: "Craft"
 
   image_viewer:
@@ -376,7 +373,6 @@ base:
   story:
     title: "Story"
     avatar_alt: "avatar"
-    next: "Next"
     done: "Got it"
 
   notebook:
@@ -398,17 +394,6 @@ inventory:
   tab_title: "Inventory — LodyLand"
   title: "Inventory"
   subtitle: "All your resources and cards in one place."
-
-  tabs:
-    resources: "Resources"
-    treasure: "Treasures"
-    items: "Items"
-    cards: "Cards"
-
-  filters:
-    filter: "Filter"
-    search: "Search"
-    type: "Type"
 
   placeholders:
     resource: "Resource name or key…"
@@ -470,9 +455,8 @@ village:
     title: "Village market"
     logo_alt: "Market logo"
     subtitle: "Here you can sell your resources to villagers for coins. Keep what you need for crafting and quests — the rest can go!"
-    back_to_village: "← Back to village"
+    back_to_village: "Back to village"
 
-    panel_title: "Sell resources"
     prices_hint: "Displayed prices are coins per unit."
 
     table:
@@ -489,31 +473,19 @@ village:
     tab_title: "Village quests — LodyLand"
     title: "Village quests"
     logo_alt: "Village quests"
-    back_to_village: "← Back to village"
+    back_to_village: "Back to village"
     subtitle: "Villagers always need help: complete daily, weekly, and storyline quests to earn rewards."
 
     panel:
       title: "Running & completed quests"
       subtitle: "Daily quests reset every day, weekly quests every week. The main story progresses one step at a time."
 
-    filters:
-      running: "Running"
-      completed: "Completed"
-      expired: "Expired"
-
-    types:
-      all: "All"
-      daily: "Daily"
-      storyline: "Storyline"
-      weekly: "Weekly"
-      other: "Other"
-
     loading: "Loading active quests..."
 
   trades_page:
     tab_title: "Village trades — LodyLand"
     title: "Village trades"
-    back_to_village: "← Back to village"
+    back_to_village: "Back to village"
     subtitle: "Trade your rare resources for unique boost cards. Each land has its own treasures that are very hard to find."
     loading: "Loading trade offers..."
 
@@ -521,7 +493,7 @@ village:
     tab_title: "Village card shop — LodyLand"
     title: "Village card shop"
     logo_alt: "Village card shop"
-    back_to_village: "← Back to village"
+    back_to_village: "Back to village"
     subtitle: "Special cards, limited-time offers, rare stock. Offers change regularly—keep an eye on the shop!"
 
     info:
@@ -531,14 +503,6 @@ village:
       coins: "coins"
       diams: "diams"
       or: "or"
-
-    filters:
-      all: "All"
-      access: "Access"
-      recipes: "Recipes"
-      lands: "Lands"
-      boosts: "Boosts"
-      other: "Other"
 
     search_placeholder: "Search a card..."
 
@@ -551,5 +515,4 @@ village:
       subtitle_item: "Special item ({item_type})"
       free: "Free"
       owned_qty: "You own"
-      buy: "Buy"
       unavailable: "Unavailable"
