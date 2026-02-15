@@ -31,7 +31,9 @@ from app.quests.service import (
 )
 
 from app.services.cards import serialize_card_def
-from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
+#from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
+from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
+
 
 bp = Blueprint("players", __name__)
 
@@ -53,51 +55,6 @@ def _player_to_dict(p: Player) -> dict:
         "xp": p.xp,
         "next_xp": getattr(p, "next_xp", None),  # ou via progression
     }
-
-
-def _compute_craft_table_level(session, player: Player) -> int:
-    """
-    Compute the craft table level for a player based on owned cards.
-
-    Cartes attendues :
-      - access_craft_table_basic
-      - access_craft_table_medium
-      - access_craft_table_advanced
-
-    Niveaux :
-      0 = aucune table
-      1 = basic    (1x3)
-      2 = medium   (2x3)
-      3 = advanced (3x3)
-    """
-    level = 0  # par défaut, aucune table
-
-    def has_card(card_key: str) -> bool:
-        return (
-            session.query(PlayerCard)
-            .filter_by(player_id=player.id, card_key=card_key)
-            .count()
-            > 0
-        )
-
-    has_basic = has_card("access_craft_table_basic")
-    has_medium = has_card("access_craft_table_medium")
-    has_advanced = has_card("access_craft_table_advanced")
-
-    # Au moins une carte => niveau 1 minimum
-    if has_basic or has_medium or has_advanced:
-        level = max(level, 1)
-
-    # Medium ou advanced => niveau 2 minimum
-    if has_medium or has_advanced:
-        level = max(level, 2)
-
-    # Advanced => niveau 3
-    if has_advanced:
-        level = max(level, 3)
-
-    return level
-
 
 def _ensure_starting_land_card(session, player: Player) -> None:
     """Ensure the player owns the starting land card (forest)."""
@@ -308,9 +265,9 @@ def get_state():
         auto_mark_expired_quests(s, me)
         s.commit()
 
-        # --- ⚠️ IMPORTANT : résoudre les jobs de craft AVANT l'inventaire ---
-        craft_job_payload = _update_craft_jobs_for_player(s, me)
-        # (cette fonction doit elle-même faire ses commits internes si besoin)
+        # --- IMPORTANT: resolve craft jobs BEFORE building inventory/items ---
+        update_craft_jobs_for_player(s, me)
+        s.commit()  # Persist credited PlayerItem changes before reading inventory/items
 
         # --- NEW: Load active quests ---------------------------------------
         quests = (
@@ -457,10 +414,10 @@ def get_state():
         # -------------------------------------------------------------------
 
         # 1) Mettre à jour les jobs en cours (donne les items terminés)
-        _update_craft_jobs_for_player(s, me)
+        #_update_craft_jobs_for_player(s, me)
 
         # 2) Niveau de table
-        craft_table_level = _compute_craft_table_level(s, me)
+        craft_table_level = compute_craft_table_level(s, me)
 
         # 3) Charger les jobs actifs
         now = dt.datetime.utcnow()

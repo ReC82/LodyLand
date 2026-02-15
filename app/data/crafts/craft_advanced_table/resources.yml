@@ -1,0 +1,73 @@
+  basic_net:
+    key: basic_net
+    station_key: craft_table_advanced
+
+    required_grid:
+      tier: 3 
+
+    output:
+      kind: item
+      key: basic_net
+      quantity: 1
+
+    recipe:
+      pattern:
+        - "VVV"
+        - "VVV"
+        - "VVV"                
+      legend:
+        V:
+          kind: resource
+          key: vine
+          quantity: 1
+
+    craft_time_seconds: 120
+    xp_reward: 10
+
+    unlock:
+    - type: card
+      key: recipe_basic_net
+
+    - type: level
+      min_level: 2
+
+    enabled: true   
+
+  branch_net:
+    key: branch_net
+    station_key: craft_table_advanced
+
+    required_grid:
+      tier: 3 
+
+    output:
+      kind: item
+      key: branch_net
+      quantity: 1
+
+    recipe:
+      pattern:
+        - "BBB"
+        - "BNB"
+        - "BBB"                
+      legend:
+        B:
+          kind: resource
+          key: branch
+          quantity: 1
+        N:
+          kind: item
+          key: branch_net
+          quantity: 1          
+
+    craft_time_seconds: 300
+    xp_reward: 15
+
+    unlock:
+    - type: card
+      key: recipe_branch_net
+
+    - type: level
+      min_level: 2
+
+    enabled: true    

@@ -77,7 +77,7 @@
   shop:
     prices:
     - coins: 1000
-      diams: 2
+      diams: 1
       resources: {}
     show_in_main_shop: false
     show_in_village_shop: true

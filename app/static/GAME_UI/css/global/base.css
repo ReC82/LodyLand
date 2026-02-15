@@ -36,3 +36,52 @@
   color: #e5e7eb;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+/* ============================================================
+   Currency Icons & Displays
+   ============================================================ */
+
+.currency-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.currency-icon-small {
+  width: 16px;
+  height: 16px;
+}
+
+.currency-icon-medium {
+  width: 24px;
+  height: 24px;
+}
+
+.currency-icon-large {
+  width: 32px;
+  height: 32px;
+}
+
+.currency-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.currency-amount {
+  font-weight: 500;
+}
+
+.currencies-display {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Specific currency colors (optional) */
+.currency-display-coins .currency-amount {
+  color: #d4af37; /* Gold color for coins */
+}
+
+.currency-display-diams .currency-amount {
+  color: #00bfff; /* Diamond blue for diams */
+}

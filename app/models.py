@@ -366,3 +366,38 @@ class PlayerStoryFlag(Base):
 
     # Optional: relation back to Player
     player = relationship("Player", backref="story_flags")
+    
+# ---------------------------------------------------------------------------
+# Temple (special land) - daily run state
+# ---------------------------------------------------------------------------
+
+class TempleRun(Base):
+    """
+    Stores daily Temple state for a player.
+
+    - One row per player per day (UTC date)
+    - Traps are stored server-side only (client never receives them)
+    - progress_row: how many rows cleared from bottom (0..8)
+    """
+
+    __tablename__ = "temple_runs"
+
+    __table_args__ = (
+        UniqueConstraint("player_id", "day", name="uq_temple_run_player_day"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+
+    day: Mapped[dt.date] = mapped_column(Date, nullable=False, index=True)
+
+    lives: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
+
+    # 0..8 (rows cleared from bottom)
+    progress_row: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    # { "1": [2], "2": [1,9], ... } keys as strings for JSON stability
+    traps: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    
+    broken_tiles: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)

@@ -164,6 +164,11 @@ def home():
 
     return render_template("home.html")
 
+# Dans app/routes/__init__.py ou routes/frontend.py
+
+@frontend_bp.route('/static-config.js')
+def static_config():
+    return render_template('config.js.html'), 200, {'Content-Type': 'application/javascript'}
 
 @frontend_bp.get("/play")
 def play_redirect():
@@ -328,6 +333,12 @@ def land_page(slug: str):
     if slug == "village":
         # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
         return render_template("GAME_UI/lands/village/village_home.html")
+    
+    # -------------------------------
+    # Special case: temple
+    # -------------------------------
+    if slug == "temple":
+        return render_template("GAME_UI/lands/temple/temple_home.html")    
 
     # -------------------------------
     # Config du land via lands.yml

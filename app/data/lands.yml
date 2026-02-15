@@ -19,7 +19,7 @@ beach:
     any:
       extra_loot:
       - resource: nautilus_shell
-        chance: 0.5
+        chance: 0.01
         min: 1
         max: 1
     hands:
@@ -99,13 +99,28 @@ cave:
         max: 1
       extra_loot:
       - resource: gold_leaf
-        chance: 0.5
-        min: 1
-        max: 1
-      - resource: moon_crystal_shard
-        min: 1
-        max: 1
         chance: 0.01
+        min: 1
+        max: 1
+    tool_wooden_knife:
+      label: Couteau en bois
+      emoji: 🪣
+      cooldown_seconds: 25
+      xp_multiplier: 1.1
+      base_loot:
+      - resource: stone_dust
+        chance: 1.0
+        min: 1
+        max: 3
+      extra_loot:
+      - resource: gold_dust
+        chance: 0.05
+        min: 1
+        max: 1
+      - resource: aluminium_foil_fragment
+        chance: 0.08
+        min: 1
+        max: 2
     tool_wooden_pickaxe:
       label: Pioche en bois
       emoji: ⛏️
@@ -129,21 +144,21 @@ cave:
       label: Pioche en fer
       emoji: ⛏️
       cooldown_seconds: 120
-      xp_multiplier: 1.2
+      xp_multiplier: 1.4
       base_loot:
       - resource: stone
         chance: 1.0
-        min: 1
-        max: 3
+        min: 3
+        max: 5
       extra_loot:
       - resource: gold_leaf
-        chance: 0.05
-        min: 1
-        max: 1
-      - resource: iron_ore
         chance: 0.1
         min: 1
-        max: 1
+        max: 2
+      - resource: iron_ore
+        chance: 0.2
+        min: 1
+        max: 3
 desert:
   card_key: land_desert
   label: Desert
@@ -178,10 +193,6 @@ desert:
         chance: 0.2
         min: 1
         max: 1
-      - resource: moon_crystal_shard
-        min: 1
-        max: 1
-        chance: 0.01
     tool_wooden_pickaxe:
       label: Pioche en bois
       emoji: ⛏️
@@ -237,7 +248,7 @@ forest:
     any:
       extra_loot:
       - resource: ancient_bark
-        chance: 0.01
+        chance: 0.1
         min: 1
         max: 1
     hands:
@@ -278,8 +289,23 @@ forest:
         chance: 0.1
         min: 1
         max: 1
-    tool_branch_shovel:
-      label: Pelle en basique
+    tool_wooden_hammer:
+      label: Marteau en bois
+      emoji: 🪓
+      cooldown_seconds: 120
+      xp_multiplier: 1.2
+      base_loot:
+      - resource: palm_wood_log
+        chance: 1.0
+        min: 3
+        max: 8
+      extra_loot:
+      - resource: apple
+        chance: 0.25
+        min: 2
+        max: 4
+    tool_wooden_shovel:
+      label: Pelle basique
       emoji: 🪣
       cooldown_seconds: 20
       xp_multiplier: 1.1
@@ -290,7 +316,7 @@ forest:
         max: 2
       extra_loot:
       - resource: worm
-        chance: 0.1
+        chance: 0.2
         min: 1
         max: 1
     tool_wooden_knife:
@@ -306,6 +332,44 @@ forest:
       extra_loot:
       - resource: resin
         chance: 0.2
+        min: 1
+        max: 1
+    tool_vine_basket:
+      label: Panier en lianes
+      emoji: 🪣
+      cooldown_seconds: 25
+      xp_multiplier: 1.1
+      base_loot:
+      - resource: mushroom
+        chance: 1.0
+        min: 1
+        max: 1
+      extra_loot:
+      - resource: bark
+        chance: 0.2
+        min: 1
+        max: 1
+    tool_vine_net:
+      label: Panier en lianes
+      emoji: 🪣
+      cooldown_seconds: 25
+      xp_multiplier: 1.1
+      base_loot:
+      - resource: mushroom
+        chance: 1.0
+        min: 1
+        max: 1
+      extra_loot:
+      - resource: bark
+        chance: 0.2
+        min: 1
+        max: 1
+      - resource: feather
+        chance: 0.2
+        min: 1
+        max: 1
+      - resource: firefly
+        chance: 0.05
         min: 1
         max: 1
   key: forest

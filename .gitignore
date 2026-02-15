@@ -2,17 +2,26 @@
 __pycache__/
 *.pyc
 
-# Venv
+# Virtual environments
 .venv/
 venv/
 
-# OS & IDE
+# OS / IDE
 .DS_Store
 .vscode/
 
-# Future
+# Environment / secrets
 .env
-game.db
+ssh-lodyland.pem
 
+# Databases
+game.db
+game.db*
+
+# Backups & generated files
 *.bak
+*.yml.bak
 app/data/*validation_report*.html
+
+# Misc
+tree.txt

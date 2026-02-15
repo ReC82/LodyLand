@@ -446,7 +446,7 @@ cards:
     - coins: 0
       diams: 0
       resources:
-        ancient_bark: 100
+        ancient_bark: 10
     show_in_main_shop: false
     show_in_village_shop: false
     buy_rules: null
@@ -676,7 +676,7 @@ cards:
   shop:
     prices:
     - coins: 1000
-      diams: 2
+      diams: 1
       resources: {}
     show_in_main_shop: false
     show_in_village_shop: true
@@ -752,6 +752,96 @@ cards:
 # CRAFT RECIPE CARDS
 # card_type: craft_recipe
 # ============================================================
+
+- key: recipe_basic_net
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - basic_net
+  card_label: Recipe Craft Basic Net
+  card_description: Recipe to craft a Basic Net.
+  card_image: /static/assets/img/cards/recipes/card_recipe_basic_net.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 10
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_branch_net
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - branch_net
+  card_label: Recipe Craft Branch Net
+  card_description: Recipe to craft a Branch Net.
+  card_image: /static/assets/img/cards/recipes/card_recipe_branch_net.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 10
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_branch_plank
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - branch_plank
+  card_label: Recipe Craft Branch Plank
+  card_description: Recipe to craft a Branch Plank.
+  card_image: /static/assets/img/cards/recipes/card_recipe_branch_plank.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 10
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
 
 - key: recipe_iron_ingot
   enabled: true
@@ -903,25 +993,25 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
-- key: recipe_tool_shovel_basic
+- key: recipe_tool_vine_basket
   enabled: true
   card_type: craft_recipe
   card_category: craft
   card_tags:
   - craft
-  - wooden_shovel
-  card_label: Recipe Craft Basic Shovel
-  card_description: Recipe to craft a Basic Shovel.
-  card_image: /static/assets/img/cards/recipes/card_recipe_shovel_basic.png
+  - vine_basket
+  card_label: Recipe Craft Vine Basket
+  card_description: Recipe to craft a Vine Basket.
+  card_image: /static/assets/img/cards/recipes/card_recipe_vine_basket.png
   card_rarity: basic
   card_gameplay:
-    target_resource: wood
+    target_resource: null
     boost:
       type: null
       amount: 0
   shop:
     prices:
-    - coins: 50
+    - coins: 25
       diams: 0
       resources: {}
     show_in_main_shop: true
@@ -933,16 +1023,16 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
-- key: recipe_tool_vine_basket
+- key: recipe_tool_vine_net
   enabled: true
   card_type: craft_recipe
   card_category: craft
   card_tags:
   - craft
-  - vine_basket
-  card_label: Recipe Craft Vine Basket
-  card_description: Recipe to craft a Vine Basket.
-  card_image: /static/assets/img/cards/recipes/card_recipe_vine_basket.png
+  - vine_net
+  card_label: Recipe Craft Vine Net
+  card_description: Recipe to craft a Vine Net.
+  card_image: /static/assets/img/cards/recipes/card_recipe_vine_net.png
   card_rarity: basic
   card_gameplay:
     target_resource: null
@@ -993,6 +1083,36 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
+- key: recipe_tool_wooden_hammer
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_hammer
+  card_label: Recipe Craft Wooden Hammer
+  card_description: Recipe to craft a Wooden Hammer.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_hammer.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 25
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
 - key: recipe_tool_wooden_knife
   enabled: true
   card_type: craft_recipe
@@ -1012,6 +1132,36 @@ cards:
   shop:
     prices:
     - coins: 25
+      diams: 0
+      resources: {}
+    show_in_main_shop: true
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+- key: recipe_tool_wooden_shovel
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_shovel
+  card_label: Recipe Craft Wooden Shovel
+  card_description: Recipe to craft a Wooden Shovel.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_shovel.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: wood
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 50
       diams: 0
       resources: {}
     show_in_main_shop: true
