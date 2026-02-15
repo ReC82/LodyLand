@@ -1,14 +1,11 @@
 {% extends "game_base.html" %}
 
-{% block title %}Profil – LodyLand{% endblock %}
+{% block title %}{{ t("profile.title") }} – LodyLand{% endblock %}
 
 {% block body_class %}game-body profile-body{% endblock %}
 
 {% block extra_css %}
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='GAME_UI/css/profile/profile.css') }}"
-  />
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/profile/profile.css') }}" />
 {% endblock %}
 
 {% block content %}
@@ -16,10 +13,8 @@
 
   <!-- Titre + sous-titre -->
   <header class="profile-header mb-3 mb-md-4">
-    <h1 class="profile-title">Mon profil</h1>
-    <p class="profile-subtitle">
-      Consulte et gère les informations de ton compte LodyLand.
-    </p>
+    <h1 class="profile-title">{{ t("profile.title") }}</h1>
+    <p class="profile-subtitle">{{ t("profile.subtitle") }}</p>
   </header>
 
   <div class="row g-3 g-md-4">
@@ -27,7 +22,7 @@
     <div class="col-12 col-lg-4">
       <section class="profile-card profile-player-card">
         <div class="profile-card-header">
-          <h2 class="profile-card-title">Joueur</h2>
+          <h2 class="profile-card-title">{{ t("profile.sections.player") }}</h2>
         </div>
         <div class="profile-card-body">
 
@@ -35,34 +30,32 @@
           <div class="profile-avatar-wrapper">
             <img
               src="{{ url_for('static', filename='assets/img/ui/avatar_placeholder.png') }}"
-              alt="Avatar du joueur"
+              alt="{{ t('profile.buttons.change_avatar') }}"
               class="profile-avatar-img"
             />
             <button class="btn btn-sm btn-outline-light mt-2 w-100" disabled>
-              Changer d’avatar (à venir)
+              {{ t("profile.buttons.change_avatar_coming") }}
             </button>
           </div>
 
           <!-- Pseudo + niveau -->
           <div class="profile-player-info mt-3">
             <div class="profile-info-row">
-              <span class="profile-info-label">Pseudo</span>
+              <span class="profile-info-label">{{ t("profile.labels.pseudo") }}</span>
               <span class="profile-info-value">
-                {{ pseudo or "Non défini" }}
+                {{ pseudo or t("profile.values.undefined") }}
               </span>
             </div>
 
             <div class="profile-info-row">
-              <span class="profile-info-label">Niveau</span>
-              <span class="profile-info-value">
-                {{ level }}
-              </span>
+              <span class="profile-info-label">{{ t("profile.labels.level") }}</span>
+              <span class="profile-info-value">{{ level }}</span>
             </div>
 
             <div class="profile-info-row profile-info-row-muted">
-              <span class="profile-info-label">Titre</span>
+              <span class="profile-info-label">{{ t("profile.labels.title") }}</span>
               <span class="profile-info-value">
-                Explorateur débutant (WIP)
+                {{ t("profile.titles.beginner_explorer") }} {{ t("profile.values.wip") }}
               </span>
             </div>
           </div>
@@ -75,43 +68,40 @@
       <!-- Infos de compte -->
       <section class="profile-card mb-3 mb-md-4">
         <div class="profile-card-header">
-          <h2 class="profile-card-title">Compte</h2>
+          <h2 class="profile-card-title">{{ t("profile.sections.account") }}</h2>
         </div>
         <div class="profile-card-body">
 
           <div class="profile-info-row">
-            <span class="profile-info-label">Email</span>
+            <span class="profile-info-label">{{ t("profile.labels.email") }}</span>
             <span class="profile-info-value">{{ email }}</span>
           </div>
 
           <div class="profile-info-row">
-            <span class="profile-info-label">Mot de passe</span>
+            <span class="profile-info-label">{{ t("profile.labels.password") }}</span>
             <span class="profile-info-value">
               ••••••••
-              <button
-                class="btn btn-sm btn-outline-light ms-2"
-                disabled
-              >
-                Modifier (à venir)
+              <button class="btn btn-sm btn-outline-light ms-2" disabled>
+                {{ t("profile.buttons.modify_password_coming") }}
               </button>
             </span>
           </div>
 
           <div class="profile-info-row">
-            <span class="profile-info-label">Date d’inscription</span>
+            <span class="profile-info-label">{{ t("profile.labels.registration_date") }}</span>
             <span class="profile-info-value">
               {% if created_at %}
                 {{ created_at.strftime("%d/%m/%Y") }}
               {% else %}
-                Inconnue
+                {{ t("profile.values.unknown") }}
               {% endif %}
             </span>
           </div>
 
           <div class="profile-info-row profile-info-row-muted">
-            <span class="profile-info-label">Vérification email</span>
+            <span class="profile-info-label">{{ t("profile.labels.email_verification") }}</span>
             <span class="profile-info-value">
-              En cours de mise en place
+              {{ t("profile.values.in_progress") }}
             </span>
           </div>
         </div>
@@ -120,53 +110,73 @@
       <!-- Statistiques -->
       <section class="profile-card">
         <div class="profile-card-header">
-          <h2 class="profile-card-title">Statistiques</h2>
+          <h2 class="profile-card-title">{{ t("profile.sections.statistics") }}</h2>
         </div>
         <div class="profile-card-body">
           <div class="row g-3">
             <div class="col-6 col-md-3">
               <div class="profile-stat">
-                <div class="profile-stat-label">Lands débloqués</div>
-                <div class="profile-stat-value">
-                  {{ stats.lands_unlocked }}
-                </div>
+                <div class="profile-stat-label">{{ t("profile.stats.lands_unlocked") }}</div>
+                <div class="profile-stat-value">{{ stats.lands_unlocked }}</div>
                 <div class="profile-stat-hint">
-                  Slots : {{ stats.total_slots }}
+                  {{ t("profile.stats.slots") }}: {{ stats.total_slots }}
                 </div>
               </div>
             </div>
 
             <div class="col-6 col-md-3">
               <div class="profile-stat">
-                <div class="profile-stat-label">Quêtes terminées</div>
-                <div class="profile-stat-value">
-                  {{ stats.quests_completed }}
-                </div>
+                <div class="profile-stat-label">{{ t("profile.stats.quests_completed") }}</div>
+                <div class="profile-stat-value">{{ stats.quests_completed }}</div>
                 <div class="profile-stat-hint">
-                  Histoire / daily / weekly
+                  {{ t("profile.stats.quest_types") }}
                 </div>
               </div>
             </div>
 
             <div class="col-6 col-md-3">
               <div class="profile-stat">
-                <div class="profile-stat-label">Niveau</div>
-                <div class="profile-stat-value">
-                  {{ stats.level }}
-                </div>
+                <div class="profile-stat-label">{{ t("profile.stats.level") }}</div>
+                <div class="profile-stat-value">{{ stats.level }}</div>
                 <div class="profile-stat-hint">
-                  XP totale (à venir)
+                  {{ t("profile.stats.total_xp") }} ({{ t("profile.stats.coming_soon") }})
                 </div>
               </div>
             </div>
 
             <div class="col-6 col-md-3">
               <div class="profile-stat">
-                <div class="profile-stat-label">Temps de jeu</div>
+                <div class="profile-stat-label">{{ t("profile.stats.playtime") }}</div>
                 <div class="profile-stat-value">–</div>
-                <div class="profile-stat-hint">À implémenter</div>
+                <div class="profile-stat-hint">{{ t("profile.stats.to_implement") }}</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Paramètres de langue -->
+      <section class="profile-card mt-3 mt-md-4">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">{{ t("settings.language") }}</h2>
+        </div>
+        <div class="profile-card-body">
+          <p class="mb-3">{{ t("settings.language_description") }}</p>
+
+          <div class="language-selector">
+            <label class="language-option">
+              <input type="radio" name="language" value="fr" 
+                    {% if current_lang == 'fr' %}checked{% endif %}>
+              <span class="language-flag">🇫🇷</span>
+              <span class="language-name">Français</span>
+            </label>
+            
+            <label class="language-option">
+              <input type="radio" name="language" value="en"
+                    {% if current_lang == 'en' %}checked{% endif %}>
+              <span class="language-flag">🇬🇧</span>
+              <span class="language-name">English</span>
+            </label>
           </div>
         </div>
       </section>
@@ -174,25 +184,23 @@
       <!-- Historique -->
       <section class="profile-card mt-3 mt-md-4">
         <div class="profile-card-header">
-          <h2 class="profile-card-title">Historique</h2>
+          <h2 class="profile-card-title">{{ t("profile.sections.history") }}</h2>
         </div>
         <div class="profile-card-body">
-          <p class="mb-3">
-            Accède à l’historique de tes achats et ventes dans le jeu.
-          </p>
+          <p class="mb-3">{{ t("profile.history.description") }}</p>
 
           <div class="profile-history-grid">
             <button class="btn btn-outline-light w-100" disabled>
-              Ressources vendues (à venir)
+              {{ t("profile.history.resources_sold") }}
             </button>
             <button class="btn btn-outline-light w-100" disabled>
-              Cartes achetées (à venir)
+              {{ t("profile.history.cards_bought") }}
             </button>
             <button class="btn btn-outline-light w-100" disabled>
-              Slots achetés (à venir)
+              {{ t("profile.history.slots_bought") }}
             </button>
             <button class="btn btn-outline-light w-100" disabled>
-              Autres transactions (à venir)
+              {{ t("profile.history.other_transactions") }}
             </button>
           </div>
         </div>
@@ -201,4 +209,8 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/ui/profile_app.js') }}"></script>
 {% endblock %}

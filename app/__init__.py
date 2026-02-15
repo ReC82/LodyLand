@@ -8,17 +8,26 @@ from .frontend import frontend_bp
 from .progression import LEVELS
 from .craft_defs import load_craft_defs
 from app.quests.loader import load_quest_templates
+from app.i18n import init_i18n, register_i18n_helpers
 
 from app.admin import admin_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    
+    # ⬇️ AJOUTER ÇA : Désactiver le cache Jinja en dev
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.jinja_env.auto_reload = True
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     # dans create_app(), après register_routes(app)
     # ===== Admin Panel activé en dev =====
     app.config["ADMIN_ENABLED"] = True
     # =====================================    
 
     init_db()
+    init_i18n()
+    register_i18n_helpers(app)
+
     seed_cards_from_yaml()
     ensure_resources_seeded()
     reseed_resources()

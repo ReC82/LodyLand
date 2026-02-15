@@ -1,0 +1,92 @@
+.
+|-- app
+|   |-- __init__.py
+|   |-- auth.py
+|   |-- data
+|   |   |-- buildings.yml
+|   |   |-- cards.yml
+|   |   |-- craft_recipes.yml
+|   |   |-- lands.yml
+|   |   |-- resources.yml
+|   |   `-- tools.yml
+|   |-- db.py
+|   |-- economy.py
+|   |-- frontend.py
+|   |-- lands.py
+|   |-- models.py
+|   |-- progression.py
+|   |-- routes
+|   |   |-- __init__.py
+|   |   |-- api_cards.py
+|   |   |-- api_daily.py
+|   |   |-- api_inventory.py
+|   |   |-- api_levels.py
+|   |   |-- api_misc.py
+|   |   |-- api_players.py
+|   |   |-- api_resources.py
+|   |   |-- api_shop.py
+|   |   `-- api_tiles.py
+|   |-- seed.py
+|   |-- seed_cards.py
+|   |-- services
+|   |   `-- cards.py
+|   |-- static
+|   |   |-- DEV_UI
+|   |   |   |-- css
+|   |   |   |   `-- dev.css
+|   |   |   `-- js
+|   |   |       `-- dev_app.js
+|   |   |-- GAME_UI
+|   |   |   |-- css
+|   |   |   |   |-- auth.css
+|   |   |   |   `-- game.css
+|   |   |   `-- js
+|   |   |       |-- game_app.js
+|   |   |       `-- lands
+|   |   |           |-- beach_app.js
+|   |   |           `-- forest_app.js
+|   |   |-- assets
+|   |   |   `-- img
+|   |   |       |-- cards
+|   |   |       |   |-- branch_boost_1.png
+|   |   |       |   `-- wood_boost_1.png
+|   |   |       `-- resources
+|   |   |           |-- branch.png
+|   |   |           |-- default.png
+|   |   |           |-- mushroom.png
+|   |   |           |-- oak_wood_log.png
+|   |   |           |-- palm_leaf.png
+|   |   |           |-- pearl.png
+|   |   |           |-- sand.png
+|   |   |           |-- shell.png
+|   |   |           |-- small_stone.png
+|   |   |           `-- star.png
+|   |   |-- common.css
+|   |   |-- common.js
+|   |   |-- favicon.png
+|   |   `-- play_old
+|   |       |-- app.js
+|   |       `-- index.html
+|   |-- templates
+|   |   |-- DEV_UI
+|   |   |   `-- index.html
+|   |   |-- GAME_UI
+|   |   |   |-- auth
+|   |   |   |   |-- login.html
+|   |   |   |   `-- register.html
+|   |   |   |-- index.html
+|   |   |   `-- lands
+|   |   |       |-- beach.html
+|   |   |       `-- forest.html
+|   |   |-- dev_base.html
+|   |   |-- game_base.html
+|   |   `-- home.html
+|   `-- unlock_rules.py
+|-- commands.txt
+|-- game.db
+|-- pytest.ini
+|-- requirements.txt
+|-- run.py
+|-- tests
+|   |-- test_api.py
+|   `-- test_unlock_rules.py

@@ -1,0 +1,271 @@
+# app/i18n/translations/en.yml
+# English translations for LodyLand
+
+ui:
+  welcome: "Welcome to LodyLand"
+  loading: "Loading..."
+  error: "An error occurred"
+  success: "Success!"
+  
+  confirm: "Confirm"
+  cancel: "Cancel"
+  close: "Close"
+  save: "Save"
+  delete: "Delete"
+  buy: "Buy"
+  sell: "Sell"
+  craft: "Craft"
+  unlock: "Unlock"
+  claim: "Claim"
+  
+  back: "Back"
+  next: "Next"
+  home: "Home"
+  inventory: "Inventory"
+  shop: "Shop"
+  quests: "Quests"
+  profile: "Profile"
+  
+  login: "Log in"
+  register: "Sign up"
+  logout: "Log out"
+  username: "Username"
+  password: "Password"
+  email: "Email"
+
+hud:
+  level: "Level"
+  xp: "XP"
+  xp_short: "XP"
+  next_level: "Next level"
+  daily_chest: "Daily chest"
+  travel: "Travel"
+  menu: "Menu"
+  
+  tooltip:
+    level: "Level {level} • {xp}/{next_xp} XP"
+    daily_available: "Chest available!"
+    daily_claimed: "Come back tomorrow"
+    daily_streak: "Streak: {streak} days"
+
+game:
+  collect:
+    success: "You found"
+    nothing: "Found nothing..."
+    cooldown: "Available in {seconds}s"
+    locked: "Tile locked"
+    
+  craft:
+    title: "Crafting"
+    available: "Available recipes"
+    locked: "Recipe locked"
+    craft_button: "Craft"
+    craft_success: "Item crafted!"
+    not_enough_resources: "Insufficient resources"
+    requirements: "Requirements"
+    
+  level_up:
+    title: "Level Up!"
+    new_level: "Level {level}"
+    rewards: "Rewards"
+    continue: "Continue"
+    
+  quests:
+    title: "Quests"
+    active: "Active"
+    completed: "Completed"
+    available: "Available"
+    claim_reward: "Claim reward"
+    objectives: "Objectives"
+    rewards: "Rewards"
+    progress: "{current}/{target}"
+    expired: "Expired"
+    
+    types:
+      daily: "Daily quest"
+      weekly: "Weekly quest"
+      storyline: "Main quest"
+      
+  lands:
+    title: "Travel"
+    select: "Select a destination"
+    locked: "Locked"
+    unlock_with: "Unlock with"
+    slots: "Slots"
+    buy_slot: "Buy slot"
+    
+  market:
+    title: "Market"
+    sell_price: "Sell price"
+    quantity: "Quantity"
+    sell_button: "Sell"
+    total: "Total"
+    transaction_success: "Sale successful!"
+    
+  shop:
+    title: "Shop"
+    buy_button: "Buy"
+    owned: "Owned"
+    purchase_limit: "Purchase limit"
+    purchase_success: "Purchase successful!"
+    not_enough_currency: "Not enough {currency}"
+
+errors:
+  not_found: "Not found"
+  not_authenticated: "Not authenticated"
+  not_authorized: "Not authorized"
+  invalid_input: "Invalid input"
+  server_error: "Server error"
+  network_error: "Network error"
+  
+  cooldown_active: "Action on cooldown"
+  insufficient_resources: "Insufficient resources"
+  insufficient_currency: "Not enough {currency}"
+  level_required: "Level {level} required"
+  item_locked: "Item locked"
+  quest_not_ready: "Quest not ready yet"
+  already_owned: "Already owned"
+  language_change_failed: "Failed to change language. Please try again."
+
+story:
+  continue: "Continue"
+  skip: "Skip"
+  understood: "Got it"
+  
+  speakers:
+    self: "Me"
+    mysterious_voice: "Mysterious voice"
+    npc_villager_guide: "Village guide"
+    
+  moods:
+    confused: "Confused"
+    lost: "Lost"
+    thinking: "Thinking"
+    surprised: "Surprised"
+    determined: "Determined"
+    worried: "Worried"
+    curious: "Curious"
+    friendly: "Friendly"
+    explaining: "Explaining"
+
+resources:
+  categories:
+    basic: "Basic"
+    rare: "Rare"
+    treasure: "Treasure"
+    
+  collected: "Collected"
+  crafted: "Crafted"
+  received: "Received"
+
+cards:
+  types:
+    resource_boost: "Resource boost"
+    xp_boost: "XP boost"
+    cooldown_boost: "Cooldown reduction"
+    land_loot_boost: "Loot boost"
+    unlock_land: "Land unlock"
+    
+  rarity:
+    common: "Common"
+    uncommon: "Uncommon"
+    rare: "Rare"
+    epic: "Epic"
+    legendary: "Legendary"
+
+time:
+  seconds: "seconds"
+  minutes: "minutes"
+  hours: "hours"
+  days: "days"
+  
+  ago: "{time} ago"
+  in: "in {time}"
+  
+  just_now: "Just now"
+  today: "Today"
+  yesterday: "Yesterday"
+  tomorrow: "Tomorrow"
+
+numbers:
+  none: "None"
+  unlimited: "Unlimited"
+  max: "Max"
+  
+  items:
+    one: "{count} item"
+    other: "{count} items"
+  
+  resources:
+    one: "{count} resource"
+    other: "{count} resources"
+    
+  cards:
+    one: "{count} card"
+    other: "{count} cards"
+
+notifications:
+  quest_completed: "Quest completed!"
+  quest_available: "New quest available"
+  level_up: "Level up!"
+  daily_chest_available: "Daily chest available"
+  achievement_unlocked: "Achievement unlocked"
+  item_crafted: "Item crafted"
+  purchase_complete: "Purchase complete"
+  
+profile:
+  title: "My Profile"
+  subtitle: "View and manage your LodyLand account information."
+  
+  sections:
+    player: "Player"
+    account: "Account"
+    statistics: "Statistics"
+    history: "History"
+  
+  labels:
+    pseudo: "Username"
+    level: "Level"
+    title: "Title"
+    email: "Email"
+    password: "Password"
+    registration_date: "Registration date"
+    email_verification: "Email verification"
+    
+  values:
+    undefined: "Not defined"
+    unknown: "Unknown"
+    in_progress: "In progress"
+    wip: "(WIP)"
+    
+  buttons:
+    change_avatar: "Change avatar"
+    change_avatar_coming: "Change avatar (coming soon)"
+    modify_password: "Modify"
+    modify_password_coming: "Modify (coming soon)"
+    
+  stats:
+    lands_unlocked: "Lands unlocked"
+    slots: "Slots"
+    quests_completed: "Quests completed"
+    level: "Level"
+    playtime: "Playtime"
+    total_xp: "Total XP"
+    to_implement: "To implement"
+    coming_soon: "coming soon"
+    quest_types: "Story / daily / weekly"
+    
+  titles:
+    beginner_explorer: "Beginner Explorer"
+    
+  history:
+    description: "Access the history of your purchases and sales in the game."
+    resources_sold: "Resources sold (coming soon)"
+    cards_bought: "Cards bought (coming soon)"
+    slots_bought: "Slots bought (coming soon)"
+    other_transactions: "Other transactions (coming soon)"
+
+settings:
+  language: "Language"
+  language_description: "Choose your preferred language for the game interface."
+  language_saved: "Language saved"
