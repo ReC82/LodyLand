@@ -4,7 +4,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
 {% endblock %}
 
-{% block title %}Card Shop du village — LodyLand{% endblock %}
+{% block title %}{{ t("village.shop_page.tab_title") }}{% endblock %}
+
 
 {% block content %}
 <div class="land-wrapper land-village land-village-cardshop">
@@ -12,7 +13,7 @@
   <!-- Bouton retour -->
   <div class="mb-3">
     <a href="{{ url_for('frontend.village_home') }}" class="btn btn-sm btn-outline-light">
-      ← Retour au village
+      {{ t("village.shop_page.back_to_village") }}
     </a>
   </div>
 
@@ -21,16 +22,15 @@
     <div class="land-header-main">
       <img
         src="/static/assets/img/ui/village/logo_small_village.png"
-        alt="Card Shop du village"
+        alt="{{ t('village.shop_page.logo_alt') }}"
         class="land-logo me-2"
       />
       <div>
         <h1 class="h4 mb-1">
-          Card Shop du village
+          {{ t("village.shop_page.title") }}
         </h1>
         <p class="text-muted mb-0">
-          Cartes spéciales, offres limitées dans le temps, stocks rares.
-          Les offres changent régulièrement, garde un œil sur ce Card Shop&nbsp;!
+          {{ t("village.shop_page.subtitle") }}
         </p>
       </div>
     </div>
@@ -39,11 +39,14 @@
   <!-- Bandeau d'info -->
   <div class="vs-info-bar mb-3">
     <div class="vs-info-main">
-      <span class="vs-info-pill">Rotation hebdomadaire</span>
-      <span class="vs-info-pill">Certaines cartes sont en quantité limitée</span>
+      <span class="vs-info-pill">{{ t("village.shop_page.info.rotation_weekly") }}</span>
+      <span class="vs-info-pill">{{ t("village.shop_page.info.limited_qty") }}</span>
     </div>
     <div class="vs-info-side text-muted small">
-      Les prix peuvent être en <span class="ui-icon ui-icon-coin"></span> coins ou <span class="ui-icon ui-icon-diams"></span> diams.
+      {{ t("village.shop_page.info.prices_hint_prefix") }}
+      <span class="ui-icon ui-icon-coin"></span> {{ t("village.shop_page.info.coins") }}
+      {{ t("village.shop_page.info.or") }}
+      <span class="ui-icon ui-icon-diams"></span> {{ t("village.shop_page.info.diams") }}.
     </div>
   </div>
 
@@ -58,42 +61,42 @@
           class="btn btn-outline-light vs-filter-tab vs-filter-active"
           data-filter-type="all"
         >
-          Tous
+          {{ t("village.shop_page.filters.all") }}
         </button>
         <button
           type="button"
           class="btn btn-outline-light vs-filter-tab"
           data-filter-type="access"
         >
-          Access
+          {{ t("village.shop_page.filters.access") }}
         </button>
         <button
           type="button"
           class="btn btn-outline-light vs-filter-tab"
           data-filter-type="recipe"
         >
-          Recipes
+          {{ t("village.shop_page.filters.recipes") }}
         </button>
         <button
           type="button"
           class="btn btn-outline-light vs-filter-tab"
           data-filter-type="land"
         >
-          Lands
+          {{ t("village.shop_page.filters.lands") }}
         </button>
         <button
           type="button"
           class="btn btn-outline-light vs-filter-tab"
           data-filter-type="boost"
         >
-          Boosts
+          {{ t("village.shop_page.filters.boosts") }}
         </button>
         <button
           type="button"
           class="btn btn-outline-light vs-filter-tab"
           data-filter-type="other"
         >
-          Autres
+          {{ t("village.shop_page.filters.other") }}
         </button>
       </div>
 
@@ -102,7 +105,7 @@
           type="search"
           id="vsCardSearch"
           class="form-control form-control-sm"
-          placeholder="Rechercher une carte..."
+          placeholder="{{ t('village.shop_page.search_placeholder') }}"
           autocomplete="off"
         />
       </div>
@@ -112,10 +115,8 @@
     <!-- État vide -->
     <div class="vs-empty-state text-center py-5">
       <div class="mb-2">🕒</div>
-      <div class="fs-5 mb-1">Aucune offre disponible pour le moment.</div>
-      <p class="text-muted mb-0">
-        Repasse plus tard, les villageois préparent de nouvelles merveilles à vendre.
-      </p>
+      <div class="fs-5 mb-1">{{ t("village.shop_page.empty.title") }}</div>
+      <p class="text-muted mb-0">{{ t("village.shop_page.empty.subtitle") }}</p>
     </div>
   {% else %}
     <!-- Grille des offres -->
@@ -174,9 +175,9 @@
                   {{ subtitle }}
                 {% else %}
                   {% if item_type == "card" %}
-                    Carte spéciale du village
+                    {{ t("village.shop_page.offer.subtitle_card") }}
                   {% else %}
-                    Objet spécial ({{ item_type }})
+                    {{ t("village.shop_page.offer.subtitle_item", item_type=item_type) }}
                   {% endif %}
                 {% endif %}
               </div>
@@ -205,7 +206,7 @@
                 {% endif %}
               {% else %}
                 <span class="vs-price-pill vs-price-pill-free">
-                  Gratuit
+                  {{ t("village.shop_page.offer.free") }}
                 </span>
               {% endif %}
             </div>
@@ -213,7 +214,7 @@
             <!-- Limites / infos -->
             <div class="vs-offer-meta text-muted small">
               {% if owned_qty > 0 %}
-                <span class="me-2">Tu en possèdes : {{ owned_qty }}</span>
+                <span class="me-2">{{ t("village.shop_page.offer.owned_qty") }} : {{ owned_qty }}</span>
               {% endif %}
               {% if cant_buy_reason %}
                 <span>{{ cant_buy_reason }}</span>
@@ -233,10 +234,10 @@
                   {% if cant_buy_reason %}
                     {{ cant_buy_reason }}
                   {% else %}
-                    Indisponible
+                    {{ t("village.shop_page.offer.unavailable") }}
                   {% endif %}
                 {% else %}
-                  Acheter
+                  {{ t("village.shop_page.offer.buy") }}
                 {% endif %}
               </button>
             </div>
