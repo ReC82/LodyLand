@@ -87,12 +87,12 @@ items:
   branch:
     key: branch
     kind: resource
-    label: Branches
-    description: Une branche tombée d'un arbre.  Ca peut toujours être utile.
+    label_i18n: items.branch.label
+    description_i18n: items.branch.description
     icon: /static/assets/img/items/resources/branch.png
     base_sell_price: 2
     enabled: true
-    unlock_description: Toujours accessible (niveau 0).
+    unlock_description_i18n: items.branch.unlock_description
 
   branch_net:
     key: branch_net

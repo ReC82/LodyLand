@@ -516,3 +516,9 @@ village:
       free: "Free"
       owned_qty: "You own"
       unavailable: "Unavailable"
+
+items:
+  branch:
+    label: "Branch"
+    description: "A branch fallen from a tree. Could always be useful."
+    unlock_description: "Always accessible (level 0)."
