@@ -1,0 +1,19 @@
+levels:
+- level: 11
+  xp_required: 1500
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 1000
+  story_events:
+  - id: level_11_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: 'Le temple, ca c''est fait. Mais qu''est-ce que je vais découvrir après ? J''ai hâte de voir ce que cette île a encore à m''offrir !'
+
+        en: The temple, that's done. But what am I going to discover next? I can't wait to see what else this island has to offer!
