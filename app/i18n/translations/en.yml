@@ -377,6 +377,7 @@ base:
     title: "Story"
     avatar_alt: "avatar"
     done: "Got it"
+    next: "Next"
 
   notebook:
     title: "Notebook"
