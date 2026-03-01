@@ -418,6 +418,12 @@ inventory:
     recipe: "Recipes"
     building: "Buildings"
 
+  tabs:
+    resources: "Resources"
+    treasure: "Treasures"
+    items: "Items"
+    cards: "Cards"
+
 village:
   home:
     tab_title: "The Village — LodyLand"
@@ -520,5 +526,5 @@ village:
 items:
   branch:
     label: "Branch"
-    description: "A branch fallen from a tree. Could always be useful."
-    unlock_description: "Always accessible (level 0)."
+    description: "A simple branch from a tree."
+    unlock_description: "Unlocked by collecting 100 wood."

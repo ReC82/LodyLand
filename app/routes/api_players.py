@@ -33,6 +33,7 @@ from app.quests.service import (
 from app.services.cards import serialize_card_def
 #from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
 from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
+from app.i18n import get_item, get_user_language  # ✅ AJOUTÉ
 
 
 bp = Blueprint("players", __name__)
@@ -257,6 +258,9 @@ def get_state():
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
+        # ✅ AJOUTÉ : Déterminer la langue de l'utilisateur
+        lang = get_user_language(request, player=me)
+
         # --- NEW: ensure daily / weekly / storyline quests are assigned ---
         now = dt.datetime.utcnow()
         assign_daily_quest_if_needed(s, me, now=now)
@@ -323,7 +327,7 @@ def get_state():
         ]
 
         # -------------------------------------------------------------------
-        # Resource defs  ✅ ADAPTÉ AU NOUVEAU MODELE
+        # Resource defs  ✅ MODIFIÉ POUR i18n
         # -------------------------------------------------------------------
         resources_rows = (
             s.query(ResourceDef)
@@ -331,19 +335,35 @@ def get_state():
             .order_by(ResourceDef.key.asc())
             .all()
         )
-        resources_payload = [
-            {
-                "key": r.key,
-                "label": r.label,
-                "icon": r.icon,
-                "kind": r.kind,
-                "base_sell_price": r.base_sell_price,
-                "enabled": r.enabled,
-                "description": r.description,
-                "unlock_description": r.unlock_description,
-            }
-            for r in resources_rows
-        ]
+        
+        resources_payload = []
+        for r in resources_rows:
+            # ✅ Récupérer la ressource traduite
+            translated = get_item(r.key, lang)
+            
+            if translated:
+                resources_payload.append({
+                    "key": r.key,
+                    "label": translated.get('label', r.label),
+                    "icon": translated.get('icon', r.icon),
+                    "kind": translated.get('kind', r.kind),
+                    "base_sell_price": translated.get('base_sell_price', r.base_sell_price),
+                    "enabled": translated.get('enabled', r.enabled),
+                    "description": translated.get('description', r.description or ''),
+                    "unlock_description": translated.get('unlock_description', r.unlock_description or ''),
+                })
+            else:
+                # Fallback sur la DB si pas de traduction
+                resources_payload.append({
+                    "key": r.key,
+                    "label": r.label,
+                    "icon": r.icon,
+                    "kind": r.kind,
+                    "base_sell_price": r.base_sell_price,
+                    "enabled": r.enabled,
+                    "description": r.description or '',
+                    "unlock_description": r.unlock_description or '',
+                })
 
         # -------------------------------------------------------------------
         # Cards (NEW) – via service
@@ -375,7 +395,7 @@ def get_state():
             )
 
         # -------------------------------------------------------------------
-        # Items craftés (PlayerItem)
+        # Items craftés (PlayerItem)  ✅ MODIFIÉ POUR i18n
         # -------------------------------------------------------------------
         item_rows = (
             s.query(PlayerItem)
@@ -389,25 +409,37 @@ def get_state():
             if it.quantity <= 0:
                 continue  # on n'envoie pas les stacks vides
 
-            meta = craft_defs.ITEM_DEFS.get(it.item_key, {}) or {}
-            craft_cfg = craft_defs.CRAFT_DEFS.get(it.item_key, {}) or {}
-
-            cfg = {**meta, **craft_cfg}
-
-            print("[DEBUG ITEM META] key =", it.item_key, "meta =", meta)
-            print("[DEBUG ITEM CFG ] key =", it.item_key, "cfg  =", cfg)
-
-            items_payload.append(
-                {
+            # ✅ Récupérer l'item traduit depuis items.yml
+            translated = get_item(it.item_key, lang)
+            
+            if translated:
+                items_payload.append({
                     "item_key": it.item_key,
                     "qty": it.quantity,
-                    "label_fr": cfg.get("label_fr"),
-                    "label_en": cfg.get("label_en"),
-                    "icon": cfg.get("icon"),
-                    "type": cfg.get("type"),
-                    "category": cfg.get("category"),
-                }
-            )
+                    "label": translated.get('label', it.item_key),
+                    "description": translated.get('description', ''),
+                    "icon": translated.get('icon', ''),
+                    "type": translated.get('kind', 'item'),
+                    "category": translated.get('category', ''),
+                })
+            else:
+                # Fallback sur craft_defs (ancien système)
+                meta = craft_defs.ITEM_DEFS.get(it.item_key, {}) or {}
+                craft_cfg = craft_defs.CRAFT_DEFS.get(it.item_key, {}) or {}
+                cfg = {**meta, **craft_cfg}
+
+                print("[DEBUG ITEM META] key =", it.item_key, "meta =", meta)
+                print("[DEBUG ITEM CFG ] key =", it.item_key, "cfg  =", cfg)
+
+                items_payload.append({
+                    "item_key": it.item_key,
+                    "qty": it.quantity,
+                    "label": cfg.get("label_fr") or cfg.get("label_en") or it.item_key,
+                    "description": cfg.get("description", ''),
+                    "icon": cfg.get("icon", ''),
+                    "type": cfg.get("type", 'item'),
+                    "category": cfg.get("category", ''),
+                })
 
         # -------------------------------------------------------------------
         # Craft : niveau de table + jobs en cours

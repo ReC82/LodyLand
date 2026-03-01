@@ -21,6 +21,8 @@ class _I18nState:
     def __init__(self):
         self.translations: Dict[str, Dict[str, Any]] = {}
         self.currencies: Dict[str, Any] = {}
+        self.items_data: Dict[str, Any] = {}  # Cache for items.yml
+        self.cards_data: Dict[str, Any] = {}  # Cache for cards.yml
         self.default_lang: str = "en"
         self.available_langs: list = ["fr", "en"]
 
@@ -30,6 +32,8 @@ _STATE = _I18nState()
 I18N_DIR = Path(__file__).resolve().parent
 TRANSLATIONS_DIR = I18N_DIR / "translations"
 CURRENCIES_FILE = I18N_DIR.parent / "data" / "currencies.yml"
+ITEMS_FILE = I18N_DIR.parent / "data" / "items.yml"
+CARDS_FILE = I18N_DIR.parent / "data" / "cards.yml"
 
 
 # =============================================================================
@@ -80,10 +84,62 @@ def load_currencies() -> None:
         traceback.print_exc()
 
 
+def load_items_data() -> None:
+    """Load items.yml into memory"""
+    if not ITEMS_FILE.exists():
+        print(f"[i18n] WARNING: items file not found: {ITEMS_FILE}")
+        return
+    
+    try:
+        with ITEMS_FILE.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        
+        items_map = data.get("items", {})
+        
+        # Clear and update to preserve reference
+        _STATE.items_data.clear()
+        _STATE.items_data.update(items_map)
+        
+        print(f"[i18n] Loaded {len(_STATE.items_data)} items from {ITEMS_FILE}")
+    
+    except Exception as e:
+        print(f"[i18n] ERROR loading items: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def load_cards_data() -> None:
+    """Load cards.yml into memory"""
+    if not CARDS_FILE.exists():
+        print(f"[i18n] WARNING: cards file not found: {CARDS_FILE}")
+        return
+    
+    try:
+        with CARDS_FILE.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        
+        # Convert list to dict by key for fast access
+        cards_list = data.get("cards", [])
+        cards_dict = {card["key"]: card for card in cards_list if "key" in card}
+        
+        # Clear and update to preserve reference
+        _STATE.cards_data.clear()
+        _STATE.cards_data.update(cards_dict)
+        
+        print(f"[i18n] Loaded {len(_STATE.cards_data)} cards from {CARDS_FILE}")
+    
+    except Exception as e:
+        print(f"[i18n] ERROR loading cards: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 def init_i18n() -> None:
     """Initialize the i18n system. Call this at app startup."""
     load_translations()
     load_currencies()
+    load_items_data()
+    load_cards_data()
 
 
 # =============================================================================
@@ -295,6 +351,135 @@ def get_user_language(request, player=None) -> str:
     # 5. Default
     print(f"[i18n]   ✓ Using default: {_STATE.default_lang}")
     return _STATE.default_lang
+
+
+# =============================================================================
+# Game data translation helpers (items, cards)
+# =============================================================================
+
+def translate_data_dict(data: dict, lang: str = None) -> dict:
+    """
+    Recursively translate all string values in a dict if they look like i18n keys.
+    
+    Example:
+        data = {"label": "items.branch.label", "icon": "/static/..."}
+        → {"label": "Branch", "icon": "/static/..."}
+    
+    A string is considered an i18n key if:
+    - It contains at least one dot
+    - It doesn't start with '/' (to avoid translating paths)
+    - It doesn't start with 'http' (to avoid translating URLs)
+    """
+    if lang is None:
+        lang = _STATE.default_lang
+    
+    result = {}
+    
+    for key, value in data.items():
+        if isinstance(value, str):
+            # Check if it looks like an i18n key
+            is_i18n_key = (
+                '.' in value 
+                and not value.startswith('/') 
+                and not value.startswith('http')
+            )
+            
+            if is_i18n_key:
+                # Try to translate
+                translated = t(value, lang=lang)
+                result[key] = translated
+            else:
+                # Keep as-is (path, URL, regular string)
+                result[key] = value
+        
+        elif isinstance(value, dict):
+            # Recursively translate nested dicts
+            result[key] = translate_data_dict(value, lang)
+        
+        elif isinstance(value, list):
+            # Translate items in lists
+            result[key] = [
+                translate_data_dict(item, lang) if isinstance(item, dict) else item
+                for item in value
+            ]
+        
+        else:
+            # Keep as-is (numbers, bools, None, etc.)
+            result[key] = value
+    
+    return result
+
+
+def get_item(item_key: str, lang: str = None) -> dict | None:
+    """
+    Get an item from items.yml and translate it.
+    
+    Usage:
+        item = get_item("branch", "en")
+        # → {"key": "branch", "label": "Branch", "description": "A branch...", ...}
+    
+    Args:
+        item_key: The item's key (e.g., "branch", "wood")
+        lang: Target language (defaults to default_lang)
+    
+    Returns:
+        Translated item dict, or None if not found
+    """
+    if item_key not in _STATE.items_data:
+        return None
+    
+    # Copy the item data (don't modify the cached version)
+    item_data = _STATE.items_data[item_key].copy()
+    
+    # Translate all i18n keys
+    return translate_data_dict(item_data, lang)
+
+
+def get_all_items(lang: str = None) -> dict:
+    """
+    Get all items translated.
+    
+    Returns:
+        dict with item_key -> translated_item_data
+    """
+    result = {}
+    for item_key in _STATE.items_data.keys():
+        result[item_key] = get_item(item_key, lang)
+    return result
+
+
+def get_card(card_key: str, lang: str = None) -> dict | None:
+    """
+    Get a card from cards.yml and translate it.
+    
+    Args:
+        card_key: The card's key (e.g., "land_forest", "recipe_rope")
+        lang: Target language (defaults to default_lang)
+    
+    Returns:
+        Translated card dict, or None if not found
+    """
+    if card_key not in _STATE.cards_data:
+        return None
+    
+    # Copy the card data (don't modify the cached version)
+    card_data = _STATE.cards_data[card_key].copy()
+    
+    # Translate all i18n keys
+    return translate_data_dict(card_data, lang)
+
+
+def get_all_cards(lang: str = None) -> dict:
+    """
+    Get all cards translated.
+    
+    Returns:
+        dict with card_key -> translated_card_data
+    """
+    result = {}
+    for card_key in _STATE.cards_data.keys():
+        result[card_key] = get_card(card_key, lang)
+    return result
 
 
 # Legacy exports for backward compatibility

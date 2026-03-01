@@ -112,7 +112,7 @@ function renderResourceGrid(listId, emptyId, data, filterText = "") {
       </div>
 
       <div class="inv-tooltip-content">
-        <div class="inv-tooltip-title">${def.label}</div>
+        <div class="inv-tooltip-title">${def.label || it.resource}</div>
         <div class="inv-tooltip-sub">${it.resource}</div>
         <div class="inv-tooltip-body">
           ${def.description || ""}
@@ -182,7 +182,7 @@ function renderItemList(filterText = "") {
       </div>
 
       <div class="inv-tooltip-content">
-        <div class="inv-tooltip-title">${it.label}</div>
+        <div class="inv-tooltip-title">${it.label || it.key}</div>
         <div class="inv-tooltip-sub">${it.key}</div>
         <div class="inv-tooltip-body">${it.description || ""}</div>
       </div>
@@ -284,9 +284,22 @@ async function loadInventoryData() {
 
   const state = s.data || {};
 
+  // ✅ DEBUG : Vérifier les données reçues
+  console.log("[INV] State received:", state);
+  console.log("[INV] Resources sample:", state.resources?.slice(0, 3));
+
   // Resource defs
   invResourceDefsByKey = {};
-  (state.resources || []).forEach((r) => (invResourceDefsByKey[r.key] = r));
+  (state.resources || []).forEach((r) => {
+    // ✅ DEBUG : Vérifier chaque ressource
+    if (r.key === 'branch') {
+      console.log("[INV] Branch resource:", r);
+    }
+    invResourceDefsByKey[r.key] = r;
+  });
+
+  // ✅ DEBUG : Vérifier invResourceDefsByKey après chargement
+  console.log("[INV] invResourceDefsByKey['branch']:", invResourceDefsByKey['branch']);
 
   // Inventory split by kind
   invResources = [];
@@ -306,17 +319,17 @@ async function loadInventoryData() {
   renderResourceList("");
   renderTreasureList("");
 
-  // Items
+  // Items ✅ MODIFIÉ : Utiliser it.label au lieu de it.label_fr/label_en
   invItems = [];
   invItemDefsByKey = {};
   (state.items || []).forEach((it) => {
     invItems.push({ item_key: it.item_key, quantity: it.qty });
     invItemDefsByKey[it.item_key] = {
-      label: it.label_fr || it.label_en || it.item_key,
+      label: it.label || it.item_key,  // ✅ Déjà traduit par le backend
       icon: it.icon,
       type: it.type,
       category: it.category,
-      description: it.description,
+      description: it.description || '',  // ✅ Déjà traduit par le backend
     };
   });
   renderItemList("");

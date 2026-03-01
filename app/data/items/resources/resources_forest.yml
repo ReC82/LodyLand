@@ -1,149 +1,136 @@
+items:
   branch:
     key: branch
     kind: resource
-    label_i18n: items.branch.label
-    description_i18n: items.branch.description
+    label: items.branch.label
+    description: items.branch.description
     icon: /static/assets/img/items/resources/branch.png
     base_sell_price: 2
     enabled: true
-    unlock_description_i18n: items.branch.unlock_description
-
+    unlock_description: items.branch.unlock_description
   small_stone:
     key: small_stone
     kind: resource
-    label: Small Stone
-    description: De petites pierres, utiles pour la construction.
+    label: items.small_stone.label
+    description: items.small_stone.description
     icon: /static/assets/img/items/resources/small_stone.png
     base_sell_price: 5
     enabled: true
-    unlock_description: Récolté à la main dans la forêt.
-
+    unlock_description: items.small_stone.unlock_description
   vine:
     key: vine
     kind: resource
-    label: Lianes
-    description: Des lianes qui serviront de ficelle pour fabriquer des objets.
+    label: items.vine.label
+    description: items.vine.description
     icon: /static/assets/img/items/resources/vine.png
     base_sell_price: 3
     enabled: true
-    unlock_description: Trouvées parfois en fouillant la forêt.
-
+    unlock_description: items.vine.unlock_description
   palm_wood:
     key: palm_wood
     kind: resource
-    label: Bois
-    description: Du bois de palmier, ressource de base pour construire et crafter.
+    label: items.palm_wood.label
+    description: items.palm_wood.description
     icon: /static/assets/img/items/resources/palm_wood_log.png
     base_sell_price: 5
     enabled: true
-    unlock_description: Récolté avec une hache dans la forêt.
-
+    unlock_description: items.palm_wood.unlock_description
   oak_wood:
     key: oak_wood
     kind: resource
-    label: Bois
-    description: Du bois de chêne, ressource de base pour construire et crafter.
+    label: items.oak_wood.label
+    description: items.oak_wood.description
     icon: /static/assets/img/items/resources/oak_wood_log.png
     base_sell_price: 5
     enabled: true
-    unlock_description: Récolté avec une hache dans la forêt.        
-
+    unlock_description: items.oak_wood.unlock_description
   worm:
     key: worm
     kind: resource
-    label: Ver
-    description: Un ver, utile pour attraper des poissons.
+    label: items.worm.label
+    description: items.worm.description
     icon: /static/assets/img/items/resources/worm.png
     base_sell_price: 2
     enabled: true
-    unlock_description: Trouvé en fouillant la terre. 
-
+    unlock_description: items.worm.unlock_description
   apple:
     key: apple
     kind: resource
-    label: Apple
-    description: Une pomme fraîche, bonne à manger.
+    label: items.apple.label
+    description: items.apple.description
     icon: /static/assets/img/items/resources/apple.png
     base_sell_price: 6
     enabled: true
-    unlock_description: Trouvé en fouillant coupant un arbre. 
-
+    unlock_description: items.apple.unlock_description
   dirt:
     key: dirt
     kind: resource
-    label: Dirt
-    description: Some dirt, useful for various purposes.
+    label: items.dirt.label
+    description: items.dirt.description
     icon: /static/assets/img/items/resources/dirt.png
     base_sell_price: 1
     enabled: true
-    unlock_description: Trouvé en utilsant une pelle.         
-
+    unlock_description: items.dirt.unlock_description
   berry:
     key: berry
     kind: resource
-    label: Berry
-    description: Une baie juteuse, bonne à manger.
+    label: items.berry.label
+    description: items.berry.description
     icon: /static/assets/img/items/resources/berry.png
     base_sell_price: 4
     enabled: true
-    unlock_description: Trouvé en fouillant les buissons.  
-
+    unlock_description: items.berry.unlock_description
   herbs:
     key: herbs
     kind: resource
-    label: Herbs
-    description: Des herbes. Utile pour cuisiner ou fabriquer des potions.
+    label: items.herbs.label
+    description: items.herbs.description
     icon: /static/assets/img/items/resources/herbs.png
     base_sell_price: 2
     enabled: true
-    unlock_description: Trouvé en fouillant les plantes.   
-
+    unlock_description: items.herbs.unlock_description
   flint:
     key: flint
     kind: resource
-    label: Flint
-    description: Du silex, utile pour allumer des feux.
+    label: items.flint.label
+    description: items.flint.description
     icon: /static/assets/img/items/resources/flint.png
     base_sell_price: 5
     enabled: true
-    unlock_description: Trouvé en fouillant le sol. 
-
+    unlock_description: items.flint.unlock_description
   ancient_relic_part:
     key: ancient_relic_part
     kind: resource
-    label: Ancient Relic Part
-    description: Une pièce d'une relique ancienne.
+    label: items.ancient_relic_part.label
+    description: items.ancient_relic_part.description
     icon: /static/assets/img/items/resources/ancient_relic_part.png
     base_sell_price: 100
     enabled: true
-    unlock_description: Trouvé en fouillant le sol.
-
+    unlock_description: items.ancient_relic_part.unlock_description
   clay:
     key: clay
     kind: resource
-    label: Argile
-    description: De l'argile, utile pour fabriquer des poteries.
+    label: items.clay.label
+    description: items.clay.description
     icon: /static/assets/img/items/resources/clay.png
     base_sell_price: 10
     enabled: true
-    unlock_description: Trouvé en fouillant le sol.
-
+    unlock_description: items.clay.unlock_description
   resin:
     key: resin
     kind: resource
-    label: Résine
-    description: De la résine, utile pour fabriquer des colles et des encres.
+    label: items.resin.label
+    description: items.resin.description
     icon: /static/assets/img/items/resources/resin.png
     base_sell_price: 6
     enabled: true
-    unlock_description: Trouvé en coupant des arbres.
-
+    unlock_description: items.resin.unlock_description
   bark:
     key: bark
     kind: resource
-    label: Écorce
-    description: De l'écorce, utile pour fabriquer des colles et des encres.
+    label: items.bark.label
+    description: items.bark.description
     icon: /static/assets/img/items/resources/bark.png
     base_sell_price: 3
     enabled: true
-    unlock_description: Trouvé en coupant des arbres.       
+    unlock_description: items.bark.unlock_description

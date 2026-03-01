@@ -23,6 +23,9 @@ from app.models import (
 from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
 from app.quests.service import on_resource_collected
 from app.unlock_rules import check_unlock_rules  # kept even if unused for now
+from app.i18n import get_item, get_user_language
+from flask import g
+
 
 bp = Blueprint("resources", __name__)
 
@@ -46,7 +49,36 @@ def _get_res_def(session, key: str) -> ResourceDef | None:
 # ---------------------------------------------------------------------------
 # Helper: check if player owns a crafted item (tool, etc.).
 # ---------------------------------------------------------------------------
+# app/routes/api_resources.py
 
+
+def _translate_resource_def(rd: ResourceDef, lang: str) -> dict:
+    """
+    Convert ResourceDef to dict and translate text fields.
+    """
+    # Convertir ResourceDef en dict (vous avez peut-être déjà une méthode pour ça)
+    item_dict = {
+        'key': rd.key,
+        'kind': rd.kind,
+        'label': rd.label,
+        'description': rd.description,
+        'unlock_description': rd.unlock_description,
+        'icon': rd.icon,
+        'base_sell_price': rd.base_sell_price,
+        'enabled': rd.enabled,
+    }
+    
+    # Si vous avez des champs i18n dans ResourceDef, ajoutez-les
+    # (Il faudra les ajouter au modèle si ce n'est pas déjà fait)
+    if hasattr(rd, 'label_i18n') and rd.label_i18n:
+        item_dict['label_i18n'] = rd.label_i18n
+    if hasattr(rd, 'description_i18n') and rd.description_i18n:
+        item_dict['description_i18n'] = rd.description_i18n
+    if hasattr(rd, 'unlock_description_i18n') and rd.unlock_description_i18n:
+        item_dict['unlock_description_i18n'] = rd.unlock_description_i18n
+    
+    # Traduire
+    return translate_item(item_dict, lang)
 
 def _player_has_item(session, player_id: int, item_key: str) -> bool:
     """
@@ -1005,50 +1037,38 @@ def unlock_tile():
 
         return jsonify({"id": t.id}), 200
 
-
 @bp.get("/player/<int:player_id>/tiles")
 def list_tiles(player_id: int):
-    """
-    Return all tiles for a player + resource metadata.
-
-    Includes:
-      - id, playerId, resource, locked, cooldown_until
-      - icon, description, unlock_text (from ResourceDef)
-    """
+    """Return all tiles with translated resource info"""
     with SessionLocal() as s:
-        # Fast check: player must exist
-        if not s.get(Player, player_id):
+        p = s.get(Player, player_id)
+        if not p:
             return jsonify({"error": "player_not_found"}), 404
+        
+        lang = get_user_language(request, player=p)
 
-        # Join Tile + ResourceDef
         rows = (
-            s.query(Tile, ResourceDef)
-            .outerjoin(ResourceDef, Tile.resource == ResourceDef.key)
+            s.query(Tile)
             .filter(Tile.player_id == player_id)
             .all()
         )
 
         data = []
-        for t, rd in rows:
-            data.append(
-                {
+        for t in rows:
+            # Récupérer l'item traduit
+            item = get_item(t.resource, lang)
+            
+            if item:
+                data.append({
                     "id": t.id,
                     "playerId": t.player_id,
                     "resource": t.resource,
                     "locked": t.locked,
-                    "cooldown_until": (
-                        t.cooldown_until.isoformat() if t.cooldown_until else None
-                    ),
-                    # Extra fields for front /play:
-                    "icon": rd.icon if rd else None,
-                    "description": rd.description if rd else None,
-                    # Human-readable unlock text for UI (comes from ResourceDef)
-                    "unlock_text": (
-                        rd.unlock_description
-                        if (rd and rd.unlock_description)
-                        else None
-                    ),
-                }
-            )
+                    "cooldown_until": t.cooldown_until.isoformat() if t.cooldown_until else None,
+                    "icon": item.get('icon'),
+                    "label": item.get('label'),
+                    "description": item.get('description'),
+                    "unlock_text": item.get('unlock_description'),
+                })
 
         return jsonify(data)
