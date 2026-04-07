@@ -1,14 +1,17 @@
 # app/auth.py
-from flask import request
+from flask import request, session
 from .models import Player
 
-def get_current_player(session):
-    """Récupère le joueur courant via le cookie 'player_id'."""
-    pid = request.cookies.get("player_id")
+def get_current_player(db_session):
+    """Récupère le joueur courant via la session Flask signée."""
+    pid = session.get("player_id")  # ← session Flask, pas le cookie brut
+    if not pid:
+        # Fallback cookie brut (compatibilité temporaire)
+        pid = request.cookies.get("player_id")
     if not pid:
         return None
     try:
         pid = int(pid)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
-    return session.get(Player, pid)
+    return db_session.get(Player, pid)

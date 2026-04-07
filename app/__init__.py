@@ -1,4 +1,7 @@
 # app/__init__.py
+import os
+import secrets
+
 from flask import Flask, jsonify, render_template
 from .db import init_db
 from .seed import reseed_resources, ensure_resources_seeded
@@ -14,6 +17,8 @@ from app.admin import admin_bp
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
     
     # ⬇️ AJOUTER ÇA : Désactiver le cache Jinja en dev
     app.config['TEMPLATES_AUTO_RELOAD'] = True
