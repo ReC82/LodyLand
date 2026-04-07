@@ -66,7 +66,7 @@ class Player(Base):
         back_populates="player",
         uselist=False
     )
-    
+
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 class Account(Base):
     __tablename__ = "accounts"
@@ -79,6 +79,13 @@ class Account(Base):
     # One account -> one player profile (you can adapt)
     player_id = Column(Integer, ForeignKey("players.id"), nullable=True)
     player = relationship("Player", back_populates="account")
+            # ✅ Anti multi-comptes
+    email_verified = Column(Boolean, default=False, nullable=False)
+    email_token = Column(String(64), nullable=True)  # token de vérification
+
+    # ✅ Futur NFT / wallet Base (MetaMask)
+    wallet_address = Column(String(42), nullable=True, unique=True)  # adresse EVM 0x...
+    wallet_linked_at = Column(DateTime, nullable=True)
 
 class Tile(Base):
     __tablename__ = "tiles"

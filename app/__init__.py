@@ -15,9 +15,11 @@ from app.i18n import init_i18n, register_i18n_helpers
 
 from app.admin import admin_bp
 
+from .extensions import limiter
+
 def create_app() -> Flask:
     app = Flask(__name__)
-    
+        
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
     
     # ⬇️ AJOUTER ÇA : Désactiver le cache Jinja en dev
@@ -28,7 +30,7 @@ def create_app() -> Flask:
     # ===== Admin Panel activé en dev =====
     app.config["ADMIN_ENABLED"] = True
     # =====================================    
-
+    limiter.init_app(app)
     init_db()
     init_i18n()
     register_i18n_helpers(app)

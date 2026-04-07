@@ -40,6 +40,8 @@ import datetime as dt
 from datetime import datetime, timezone
 from .village_shop import get_active_village_offers
 
+from app.extensions import limiter
+
 frontend_bp = Blueprint("frontend", __name__)
 
 # ---------------------------------------------------------------------------
@@ -680,6 +682,7 @@ def village_trades():
 
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def register():
     if request.method == "GET":
         return render_template("GAME_UI/auth/register.html", errors=[])
@@ -727,6 +730,7 @@ def register():
 
 
 @frontend_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
 def login():
     if request.method == "GET":
         return render_template("GAME_UI/auth/login.html", errors=[])
