@@ -1,6 +1,6 @@
 levels:
   - level: 3
-    xp_required: 60
+    xp_required: 100
     rewards:
       - type: coins
         amount: 100    

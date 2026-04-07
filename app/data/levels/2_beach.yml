@@ -1,6 +1,6 @@
 levels:
   - level: 2
-    xp_required: 30
+    xp_required: 40
     rewards:
       - type: card
         card_key: land_beach

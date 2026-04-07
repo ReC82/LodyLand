@@ -1,6 +1,6 @@
 levels:
 - level: 8
-  xp_required: 600
+  xp_required: 2025
   rewards:
   - type: card
     card_key: land_desert
