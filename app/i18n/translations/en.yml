@@ -346,6 +346,9 @@ base:
     title: "Menu"
     close_aria: "Close menu"
     profile_wip: "Profile (WIP)"
+    lands: "Lands"
+    inventory: "Inventory"
+    logout: "Log out"
 
   travel:
     title: "Travel to a land"
@@ -374,6 +377,7 @@ base:
     title: "Story"
     avatar_alt: "avatar"
     done: "Got it"
+    next: "Next"
 
   notebook:
     title: "Notebook"
@@ -522,9 +526,18 @@ village:
       free: "Free"
       owned_qty: "You own"
       unavailable: "Unavailable"
+      buy: "Buy Card"
+
+    filters: 
+      all: "All"
+      access: "Access"
+      boosts: "Boosts"
+      recipes: "Recipes"
+      lands: "Lands"
+      other: "Others"      
 
 items:
   branch:
     label: "Branch"
-    description: "A simple branch from a tree."
-    unlock_description: "Unlocked by collecting 100 wood."
+    description: "A branch fallen from a tree. Could always be useful."
+    unlock_description: "Always accessible (level 0)."
