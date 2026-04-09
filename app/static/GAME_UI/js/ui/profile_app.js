@@ -4,6 +4,8 @@ console.log("[Profile] profile_app.js loaded!");
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[Profile] DOMContentLoaded fired");
   initLanguageSelector();
+  initLanguageSelector();
+  initBetaReset();  
 });
 
 /**
@@ -111,6 +113,46 @@ function showLanguageError() {
       currentInput.checked = true;
     }
   }
+}
+
+/**
+ * Beta Reset
+ */
+function initBetaReset() {
+  const btn = document.getElementById('btn-beta-reset');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    document.getElementById('beta-reset-confirm-input').value = '';
+    document.getElementById('beta-reset-error').style.display = 'none';
+    const modal = new bootstrap.Modal(document.getElementById('modal-beta-reset'));
+    modal.show();
+  });
+
+  document.getElementById('btn-beta-reset-confirm').addEventListener('click', async () => {
+    const input = document.getElementById('beta-reset-confirm-input').value.trim();
+    const errorEl = document.getElementById('beta-reset-error');
+
+    try {
+      const response = await fetch('/api/player/beta-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm_name: input })
+      });
+
+      if (response.ok) {
+        // Fermer la modale et recharger la page
+        bootstrap.Modal.getInstance(document.getElementById('modal-beta-reset')).hide();
+        showToast('Reset effectué !', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        errorEl.style.display = 'block';
+      }
+    } catch (err) {
+      console.error('[BetaReset] Error:', err);
+      errorEl.style.display = 'block';
+    }
+  });
 }
 
 console.log("[Profile] profile_app.js fully loaded");

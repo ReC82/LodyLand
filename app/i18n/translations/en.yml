@@ -273,6 +273,18 @@ profile:
     cards_bought: "Cards bought (coming soon)"
     slots_bought: "Slots bought (coming soon)"
     other_transactions: "Other transactions (coming soon)"
+  
+  beta:
+    title: "Beta Zone — Reset"
+    description: "Resets your progression (level, resources, cards, quests). Your account is kept."
+    button: "Reset my progression"
+    modal_title: "Confirm reset"
+    modal_warning: "This action is irreversible. All your progress will be erased."
+    modal_kept: "Your email and password are kept."
+    modal_confirm_label: "Type your username to confirm:"
+    modal_error: "Wrong username. Try again."
+    modal_cancel: "Cancel"
+    modal_confirm_btn: "Reset"
 
 settings:
   language: "Language"
