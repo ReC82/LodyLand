@@ -428,9 +428,6 @@ inventory:
     items: "Items"
     cards: "Cards"
 
-  filters:
-    filter: "Filter"
-
 village:
   home:
     tab_title: "The Village — LodyLand"
@@ -544,4 +541,3 @@ items:
     label: "Branch"
     description: "A branch fallen from a tree. Could always be useful."
     unlock_description: "Always accessible (level 0)."
-

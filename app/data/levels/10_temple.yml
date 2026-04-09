@@ -1,6 +1,6 @@
 levels:
 - level: 10
-  xp_required: 1000
+  xp_required: 4557
   rewards:
   - type: currency
     currency: primary

@@ -12,6 +12,7 @@ from flask import (
     Blueprint,
     render_template,
     redirect,
+    session,
     url_for,
     request,
     make_response,
@@ -38,6 +39,8 @@ from .lands import get_land_def, get_player_land_state
 import datetime as dt
 from datetime import datetime, timezone
 from .village_shop import get_active_village_offers
+
+from app.extensions import limiter
 
 frontend_bp = Blueprint("frontend", __name__)
 
@@ -679,17 +682,11 @@ def village_trades():
 
 
 @frontend_bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def register():
-    """
-    Registration: email + password + confirmation.
-
-    Creates an Account + Player, and gives starting land card(s).
-    """
     if request.method == "GET":
-        # Just display the form
         return render_template("GAME_UI/auth/register.html", errors=[])
 
-    # POST
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "") or ""
     password_confirm = request.form.get("password_confirm", "") or ""
@@ -698,68 +695,43 @@ def register():
 
     if not validate_email(email):
         errors.append("Adresse email invalide.")
-
     if password != password_confirm:
         errors.append("Les mots de passe ne correspondent pas.")
-
     errors.extend(validate_password(password))
 
-    session = SessionLocal()
+    db = SessionLocal()
     try:
-        # Check if email is already used
-        existing = session.query(Account).filter_by(email=email).first()
+        existing = db.query(Account).filter_by(email=email).first()  # ✅ db.
         if existing:
             errors.append("Un compte existe déjà avec cette adresse email.")
 
         if errors:
-            # Redisplay form with errors
-            return render_template(
-                "GAME_UI/auth/register.html",
-                errors=errors,
-                email=email,
-            )
+            return render_template("GAME_UI/auth/register.html", errors=errors, email=email)
 
-        # Create Player (in-game profile)
-        # For now we use the truncated email as the 'name'
         player_name = email[:50] or "SansNom"
         player = Player(name=player_name)
-        session.add(player)
-        session.flush()  # to get player.id
+        db.add(player)        # ✅ db.
+        db.flush()            # ✅ db.
 
-        # Create Account
         account = Account(
             email=email,
             password_hash=generate_password_hash(password),
             player_id=player.id,
         )
-        session.add(account)
+        db.add(account)       # ✅ db.
+        _ensure_starting_land_card(db, player)  # ✅ db
+        db.commit()           # ✅ db.
 
-        # Ensure starting land card(s)
-        _ensure_starting_land_card(session, player)
-
-        session.commit()
-
-        # Prepare response + player_id cookie
-        resp = make_response(redirect(url_for("frontend.land_page", slug="forest")))
-        resp.set_cookie(
-            "player_id",
-            str(player.id),
-            httponly=True,
-            samesite="Lax",
-        )
-        return resp
+        session["player_id"] = player.id  # ✅ flask.session
+        return redirect(url_for("frontend.land_page", slug="forest"))
 
     finally:
-        session.close()
+        db.close()
 
 
 @frontend_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
 def login():
-    """
-    Login via email + password.
-
-    Loads the Account and its associated Player, then sets a cookie.
-    """
     if request.method == "GET":
         return render_template("GAME_UI/auth/login.html", errors=[])
 
@@ -771,58 +743,31 @@ def login():
     if not email or not password:
         errors.append("Email et mot de passe sont requis.")
 
-    session = SessionLocal()
+    db = SessionLocal()
     try:
-        account = session.query(Account).filter_by(email=email).first()
+        account = db.query(Account).filter_by(email=email).first()  # ✅ db.
         if not account or not check_password_hash(account.password_hash, password):
             errors.append("Email ou mot de passe incorrect.")
 
         if errors:
-            return render_template(
-                "GAME_UI/auth/login.html",
-                errors=errors,
-                email=email,
-            )
+            return render_template("GAME_UI/auth/login.html", errors=errors, email=email)
 
-        # Fetch associated player
         player = account.player
         if not player:
-            # Theoretical case: account without player
             errors.append("Aucun profil joueur associé à ce compte.")
-            return render_template(
-                "GAME_UI/auth/login.html",
-                errors=errors,
-                email=email,
-            )
+            return render_template("GAME_UI/auth/login.html", errors=errors, email=email)
 
-        # OK → set cookie + redirect to forest land
-        resp = make_response(redirect(url_for("frontend.land_page", slug="forest")))
-        resp.set_cookie(
-            "player_id",
-            str(player.id),
-            httponly=True,
-            samesite="Lax",
-        )
-        return resp
+        session["player_id"] = player.id  # ✅ flask.session
+        return redirect(url_for("frontend.land_page", slug="forest"))
 
     finally:
-        session.close()
+        db.close()
 
 
 @frontend_bp.route("/logout")
 def logout():
-    """
-    Simple logout: clear player_id cookie and redirect to home.
-    """
-    resp = make_response(redirect(url_for("frontend.home")))
-    resp.set_cookie(
-        "player_id",
-        "",
-        httponly=True,
-        samesite="Lax",
-        max_age=0,  # expire immediately
-    )
-    return resp
+    session.clear()  # ✅ flask.session
+    return redirect(url_for("frontend.home"))
 
 
 # ---------------------------------------------------------------------------

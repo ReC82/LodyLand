@@ -102,7 +102,7 @@ levels:
 
           '
 - level: 2
-  xp_required: 30
+  xp_required: 40
   rewards:
   - type: card
     card_key: land_beach
@@ -155,7 +155,7 @@ levels:
 
           '
 - level: 3
-  xp_required: 60
+  xp_required: 100
   rewards:
   - type: coins
     amount: 100
@@ -253,7 +253,7 @@ levels:
 
           '
 - level: 4
-  xp_required: 100
+  xp_required: 300
   rewards:
   - type: currency
     currency: primary
@@ -282,7 +282,7 @@ levels:
 
           '
 - level: 5
-  xp_required: 150
+  xp_required: 600
   rewards:
   - type: currency
     currency: primary
@@ -333,7 +333,7 @@ levels:
 
           '
 - level: 6
-  xp_required: 200
+  xp_required: 900
   rewards:
   - type: currency
     currency: primary
@@ -354,7 +354,7 @@ levels:
         en: I've heard about an ancient temple hidden somewhere on this island. They
           say that's where it all began.
 - level: 7
-  xp_required: 400
+  xp_required: 1350
   rewards:
   - type: currency
     currency: primary
@@ -375,7 +375,7 @@ levels:
         en: I've heard about an ancient temple hidden somewhere on this island. They
           say that's where it all began.
 - level: 8
-  xp_required: 600
+  xp_required: 2025
   rewards:
   - type: card
     card_key: land_desert
@@ -398,7 +398,7 @@ levels:
 
           '
 - level: 9
-  xp_required: 800
+  xp_required: 3038
   rewards:
   - type: currency
     currency: primary
@@ -419,7 +419,7 @@ levels:
         en: I've heard about an ancient temple hidden somewhere on this island. They
           say that's where it all began.
 - level: 10
-  xp_required: 1000
+  xp_required: 4557
   rewards:
   - type: currency
     currency: primary
