@@ -182,6 +182,14 @@
   font-size: 0.95rem;
 }
 
+.profile-danger-zone {
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.profile-danger-zone .profile-card-title {
+  color: #f87171;
+}
+
 /* Responsive */
 @media (max-width: 575.98px) {
   .language-option {

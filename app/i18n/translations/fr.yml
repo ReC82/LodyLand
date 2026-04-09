@@ -275,6 +275,18 @@ profile:
     slots_bought: "Emplacements achetés (bientôt)"
     other_transactions: "Autres transactions (bientôt)"
 
+  beta:
+    title: "Zone Beta — Reset"
+    description: "Remet ta progression à zéro (niveau, ressources, cartes, quêtes). Ton compte reste intact."
+    button: "Réinitialiser ma progression"
+    modal_title: "Confirmer le reset"
+    modal_warning: "Cette action est irréversible. Toute ta progression sera effacée."
+    modal_kept: "Ton email et ton mot de passe sont conservés."
+    modal_confirm_label: "Tape ton pseudo pour confirmer :"
+    modal_error: "Pseudo incorrect. Réessaie."
+    modal_cancel: "Annuler"
+    modal_confirm_btn: "Réinitialiser"
+
 settings:
   language: "Langue"
   language_description: "Choisis ta langue préférée pour l’interface du jeu."

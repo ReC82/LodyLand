@@ -209,6 +209,57 @@
   </div>
 
 </div>
+
+<!-- Beta Reset -->
+      <section class="profile-card mt-3 mt-md-4 profile-danger-zone">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">⚠️ {{ t("profile.beta.title") }}</h2>
+        </div>
+        <div class="profile-card-body">
+          <p class="mb-3 text-warning">{{ t("profile.beta.description") }}</p>
+          <button class="btn btn-danger" id="btn-beta-reset">
+            {{ t("profile.beta.button") }}
+          </button>
+        </div>
+      </section>
+
+<!-- Modal Beta Reset -->
+<div class="modal fade" id="modal-beta-reset" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border-danger">
+      <div class="modal-header border-danger">
+        <h5 class="modal-title text-danger">⚠️ {{ t("profile.beta.modal_title") }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ t("profile.beta.modal_warning") }}</p>
+        <p class="text-muted small">{{ t("profile.beta.modal_kept") }}</p>
+        <label class="form-label mt-2">
+          {{ t("profile.beta.modal_confirm_label") }} 
+          <strong>{{ pseudo }}</strong>
+        </label>
+        <input 
+          type="text" 
+          id="beta-reset-confirm-input" 
+          class="form-control bg-dark text-white border-secondary mt-1" 
+          placeholder="{{ pseudo }}"
+        />
+        <div id="beta-reset-error" class="text-danger small mt-2" style="display:none;">
+          {{ t("profile.beta.modal_error") }}
+        </div>
+      </div>
+      <div class="modal-footer border-danger">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          {{ t("profile.beta.modal_cancel") }}
+        </button>
+        <button type="button" class="btn btn-danger" id="btn-beta-reset-confirm">
+          {{ t("profile.beta.modal_confirm_btn") }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>      
+
 {% endblock %}
 
 {% block extra_scripts %}

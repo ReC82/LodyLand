@@ -741,3 +741,50 @@ def get_levels_definitions():
             )
 
     return jsonify(payload)
+
+@bp.post("/player/beta-reset")
+def beta_reset():
+    """Reset all player progression data (beta only). Keeps account and name."""
+    with SessionLocal() as s:
+        me = _get_current_player(s)
+        if not me:
+            return jsonify({"error": "not_authenticated"}), 401
+
+        data = request.get_json(silent=True) or {}
+        confirm_name = (data.get("confirm_name") or "").strip()
+
+        if confirm_name != me.name:
+            return jsonify({"error": "invalid_confirmation"}), 400
+
+        player_id = me.id
+
+        # Reset Player fields
+        me.level = 0
+        me.xp = 0.0
+        me.shards = 0
+        me.essence = 0
+        me.last_daily = None
+        me.daily_streak = 0
+        me.best_streak = 0
+
+        # Delete all related data
+        s.query(ResourceStock).filter_by(player_id=player_id).delete()
+        s.query(PlayerCard).filter_by(player_id=player_id).delete()
+        s.query(PlayerItem).filter_by(player_id=player_id).delete()
+        s.query(PlayerCraftJob).filter_by(player_id=player_id).delete()
+        s.query(PlayerStoryFlag).filter_by(player_id=player_id).delete()
+        s.query(PlayerQuest).filter_by(player_id=player_id).delete()
+
+        # LandSlotState et TempleRun ne sont pas importés, on les ajoute
+        from app.models import LandSlotState, PlayerQuestObjective, TempleRun, PlayerLandSlots
+
+        s.query(LandSlotState).filter_by(player_id=player_id).delete()
+        s.query(TempleRun).filter_by(player_id=player_id).delete()
+        s.query(PlayerLandSlots).filter_by(player_id=player_id).delete()
+
+        # Re-give starting land card
+        _ensure_starting_land_card(s, me)
+
+        s.commit()
+
+        return jsonify({"ok": True}), 200
