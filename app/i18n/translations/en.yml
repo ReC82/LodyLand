@@ -539,14 +539,37 @@ village:
       owned_qty: "You own"
       unavailable: "Unavailable"
       buy: "Buy Card"
+      already_owned: "Already owned"
 
-    filters: 
+    filters:
       all: "All"
       access: "Access"
-      boosts: "Boosts"
       recipes: "Recipes"
       lands: "Lands"
-      other: "Others"      
+      boosts: "Boosts"
+      other: "Others"
+
+    modal:
+      close: "Close"
+      buy: "Buy"
+      unavailable: "Unavailable"
+      effect_label: "✦ Effect"
+      price_label: "Price"
+      owned_label: "Owned"
+      limit_label: "Limit"
+      free: "Free"
+      buying: "Buying…"
+      bought: "Bought ✔"
+      buy_error: "Purchase failed"
+      network_error: "Network error during purchase."
+
+    gameplay:
+      harvest_bonus: "Harvest bonus"
+      xp_multiplier: "XP ×"
+      xp_suffix: "permanently"
+      coin_multiplier: "Coins ×"
+      target_resource: "Target resource"
+      unlocks: "Unlocks"
 
 items:
   branch:

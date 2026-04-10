@@ -120,122 +120,79 @@
     </div>
   {% else %}
     <!-- Grille des offres -->
-    <div class="vs-offers-grid">
+    <div class="vs-offers-grid" id="vsOffersGrid">
       {% for offer in shop_items %}
-        {# On s'aligne strictement sur l'API: offer.offer_key doit exister #}
         {% set offer_key   = offer.offer_key %}
-        {% set item_type   = offer.item_type or "card" %}
-        {% set rarity      = offer.rarity or offer.tier or "" %}
-        {% set title       = offer.title or offer.label or offer.item_key or offer_key %}
-        {% set subtitle    = offer.subtitle or offer.tagline or "" %}
+        {% set rarity      = offer.rarity or "" %}
+        {% set title       = offer.title or offer.label or offer_key %}
         {% set desc        = offer.description or "" %}
         {% set icon        = offer.icon or "" %}
         {% set filter_type = offer.filter_type or "other" %}
-        {% set search_text = offer.search_text or (title ~ " " ~ desc ~ " " ~ offer_key) %}
+        {% set search_text = offer.search_text or "" %}
         {% set owned_qty   = offer.owned_qty or 0 %}
-        {% set price_coins = offer.price_coins
-                            if offer.price_coins is not none
-                            else offer.coins %}
-        {% set price_diams = offer.price_diams
-                            if offer.price_diams is not none
-                            else offer.diams %}
-
-        {% set limit_per_player = offer.limit_per_player or offer.max_per_player %}
-        {% set stock            = offer.stock %}
-        {% set disabled         = offer.disabled or (stock is not none and stock <= 0) %}
+        {% set price_coins = offer.price_coins or 0 %}
+        {% set price_diams = offer.price_diams or 0 %}
+        {% set can_buy     = offer.can_buy %}
+        {% set stock_disabled = offer.stock is not none and offer.stock <= 0 %}
 
         <article
-          class="vs-offer-card {% if disabled %}vs-offer-disabled{% endif %}"
+          class="vs-offer-card"
           data-filter-type="{{ filter_type }}"
           data-search="{{ search_text }}"
+          data-offer-key="{{ offer_key }}"
+          style="cursor:pointer;"
         >
           <div class="vs-offer-header">
             <div class="vs-offer-icon-wrap">
               {% if icon %}
                 <img src="{{ icon }}" alt="{{ title }}" class="vs-offer-icon">
               {% else %}
-                <div class="vs-offer-icon vs-offer-icon-fallback">
-                  🃏
-                </div>
+                <div class="vs-offer-icon-fallback">🃏</div>
               {% endif %}
-
               {% if rarity %}
-                <div class="vs-offer-rarity vs-offer-rarity-{{ rarity|lower }}">
-                  {{ rarity }}
-                </div>
+                <div class="vs-offer-rarity vs-offer-rarity-{{ rarity|lower }}">{{ rarity }}</div>
               {% endif %}
             </div>
-
             <div class="vs-offer-title-block">
-              <div class="vs-offer-title">
-                {{ title }}
-              </div>
-              <div class="vs-offer-subtitle text-muted">
-                {% if subtitle %}
-                  {{ subtitle }}
-                {% else %}
-                  {% if item_type == "card" %}
-                    {{ t("village.shop_page.offer.subtitle_card") }}
-                  {% else %}
-                    {{ t("village.shop_page.offer.subtitle_item", item_type=item_type) }}
-                  {% endif %}
-                {% endif %}
-              </div>
+              <div class="vs-offer-title">{{ title }}</div>
+              <div class="vs-offer-subtitle text-muted">{{ t("village.shop_page.offer.subtitle_card") }}</div>
             </div>
           </div>
 
           {% if desc %}
-            <p class="vs-offer-desc text-muted mb-2">
-              {{ desc }}
-            </p>
+            <p class="vs-offer-desc text-muted mb-2">{{ desc }}</p>
           {% endif %}
 
           <div class="vs-offer-footer">
-            <!-- Prix -->
             <div class="vs-offer-price">
-              {% if price_coins > 0 or price_diams > 0 %}
-                {% if price_coins > 0 %}
-                  <span class="vs-price-pill">
-                    {{ price_coins }} <span class="ui-icon ui-icon-coin"></span>
-                  </span>
-                {% endif %}
-                {% if price_diams > 0 %}
-                  <span class="vs-price-pill vs-price-pill-diams">
-                    {{ price_diams }} <span class="ui-icon ui-icon-diams"></span>
-                  </span>
-                {% endif %}
-              {% else %}
-                <span class="vs-price-pill vs-price-pill-free">
-                  {{ t("village.shop_page.offer.free") }}
-                </span>
+              {% if price_coins > 0 %}
+                <span class="vs-price-pill">{{ price_coins }} <span class="ui-icon ui-icon-coin"></span></span>
+              {% endif %}
+              {% if price_diams > 0 %}
+                <span class="vs-price-pill vs-price-pill-diams">{{ price_diams }} <span class="ui-icon ui-icon-diams"></span></span>
+              {% endif %}
+              {% if price_coins == 0 and price_diams == 0 %}
+                <span class="vs-price-pill vs-price-pill-free">{{ t("village.shop_page.offer.free") }}</span>
               {% endif %}
             </div>
 
-            <!-- Limites / infos -->
-            <div class="vs-offer-meta text-muted small">
-              {% if owned_qty > 0 %}
-                <span class="me-2">{{ t("village.shop_page.offer.owned_qty") }} : {{ owned_qty }}</span>
-              {% endif %}
-              {% if cant_buy_reason %}
-                <span>{{ cant_buy_reason }}</span>
-              {% endif %}
-            </div>
+            {% if owned_qty > 0 %}
+              <div class="vs-offer-meta text-muted small">
+                {{ t("village.shop_page.offer.owned_qty") }} : {{ owned_qty }}
+              </div>
+            {% endif %}
 
-            <!-- Bouton d'achat -->
             <div class="vs-offer-actions">
               <button
                 type="button"
-                class="btn btn-sm btn-success vs-buy-btn"
+                class="btn btn-sm vs-buy-btn {% if can_buy and not stock_disabled %}btn-success{% else %}btn-secondary{% endif %}"
                 data-offer-key="{{ offer_key }}"
-                data-price-index="0"
-                {% if disabled %}disabled{% endif %}
+                {% if not can_buy or stock_disabled %}disabled{% endif %}
               >
-                {% if disabled %}
-                  {% if cant_buy_reason %}
-                    {{ cant_buy_reason }}
-                  {% else %}
-                    {{ t("village.shop_page.offer.unavailable") }}
-                  {% endif %}
+                {% if stock_disabled %}
+                  {{ t("village.shop_page.offer.unavailable") }}
+                {% elif not can_buy %}
+                  {{ t("village.shop_page.offer.already_owned") }}
                 {% else %}
                   {{ t("village.shop_page.offer.buy") }}
                 {% endif %}
@@ -249,9 +206,85 @@
 
   </div>
 </div>
+
+<!-- ================================================================
+     Overlay + modal détail carte (vanilla JS, sans Bootstrap Modal)
+     ================================================================ -->
+<div id="cardDetailOverlay" style="display:none; position:fixed; inset:0; z-index:1050; background:rgba(0,0,0,.7); align-items:center; justify-content:center; padding:1rem;">
+  <div id="cardDetailModal" style="background:#1a1a2e; color:#eee; border-radius:16px; overflow:hidden; width:100%; max-width:420px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.6);">
+
+    <!-- Image -->
+    <div id="mdl-img-wrap" style="background:#111; display:none; text-align:center;">
+      <img id="mdl-img" src="" alt="" style="max-width:100%; max-height:260px; object-fit:contain; display:block; margin:0 auto;">
+    </div>
+
+    <div style="padding:1.25rem 1.5rem 1.5rem;">
+
+      <!-- Rareté + titre -->
+      <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.4rem;">
+        <span id="mdl-rarity" style="font-size:.7rem; text-transform:uppercase; padding:.2rem .55rem; border-radius:999px; font-weight:700;"></span>
+        <strong id="mdl-title" style="font-size:1rem;"></strong>
+      </div>
+
+      <!-- Description -->
+      <p id="mdl-desc" style="color:#aaa; font-size:.875rem; line-height:1.5; margin-bottom:.75rem;"></p>
+
+      <!-- Effet / gameplay -->
+      <div id="mdl-gameplay-block" style="display:none; background:rgba(250,204,21,.08); border:1px solid rgba(250,204,21,.3); border-radius:8px; padding:.6rem .8rem; margin-bottom:.75rem;">
+        <div style="font-size:.75rem; font-weight:700; color:#facc15; margin-bottom:.3rem;">{{ t("village.shop_page.modal.effect_label") }}</div>
+        <div id="mdl-gameplay-content" style="font-size:.85rem; color:#ddd;"></div>
+      </div>
+
+      <!-- Prix -->
+      <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; font-size:.875rem;">
+        <span style="color:#888; font-weight:600;">{{ t("village.shop_page.modal.price_label") }} :</span>
+        <span id="mdl-price-coins" style="display:none;"><span id="mdl-price-coins-val"></span> <span class="ui-icon ui-icon-coin"></span></span>
+        <span id="mdl-price-diams" style="display:none;"><span id="mdl-price-diams-val"></span> <span class="ui-icon ui-icon-diams"></span></span>
+        <span id="mdl-price-free" style="display:none; background:#198754; color:#fff; border-radius:999px; padding:.15rem .6rem; font-size:.75rem;">{{ t("village.shop_page.modal.free") }}</span>
+      </div>
+
+      <!-- Possédé / limite -->
+      <div style="display:flex; gap:1.5rem; font-size:.8rem; color:#888; margin-bottom:.85rem;">
+        <span>{{ t("village.shop_page.modal.owned_label") }} : <strong id="mdl-owned" style="color:#eee;"></strong></span>
+        <span>{{ t("village.shop_page.modal.limit_label") }} : <strong id="mdl-max-owned" style="color:#eee;"></strong></span>
+      </div>
+
+      <!-- Raison non-achat -->
+      <div id="mdl-cant-buy-reason" style="display:none; background:rgba(255,193,7,.15); border:1px solid rgba(255,193,7,.4); border-radius:6px; padding:.4rem .7rem; font-size:.8rem; color:#ffc107; margin-bottom:.6rem;"></div>
+
+      <!-- Boutons -->
+      <div style="display:flex; gap:.6rem;">
+        <button type="button" data-close-card-modal style="flex:1; padding:.4rem; border-radius:6px; border:1px solid #555; background:transparent; color:#ccc; cursor:pointer;">{{ t("village.shop_page.modal.close") }}</button>
+        <button type="button" id="mdl-buy-btn" style="flex:1; padding:.4rem; border-radius:6px; border:none; background:#198754; color:#fff; font-weight:600; cursor:pointer;">{{ t("village.shop_page.modal.buy") }}</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
+  <script>
+  window.VS_ITEMS = {{ shop_items | tojson }};
+  window.VS_I18N = {
+    modal: {
+      buy:          {{ t("village.shop_page.modal.buy")         | tojson }},
+      unavailable:  {{ t("village.shop_page.modal.unavailable") | tojson }},
+      buying:       {{ t("village.shop_page.modal.buying")      | tojson }},
+      bought:       {{ t("village.shop_page.modal.bought")      | tojson }},
+      buy_error:    {{ t("village.shop_page.modal.buy_error")   | tojson }},
+      network_error:{{ t("village.shop_page.modal.network_error")| tojson }}
+    },
+    gameplay: {
+      harvest_bonus:  {{ t("village.shop_page.gameplay.harvest_bonus")  | tojson }},
+      xp_multiplier:  {{ t("village.shop_page.gameplay.xp_multiplier")  | tojson }},
+      xp_suffix:      {{ t("village.shop_page.gameplay.xp_suffix")      | tojson }},
+      coin_multiplier:{{ t("village.shop_page.gameplay.coin_multiplier") | tojson }},
+      target_resource:{{ t("village.shop_page.gameplay.target_resource") | tojson }},
+      unlocks:        {{ t("village.shop_page.gameplay.unlocks")         | tojson }}
+    }
+  };
+  </script>
   <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_shop.js') }}"></script>

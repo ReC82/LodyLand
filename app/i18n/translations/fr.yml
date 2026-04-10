@@ -529,6 +529,38 @@ village:
       free: "Gratuit"
       owned_qty: "Tu en possèdes"
       unavailable: "Indisponible"
+      buy: "Acheter la carte"
+      already_owned: "Déjà possédé"
+
+    filters:
+      all: "Tous"
+      access: "Accès"
+      recipes: "Recettes"
+      lands: "Terres"
+      boosts: "Boosts"
+      other: "Autres"
+
+    modal:
+      close: "Fermer"
+      buy: "Acheter"
+      unavailable: "Non disponible"
+      effect_label: "✦ Effet"
+      price_label: "Prix"
+      owned_label: "Possédé"
+      limit_label: "Limite"
+      free: "Gratuit"
+      buying: "Achat…"
+      bought: "Acheté ✔"
+      buy_error: "Achat impossible"
+      network_error: "Erreur réseau pendant l'achat."
+
+    gameplay:
+      harvest_bonus: "Bonus récolte"
+      xp_multiplier: "XP ×"
+      xp_suffix: "en permanence"
+      coin_multiplier: "Pièces ×"
+      target_resource: "Ressource cible"
+      unlocks: "Débloque"
 
 items:
   branch:
