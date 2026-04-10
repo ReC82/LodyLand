@@ -205,7 +205,7 @@ def _count_cards(
 
     total = 0
     for pc, cd in rows:
-        if getattr(cd, "type", None) != card_type:
+        if getattr(cd, "card_type", None) != card_type:
             continue
         if target_resource is not None:
             if getattr(cd, "target_resource", None) != target_resource:
@@ -231,7 +231,7 @@ def _has_unlock_resource_card(session, player_id: int, resource_key: str) -> boo
     )
 
     for pc, cd in rows:
-        if getattr(cd, "type", None) != "unlock_resource":
+        if getattr(cd, "card_type", None) != "unlock_resource":
             continue
         if getattr(cd, "target_resource", None) != resource_key:
             continue
@@ -265,10 +265,10 @@ def _get_xp_boost_cards(session, player_id: int):
 
     boosts = []
     for pc, cd in rows:
-        if getattr(cd, "type", None) != "xp_boost":
+        if getattr(cd, "card_type", None) != "xp_boost":
             continue
 
-        gp = cd.gameplay or {}
+        gp = cd.card_gameplay or {}
         xp_cfg = gp.get("xp")
         if not xp_cfg:
             continue
@@ -304,10 +304,10 @@ def _get_cooldown_boost_cards(session, player_id: int, resource_key: str):
 
     boosts = []
     for pc, cd in rows:
-        if getattr(cd, "type", None) != "reduce_cooldown":
+        if getattr(cd, "card_type", None) != "reduce_cooldown":
             continue
 
-        gp = cd.gameplay or {}
+        gp = cd.card_gameplay or {}
 
         # Resource-specific? None = global
         target = gp.get("target_resource")
@@ -356,10 +356,10 @@ def _get_land_loot_boost_cards(
 
     boosts = []
     for pc, cd in rows:
-        if getattr(cd, "type", None) != "land_loot_boost":
+        if getattr(cd, "card_type", None) != "land_loot_boost":
             continue
 
-        gp = cd.gameplay or {}
+        gp = cd.card_gameplay or {}
 
         # Optional filters: land + tool
         target_land = gp.get("target_land")
@@ -413,10 +413,10 @@ def _get_resource_boost_cards(
 
     boosts = []
     for pc, cd in rows:
-        if getattr(cd, "type", None) != "resource_boost":
+        if getattr(cd, "card_type", None) != "resource_boost":
             continue
 
-        gp = cd.gameplay or {}
+        gp = cd.card_gameplay or {}
         if gp.get("target_resource") != resource_key:
             continue
 
