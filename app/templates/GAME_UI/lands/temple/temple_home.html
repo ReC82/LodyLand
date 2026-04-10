@@ -1,37 +1,366 @@
 {% extends "game_base.html" %}
 
-{% block title %}Temple{% endblock %}
+{% block title %}Temple — Reconstruction{% endblock %}
 
 {% block content %}
-  <div class="container py-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="h4 m-0">Le Temple</h1>
+<div class="container py-3">
 
-      <a href="{{ url_for('frontend.lands_select') }}" class="btn btn-outline-light btn-sm">
-        ← Retour
-      </a>
-    </div>
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 m-0 text-light">🏛️ Le Temple</h1>
+    <a href="{{ url_for('frontend.lands_select') }}" class="btn btn-outline-light btn-sm">← Retour</a>
+  </div>
 
-    <!-- Phaser will mount here in STEP 2 -->
-    <div id="phaser-temple"
-         style="width: 100%; height: 70vh; border-radius: 16px; background: #0b1020;">
-    </div>
-
-    <p class="text-muted mt-3 mb-0">
-      Chargement du Temple… (STEP 1 : page dédiée OK)
+  <!-- Intro card -->
+  <div class="border border-secondary rounded p-3 mb-3" style="background:rgba(255,255,255,0.06);">
+    <p class="mb-1 small text-light">
+      Le temple ancestral est en ruines. Reconstituez-le <strong>brique par brique</strong>,
+      couche par couche, en y apportant les ressources nécessaires.
+    </p>
+    <p class="mb-0 small" style="color:#aaa;">
+      Complétez les <strong class="text-light">fondations</strong> en premier — chaque couche se débloque quand la précédente est complète.
+      Les <strong class="text-warning">100 premiers joueurs</strong> à finir reçoivent la carte légendaire
+      <em class="text-warning">Bénédiction du Temple</em> (+15 % XP permanent).
     </p>
   </div>
+
+  <!-- Progress bar -->
+  <div class="mb-2">
+    <div class="d-flex justify-content-between small mb-1">
+      <span id="progress-label" class="text-warning fw-semibold">Chargement…</span>
+      <span id="stock-label" style="color:#aaa;"></span>
+    </div>
+    <div class="progress" style="height:8px; background:#333;">
+      <div id="progress-bar" class="progress-bar bg-warning" style="width:0%; transition:width .4s;"></div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="d-flex gap-3 mb-3 small" style="color:#aaa;">
+    <span><span class="badge bg-success me-1">✓</span>Posée</span>
+    <span><span class="badge bg-warning text-dark me-1">□</span>Disponible — cliquer pour poser</span>
+    <span><span class="badge bg-secondary me-1" style="opacity:.5;">🔒</span>Verrouillée</span>
+  </div>
+
+  <!-- Banners -->
+  <div id="completion-banner" class="alert alert-warning text-center d-none">
+    🌟 Le temple est reconstruit ! La carte <strong>Bénédiction du Temple</strong> a été ajoutée à votre inventaire.
+  </div>
+  <div id="consolation-banner" class="alert alert-secondary text-center d-none">
+    🏛️ Le temple est reconstruit ! Le stock de cartes est épuisé — vous recevez <strong>2 000 pièces</strong> et <strong>20 diamants</strong>.
+  </div>
+
+  <!-- Layout: pyramid + detail panel side by side on large screens -->
+  <div class="row g-3">
+
+    <!-- Pyramid -->
+    <div class="col-12 col-lg-7">
+      <div id="pyramid" class="d-flex flex-column align-items-center gap-2 py-2">
+        <div style="color:#aaa;" class="small">Chargement de la pyramide…</div>
+      </div>
+    </div>
+
+    <!-- Detail panel: shown when a brick is selected -->
+    <div class="col-12 col-lg-5">
+      <div id="detail-panel" class="border border-secondary rounded p-3 d-none" style="background:rgba(255,255,255,0.04); position:sticky; top:80px;">
+        <h6 id="detail-brick-name" class="text-light mb-1"></h6>
+        <p id="detail-brick-desc" class="small mb-3" style="color:#aaa;"></p>
+
+        <p class="small text-light mb-2 fw-semibold">Ressources à apporter :</p>
+        <table class="table table-sm mb-3" style="color:#ddd; background:transparent;">
+          <thead>
+            <tr style="color:#888; border-color:#444;">
+              <th class="ps-0" style="border-color:#444;">Ressource</th>
+              <th class="text-end" style="border-color:#444;">Requis</th>
+              <th class="text-end" style="border-color:#444;">Stock</th>
+            </tr>
+          </thead>
+          <tbody id="detail-cost-tbody" style="border-color:#444;"></tbody>
+        </table>
+
+        <div id="detail-afford-warning" class="small mb-2 d-none" style="color:#f87;">
+          ⚠️ Ressources insuffisantes — continuez à récolter !
+        </div>
+
+        <button id="detail-confirm-btn" class="btn btn-warning btn-sm w-100">
+          Poser cette brique
+        </button>
+      </div>
+
+      <!-- Placeholder when nothing selected -->
+      <div id="detail-placeholder" class="border border-secondary rounded p-3 text-center" style="background:rgba(255,255,255,0.03); color:#666;">
+        <div style="font-size:2rem;">🧱</div>
+        <div class="small mt-2">Cliquez sur une brique<br><span class="badge bg-warning text-dark">jaune</span> pour voir le coût</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Confirmation modal (secondary safety) -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-secondary" style="background:#1a1a2e; color:#eee;">
+      <div class="modal-header border-secondary">
+        <h6 class="modal-title mb-0">Confirmer la pose</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body small" style="color:#ccc;">
+        Les ressources seront <strong class="text-light">définitivement consommées</strong>. Continuer ?
+      </div>
+      <div class="modal-footer border-secondary py-2">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-warning btn-sm" id="modal-confirm-btn">Confirmer</button>
+      </div>
+      <div id="modal-error" class="alert alert-danger mx-3 mb-3 small d-none"></div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
-  <script src="{{ url_for('static', filename='vendor/phaser/phaser.min.js') }}" defer></script>
+<script>
+// ================================================================
+// Temple Reconstruction — UI
+// ================================================================
 
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_api.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_state.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_grid.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_ui.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_animations.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_movement.js') }}" defer></script>
+const API_STATE = "/temple/reconstruction/state";
+const API_PLACE = "/temple/reconstruction/place";
 
-  <script src="{{ url_for('static', filename='GAME_UI/js/temple/temple_game.js') }}" defer></script>
+let _state       = null;
+let _activeBrick = null;
+
+// ----------------------------------------------------------------
+// Load & render
+// ----------------------------------------------------------------
+
+async function loadState() {
+  const res = await fetch(API_STATE);
+  if (!res.ok) { console.error("Erreur chargement état temple"); return; }
+  _state = await res.json();
+  renderAll();
+}
+
+function renderAll() {
+  renderProgress();
+  renderPyramid();
+  // Keep detail panel in sync if a brick was selected
+  if (_activeBrick) {
+    const updated = findBrick(_activeBrick.key);
+    if (updated) showDetail(updated);
+    else hideDetail();
+  }
+}
+
+function findBrick(key) {
+  for (const layer of _state.layers)
+    for (const b of layer.bricks)
+      if (b.key === key) return b;
+  return null;
+}
+
+function renderProgress() {
+  const { placed_count, total_bricks, stock_remaining, fully_complete, already_blessed } = _state;
+  const pct = Math.round(placed_count / total_bricks * 100);
+
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("progress-label").textContent =
+    placed_count + " / " + total_bricks + " briques posées (" + pct + "%)";
+  document.getElementById("stock-label").textContent =
+    "🃏 " + stock_remaining + " carte" + (stock_remaining > 1 ? "s" : "") + " légendaire" + (stock_remaining > 1 ? "s" : "") + " restante" + (stock_remaining > 1 ? "s" : "");
+
+  if (fully_complete && already_blessed)
+    document.getElementById("completion-banner").classList.remove("d-none");
+  else if (fully_complete)
+    document.getElementById("consolation-banner").classList.remove("d-none");
+}
+
+function renderPyramid() {
+  const pyramid = document.getElementById("pyramid");
+  pyramid.innerHTML = "";
+
+  const layers = [..._state.layers].reverse(); // top→bottom
+
+  for (const layer of layers) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex gap-1 justify-content-center align-items-center";
+
+    for (const brick of layer.bricks) {
+      const el = document.createElement("button");
+      el.className = "btn btn-sm brick-btn " + brickClass(brick, layer);
+      el.style.cssText = "width:54px;height:44px;font-size:0.75rem;padding:2px;position:relative;";
+      el.title = brick.name_fr;
+
+      if (brick.placed) {
+        el.innerHTML = "✓";
+      } else if (!layer.unlocked) {
+        el.innerHTML = "🔒";
+      } else if (!brick.can_afford) {
+        el.innerHTML = "□<span style=\"position:absolute;top:2px;right:4px;font-size:9px;color:#f87;\">!</span>";
+      } else {
+        el.innerHTML = "□";
+      }
+
+      if (brick.available) {
+        el.addEventListener("click", () => {
+          _activeBrick = brick;
+          showDetail(brick);
+        });
+      }
+
+      wrapper.appendChild(el);
+    }
+
+    // Layer label
+    const lbl = document.createElement("span");
+    lbl.style.cssText = "min-width:100px; font-size:0.8rem;";
+    lbl.className = "ms-2 " + (layer.complete ? "text-success" : layer.unlocked ? "text-warning" : "");
+    lbl.style.color = layer.complete ? "" : layer.unlocked ? "" : "#666";
+    lbl.textContent = layer.name_fr + (layer.complete ? " ✓" : "");
+    wrapper.appendChild(lbl);
+
+    pyramid.appendChild(wrapper);
+  }
+}
+
+function brickClass(brick, layer) {
+  if (brick.placed)                         return "btn-success";
+  if (brick.available && brick.can_afford)  return "btn-warning text-dark";
+  if (brick.available && !brick.can_afford) return "btn-outline-warning";
+  return "btn-outline-secondary";
+}
+
+// ----------------------------------------------------------------
+// Detail panel
+// ----------------------------------------------------------------
+
+function showDetail(brick) {
+  document.getElementById("detail-placeholder").classList.add("d-none");
+  const panel = document.getElementById("detail-panel");
+  panel.classList.remove("d-none");
+
+  document.getElementById("detail-brick-name").textContent = brick.name_fr;
+  document.getElementById("detail-brick-desc").textContent = brick.description_fr || "";
+
+  const tbody = document.getElementById("detail-cost-tbody");
+  tbody.innerHTML = "";
+  let allOk = true;
+
+  for (const [resKey, detail] of Object.entries(brick.cost_detail)) {
+    if (!detail.ok) allOk = false;
+
+    // Source hint
+    let sourceHtml = "";
+    if (detail.sources && detail.sources.length > 0) {
+      const hints = detail.sources.map(s =>
+        '<span style="color:#888;">📍 ' + s.land_fr + ' — ' + s.tools_fr + '</span>'
+      ).join("<br>");
+      sourceHtml = '<br><small style="line-height:1.3;">' + hints + '</small>';
+    }
+
+    const tr = document.createElement("tr");
+    tr.style.borderColor = "#444";
+    tr.innerHTML =
+      '<td class="ps-0" style="border-color:#444; vertical-align:top;">' +
+        (detail.icon
+          ? '<img src="' + detail.icon + '" width="16" height="16" class="me-1" style="object-fit:contain;">'
+          : '') +
+        '<span style="color:#ddd;">' + detail.label + '</span>' +
+        sourceHtml +
+      '</td>' +
+      '<td class="text-end" style="border-color:#444; color:#eee; vertical-align:top;">' + detail.needed.toLocaleString() + '</td>' +
+      '<td class="text-end fw-semibold" style="border-color:#444; color:' + (detail.ok ? '#4caf50' : '#f87') + '; vertical-align:top;">' +
+        Math.floor(detail.owned).toLocaleString() +
+        (detail.ok ? ' ✓' : ' ✗') +
+      '</td>';
+    tbody.appendChild(tr);
+  }
+
+  const warning = document.getElementById("detail-afford-warning");
+  const btn = document.getElementById("detail-confirm-btn");
+
+  if (!allOk) {
+    warning.classList.remove("d-none");
+    btn.disabled = true;
+    btn.textContent = "Ressources insuffisantes";
+  } else {
+    warning.classList.add("d-none");
+    btn.disabled = false;
+    btn.textContent = "Poser cette brique";
+  }
+}
+
+function hideDetail() {
+  _activeBrick = null;
+  document.getElementById("detail-panel").classList.add("d-none");
+  document.getElementById("detail-placeholder").classList.remove("d-none");
+}
+
+document.getElementById("detail-confirm-btn").addEventListener("click", () => {
+  if (!_activeBrick || !_activeBrick.can_afford) return;
+  document.getElementById("modal-error").classList.add("d-none");
+  new bootstrap.Modal(document.getElementById("confirmModal")).show();
+});
+
+// ----------------------------------------------------------------
+// Confirmation modal → place brick
+// ----------------------------------------------------------------
+
+document.getElementById("modal-confirm-btn").addEventListener("click", async () => {
+  if (!_activeBrick) return;
+
+  const btn = document.getElementById("modal-confirm-btn");
+  btn.disabled = true;
+  btn.textContent = "En cours…";
+
+  const res = await fetch(API_PLACE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ brick_key: _activeBrick.key }),
+  });
+
+  const data = await res.json();
+  btn.disabled = false;
+  btn.textContent = "Confirmer";
+
+  if (!res.ok) {
+    const errEl = document.getElementById("modal-error");
+    errEl.textContent = errorMessage(data.error, data.resource);
+    errEl.classList.remove("d-none");
+    return;
+  }
+
+  bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
+  _activeBrick = null;
+  hideDetail();
+
+  if (data.reward) {
+    if (data.reward.type === "card")
+      document.getElementById("completion-banner").classList.remove("d-none");
+    else if (data.reward.type === "consolation")
+      document.getElementById("consolation-banner").classList.remove("d-none");
+  }
+
+  await loadState();
+});
+
+function errorMessage(code, resource) {
+  if (code === "insufficient_resources") return "Ressources insuffisantes : " + resource;
+  if (code === "layer_locked")           return "Terminez d'abord la couche précédente.";
+  if (code === "brick_already_placed")   return "Cette brique est déjà posée.";
+  return "Erreur : " + code;
+}
+
+// ----------------------------------------------------------------
+// Init
+// ----------------------------------------------------------------
+loadState();
+</script>
+
+<style>
+.brick-btn { border-radius: 6px !important; transition: transform .1s; }
+.brick-btn:hover:not(:disabled) { transform: scale(1.1); }
+#pyramid   { user-select: none; }
+#detail-cost-tbody tr { border-color: #444 !important; }
+</style>
 {% endblock %}

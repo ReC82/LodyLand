@@ -408,3 +408,30 @@ class TempleRun(Base):
     traps: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     
     broken_tiles: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
+
+
+# ---------------------------------------------------------------------------
+# Temple Reconstruction — persistent bricks placed by each player
+# ---------------------------------------------------------------------------
+
+class TempleReconstructionBrick(Base):
+    """
+    One row per brick placed by a player.
+    36 rows max per player (pyramid 8+7+...+1).
+    """
+
+    __tablename__ = "temple_reconstruction_bricks"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "player_id", "brick_key",
+            name="uq_temple_brick_player_brick",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    brick_key: Mapped[str] = mapped_column(String(60), nullable=False)
+    placed_at: Mapped[dt.datetime] = mapped_column(
+        DateTime, nullable=False, default=dt.datetime.utcnow
+    )

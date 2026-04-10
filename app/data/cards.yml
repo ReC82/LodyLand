@@ -1143,6 +1143,37 @@ cards:
   card_purchase_limit_quantity: null
   card_max_owned: 1
 
+- key: recipe_tool_wooden_pickaxe
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_pickaxe
+  card_label: Recette — Pioche en bois
+  card_description: Recette pour fabriquer une pioche en bois. Permet d'extraire pierre
+    et minerai dans la Caverne et le Désert.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_pickaxe.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 75
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
 - key: recipe_tool_wooden_shovel
   enabled: true
   card_type: craft_recipe
@@ -1199,6 +1230,45 @@ cards:
     buy_rules: null
   tradable: false
   giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+
+# ============================================================
+# PASSIVE BOOST CARDS
+# card_type: passive_boost
+# ============================================================
+
+- key: blessing_of_the_temple
+  enabled: true
+  card_type: passive_boost
+  card_category: special
+  card_tags:
+  - temple
+  - legendary
+  - special
+  card_label: Bénédiction du Temple
+  card_description: 'Le temple reconstruit vous accorde sa bénédiction éternelle. +15%
+    d''XP sur toutes les récoltes, pour toujours.
+  
+    '
+  card_image: /static/assets/img/cards/lands/specials/blessing_of_the_temple.png
+  card_rarity: legendary
+  card_gameplay:
+    xp:
+      type: addition
+      amount: 0.15
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: false
   card_quantity: 0
   card_purchase_limit_quantity: null
   card_max_owned: 1

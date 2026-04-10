@@ -1,0 +1,267 @@
+# =====================================================================
+# TEMPLE RECONSTRUCTION
+# Pyramide à 8 couches = 36 briques au total (8+7+6+5+4+3+2+1)
+# Toutes les ressources sont collectables dans les lands lvl 1-9.
+# =====================================================================
+
+temple_reconstruction:
+
+  name_fr: "Reconstruction du Temple"
+  name_en: "Temple Reconstruction"
+
+  unlock_min_level: 10
+  requires_card: land_temple
+
+  completion_reward:
+    card_key: blessing_of_the_temple
+    global_stock: 100
+    fallback_when_stock_empty:
+      coins: 2000
+      diams: 20
+
+  # Ressources → où les trouver (affiché dans l'UI)
+  # Format : resource_key → [{land_fr, tools_fr}]
+  resource_sources:
+    palm_wood_log:
+      - land_fr: "Forêt"
+        tools_fr: "Hache en bois 🪓 / Marteau en bois"
+    branch:
+      - land_fr: "Forêt"
+        tools_fr: "Mains nues 🤲"
+    vine:
+      - land_fr: "Forêt"
+        tools_fr: "Mains nues 🤲 (rare)"
+    bark:
+      - land_fr: "Forêt"
+        tools_fr: "Couteau en bois"
+    resin:
+      - land_fr: "Forêt"
+        tools_fr: "Couteau en bois (rare)"
+    stone:
+      - land_fr: "Caverne"
+        tools_fr: "Mains nues 🤲 / Pioche en bois ⛏️"
+      - land_fr: "Désert"
+        tools_fr: "Pioche en bois ⛏️"
+    iron_ore:
+      - land_fr: "Caverne"
+        tools_fr: "Pioche en bois ⛏️ (rare)"
+    gold_leaf:
+      - land_fr: "Caverne"
+        tools_fr: "Mains nues 🤲 (rare) / Pioche ⛏️ (rare)"
+    sand:
+      - land_fr: "Plage"
+        tools_fr: "Mains nues 🤲 / Pelle en bois"
+    seashell:
+      - land_fr: "Plage"
+        tools_fr: "Mains nues 🤲 (rare)"
+    pearl:
+      - land_fr: "Plage"
+        tools_fr: "Mains nues 🤲 (très rare)"
+
+  layers:
+
+    # ==========================================================
+    # COUCHE 1 — Fondations (8 briques)
+    # Bûches de palmier + pierre — la base de tout
+    # ==========================================================
+    - layer: 1
+      name_fr: "Fondations"
+      description_fr: "Posons des bases solides. Bûches de palmier et pierre brute."
+      required_layer: null
+      bricks:
+        - key: fondation_1
+          name_fr: "Bloc N°1"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_2
+          name_fr: "Bloc N°2"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_3
+          name_fr: "Bloc N°3"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_4
+          name_fr: "Bloc N°4"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_5
+          name_fr: "Bloc N°5"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_6
+          name_fr: "Bloc N°6"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_7
+          name_fr: "Bloc N°7"
+          cost: { palm_wood_log: 600, stone: 500 }
+        - key: fondation_8
+          name_fr: "Pierre angulaire"
+          description_fr: "La pierre centrale de toute la fondation."
+          cost: { palm_wood_log: 600, stone: 500 }
+
+    # ==========================================================
+    # COUCHE 2 — Socle (7 briques)
+    # Bois + pierre + sable (liant)
+    # ==========================================================
+    - layer: 2
+      name_fr: "Socle"
+      description_fr: "Les premiers murs. Le sable sert de mortier entre les pierres."
+      required_layer: 1
+      bricks:
+        - key: socle_1
+          name_fr: "Mur N°1"
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+        - key: socle_2
+          name_fr: "Mur N°2"
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+        - key: socle_3
+          name_fr: "Mur N°3"
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+        - key: socle_4
+          name_fr: "Mur N°4"
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+        - key: socle_5
+          name_fr: "Mur N°5"
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+        - key: socle_6
+          name_fr: "Mur N°6"
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+        - key: socle_7
+          name_fr: "Linteau"
+          description_fr: "La pierre taillée qui marque l'entrée principale."
+          cost: { palm_wood_log: 400, stone: 300, sand: 100 }
+
+    # ==========================================================
+    # COUCHE 3 — Colonnes (6 briques)
+    # Pierre + lianes (liens) + fer (renforts)
+    # ==========================================================
+    - layer: 3
+      name_fr: "Colonnes"
+      description_fr: "De grandes colonnes maintenues par des lianes et renforcées de fer."
+      required_layer: 2
+      bricks:
+        - key: colonne_1
+          name_fr: "Colonne N°1"
+          cost: { stone: 300, vine: 300, iron_ore: 50 }
+        - key: colonne_2
+          name_fr: "Colonne N°2"
+          cost: { stone: 300, vine: 300, iron_ore: 50 }
+        - key: colonne_3
+          name_fr: "Colonne N°3"
+          cost: { stone: 300, vine: 300, iron_ore: 50 }
+        - key: colonne_4
+          name_fr: "Colonne N°4"
+          cost: { stone: 300, vine: 300, iron_ore: 50 }
+        - key: colonne_5
+          name_fr: "Colonne N°5"
+          cost: { stone: 300, vine: 300, iron_ore: 50 }
+        - key: colonne_6
+          name_fr: "Chapiteau"
+          description_fr: "Le chapiteau sculpté qui coiffe les colonnes."
+          cost: { stone: 300, vine: 300, iron_ore: 50 }
+
+    # ==========================================================
+    # COUCHE 4 — Plancher (5 briques)
+    # Bûches + lianes tressées + sable
+    # ==========================================================
+    - layer: 4
+      name_fr: "Plancher"
+      description_fr: "Le plancher surélevé, tressé de bûches et de lianes."
+      required_layer: 3
+      bricks:
+        - key: plancher_1
+          name_fr: "Dalle N°1"
+          cost: { palm_wood_log: 200, vine: 200, sand: 100 }
+        - key: plancher_2
+          name_fr: "Dalle N°2"
+          cost: { palm_wood_log: 200, vine: 200, sand: 100 }
+        - key: plancher_3
+          name_fr: "Dalle centrale"
+          description_fr: "La dalle centrale — là où les offrandes seront déposées."
+          cost: { palm_wood_log: 200, vine: 200, sand: 100 }
+        - key: plancher_4
+          name_fr: "Dalle N°4"
+          cost: { palm_wood_log: 200, vine: 200, sand: 100 }
+        - key: plancher_5
+          name_fr: "Dalle N°5"
+          cost: { palm_wood_log: 200, vine: 200, sand: 100 }
+
+    # ==========================================================
+    # COUCHE 5 — Arches (4 briques)
+    # Pierre + bois + lianes + fer
+    # ==========================================================
+    - layer: 5
+      name_fr: "Arches"
+      description_fr: "Les arches qui encadrent l'entrée solennelle du temple."
+      required_layer: 4
+      bricks:
+        - key: arche_1
+          name_fr: "Pilier gauche"
+          cost: { stone: 200, palm_wood_log: 150, vine: 150, iron_ore: 50 }
+        - key: arche_2
+          name_fr: "Clé d'arche gauche"
+          cost: { stone: 200, palm_wood_log: 150, vine: 150, iron_ore: 50 }
+        - key: arche_3
+          name_fr: "Clé d'arche droite"
+          cost: { stone: 200, palm_wood_log: 150, vine: 150, iron_ore: 50 }
+        - key: arche_4
+          name_fr: "Pilier droit"
+          cost: { stone: 200, palm_wood_log: 150, vine: 150, iron_ore: 50 }
+
+    # ==========================================================
+    # COUCHE 6 — Ornements (3 briques)
+    # Matériaux rares : résine + coquillages + or + écorce
+    # ==========================================================
+    - layer: 6
+      name_fr: "Ornements"
+      description_fr: "Les décorations précieuses qui embellissent le temple."
+      required_layer: 5
+      bricks:
+        - key: ornement_gauche
+          name_fr: "Frise gauche"
+          description_fr: "Une frise sculptée incrustée de coquillages."
+          cost: { resin: 60, seashell: 100, gold_leaf: 50, bark: 30 }
+        - key: ornement_central
+          name_fr: "Médaillon solaire"
+          description_fr: "Un médaillon doré représentant le soleil."
+          cost: { resin: 60, seashell: 100, gold_leaf: 50, bark: 30 }
+        - key: ornement_droite
+          name_fr: "Frise droite"
+          description_fr: "La frise de droite, miroir de celle de gauche."
+          cost: { resin: 60, seashell: 100, gold_leaf: 50, bark: 30 }
+
+    # ==========================================================
+    # COUCHE 7 — Toiture (2 briques)
+    # Pierre + bois + or + perle
+    # ==========================================================
+    - layer: 7
+      name_fr: "Toiture"
+      description_fr: "Le toit du temple, couvert de pierres et pépites d'or."
+      required_layer: 6
+      bricks:
+        - key: toit_gauche
+          name_fr: "Versant gauche"
+          description_fr: "La moitié gauche du toit, ornée de feuilles d'or."
+          cost: { stone: 300, palm_wood_log: 150, gold_leaf: 50, pearl: 40 }
+        - key: toit_droite
+          name_fr: "Versant droit"
+          description_fr: "La moitié droite, symétrique et majestueuse."
+          cost: { stone: 300, palm_wood_log: 150, gold_leaf: 50, pearl: 40 }
+
+    # ==========================================================
+    # COUCHE 8 — Pierre Sacrée (1 brique)
+    # La brique ultime — matériaux de toutes les terres
+    # ==========================================================
+    - layer: 8
+      name_fr: "Pierre Sacrée"
+      description_fr: "La clé de voûte qui couronnera le temple pour l'éternité."
+      required_layer: 7
+      bricks:
+        - key: pierre_sacree
+          name_fr: "Clé de voûte sacrée"
+          description_fr: >
+            La dernière pierre, taillée dans les matériaux les plus rares
+            de toutes les terres explorées. Sa pose marquera la renaissance du temple.
+          cost:
+            palm_wood_log: 300
+            stone: 400
+            vine: 400
+            pearl: 30
+            iron_ore: 30
+            gold_leaf: 20
