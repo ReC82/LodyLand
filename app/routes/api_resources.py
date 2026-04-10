@@ -23,7 +23,7 @@ from app.models import (
 from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
 from app.quests.service import on_resource_collected
 from app.unlock_rules import check_unlock_rules  # kept even if unused for now
-from app.i18n import get_item, get_user_language
+from app.i18n import get_item, get_user_language, translate_data_dict
 from flask import g
 
 
@@ -78,7 +78,7 @@ def _translate_resource_def(rd: ResourceDef, lang: str) -> dict:
         item_dict['unlock_description_i18n'] = rd.unlock_description_i18n
     
     # Traduire
-    return translate_item(item_dict, lang)
+    return translate_data_dict(item_dict, lang)
 
 def _player_has_item(session, player_id: int, item_key: str) -> bool:
     """
