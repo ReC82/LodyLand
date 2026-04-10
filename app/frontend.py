@@ -638,8 +638,10 @@ def village_shop():
                 "stock": None,
                 "limit_until": None,
                 "owned_qty": owned_qty,
+                "max_owned": max_owned,
                 "can_buy": can_buy,
                 "cant_buy_reason": cant_buy_reason,
+                "card_gameplay": cd.card_gameplay or {},
                 # NEW: used by filters/search
                 "card_type": raw_type,
                 "filter_type": filter_type,
