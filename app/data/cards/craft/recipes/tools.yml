@@ -178,6 +178,36 @@
   card_purchase_limit_quantity: null
   card_max_owned: 1 
 
+- key: recipe_tool_wooden_pickaxe
+  enabled: true
+  card_type: craft_recipe
+  card_category: craft
+  card_tags:
+  - craft
+  - wooden_pickaxe
+  card_label: Recette — Pioche en bois
+  card_description: Recette pour fabriquer une pioche en bois. Permet d'extraire pierre et minerai dans la Caverne et le Désert.
+  card_image: /static/assets/img/cards/recipes/card_recipe_wooden_pickaxe.png
+  card_rarity: basic
+  card_gameplay:
+    target_resource: null
+    boost:
+      type: null
+      amount: 0
+  shop:
+    prices:
+    - coins: 75
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
 - key: recipe_tool_vine_net
   enabled: true
   card_type: craft_recipe

@@ -337,6 +337,34 @@ crafts:
       min_level: 2
     enabled: true
 
+  tool_wooden_pickaxe:
+    key: tool_wooden_pickaxe
+    station_key: craft_table_base
+    output:
+      kind: tool
+      key: tool_wooden_pickaxe
+      quantity: 1
+    recipe:
+      pattern:
+      - FSF
+      - .S.
+      legend:
+        F:
+          kind: resource
+          key: flint
+          quantity: 1
+        S:
+          kind: item
+          key: wooden_stick
+          quantity: 1
+      required_table_level: 1
+    craft_time_seconds: 15
+    xp_reward: 8
+    unlock:
+      recipe_card_key: recipe_tool_wooden_pickaxe
+      min_level: 5
+    enabled: true
+
   tool_wooden_shovel:
     key: tool_wooden_shovel
     station_key: craft_table_advanced

@@ -597,6 +597,16 @@ items:
     base_sell_price: 5
     enabled: true
 
+  tool_wooden_pickaxe:
+    key: tool_wooden_pickaxe
+    kind: tool
+    label: Pioche en bois
+    description: Une pioche rudimentaire taillée dans du bois et du silex. Permet d'extraire
+      de la pierre et du minerai dans la Caverne et le Désert.
+    icon: /static/assets/img/items/tools/wooden_pickaxe.png
+    base_sell_price: 8
+    enabled: true
+
   tool_wooden_shovel:
     key: tool_wooden_shovel
     kind: tool

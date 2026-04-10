@@ -1,3 +1,35 @@
+- key: blessing_of_the_temple
+  enabled: true
+  card_type: passive_boost
+  card_category: special
+  card_tags:
+  - temple
+  - legendary
+  - special
+  card_label: Bénédiction du Temple
+  card_description: >
+    Le temple reconstruit vous accorde sa bénédiction éternelle.
+    +15% d'XP sur toutes les récoltes, pour toujours.
+  card_image: /static/assets/img/cards/lands/specials/blessing_of_the_temple.png
+  card_rarity: legendary
+  card_gameplay:
+    xp:
+      type: addition
+      amount: 0.15
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: false
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
 - key: land_village
   enabled: true
   card_type: land_access

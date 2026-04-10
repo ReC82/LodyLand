@@ -108,4 +108,42 @@ tool_wooden_knife:
   - type: level
     min_level: 2
 
-  enabled: true     
+  enabled: true
+
+tool_wooden_pickaxe:
+  key: tool_wooden_pickaxe
+  station_key: craft_table_base
+
+  required_grid:
+    tier: 1
+
+  output:
+    kind: tool
+    key: tool_wooden_pickaxe
+    quantity: 1
+
+  recipe:
+    pattern:
+      - "FSF"
+      - ".S."
+    legend:
+      F:
+        kind: resource
+        key: flint
+        quantity: 1
+      S:
+        kind: item
+        key: wooden_stick
+        quantity: 1
+
+  craft_time_seconds: 15
+  xp_reward: 8
+
+  unlock:
+  - type: card
+    key: recipe_tool_wooden_pickaxe
+
+  - type: level
+    min_level: 5
+
+  enabled: true
