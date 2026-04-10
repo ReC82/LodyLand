@@ -9,23 +9,9 @@ from flask import Blueprint, jsonify, request
 
 from app.db import SessionLocal
 from app.models import Player, PlayerCard
+from app.auth import get_current_player
 
 bp = Blueprint("notebook", __name__)
-
-
-# -------------------------
-# Helpers: auth / yaml loads
-# -------------------------
-def _get_current_player(session):
-    pid = request.cookies.get("player_id")
-    if not pid:
-        return None
-    try:
-        pid = int(pid)
-    except ValueError:
-        return None
-    return session.get(Player, pid)
-
 
 def _load_lands_defs() -> dict:
     path = Path("app/data/lands.yml")
@@ -167,7 +153,7 @@ def _compute_xp_per_collect(land_xp: float, tool_multiplier: float) -> float:
 @bp.get("/notebook")
 def get_notebook():
     with SessionLocal() as s:
-        me = _get_current_player(s)
+        me = get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
