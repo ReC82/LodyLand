@@ -1202,10 +1202,10 @@ function updateCraftPanelsVisibility() {
   if (craftState.showRecipes) {
     console.log("Showing recipes panel, hiding ingredients panel.");
     ingredientsPanel.style.display = "none";
-    recipesPanel.style.display     = "block";
+    recipesPanel.style.display     = "flex";
   } else {
     console.log("Showing ingredients panel, hiding recipes panel.");
-    ingredientsPanel.style.display = "block";
+    ingredientsPanel.style.display = "flex";
     recipesPanel.style.display     = "none";
   }
 }
