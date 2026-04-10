@@ -34,7 +34,10 @@ from app.services.cards import serialize_card_def
 #from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
 from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
 from app.i18n import get_item, get_user_language  # ✅ AJOUTÉ
+from app.auth import get_current_player
 
+from app.progression import LEVELS, xp_required_for
+from app.models import ResourceDef, CardDef
 
 bp = Blueprint("players", __name__)
 
@@ -234,7 +237,7 @@ def logout():
 @bp.get("/me")
 def whoami():
     with SessionLocal() as s:
-        p = _get_current_player(s)
+        p = get_current_player(s)
         if not p:
             return jsonify({"error": "not_authenticated"}), 401
         return jsonify(
@@ -254,7 +257,7 @@ def whoami():
 def get_state():
     """Return full player state, including cards (new format)."""
     with SessionLocal() as s:
-        me = _get_current_player(s)
+        me = get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
@@ -580,7 +583,7 @@ def get_state():
 def mark_story_seen():
     """Mark a given story event as seen for the current player."""
     with SessionLocal() as s:
-        me = _get_current_player(s)
+        me = get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
@@ -608,24 +611,6 @@ def mark_story_seen():
         s.commit()
 
         return jsonify({"ok": True, "already_seen": False}), 200
-
-
-# -----------------------------------------------------------------
-# Helper: cookie-based auth
-# -----------------------------------------------------------------
-def _get_current_player(session):
-    pid = request.cookies.get("player_id")
-    if not pid:
-        return None
-    try:
-        pid = int(pid)
-    except ValueError:
-        return None
-    return session.get(Player, pid)
-
-
-from app.progression import LEVELS, xp_required_for
-from app.models import ResourceDef, CardDef
 
 
 @bp.get("/levels")
@@ -746,7 +731,7 @@ def get_levels_definitions():
 def beta_reset():
     """Reset all player progression data (beta only). Keeps account and name."""
     with SessionLocal() as s:
-        me = _get_current_player(s)
+        me = get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
