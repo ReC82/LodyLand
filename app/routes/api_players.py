@@ -26,6 +26,7 @@ from app.quests.service import (
     assign_daily_quest_if_needed,
     assign_weekly_quest_if_needed,
     assign_next_storyline_quest_if_needed,
+    assign_continuous_quest_if_needed,
     auto_mark_expired_quests,
     serialize_quest,
 )
@@ -269,6 +270,7 @@ def get_state():
         assign_daily_quest_if_needed(s, me, now=now)
         assign_weekly_quest_if_needed(s, me, now=now)
         assign_next_storyline_quest_if_needed(s, me, now=now)
+        assign_continuous_quest_if_needed(s, me, now=now)
         auto_mark_expired_quests(s, me)
         s.commit()
 

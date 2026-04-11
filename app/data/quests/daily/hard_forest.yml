@@ -1,0 +1,166 @@
+quest_templates:
+
+  daily_forest_bulk_hard:
+    key: qt_daily_forest_bulk_hard
+    quest_type: daily
+    difficulty: hard
+    category: gathering
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Grande récolte de bois
+      en: Large wood harvest
+    description:
+      fr: Le village prépare de grandes constructions. Il faut énormément de bois.
+      en: The village is preparing for major construction. A lot of wood is needed.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      quantity_min: 45
+      quantity_max: 60
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 50
+      shards_max: 75
+      essence_min: 0
+      essence_max: 2
+      xp_min: 55
+      xp_max: 90
+
+  daily_rope_production_hard:
+    key: qt_daily_rope_production_hard
+    quest_type: daily
+    difficulty: hard
+    category: crafting
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Production de cordes
+      en: Rope production run
+    description:
+      fr: Les pêcheurs ont besoin de nombreuses cordes solides pour leurs filets.
+      en: The fishermen need many strong ropes for their nets.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: craft_item
+      item_keys:
+      - item_rope
+      quantity_min: 5
+      quantity_max: 8
+    reward_templates:
+      shards_min: 55
+      shards_max: 80
+      essence_min: 0
+      essence_max: 2
+      xp_min: 60
+      xp_max: 95
+
+  daily_forest_all_hard:
+    key: qt_daily_forest_all_hard
+    quest_type: daily
+    difficulty: hard
+    category: gathering
+    enabled: true
+    min_player_level: 6
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Approvisionnement complet
+      en: Full forest resupply
+    description:
+      fr: Le village a besoin de toutes les ressources de la forêt pour les fêtes.
+      en: The village needs all forest resources for the celebration.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      - small_stone
+      - palm_leaf
+      quantity_min: 55
+      quantity_max: 75
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 55
+      shards_max: 80
+      essence_min: 1
+      essence_max: 3
+      xp_min: 65
+      xp_max: 100
+
+  daily_stone_mining_hard:
+    key: qt_daily_stone_mining_hard
+    quest_type: daily
+    difficulty: hard
+    category: mining
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Extraction massive
+      en: Mass extraction
+    description:
+      fr: Les ingénieurs ont besoin d'une grande quantité de pierres pour le chantier.
+      en: The engineers need a large quantity of stones for the site.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - small_stone
+      quantity_min: 40
+      quantity_max: 55
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 50
+      shards_max: 72
+      essence_min: 0
+      essence_max: 2
+      xp_min: 55
+      xp_max: 85
+
+  daily_forest_emergency_hard:
+    key: qt_daily_forest_emergency_hard
+    quest_type: daily
+    difficulty: hard
+    category: gathering
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Ravitaillement d'urgence
+      en: Emergency supply run
+    description:
+      fr: Une tempête approche ! Il faut stocker un maximum de ressources vitales.
+      en: A storm is coming! Stock as many vital resources as possible.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - vine
+      - palm_leaf
+      quantity_min: 50
+      quantity_max: 65
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 50
+      shards_max: 72
+      essence_min: 1
+      essence_max: 2
+      xp_min: 55
+      xp_max: 85

@@ -5,28 +5,72 @@ import datetime as dt
 
 from flask import Blueprint, jsonify, request
 
+from app.auth import get_current_player
 from app.db import SessionLocal
-from app.models import Player, PlayerQuest
-from app.quests.service import _apply_quest_rewards, serialize_quest
+from app.models import PlayerQuest
+from app.quests.service import (
+    QUEST_MIN_LEVEL,
+    _apply_quest_rewards,
+    assign_continuous_quest_if_needed,
+    assign_daily_quest_if_needed,
+    assign_weekly_quest_if_needed,
+    auto_mark_expired_quests,
+    serialize_quest,
+)
 
 bp = Blueprint("quests", __name__)
 
 
 # --------------------------------------------------------------------
-# Helper local : récupérer le joueur courant via le cookie player_id
-# (on le duplique ici pour éviter les imports circulaires)
+# GET /api/quests  — quêtes actives organisées par type
 # --------------------------------------------------------------------
-def _get_current_player(session) -> Player | None:
-    from flask import request as flask_request
+@bp.get("/quests")
+def get_quests():
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            return jsonify({"error": "not_authenticated"}), 401
 
-    pid = flask_request.cookies.get("player_id")
-    if not pid:
-        return None
-    try:
-        pid = int(pid)
-    except ValueError:
-        return None
-    return session.get(Player, pid)
+        # Level gate — quests become available at QUEST_MIN_LEVEL
+        if (me.level or 0) < QUEST_MIN_LEVEL:
+            return jsonify({
+                "locked": True,
+                "min_level": QUEST_MIN_LEVEL,
+                "daily": [],
+                "weekly": [],
+                "continuous": [],
+            }), 200
+
+        now = dt.datetime.utcnow()
+
+        # Auto-assign + clean up expired quests
+        auto_mark_expired_quests(s, me, now=now)
+        assign_daily_quest_if_needed(s, me, now=now)
+        assign_weekly_quest_if_needed(s, me, now=now)
+        assign_continuous_quest_if_needed(s, me, now=now)
+        s.commit()
+
+        active = (
+            s.query(PlayerQuest)
+            .filter(PlayerQuest.player_id == me.id)
+            .filter(PlayerQuest.status.in_(["active", "ready"]))
+            .order_by(PlayerQuest.started_at.asc())
+            .all()
+        )
+
+        # Exclude expired quests from the response (belt-and-suspenders)
+        now_ts = now
+        daily      = [q for q in active if q.quest_type == "daily"
+                      and (q.expires_at is None or q.expires_at > now_ts)]
+        weekly     = [q for q in active if q.quest_type == "weekly"
+                      and (q.expires_at is None or q.expires_at > now_ts)]
+        continuous = [q for q in active if q.quest_type == "continuous"]
+
+        return jsonify({
+            "daily":      [serialize_quest(q) for q in daily],
+            "weekly":     [serialize_quest(q) for q in weekly],
+            "continuous": [serialize_quest(q) for q in continuous],
+        }), 200
 
 
 # --------------------------------------------------------------------
@@ -34,26 +78,11 @@ def _get_current_player(session) -> Player | None:
 # --------------------------------------------------------------------
 @bp.post("/quests/claim")
 def claim_quest():
-    """
-    Permet au joueur de valider une quête en status 'ready'.
-
-    Input JSON:
-      {
-        "quest_id": 31
-      }
-
-    Règles v1:
-      - La quête doit appartenir au joueur courant.
-      - status doit être 'ready'.
-      - Si la quête est expirée, on la marque 'expired' et on refuse.
-      - On applique les récompenses (shards, essence) et on passe en 'completed'.
-    """
     data = request.get_json(silent=True) or {}
     quest_id = data.get("quest_id")
 
     if not quest_id:
         return jsonify({"error": "quest_id_required"}), 400
-
     try:
         quest_id = int(quest_id)
     except (TypeError, ValueError):
@@ -62,69 +91,59 @@ def claim_quest():
     now = dt.datetime.utcnow()
 
     with SessionLocal() as s:
-        me = _get_current_player(s)
+        me = get_current_player(s)
         if not me:
             return jsonify({"error": "not_authenticated"}), 401
 
         quest = (
             s.query(PlayerQuest)
-            .filter(
-                PlayerQuest.id == quest_id,
-                PlayerQuest.player_id == me.id,
-            )
+            .filter(PlayerQuest.id == quest_id, PlayerQuest.player_id == me.id)
             .one_or_none()
         )
 
         if not quest:
             return jsonify({"error": "quest_not_found"}), 404
 
-        # 1) objectifs vraiment atteints ?
         if any(obj.current_value < obj.target_value for obj in quest.objectives):
-            return jsonify(
-                {
-                    "error": "objectives_not_fulfilled",
-                    "status": quest.status,
-                }
-            ), 400
+            return jsonify({"error": "objectives_not_fulfilled", "status": quest.status}), 400
 
-        # 2) statut prêt ?
         if quest.status != "ready":
-            return jsonify(
-                {
-                    "error": "quest_not_ready",
-                    "status": quest.status,
-                }
-            ), 400
+            return jsonify({"error": "quest_not_ready", "status": quest.status}), 400
 
-        # 3) expiration ?
         if quest.expires_at is not None and now > quest.expires_at:
             quest.status = "expired"
             quest.completed_at = now
             s.commit()
             return jsonify({"error": "quest_expired"}), 400
 
-        # 👉 Baby step 2 : on NE touche pas encore aux ressources.
-        # On applique juste les récompenses (shards / essence)
         _apply_quest_rewards(me, quest)
+        completed_type = quest.quest_type
+        completed_key  = quest.template_key
 
         quest.status = "completed"
         quest.completed_at = now
+
+        # Auto-assign new continuous quest immediately
+        new_quest = None
+        if completed_type == "continuous":
+            new_quest = assign_continuous_quest_if_needed(
+                s, me, exclude_quest_id=quest.id, now=now
+            )
 
         s.commit()
         s.refresh(me)
         s.refresh(quest)
 
-        return jsonify(
-            {
-                "ok": True,
-                "player": {
-                    "id": me.id,
-                    "name": me.name,
-                    "level": me.level,
-                    "xp": me.xp,
-                    "shards": me.shards,
-                    "essence": me.essence,
-                },
-                "quest": serialize_quest(quest),
-            }
-        ), 200
+        return jsonify({
+            "ok": True,
+            "player": {
+                "id":      me.id,
+                "name":    me.name,
+                "level":   me.level,
+                "xp":      me.xp,
+                "shards":  me.shards,
+                "essence": me.essence,
+            },
+            "quest":     serialize_quest(quest),
+            "new_quest": serialize_quest(new_quest) if new_quest else None,
+        }), 200

@@ -1,0 +1,195 @@
+quest_templates:
+
+  continuous_branch_supply:
+    key: qt_continuous_branch_supply
+    quest_type: continuous
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Réserve de branches
+      en: Branch reserve
+    description:
+      fr: Le village a toujours besoin de branches. Continue à en apporter régulièrement.
+      en: The village always needs branches. Keep bringing them regularly.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      quantity_min: 25
+      quantity_max: 35
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 28
+      shards_max: 48
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 55
+
+  continuous_stone_supply:
+    key: qt_continuous_stone_supply
+    quest_type: continuous
+    difficulty: easy
+    category: mining
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Pierres en continu
+      en: Continuous stone supply
+    description:
+      fr: Les maçons ont besoin d'un flux constant de petites pierres.
+      en: The masons need a constant flow of small stones.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - small_stone
+      quantity_min: 20
+      quantity_max: 30
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 28
+      shards_max: 48
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 55
+
+  continuous_wood_supply:
+    key: qt_continuous_wood_supply
+    quest_type: continuous
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Approvisionnement en bois
+      en: Steady wood supply
+    description:
+      fr: Le village a toujours besoin de bois. Continue à en apporter régulièrement.
+      en: The village always needs wood. Keep bringing it regularly.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - wood
+      quantity_min: 18
+      quantity_max: 28
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 30
+      shards_max: 50
+      essence_min: 0
+      essence_max: 1
+      xp_min: 32
+      xp_max: 55
+
+  continuous_forest_mixed:
+    key: qt_continuous_forest_mixed
+    quest_type: continuous
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Ressources mixtes de la forêt
+      en: Mixed forest resources
+    description:
+      fr: Apporte un lot varié de ressources forestières au village.
+      en: Bring a varied batch of forest resources to the village.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - vine
+      - palm_leaf
+      quantity_min: 32
+      quantity_max: 48
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 45
+      shards_max: 70
+      essence_min: 0
+      essence_max: 1
+      xp_min: 45
+      xp_max: 75
+
+  continuous_rope_craft:
+    key: qt_continuous_rope_craft
+    quest_type: continuous
+    difficulty: medium
+    category: crafting
+    enabled: true
+    min_player_level: 4
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Production régulière de cordes
+      en: Regular rope production
+    description:
+      fr: L'atelier a besoin d'un approvisionnement régulier en cordes.
+      en: The workshop needs a regular supply of ropes.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: craft_item
+      item_keys:
+      - item_rope
+      quantity_min: 3
+      quantity_max: 5
+    reward_templates:
+      shards_min: 48
+      shards_max: 72
+      essence_min: 0
+      essence_max: 2
+      xp_min: 50
+      xp_max: 80
+
+  continuous_branch_palm_supply:
+    key: qt_continuous_branch_palm_supply
+    quest_type: continuous
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Feuillages pour le village
+      en: Foliage for the village
+    description:
+      fr: Les habitants utilisent branches et feuilles de palmier pour tout.
+      en: The villagers use branches and palm leaves for everything.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - palm_leaf
+      quantity_min: 22
+      quantity_max: 32
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 28
+      shards_max: 48
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 55
