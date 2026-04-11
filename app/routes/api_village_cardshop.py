@@ -86,6 +86,22 @@ def api_village_cardshop_buy():
                 {"ok": False, "error": "max_owned_reached"}
             ), 400
 
+        # Check buy_rules: prerequisite card ownership
+        buy_rules = shop_cfg.get("buy_rules") or {}
+        requires_card = buy_rules.get("requires_card")
+        if requires_card:
+            has_prereq = (
+                session.query(PlayerCard)
+                .filter_by(player_id=player.id, card_key=requires_card)
+                .count()
+            ) > 0
+            if not has_prereq:
+                return jsonify({
+                    "ok": False,
+                    "error": "prerequisite_card_required",
+                    "requires_card": requires_card,
+                }), 400
+
         # (optionnel) Ressources requises -> à implémenter plus tard
         if res_costs:
             # TODO: vérifier les ressources du joueur

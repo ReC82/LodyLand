@@ -14,8 +14,7 @@ let craftState = {
   recipes: [],
   selectedRecipe: null,
 
-  // Craft table level:
-  // 0: no table, 1: 1x3, 2: 2x3, 3: 3x3
+  // Craft table level: 0 / 1 / 2 / 3
   tableLevel: 0,
 
   // Player inventory from /api/state
@@ -33,17 +32,27 @@ let craftState = {
   // Toggle ingredients / recipes panel
   showRecipes: false,
 
-  // Craft job state (single job per table)
-  activeJob: null,        // current craft job
-  jobRemainingSeconds: 0, // local countdown for UI
+  // Craft queue state
+  activeJob: null,     // currently crafting
+  queueJobs: [],       // waiting in queue
+  maxQueueSlots: 2,    // base 2 + extra purchased
+  extraSlots: 0,
+  nextSlotCost: 2,
 
   // Filters (text input)
   ingredientsFilter: "",
   recipesFilter: "",
 };
 
-// Timer id for craft job countdown
-let craftJobTimerId = null;
+// Set of job IDs for which we've already shown a "done" toast
+const _craftShownDoneIds = new Set();
+
+// Interval ID for the progress/timer loop
+let craftTimerLoopId = null;
+
+// Track progress per job so the bar never goes backwards
+let _craftProgressJobId = null;
+let _craftProgressPct   = 0;
 
 // Currently dragged ingredient key (for slot hover highlight)
 let currentDraggedKey = null;
@@ -82,12 +91,10 @@ function showCraftMobileTooltip(text) {
 
 
 // ============================================================================
-// Generic helpers
+// Craft queue bar rendering
 // ============================================================================
 
-/**
- * Format seconds as "mm:ss".
- */
+/** Format seconds as "mm:ss" */
 function formatSecondsMMSS(total) {
   const sec = Math.max(0, parseInt(total, 10) || 0);
   const m = Math.floor(sec / 60);
@@ -95,27 +102,185 @@ function formatSecondsMMSS(total) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-// ============================================================================
-// Craft status (top UI)
-// ============================================================================
+/** Show/hide the craft FAB red dot */
+function updateCraftFabDot(show) {
+  const dot = document.getElementById("craft-fab-dot");
+  if (!dot) return;
+  dot.style.display = show ? "" : "none";
+}
 
+/** Show a "craft done" toast above the FAB button */
+function showCraftDoneToast(label, qty) {
+  let toast = document.querySelector(".craft-done-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.className = "craft-done-toast";
+    const icon = document.createElement("span");
+    icon.className = "craft-done-toast-icon";
+    icon.textContent = "✓";
+    toast.appendChild(icon);
+    const text = document.createElement("span");
+    text.className = "craft-done-toast-text";
+    toast.appendChild(text);
+    document.body.appendChild(toast);
+  }
+
+  const text = toast.querySelector(".craft-done-toast-text");
+  if (text) text.textContent = `Craft terminé : ×${qty} ${label}`;
+
+  toast.classList.add("is-visible");
+  setTimeout(() => toast.classList.remove("is-visible"), 3500);
+}
+
+/**
+ * Render the queue bar (active job + queue slots + unlock button).
+ * Called every second by the timer loop AND after each data refresh.
+ */
+function renderCraftQueueBar() {
+  const bar = document.getElementById("craft-queue-bar");
+  if (!bar) return;
+
+  // Show the bar whenever the player has a craft table
+  bar.style.display = craftState.tableLevel > 0 ? "flex" : "none";
+
+  const job = craftState.activeJob;
+  bar.classList.toggle("has-active-job", !!job);
+
+  // --- Active job section ---
+  const jobIcon  = document.getElementById("craft-job-icon");
+  const jobIconFb = document.getElementById("craft-job-icon-fallback");
+  const jobName  = document.getElementById("craft-job-name");
+  const timerClock = document.getElementById("craft-timer-clock");
+  const timerQty = document.getElementById("craft-timer-qty");
+  const progressBar = document.getElementById("craft-progress-bar");
+
+  if (job) {
+    // Icon
+    if (jobIcon) {
+      if (job.icon) {
+        let src = job.icon;
+        if (!src.startsWith("/") && !src.startsWith("http")) src = "/" + src;
+        jobIcon.src = src;
+        jobIcon.style.display = "";
+        if (jobIconFb) jobIconFb.style.display = "none";
+      } else {
+        jobIcon.style.display = "none";
+        if (jobIconFb) jobIconFb.style.display = "";
+      }
+    }
+
+    if (jobName) jobName.textContent = job.label || job.item_key || "—";
+
+    // Compute remaining time from ends_at
+    // Backend returns naive UTC strings (no "Z"), so we append it to force UTC parsing
+    const _addZ = (s) => (s && !s.endsWith("Z") && !s.includes("+") ? s + "Z" : s);
+    const now = Date.now() / 1000;
+    const endsAt = new Date(_addZ(job.ends_at)).getTime() / 1000;
+    const startedAt = new Date(_addZ(job.started_at)).getTime() / 1000;
+    const totalSecs = Math.max(1, endsAt - startedAt);
+    const remaining = Math.max(0, endsAt - now);
+    const elapsed = totalSecs - remaining;
+    const progress = Math.min(100, (elapsed / totalSecs) * 100);
+
+    if (timerClock) timerClock.textContent = formatSecondsMMSS(Math.ceil(remaining));
+    if (timerQty) timerQty.textContent = `×${job.quantity_total || 1}`;
+    if (progressBar) {
+      // Never allow progress to go backwards for the same job
+      if (_craftProgressJobId !== job.id) {
+        _craftProgressJobId = job.id;
+        _craftProgressPct   = 0;
+      }
+      _craftProgressPct = Math.max(_craftProgressPct, progress);
+      progressBar.style.width = _craftProgressPct + "%";
+    }
+  }
+
+  // Show/hide the whole active-job display based on whether a job is running
+  const activeDisplay = document.getElementById("craft-active-job-display");
+  if (activeDisplay) activeDisplay.style.display = job ? "flex" : "none";
+
+  // --- Queue slots (waiting) ---
+  renderCraftQueueSlots();
+
+  // --- Unlock slot button (always visible when table unlocked) ---
+  const unlockBtn  = document.getElementById("craft-unlock-slot-btn");
+  const costSpan   = document.getElementById("craft-unlock-slot-cost");
+  if (unlockBtn) {
+    unlockBtn.style.display = craftState.tableLevel > 0 ? "" : "none";
+    if (costSpan) costSpan.textContent = `${craftState.nextSlotCost} ✦`;
+  }
+}
+
+/** Render queue slot items (waiting jobs + empty slots) */
+function renderCraftQueueSlots() {
+  const container = document.getElementById("craft-queue-slots");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const queuedJobs = craftState.queueJobs || [];
+  // Extra queue capacity beyond active slot = maxQueueSlots - 1
+  const queueCapacity = Math.max(0, craftState.maxQueueSlots - 1);
+
+  for (let i = 0; i < queueCapacity; i++) {
+    const queued = queuedJobs[i] || null;
+    const el = document.createElement("div");
+
+    if (queued) {
+      el.className = "craft-queue-slot-item";
+      el.title = queued.label || queued.item_key;
+      if (queued.icon) {
+        const img = document.createElement("img");
+        let src = queued.icon;
+        if (!src.startsWith("/") && !src.startsWith("http")) src = "/" + src;
+        img.src = src;
+        img.alt = queued.label || queued.item_key;
+        el.appendChild(img);
+      } else {
+        el.textContent = "⚙";
+        el.style.fontSize = "1rem";
+        el.style.color = "#9ca3af";
+      }
+    } else {
+      el.className = "craft-queue-slot-empty";
+      const icon = document.createElement("span");
+      icon.className = "craft-queue-slot-empty-icon";
+      icon.textContent = "·";
+      el.appendChild(icon);
+    }
+    container.appendChild(el);
+  }
+}
+
+/** Start (or restart) the 1-second timer loop that updates the queue bar */
+function startCraftTimerLoop() {
+  if (craftTimerLoopId) {
+    clearInterval(craftTimerLoopId);
+    craftTimerLoopId = null;
+  }
+
+  if (!craftState.activeJob) return;
+
+  let ticksSinceSync = 0;
+
+  craftTimerLoopId = setInterval(() => {
+    renderCraftQueueBar();
+    ticksSinceSync++;
+
+    // Every 5 ticks (~5 seconds), resync with backend
+    if (ticksSinceSync >= 5) {
+      ticksSinceSync = 0;
+      clearInterval(craftTimerLoopId);
+      craftTimerLoopId = null;
+      refreshCraftData().catch((e) =>
+        console.error("[craft] timer resync error:", e)
+      );
+    }
+  }, 1000);
+}
+
+/** Legacy stub (used in a few places) - now a no-op */
 function setCraftStatus(text, tone) {
-  const box = document.getElementById("craft-status");
-  const textEl = document.getElementById("craft-status-text");
-  if (!box || !textEl) return;
-
-  // Reset tones
-  box.classList.remove(
-    "craft-status--neutral",
-    "craft-status--running",
-    "craft-status--error",
-    "craft-status--success"
-  );
-
-  const t = (tone || "neutral").toLowerCase();
-  box.classList.add("craft-status--" + t);
-
-  textEl.textContent = text || "Aucun craft en cours.";
+  // Queue bar replaced the old status box. No-op kept for compatibility.
 }
 
 
@@ -150,153 +315,19 @@ function updateSlotHover(slotIndex, isOver) {
 
 
 // ============================================================================
-// Craft job status + timer
+// Legacy stubs (kept for compatibility with code paths that may call them)
 // ============================================================================
 
-/**
- * Check if the current job is actually still active (units + seconds).
- */
 function isCraftJobActive() {
-  const job = craftState.activeJob;
-  if (!job) return false;
-
-  const remainingUnits =
-    job.remaining_units != null
-      ? job.remaining_units
-      : Math.max(
-          0,
-          (job.quantity_total || 0) - (job.quantity_done || 0)
-        );
-
-  const serverRemaining =
-    typeof job.seconds_remaining_total === "number"
-      ? job.seconds_remaining_total
-      : 0;
-
-  const sec =
-    craftState.jobRemainingSeconds > 0
-      ? craftState.jobRemainingSeconds
-      : serverRemaining;
-
-  return remainingUnits > 0 && sec > 0;
+  return !!(craftState.activeJob);
 }
 
-/**
- * Update the craft job status UI box.
- */
 function renderCraftJobStatus() {
-  const job = craftState.activeJob;
-
-  // No job running
-  if (!job || !isCraftJobActive()) {
-    setCraftStatus("Aucun craft en cours.", "neutral");
-    return;
-  }
-
-  const label = job.label || job.item_key || "Item";
-
-  const remainingUnits =
-    job.remaining_units != null
-      ? job.remaining_units
-      : Math.max(0, (job.quantity_total || 0) - (job.quantity_done || 0));
-
-  const serverRemaining =
-    typeof job.seconds_remaining_total === "number"
-      ? job.seconds_remaining_total
-      : 0;
-
-  const sec =
-    craftState.jobRemainingSeconds > 0
-      ? craftState.jobRemainingSeconds
-      : serverRemaining;
-
-  setCraftStatus(
-    `Craft en cours : ${remainingUnits} × ${label} — temps restant : ${formatSecondsMMSS(sec)}`,
-    "running"
-  );
+  renderCraftQueueBar();
 }
 
-
-/**
- * Setup / reset local countdown from activeJob (including periodic resync).
- */
 function setupCraftJobTimerFromState() {
-  // Clear previous timer
-  if (craftJobTimerId) {
-    clearInterval(craftJobTimerId);
-    craftJobTimerId = null;
-  }
-
-  const job = craftState.activeJob;
-
-  // If no job or already finished → clean state
-  if (!job || !isCraftJobActive()) {
-    craftState.activeJob = null;
-    craftState.jobRemainingSeconds = 0;
-    renderCraftJobStatus();
-    return;
-  }
-
-  const serverRemaining =
-    typeof job.seconds_remaining_total === "number"
-      ? job.seconds_remaining_total
-      : 0;
-
-  craftState.jobRemainingSeconds = Math.max(
-    0,
-    parseInt(serverRemaining, 10) || 0
-  );
-
-  // First render immediately
-  renderCraftJobStatus();
-
-  if (craftState.jobRemainingSeconds <= 0) {
-    craftState.activeJob = null;
-    renderCraftJobStatus();
-    return;
-  }
-
-  // Keep track of last remaining seconds when we synced
-  let lastSyncRemaining = craftState.jobRemainingSeconds;
-
-  craftJobTimerId = setInterval(() => {
-    if (craftState.jobRemainingSeconds > 0) {
-      craftState.jobRemainingSeconds -= 1;
-      renderCraftJobStatus();
-
-      // Every 5 seconds, re-sync with backend (/api/state)
-      if (
-        craftState.jobRemainingSeconds > 0 &&
-        lastSyncRemaining - craftState.jobRemainingSeconds >= 5
-      ) {
-        lastSyncRemaining = craftState.jobRemainingSeconds;
-
-        // This will refresh job, inventory, etc.
-        refreshCraftData()
-          .catch((e) => console.error("[craft] refreshCraftData (poll) error:", e));
-
-        // refreshCraftData will call setupCraftJobTimerFromState again
-        // so we stop the current timer.
-        clearInterval(craftJobTimerId);
-        craftJobTimerId = null;
-        return;
-      }
-
-      // End of local timer
-      if (craftState.jobRemainingSeconds <= 0) {
-        clearInterval(craftJobTimerId);
-        craftJobTimerId = null;
-
-        // Final resync to close job and update inventory/items
-        refreshCraftData().catch((e) => {
-          console.error("[craft] refreshCraftData after timer error:", e);
-        });
-      }
-    } else {
-      clearInterval(craftJobTimerId);
-      craftJobTimerId = null;
-    }
-  }, 1000);
+  startCraftTimerLoop();
 }
 
 
@@ -325,8 +356,19 @@ function rebuildCraftGrid() {
 
   const slotsCount = getCraftGridSlotCount();
 
+  // Only wipe slot state + rebuild DOM when the grid size actually changes.
+  // This prevents ghost icons disappearing on every 5-second resync.
+  const domSlots = grid.querySelectorAll(".craft-slot").length;
+  if (domSlots === slotsCount) {
+    // Grid size unchanged — just re-render the existing slots
+    renderCraftSlots();
+    return;
+  }
+
+  // Grid size changed (or first build): reset and rebuild fully
   craftState.expectedSlots = new Array(slotsCount).fill(null);
   craftState.filledSlots   = new Array(slotsCount).fill(null);
+  craftState.selectedRecipe = null;
 
   grid.innerHTML = "";
 
@@ -347,13 +389,6 @@ function rebuildCraftGrid() {
         return;
       }
 
-      // If a craft job is active, do not allow drop
-      if (craftState.activeJob) {
-        slotEl.classList.remove("craft-slot--droppable");
-        return;
-      }
-
-      // Highlight only if dragged ingredient matches expected key
       if (currentDraggedKey && currentDraggedKey === expected.key) {
         slotEl.classList.add("craft-slot--droppable");
       } else {
@@ -433,6 +468,12 @@ function initCraftUI() {
   // Perform craft / change panel
   performBtn.addEventListener("click", onCraftPerformClicked);
 
+  // Buy extra queue slot
+  const unlockSlotBtn = $("craft-unlock-slot-btn");
+  if (unlockSlotBtn) {
+    unlockSlotBtn.addEventListener("click", onBuyQueueSlotClicked);
+  }
+
   // Filters
   if (ingredientsFilterInput) {
     ingredientsFilterInput.addEventListener("input", (e) => {
@@ -483,6 +524,9 @@ function openCraftModal() {
 
   modalEl.classList.add("is-open");
 
+  // Clear notification dot when opening
+  updateCraftFabDot(false);
+
   // Reload state when opening
   refreshCraftData().catch((e) => {
     console.error("[craft] refreshCraftData (open) error:", e);
@@ -523,8 +567,6 @@ async function refreshCraftData() {
       ? craftBlock.craft_table_level
       : 0;
 
-  console.log("[craft] tableLevel from /api/state =", craftState.tableLevel);
-
   // Resource definitions (icons, labels, etc.)
   craftState.resourceDefs =
     state.resources || state.resource_defs || state.resourceDefinitions || [];
@@ -544,9 +586,7 @@ async function refreshCraftData() {
     };
   });
 
-  // Build merged inventory for craft table:
-  //  - resources from state.inventory
-  //  - items from state.items
+  // Build merged inventory
   const resInv = (state.inventory || []).map((rs) => ({
     key: rs.resource || rs.key,
     qty:
@@ -566,16 +606,34 @@ async function refreshCraftData() {
 
   craftState.inventory = [...resInv, ...itemsInv];
 
-  // Active job from backend state
-  craftState.activeJob = craftBlock.active_job || null;
-  console.log("[craft] activeJob from /api/state =", craftState.activeJob);
+  // Queue state from backend
+  craftState.activeJob   = craftBlock.active_job  || null;
+  craftState.queueJobs   = craftBlock.queue_jobs  || [];
+  craftState.maxQueueSlots = craftBlock.max_queue_slots || 2;
+  craftState.extraSlots    = craftBlock.extra_slots || 0;
+  craftState.nextSlotCost  = craftBlock.next_slot_cost || 2;
 
-  const levelSpan = $("craft-table-level");
-  if (levelSpan) {
-    levelSpan.textContent = craftState.tableLevel;
+  // Recently-completed jobs → show toasts + red dot
+  const recentDone = craftBlock.recently_completed || [];
+  let hasNew = false;
+  recentDone.forEach((rc) => {
+    if (!_craftShownDoneIds.has(rc.id)) {
+      _craftShownDoneIds.add(rc.id);
+      showCraftDoneToast(rc.label || rc.item_key, rc.quantity_total || 1);
+      hasNew = true;
+    }
+  });
+  if (hasNew) {
+    // Only show dot if modal is not currently open
+    const modalEl = $("craft-modal");
+    if (!modalEl || !modalEl.classList.contains("is-open")) {
+      updateCraftFabDot(true);
+    }
   }
 
-  // Rebuild grid according to table level
+  const levelSpan = $("craft-table-level");
+  if (levelSpan) levelSpan.textContent = craftState.tableLevel;
+
   rebuildCraftGrid();
 
   // FAB craft button visible only if tableLevel > 0
@@ -584,11 +642,11 @@ async function refreshCraftData() {
     craftBtn.style.display = craftState.tableLevel > 0 ? "" : "none";
   }
 
-  // Render ingredients (with filter)
   renderCraftIngredients(craftState.inventory);
 
-  // Update job status + timer
-  setupCraftJobTimerFromState();
+  // Render queue bar + start timer loop
+  renderCraftQueueBar();
+  startCraftTimerLoop();
 
   // 2) Load recipes
   const recipesRes = await http(
@@ -722,16 +780,6 @@ function renderCraftIngredients(inventory) {
       item.draggable = true;
 
       item.addEventListener("dragstart", (e) => {
-        if (craftState.activeJob) {
-          e.preventDefault();
-          const errEl = $("craft-error");
-          if (errEl) {
-            errEl.style.display = "block";
-            errEl.textContent =
-              "Un craft est déjà en cours. Attends la fin avant de lancer un autre craft.";
-          }
-          return;
-        }
         currentDraggedKey = key;
         e.dataTransfer.setData("text/plain", key);
       });
@@ -761,8 +809,6 @@ function renderCraftIngredients(inventory) {
 // ============================================================================
 
 function onIngredientClickedMobile(key) {
-  if (craftState.activeJob) return;
-
   const expected = craftState.expectedSlots || [];
   const filled = craftState.filledSlots || [];
 
@@ -927,16 +973,6 @@ function renderCraftRecipes(recipes) {
 
     // Click: sélection de la recette
     item.addEventListener("click", () => {
-      if (craftState.activeJob) {
-        const errEl = $("craft-error");
-        if (errEl) {
-          errEl.style.display = "block";
-          errEl.textContent =
-            "Un craft est en cours sur cette table. Termine-le avant de choisir une nouvelle recette.";
-        }
-        return;
-      }
-
       craftState.selectedRecipe = r;
       decodeRecipeIntoSlots(r);
       renderCraftSlots();
@@ -1136,17 +1172,6 @@ function renderCraftSlots() {
 function onSlotDropped(e, slotIndex) {
   e.preventDefault();
 
-  // Do not allow drop if a craft job is running
-  if (craftState.activeJob) {
-    const errEl = $("craft-error");
-    if (errEl) {
-      errEl.style.display = "block";
-      errEl.textContent =
-        "Un craft est déjà en cours. Attends la fin avant de lancer un autre craft.";
-    }
-    return;
-  }
-
   const key = e.dataTransfer.getData("text/plain") || currentDraggedKey;
   if (!key) return;
 
@@ -1218,7 +1243,7 @@ function updateCraftPanelsVisibility() {
 function updateCraftSelectionUI() {
   const performBtn = $("craft-perform-btn");
 
-  renderCraftJobStatus();
+  renderCraftQueueBar();
 
   // Highlight selected recipe in list
   const listEl = $("craft-recipes-list");
@@ -1226,10 +1251,7 @@ function updateCraftSelectionUI() {
     const items = listEl.querySelectorAll(".craft-recipe-item");
     items.forEach((el) => {
       const key = el.getAttribute("data-itemKey");
-      if (
-        craftState.selectedRecipe &&
-        key === craftState.selectedRecipe.item_key
-      ) {
+      if (craftState.selectedRecipe && key === craftState.selectedRecipe.item_key) {
         el.classList.add("is-selected");
       } else {
         el.classList.remove("is-selected");
@@ -1237,62 +1259,56 @@ function updateCraftSelectionUI() {
     });
   }
 
+  // Show duration hint for selected recipe
+  const durationEl = $("craft-recipe-duration");
+  const durationText = $("craft-duration-text");
+  if (durationEl && durationText) {
+    const recipe = craftState.selectedRecipe;
+    const tps = recipe?.recipe?.craft_time_seconds || 0;
+    if (recipe && tps > 0) {
+      durationText.textContent = formatSecondsMMSS(tps) + " par item";
+      durationEl.style.display = "flex";
+    } else if (recipe && tps === 0) {
+      durationText.textContent = "Instantané";
+      durationEl.style.display = "flex";
+    } else {
+      durationEl.style.display = "none";
+    }
+  }
+
   if (!performBtn) return;
 
-  // Button text depends on current panel
+  // Button text
+  performBtn.textContent = craftState.showRecipes ? "Choisir cette recette" : "Craft";
+
+  // --- CASE 1: Recipes panel ---
   if (craftState.showRecipes) {
-    performBtn.textContent = "Crafter cette recette";
-  } else {
-    performBtn.textContent = "Craft";
+    performBtn.disabled = !craftState.selectedRecipe;
+    return;
   }
 
-  // If a craft job is active, always disable button
-  if (craftState.activeJob) {
+  // --- CASE 2: Ingredients panel ---
+  if (!craftState.selectedRecipe || !craftState.tableLevel || craftState.tableLevel <= 0) {
     performBtn.disabled = true;
     return;
   }
 
-  // --- CASE 1: Recipes panel ----------------------------------------------
-  // Here the button is only a "continue" to ingredients, not a real POST yet.
-  if (craftState.showRecipes) {
-    if (!craftState.selectedRecipe) {
-      performBtn.disabled = true;
-    } else {
-      performBtn.disabled = false;
-    }
-    return;
-  }
-
-  // --- CASE 2: Ingredients panel (normal craft flow) ----------------------
-
-  // No recipe selected
-  if (!craftState.selectedRecipe) {
-    performBtn.disabled = true;
-    return;
-  }
-
-  // No table => cannot craft
-  if (!craftState.tableLevel || craftState.tableLevel <= 0) {
-    performBtn.disabled = true;
-    return;
-  }
-
-  // Recipe locked (level, card, table, etc.)
   if (!craftState.selectedRecipe.is_unlocked) {
     performBtn.disabled = true;
     return;
   }
 
-  // All expected slots must be filled with the correct key
-  console.log(
-    "[craft] updateUI selected=",
-    !!craftState.selectedRecipe,
-    "expected=",
-    craftState.expectedSlots,
-    "filled=",
-    craftState.filledSlots
-  );
+  // Queue full check (only for delayed crafts)
+  const tps = craftState.selectedRecipe?.recipe?.craft_time_seconds || 0;
+  if (tps > 0) {
+    const occupied = (craftState.activeJob ? 1 : 0) + craftState.queueJobs.length;
+    if (occupied >= craftState.maxQueueSlots) {
+      performBtn.disabled = true;
+      return;
+    }
+  }
 
+  // All expected slots must be filled
   const allGood = craftState.expectedSlots.every((exp, i) => {
     if (!exp) return true;
     const filled = craftState.filledSlots[i];
@@ -1309,133 +1325,120 @@ function updateCraftSelectionUI() {
 
 async function onCraftPerformClicked() {
   const performBtn = $("craft-perform-btn");
-  const qtyInput   = $("craft-quantity-input");
 
-  // If a job is active → nothing to do
-  if (craftState.activeJob) {
-    setCraftStatus(
-      "Un craft est déjà en cours. Attends sa fin avant de lancer un autre craft.",
-      "error"
-    );
-    return;
-  }
-
-  // --- CASE 1: Recipes panel ----------------------------------------------
-  // Here, "Crafter cette recette" only switches to ingredients panel.
+  // --- CASE 1: Recipes panel → switch to ingredients panel ---
   if (craftState.showRecipes) {
-    if (!craftState.selectedRecipe) {
-      // No recipe selected → nothing
-      return;
-    }
-
+    if (!craftState.selectedRecipe) return;
     craftState.showRecipes = false;
     updateCraftPanelsVisibility();
     updateCraftSelectionUI();
     return;
   }
 
-  // --- CASE 2: Ingredients panel (launch craft) ---------------------------
+  // --- CASE 2: Ingredients panel → launch craft ---
   if (!craftState.selectedRecipe) return;
 
-  // Quantity
-  let times = 1;
-  if (qtyInput) {
-    const v = parseInt(qtyInput.value, 10);
-    times = Number.isNaN(v) || v < 1 ? 1 : v;
-    qtyInput.value = String(times);
-  }
-
-  if (performBtn) {
-    performBtn.disabled = true;
-  }
+  if (performBtn) performBtn.disabled = true;
 
   const itemKey = craftState.selectedRecipe.item_key;
-
-  const payload = {
-    item_key: itemKey,
-    craft_location: "craft_table",
-    times: times,
-  };
-
-  console.log("[craft] perform =>", {
-    ...payload,
-    filledSlots: craftState.filledSlots,
-    expectedSlots: craftState.expectedSlots,
-  });
+  const payload = { item_key: itemKey, craft_location: "craft_table", times: 1 };
 
   const res = await http("POST", "/api/craft/perform", payload);
 
   if (!res.ok) {
-    console.error("[craft] perform error:", res);
-    console.error("[craft] perform error data:", res.data);
-    console.error("[craft] perform error data (pretty):", JSON.stringify(res.data, null, 2));
-
-
-    if (performBtn) {
-      performBtn.disabled = false;
-    }
+    if (performBtn) performBtn.disabled = false;
 
     const data = res.data || {};
     const code = data.error || "";
 
-    if (code === "not_enough_resources") {
+    let errMsg = "Erreur lors du craft.";
+    if (code === "craft_queue_full") {
+      errMsg = `File de craft pleine (${data.occupied}/${data.max_slots}). Débloque un emplacement supplémentaire.`;
+    } else if (code === "not_enough_ingredients") {
       const missing = data.missing || {};
-      const parts = Object.entries(missing).map(([k, v]) => `${v} x ${k}`);
-      setCraftStatus(
-        "Pas assez de ressources: " + (parts.join(", ") || "inconnu"),
-        "error"
-      );
+      const all = { ...(missing.resources || {}), ...(missing.items || {}) };
+      const parts = Object.entries(all).map(([k, v]) => `${v} × ${k}`);
+      errMsg = "Ingrédients manquants : " + (parts.join(", ") || "?");
     } else if (code === "craft_locked") {
-      setCraftStatus("Recette verrouillée.", "error");
+      errMsg = "Recette verrouillée.";
     } else if (code === "craft_table_too_low") {
-      setCraftStatus("Table de craft de niveau insuffisant.", "error");
-    } else if (code === "craft_in_progress") {
-      setCraftStatus("Un craft est déjà en cours sur cette table.", "error");
-    } else {
-      setCraftStatus("Erreur lors du craft.", "error");
+      errMsg = "Table de craft de niveau insuffisant.";
     }
 
+    // Show inline error briefly in status area if it exists, otherwise alert
+    const errEl = $("craft-error");
+    if (errEl) {
+      errEl.style.display = "block";
+      errEl.textContent = errMsg;
+      setTimeout(() => { errEl.style.display = "none"; }, 4000);
+    } else {
+      console.warn("[craft] error:", errMsg);
+    }
     return;
   }
 
   const data = res.data || {};
-  const crafted = data.crafted_item || {};
-  const delayed = !!data.delayed;
-
-  // If backend returns rewards (xp/level), trigger global level-up UI if available
   const rewards = data.rewards || null;
-
   if (rewards && rewards.level_up && typeof window.handleLevelUpFront === "function") {
-    window.handleLevelUpFront(
-      rewards.old_level,
-      rewards.new_level,
-      rewards.level_rewards || []
-    );
+    window.handleLevelUpFront(rewards.old_level, rewards.new_level, rewards.level_rewards || []);
   }
 
-  // Reset quantity input to 1 after craft
-  if (qtyInput) {
-    qtyInput.value = "1";
-  }
-
-  // Success message in top status
-  const qty = crafted.quantity || times;
-  const label = crafted.label || crafted.item_key || itemKey;
-
-  if (delayed) {
-    setCraftStatus(`Craft lancé : x${qty} ${label} (en cours...)`, "success");
-  } else {
-    setCraftStatus(`Craft réussi : x${qty} ${label}`, "success");
-  }
-
-  // Refresh ingredients, jobs & timer
+  // Refresh data (updates queue bar, inventory, etc.)
   await refreshCraftData();
 
-  // After refresh, show the job timer if a job is now active
-  renderCraftJobStatus();
-
-  // Reset filled slots but keep pattern
+  // Reset filled slots but keep pattern visible
   craftState.filledSlots = new Array(craftState.expectedSlots.length).fill(null);
   renderCraftSlots();
 }
+
+async function onBuyQueueSlotClicked() {
+  const res = await http("POST", "/api/craft/queue/buy_slot", {});
+  if (!res.ok) {
+    const data = res.data || {};
+    if (data.error === "not_enough_essence") {
+      alert(`Essence insuffisante — il te faut ${data.required} ✦ (tu en as ${data.owned}).`);
+    } else {
+      console.error("[craft] buy_slot error:", data);
+    }
+    return;
+  }
+  await refreshCraftData();
+}
+
+
+// ============================================================================
+// Background craft-done polling (runs even when modal is closed)
+// ============================================================================
+
+(function startCraftBackgroundPoll() {
+  // Poll every 30 seconds when modal is closed (timer loop handles it when open)
+  setInterval(async () => {
+    const modalEl = document.getElementById("craft-modal");
+    if (modalEl && modalEl.classList.contains("is-open")) return; // timer loop handles it
+    if (!craftState.activeJob && craftState.queueJobs.length === 0) return; // nothing running
+
+    try {
+      const res = await http("GET", "/api/state");
+      if (!res.ok) return;
+      const craftBlock = (res.data || {}).craft || {};
+
+      // Update queue state silently
+      craftState.activeJob   = craftBlock.active_job  || null;
+      craftState.queueJobs   = craftBlock.queue_jobs  || [];
+      craftState.maxQueueSlots = craftBlock.max_queue_slots || 2;
+      craftState.nextSlotCost  = craftBlock.next_slot_cost || 2;
+
+      const recentDone = craftBlock.recently_completed || [];
+      recentDone.forEach((rc) => {
+        if (!_craftShownDoneIds.has(rc.id)) {
+          _craftShownDoneIds.add(rc.id);
+          showCraftDoneToast(rc.label || rc.item_key, rc.quantity_total || 1);
+          updateCraftFabDot(true);
+        }
+      });
+    } catch (e) {
+      // silent
+    }
+  }, 30000);
+})();
 

@@ -215,13 +215,33 @@ def compute_craft_table_level(session: Session, player: Player) -> int:
     return level
 
 
-def update_craft_jobs_for_player(session: Session, player: Player) -> None:
+def get_craft_queue_max_slots(player: Player) -> int:
     """
-    Update all active craft jobs for this player:
-      - compute how many units should be completed based on time
-      - credit missing items into PlayerItem
-      - mark job as done when finished
+    Return the total number of craft queue slots available to a player.
+    Base is 2 (1 active + 1 queued). Each extra slot purchased adds 1 more.
+    """
+    extra = int(getattr(player, "craft_queue_extra_slots", 0) or 0)
+    return 2 + extra
 
+
+def get_craft_next_slot_cost(player: Player) -> int:
+    """
+    Cost in essence to unlock the next queue slot.
+    Formula: 2^(extra_slots + 1)  →  2, 4, 8, 16 ...
+    """
+    extra = int(getattr(player, "craft_queue_extra_slots", 0) or 0)
+    return 2 ** (extra + 1)
+
+
+def update_craft_jobs_for_player(session: Session, player: Player) -> list:
+    """
+    Update all active and queued craft jobs for this player:
+      - compute how many units should be completed based on time (active jobs)
+      - credit missing items into PlayerItem
+      - mark active job as done when finished
+      - promote the next queued job to active
+
+    Returns a list of item_keys that were just completed (for notifications).
     Notes:
       - This function does NOT commit; caller decides transaction boundaries.
     """
@@ -229,8 +249,10 @@ def update_craft_jobs_for_player(session: Session, player: Player) -> None:
     from app.quests.service import on_item_crafted
 
     now = dt.datetime.utcnow()
+    just_completed: list = []
 
-    jobs = (
+    # Process active jobs first
+    active_jobs = (
         session.query(PlayerCraftJob)
         .filter(PlayerCraftJob.player_id == player.id)
         .filter(PlayerCraftJob.status == "active")
@@ -238,12 +260,13 @@ def update_craft_jobs_for_player(session: Session, player: Player) -> None:
         .all()
     )
 
-    for job in jobs:
+    for job in active_jobs:
         total = int(job.quantity_total or 0)
         done = int(job.quantity_done or 0)
 
         if total <= 0:
             job.status = "done"
+            just_completed.append(job.item_key)
             continue
 
         total_duration = (job.ends_at - job.started_at).total_seconds()
@@ -289,3 +312,34 @@ def update_craft_jobs_for_player(session: Session, player: Player) -> None:
 
         if completed_units >= total or now >= job.ends_at:
             job.status = "done"
+            just_completed.append(job.item_key)
+
+    # After processing active jobs, check if we can promote a queued job
+    still_has_active = (
+        session.query(PlayerCraftJob)
+        .filter(PlayerCraftJob.player_id == player.id)
+        .filter(PlayerCraftJob.status == "active")
+        .count()
+    ) > 0
+
+    if not still_has_active:
+        # Find the oldest queued job and promote it
+        next_queued = (
+            session.query(PlayerCraftJob)
+            .filter(PlayerCraftJob.player_id == player.id)
+            .filter(PlayerCraftJob.status == "queued")
+            .order_by(PlayerCraftJob.id.asc())
+            .first()
+        )
+        if next_queued:
+            # Get craft duration from CRAFT_DEFS
+            cfg = craft_defs.CRAFT_DEFS.get(next_queued.item_key, {}) or {}
+            recipe = cfg.get("recipe") or {}
+            craft_time_seconds = int(recipe.get("craft_time_seconds") or 0)
+            total_duration_secs = craft_time_seconds * int(next_queued.quantity_total or 1)
+
+            next_queued.status = "active"
+            next_queued.started_at = now
+            next_queued.ends_at = now + dt.timedelta(seconds=total_duration_secs)
+
+    return just_completed

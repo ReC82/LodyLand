@@ -680,7 +680,8 @@ cards:
       resources: {}
     show_in_main_shop: false
     show_in_village_shop: true
-    buy_rules: null
+    buy_rules:
+      requires_card: access_craft_table_medium
   tradable: false
   giftable: true
   card_quantity: 0
@@ -740,7 +741,8 @@ cards:
       resources: {}
     show_in_main_shop: false
     show_in_village_shop: true
-    buy_rules: null
+    buy_rules:
+      requires_card: access_craft_table_basic
   tradable: false
   giftable: true
   card_quantity: 0
