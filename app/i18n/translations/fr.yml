@@ -328,6 +328,7 @@ lands:
 
 base:
   beta_banner: "Version bêta – progression et données susceptibles de changer"
+  ok: "OK"
 
   level_zone:
     title: "Voir la progression des niveaux"
