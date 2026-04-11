@@ -1,11 +1,11 @@
 /* ============================================================
-   DAILY CHEST MODAL — REBUILT VERSION
+   DAILY CHEST MODAL
    ============================================================ */
 
 .daily-modal {
   position: fixed;
   inset: 0;
-  display: none;              /* hidden by default */
+  display: none;
   align-items: center;
   justify-content: center;
   z-index: 80;
@@ -18,56 +18,40 @@
 .daily-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(3px);
 }
 
 .daily-modal-box {
   position: relative;
   background: radial-gradient(circle at top, #0f172a, #020617);
   border-radius: 20px;
-  padding: 1.5rem 2rem;
-  border: 1px solid rgba(148, 163, 184, 0.5);
+  padding: 1.2rem 1rem 1.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
   color: #e5e7eb;
-  min-width: 260px;
-  max-width: 90vw;
+  width: 340px;
+  max-width: 94vw;
   text-align: center;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
   animation: dailyModalPop 0.38s ease-out;
 }
 
-.daily-modal-icon {
-  font-size: 2.4rem;
-  margin-bottom: 0.5rem;
-  animation: dailyIconBounce 0.9s ease-out;
-}
-
 .daily-modal-title {
-  font-size: 1.3rem;
-  margin-bottom: 0.3rem;
-}
-
-.daily-modal-reward {
-  font-size: 1rem;
-  margin-bottom: 0.3rem;
-}
-
-.daily-modal-reward span {
-  font-weight: 700;
-  color: #facc15;
+  font-size: 1.2rem;
+  margin: 0.6rem 0 0.8rem;
 }
 
 .daily-modal-streak {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #9ca3af;
-  margin-bottom: 0.8rem;
+  margin: 0.6rem 0 0.9rem;
 }
 
 /* Close button */
 .daily-modal-close {
   border: none;
   border-radius: 999px;
-  padding: 0.4rem 1.2rem;
+  padding: 0.4rem 1.4rem;
   font-size: 0.9rem;
   font-weight: 600;
   background: linear-gradient(to right, #22c55e, #16a34a);
@@ -76,43 +60,218 @@
 }
 
 .daily-modal-close:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.08);
 }
+
+/* =========================
+   7-day timeline
+   ========================= */
+
+.daily-timeline {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 3px;
+  margin-bottom: 0.4rem;
+  overflow: hidden;
+}
+
+.daily-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  width: 32px;
+}
+
+.daily-day-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  transition: transform 0.15s;
+}
+
+.daily-day-label {
+  font-size: 0.55rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Past days (already claimed) */
+.daily-day.is-past .daily-day-icon {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(71, 85, 105, 0.4);
+  filter: grayscale(0.6) opacity(0.55);
+}
+
+/* Future days */
+.daily-day.is-future .daily-day-icon {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(71, 85, 105, 0.25);
+  opacity: 0.45;
+}
+
+/* Today's chest */
+.daily-day.is-today .daily-day-icon {
+  background: rgba(30, 58, 138, 0.6);
+  border-color: rgba(96, 165, 250, 0.7);
+  animation: dailyChestBounce 0.9s ease-out;
+  transform-origin: bottom center;
+}
+
+.daily-day.is-today .daily-day-label {
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+/* Day 7 — golden + glow (overrides today/future) */
+.daily-day.is-day7 .daily-day-icon {
+  background: rgba(120, 53, 15, 0.55);
+  border-color: rgba(251, 191, 36, 0.85);
+  box-shadow: 0 0 10px 2px rgba(251, 191, 36, 0.5);
+}
+
+.daily-day.is-day7.is-today .daily-day-icon {
+  animation: dailyChestBounce 0.9s ease-out, day7Glow 2s infinite ease-in-out;
+  box-shadow: 0 0 14px 4px rgba(251, 191, 36, 0.7);
+}
+
+.daily-day.is-day7 .daily-day-label {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+/* Day 7 future: still show the golden outline as a teaser */
+.daily-day.is-day7.is-future .daily-day-icon {
+  opacity: 0.65;
+  border-color: rgba(251, 191, 36, 0.55);
+  box-shadow: 0 0 6px 1px rgba(251, 191, 36, 0.25);
+  filter: none;
+}
+
+/* Connector line between days */
+.daily-timeline-connector {
+  width: 4px;
+  height: 2px;
+  background: rgba(71, 85, 105, 0.45);
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+
+/* =========================
+   Reward items list
+   ========================= */
+
+.daily-rewards-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 0.6rem;
+}
+
+/* "Dernières récompenses" hint label above the list in already-claimed mode */
+.daily-rewards-hint {
+  width: 100%;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-bottom: 2px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Dim rewards when showing past chest */
+.daily-rewards-list.is-past-chest .daily-reward-item {
+  opacity: 0.55;
+  filter: grayscale(0.3);
+  animation: none;
+}
+
+.daily-reward-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.45);
+  border-radius: 10px;
+  padding: 5px 10px 5px 6px;
+  animation: rewardPop 0.35s ease-out both;
+}
+
+.daily-reward-item:nth-child(1) { animation-delay: 0.05s; }
+.daily-reward-item:nth-child(2) { animation-delay: 0.12s; }
+.daily-reward-item:nth-child(3) { animation-delay: 0.19s; }
+.daily-reward-item:nth-child(4) { animation-delay: 0.26s; }
+
+.daily-reward-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.daily-reward-icon.is-emoji {
+  font-size: 1.2rem;
+  width: 26px;
+  text-align: center;
+  line-height: 26px;
+}
+
+.daily-reward-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #facc15;
+}
+
+.daily-reward-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: capitalize;
+}
+
+/* Colour overrides per reward type */
+.daily-reward-item[data-type="shards"]  .daily-reward-amount { color: #fbbf24; }
+.daily-reward-item[data-type="essence"] .daily-reward-amount { color: #a78bfa; }
+.daily-reward-item[data-type="xp"]      .daily-reward-amount { color: #34d399; }
+.daily-reward-item[data-type="resource"] .daily-reward-amount { color: #7dd3fc; }
 
 /* =========================
    animations
    ========================= */
 
 @keyframes dailyModalPop {
-  0% {
-    transform: scale(0.7) translateY(20px);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.05) translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
+  0%   { transform: scale(0.7) translateY(20px); opacity: 0; }
+  60%  { transform: scale(1.04) translateY(0);   opacity: 1; }
+  100% { transform: scale(1) translateY(0);       opacity: 1; }
 }
 
-@keyframes dailyIconBounce {
-  0% {
-    transform: translateY(-8px) scale(0.9);
-  }
-  40% {
-    transform: translateY(0) scale(1.1);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
+@keyframes dailyChestBounce {
+  0%   { transform: translateY(-6px) scale(0.9); }
+  45%  { transform: translateY(0)    scale(1.12); }
+  100% { transform: translateY(0)    scale(1); }
+}
+
+@keyframes day7Glow {
+  0%, 100% { box-shadow: 0 0 10px 2px rgba(251, 191, 36, 0.4); }
+  50%       { box-shadow: 0 0 20px 6px rgba(251, 191, 36, 0.8); }
+}
+
+@keyframes rewardPop {
+  0%   { transform: scale(0.6) translateY(8px); opacity: 0; }
+  70%  { transform: scale(1.06) translateY(0);  opacity: 1; }
+  100% { transform: scale(1) translateY(0);      opacity: 1; }
 }
 
 /* =========================
    HUD daily chest icon + tooltip
-   (these WERE in game.css)
    ========================= */
 
 .hud-daily {
@@ -128,7 +287,6 @@
   position: relative;
   transition: transform 0.1s ease;
   user-select: none;
-
   width: 36px;
   height: 36px;
   display: flex;
@@ -140,27 +298,23 @@
   transform: scale(1.15);
 }
 
-/* When chest is “busy” */
 .hud-daily-icon.is-busy {
   opacity: 0.6;
   pointer-events: none;
 }
 
-/* Little red alert badge “!” */
+/* Red alert badge */
 .daily-alert-badge {
   position: absolute;
   top: -4px;
   right: -4px;
-
   width: 18px;
   height: 18px;
   border-radius: 50%;
   background-color: #e11d48;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
-
   display: block;
   pointer-events: none;
-
   font-size: 0;
 }
 
@@ -195,29 +349,19 @@
   display: block;
 }
 
-/* “Ready” animation (glow + bounce) */
+/* "Ready" animation (glow + bounce) */
 .hud-daily-ready {
   animation: chest-bounce 1.2s infinite ease-in-out,
-             chest-glow 1.2s infinite ease-in-out;
+             chest-glow   1.2s infinite ease-in-out;
 }
 
 @keyframes chest-bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-5px);
-  }
-  60% {
-    transform: translateY(-3px);
-  }
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40%                      { transform: translateY(-5px); }
+  60%                      { transform: translateY(-3px); }
 }
 
 @keyframes chest-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0.0));
-  }
-  50% {
-    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9));
-  }
+  0%, 100% { filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0.0)); }
+  50%       { filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9)); }
 }

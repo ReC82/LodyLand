@@ -113,9 +113,7 @@ async function claimDaily() {
   const icon = $("dailyIcon");
   const tooltip = $("dailyTooltip");
 
-  if (!icon || !tooltip) {
-    return;
-  }
+  if (!icon || !tooltip) return;
 
   icon.classList.add("is-busy");
   tooltip.textContent = "Ouverture du coffre...";
@@ -125,55 +123,61 @@ async function claimDaily() {
 
     if (r.ok) {
       const d = r.data || {};
+      const rewards      = d.rewards      || [];
+      const dayInCycle   = d.day_in_cycle || 1;
+      const weekMult     = d.week_multiplier || 1;
+      const streak       = d.streak || {};
 
-      const reward = d.reward ?? d.shards_awarded ?? 0;
-      const streak = d.streak || {};
-      const cur = streak.current ?? "?";
-      const best = streak.best ?? "?";
+      // Persist rewards so we can show them on re-open
+      try {
+        localStorage.setItem("daily_last_rewards", JSON.stringify({ rewards, dayInCycle, weekMult }));
+      } catch (_) {}
 
-    // 👉 affiche le modal animé
-    showDailyModal(reward, streak);
+      // Show animated modal
+      showDailyModal(rewards, dayInCycle, weekMult, streak);
 
+      // Build a short tooltip summary
+      const shardsReward = rewards.filter(r => r.type === "shards").reduce((a, r) => a + r.amount, 0);
       tooltip.innerHTML =
         `Coffre ouvert 🎁<br>` +
-        `+${reward} shards<br>` +
-        `<small>Streak: ${cur} (meilleur: ${best})</small>`;
+        (shardsReward ? `+${shardsReward} éclats<br>` : "") +
+        `<small>Série: ${streak.current ?? 0} (meilleur: ${streak.best ?? 0})</small>`;
 
-      // Mise à jour HUD player si le backend renvoie un player
+      // Update HUD player
       if (d.player) {
         const p = d.player;
-        currentPlayer = {
-          ...p,
-          next_xp: p.next_xp ?? p.nextXp ?? null,
-        };
+        currentPlayer = { ...p, next_xp: p.next_xp ?? p.nextXp ?? null };
         renderPlayer(currentPlayer);
       } else {
-        // fallback : /api/me
         const meRes = await http("GET", "/api/me");
         if (meRes.ok) {
           const p = meRes.data;
-          currentPlayer = {
-            ...p,
-            next_xp: p.next_xp ?? p.nextXp ?? null,
-          };
+          currentPlayer = { ...p, next_xp: p.next_xp ?? p.nextXp ?? null };
           renderPlayer(currentPlayer);
         }
       }
 
-      // Mise à jour du badge / tooltip
       await refreshDailyStatus();
     } else {
       const err = r.data || {};
-      const msg = err.error || "daily_failed";
+      if (r.status === 409 && err.already_claimed) {
+        // Load last rewards from localStorage to display them
+        let lastRewards = [];
+        try {
+          const saved = localStorage.getItem("daily_last_rewards");
+          if (saved) lastRewards = JSON.parse(saved).rewards || [];
+        } catch (_) {}
 
-      if (r.status === 409 && err.next_at) {
-        const formatted = formatIso(err.next_at);
-        tooltip.innerHTML =
-          "Déjà ouvert aujourd'hui.<br>" +
-          `<small>Prochain coffre: <br>${formatted}</small>`;
+        showDailyModal(lastRewards, err.day_in_cycle || 1, 1, err.streak || {}, true);
+
+        if (err.next_at) {
+          const formatted = formatIso(err.next_at);
+          tooltip.innerHTML =
+            "Déjà ouvert aujourd'hui.<br>" +
+            `<small>Prochain coffre:<br>${formatted}</small>`;
+        }
       } else {
-        tooltip.textContent =
-          `Impossible d'ouvrir le coffre (${r.status}) : ${msg}`;
+        tooltip.textContent = `Impossible d'ouvrir le coffre (${r.status}) : ${err.error || "daily_failed"}`;
       }
     }
   } catch (e) {
@@ -203,41 +207,35 @@ function setDailyChestReady(isReady) {
 
 async function refreshDailyStatus() {
   const tooltip = $("dailyTooltip");
-
   if (!tooltip) return;
 
   const r = await http("GET", "/api/daily/status");
 
   if (!r.ok) {
     tooltip.textContent = "Impossible de récupérer le statut du coffre.";
-    // Daily not ready on error
     setDailyChestReady(false);
     return;
   }
 
   const d = r.data || {};
-
-  // ✅ Ici on active / désactive animation + badge "!"
   setDailyChestReady(!!d.eligible);
 
-  // Contenu de l'infobulle
   let html = "";
-
   if (d.eligible) {
     html += `<div><b>Coffre disponible</b> 🎁</div>`;
-    html += `<div>Récompense : quelques shards</div>`;
+    const day = d.day_in_cycle || 1;
+    html += `<div>Jour <b>${day}</b>/7 du cycle</div>`;
   } else {
     html += `<div><b>Déjà ouvert aujourd'hui</b></div>`;
   }
 
   html += `<hr style="opacity:0.2;">`;
-  html += `<div>Streak actuel : <b>${d.streak?.current ?? 0}</b></div>`;
-  html += `<div>Meilleur streak : <b>${d.streak?.best ?? 0}</b></div>`;
+  html += `<div>Série : <b>${d.streak?.current ?? 0}</b></div>`;
+  html += `<div>Meilleure : <b>${d.streak?.best ?? 0}</b></div>`;
 
-    if (!d.eligible && d.next_reset) {
-      const formatted = formatIso(d.next_reset);
-      html += `<div style="margin-top:4px;">Prochain coffre :<br><b>${formatted}</b></div>`;
-    }
+  if (!d.eligible && d.next_reset) {
+    html += `<div style="margin-top:4px;">Prochain coffre :<br><b>${formatIso(d.next_reset)}</b></div>`;
+  }
 
   tooltip.innerHTML = html;
 }
@@ -247,17 +245,150 @@ async function refreshDailyStatus() {
 // Daily modal helpers
 // ------------------------------
 
-function showDailyModal(reward, streak) {
+const DAILY_REWARD_TYPE_LABELS = {
+  shards:   "Éclats",
+  essence:  "Essences",
+  xp:       "XP",
+  resource: "",
+};
+
+const DAILY_DAY_EMOJIS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","⭐"];
+
+// alreadyClaimed: today's day counts as "done" (past), not "today"
+function _buildDailyTimeline(dayInCycle, alreadyClaimed = false) {
+  const container = $("dailyTimeline");
+  if (!container) return;
+
+  container.innerHTML = "";
+  const frag = document.createDocumentFragment();
+
+  for (let d = 1; d <= 7; d++) {
+    if (d > 1) {
+      const conn = document.createElement("div");
+      conn.className = "daily-timeline-connector";
+      frag.appendChild(conn);
+    }
+
+    const dayEl = document.createElement("div");
+    dayEl.className = "daily-day";
+
+    const isDone = alreadyClaimed ? d <= dayInCycle : d < dayInCycle;
+    const isToday = !alreadyClaimed && d === dayInCycle;
+
+    if (isDone)    dayEl.classList.add("is-past");
+    if (isToday)   dayEl.classList.add("is-today");
+    if (!isDone && !isToday) dayEl.classList.add("is-future");
+    if (d === 7)   dayEl.classList.add("is-day7");
+
+    const iconEl = document.createElement("div");
+    iconEl.className = "daily-day-icon";
+    iconEl.textContent = isDone ? "✔" : DAILY_DAY_EMOJIS[d - 1];
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "daily-day-label";
+    labelEl.textContent = d === 7 ? "Bonus" : `J${d}`;
+
+    dayEl.appendChild(iconEl);
+    dayEl.appendChild(labelEl);
+    frag.appendChild(dayEl);
+  }
+
+  container.appendChild(frag);
+}
+
+function _buildDailyRewards(rewards, alreadyClaimed = false) {
+  const container = $("dailyRewardsList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (alreadyClaimed) {
+    container.classList.add("is-past-chest");
+  } else {
+    container.classList.remove("is-past-chest");
+  }
+
+  // If no rewards at all, hide the list silently
+  if (!rewards || rewards.length === 0) return;
+
+  const frag = document.createDocumentFragment();
+
+  // Label hint when showing past chest
+  if (alreadyClaimed) {
+    const hint = document.createElement("div");
+    hint.className = "daily-rewards-hint";
+    hint.textContent = "Dernier coffre";
+    frag.appendChild(hint);
+  }
+
+  for (const reward of rewards) {
+    const item = document.createElement("div");
+    item.className = "daily-reward-item";
+    item.dataset.type = reward.type;
+
+    // Icon
+    if (reward.icon) {
+      const img = document.createElement("img");
+      img.className = "daily-reward-icon";
+      img.src = reward.icon;
+      img.alt = reward.label || reward.type;
+      img.onerror = function() {
+        // fallback emoji if image missing
+        const span = document.createElement("span");
+        span.className = "daily-reward-icon is-emoji";
+        span.textContent = reward.type === "shards" ? "✨"
+          : reward.type === "essence" ? "💜"
+          : reward.type === "xp"      ? "⚡"
+          : "📦";
+        this.replaceWith(span);
+      };
+      item.appendChild(img);
+    }
+
+    // Amount + label
+    const textWrap = document.createElement("div");
+
+    const amountEl = document.createElement("div");
+    amountEl.className = "daily-reward-amount";
+    amountEl.textContent = `+${reward.amount}`;
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "daily-reward-label";
+    labelEl.textContent = DAILY_REWARD_TYPE_LABELS[reward.type] || reward.label || reward.key || reward.type;
+
+    textWrap.appendChild(amountEl);
+    textWrap.appendChild(labelEl);
+    item.appendChild(textWrap);
+
+    frag.appendChild(item);
+  }
+
+  container.appendChild(frag);
+}
+
+function showDailyModal(rewards, dayInCycle, weekMultiplier, streak, alreadyClaimed = false) {
   const modal = $("dailyModal");
   if (!modal) return;
 
-  const rewardEl = $("dailyModalReward");
-  const streakCurEl = $("dailyModalStreakCurrent");
-  const streakBestEl = $("dailyModalStreakBest");
+  // Update title depending on claimed state
+  const titleEl = modal.querySelector(".daily-modal-title");
+  if (titleEl) {
+    titleEl.textContent = alreadyClaimed
+      ? "Déjà ouvert aujourd'hui"
+      : (titleEl.dataset.titleOpen || titleEl.textContent);
+    // Store original title on first open so we can restore it later
+    if (!alreadyClaimed && !titleEl.dataset.titleOpen) {
+      titleEl.dataset.titleOpen = titleEl.textContent;
+    }
+  }
 
-  if (rewardEl) rewardEl.textContent = reward ?? 0;
-  if (streakCurEl) streakCurEl.textContent = streak?.current ?? 0;
-  if (streakBestEl) streakBestEl.textContent = streak?.best ?? 0;
+  _buildDailyTimeline(dayInCycle || 1, alreadyClaimed);
+  _buildDailyRewards(rewards || [], alreadyClaimed);
+
+  const streakCurEl  = $("dailyModalStreakCurrent");
+  const streakBestEl = $("dailyModalStreakBest");
+  if (streakCurEl)  streakCurEl.textContent  = streak?.current ?? 0;
+  if (streakBestEl) streakBestEl.textContent = streak?.best    ?? 0;
 
   modal.classList.add("is-open");
 }
@@ -269,21 +400,12 @@ function setupDailyModal() {
   const closeBtn = $("dailyModalClose");
   const backdrop = modal.querySelector(".daily-modal-backdrop");
 
-  const close = () => {
-    modal.classList.remove("is-open");
-  };
+  const close = () => modal.classList.remove("is-open");
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", close);
-  }
-  if (backdrop) {
-    backdrop.addEventListener("click", close);
-  }
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (backdrop) backdrop.addEventListener("click", close);
 
-  // fermer avec ESC
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("is-open")) {
-      close();
-    }
+    if (e.key === "Escape" && modal.classList.contains("is-open")) close();
   });
 }
