@@ -7,13 +7,16 @@
 
 {% block title %}{{ t("village.quests_page.tab_title") }}{% endblock %}
 
+{# Suppress the floating quest panel on this page — the quest UI is embedded directly in the page content #}
+{% block quest_panel_modal %}{% endblock %}
+
 {% block content %}
 <div class="land-wrapper land-village land-village-quests">
 
   <!-- Bouton retour -->
   <div class="mb-3">
     <a href="{{ url_for('frontend.land_page', slug='village') }}" class="btn btn-sm btn-outline-light">
-      {{ t("village.quests_page.back_to_village") }}
+      ← {{ t("village.quests_page.back_to_village") }}
     </a>
   </div>
 
@@ -36,50 +39,60 @@
     </div>
   </header>
 
-  <!-- PANEL QUÊTES (version page, pas overlay HUD) -->
-  <section class="village-panel village-quests-panel">
+  <!-- Onglets de type de quêtes -->
+  <div class="quests-tabs">
+    <button class="qtab is-active" data-tab="daily">
+      <span class="qtab-icon">☀️</span>
+      <span>Quotidiennes</span>
+      <span class="qtab-badge" id="badge-daily"></span>
+    </button>
+    <button class="qtab" data-tab="weekly">
+      <span class="qtab-icon">📅</span>
+      <span>Hebdomadaires</span>
+      <span class="qtab-badge" id="badge-weekly"></span>
+    </button>
+    <button class="qtab" data-tab="continuous">
+      <span class="qtab-icon">🔄</span>
+      <span>Continue</span>
+      <span class="qtab-badge" id="badge-continuous"></span>
+    </button>
+  </div>
 
-    <!-- En-tête du panel (titre + filtres statut) -->
-    <div class="quests-panel-header">
-      <div>
-        <h2 class="quests-panel-title mb-1">{{ t("village.quests_page.panel.title") }}</h2>
-        <p class="quests-panel-subtitle mb-0">
-          {{ t("village.quests_page.panel.subtitle") }}
-        </p>
-      </div>
-      <div class="quests-status-filters">
-        <button class="qfilter-btn qfilter-active" data-filter="running">{{ t("village.quests_page.filters.running") }}</button>
-        <button class="qfilter-btn" data-filter="completed">{{ t("village.quests_page.filters.completed") }}</button>
-        <button class="qfilter-btn" data-filter="expired">{{ t("village.quests_page.filters.expired") }}</button>
-      </div>
+  <!-- Panels -->
+  <div class="quests-tab-panel is-active" id="panel-daily">
+    <div class="quests-grid" id="grid-daily">
+      <p class="quests-loading">{{ t("village.quests_page.loading") }}</p>
     </div>
-
-    <!-- Onglets de TYPE de quêtes -->
-      <div class="quests-type-tabs mt-2 mb-1">
-        <button type="button" class="btn btn-sm qtype-btn qtype-active" data-qtype="all">
-          {{ t("village.quests_page.types.all") }}
-        </button>
-        <button type="button" class="btn btn-sm qtype-btn" data-qtype="daily">
-          {{ t("village.quests_page.types.daily") }}
-        </button>
-        <button type="button" class="btn btn-sm qtype-btn" data-qtype="storyline">
-          {{ t("village.quests_page.types.storyline") }}
-        </button>
-        <button class="btn btn-sm qtype-btn" data-qtype="weekly">{{ t("village.quests_page.types.weekly") }}</button>
-        <button class="btn btn-sm qtype-btn" data-qtype="other">{{ t("village.quests_page.types.other") }}</button>
-      </div>
-
-    <!-- Corps du panel : la liste est remplie par quests_app.js -->
-    <div class="quests-panel-body">
-      <div id="quests-list">
-        <p class="quest-desc text-muted small mb-0">
-          {{ t("village.quests_page.loading") }}
-        </p>
-      </div>
-    </div>
-  </section>
+  </div>
+  <div class="quests-tab-panel" id="panel-weekly">
+    <div class="quests-grid" id="grid-weekly"></div>
+  </div>
+  <div class="quests-tab-panel" id="panel-continuous">
+    <div class="quests-grid" id="grid-continuous"></div>
+  </div>
 
 </div>
+
+<!-- Quest detail modal (page-level) -->
+<div id="quest-detail-modal" class="quest-modal" role="dialog" aria-modal="true">
+  <div class="quest-modal-backdrop" id="quest-modal-backdrop"></div>
+  <div class="quest-modal-box">
+    <button class="quest-modal-close" id="quest-modal-close" aria-label="Fermer">✕</button>
+    <div id="quest-modal-content"></div>
+  </div>
+</div>
+
+<!-- Quest completion popup (page-level) -->
+<div id="quest-complete-popup" class="quest-complete-popup">
+  <div class="quest-complete-box">
+    <div class="quest-complete-check">✅</div>
+    <h3 class="quest-complete-title">Quête accomplie !</h3>
+    <p class="quest-complete-name" id="qcp-name"></p>
+    <div class="quest-complete-rewards" id="qcp-rewards"></div>
+    <button class="quest-complete-ok" id="qcp-ok">OK</button>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}

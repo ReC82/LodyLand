@@ -1,0 +1,163 @@
+quest_templates:
+
+  daily_wood_medium:
+    key: qt_daily_wood_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Bois en quantité
+      en: Wood in quantity
+    description:
+      fr: L'atelier du village a besoin d'un bon lot de bois travaillé.
+      en: The village workshop needs a solid batch of worked wood.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - wood
+      quantity_min: 18
+      quantity_max: 28
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
+
+  daily_branch_stone_medium:
+    key: qt_daily_branch_stone_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Branches et pierres
+      en: Branches and stones
+    description:
+      fr: Les constructeurs ont besoin de branches et de pierres pour leurs chantiers.
+      en: The builders need branches and stones for their construction sites.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - small_stone
+      quantity_min: 20
+      quantity_max: 30
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
+
+  daily_vine_palm_medium:
+    key: qt_daily_vine_palm_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Fibres naturelles
+      en: Natural fibres
+    description:
+      fr: Les tisserands ont besoin de lianes et de feuilles de palmier.
+      en: The weavers need vines and palm leaves.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - vine
+      - palm_leaf
+      quantity_min: 16
+      quantity_max: 26
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
+
+  daily_rope_medium:
+    key: qt_daily_rope_medium
+    quest_type: daily
+    difficulty: medium
+    category: crafting
+    enabled: true
+    min_player_level: 4
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Cordes pour l'atelier
+      en: Ropes for the workshop
+    description:
+      fr: L'atelier a besoin de cordes solides. Fabrique-en quelques-unes.
+      en: The workshop needs strong ropes. Craft a few.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: craft_item
+      item_keys:
+      - item_rope
+      quantity_min: 2
+      quantity_max: 4
+    reward_templates:
+      shards_min: 25
+      shards_max: 40
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 50
+
+  daily_branch_wood_medium:
+    key: qt_daily_branch_wood_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Bois brut et travaillé
+      en: Raw and worked wood
+    description:
+      fr: Le village a besoin des deux types de bois pour les réparations.
+      en: The village needs both types of wood for repairs.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      quantity_min: 20
+      quantity_max: 30
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45

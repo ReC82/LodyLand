@@ -1,508 +1,455 @@
-// static/GAME_UI/js/quests_app.js
-// NON-MODULE VERSION – Compatible with existing game_app.js
-// Uses http() and $() helpers from common.js
+// quests_app.js — Quest grid UI
+// Requires http() and $() from common.js
 
 /* global http, $ */
 
-let QQ_currentQuests = [];
-let QQ_statusFilter = "running";
-let QQ_typeFilter = "all";   // "all", "daily", "weekly", etc.
-console.log("[quests] quests_app.js loaded");
-/**
- * Convert quest_type into a label.
- */
-function QQ_questTypeLabel(quest) {
-  switch (quest.quest_type) {
-    case "daily":
-      return "Quotidienne";
-    case "weekly":
-      return "Hebdomadaire";
-    case "bonus":
-      return "Bonus";
-    case "event":
-      return "Événement";
-    default:
-      return quest.quest_type || "Quête";
-  }
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let QQ_quests = { daily: [], weekly: [], continuous: [] };
+let QQ_activeTab = "daily";
+let QQ_detailQuestId = null;
+let QQ_locked = false;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function QQ_title(q) {
+  return q.title_fr || q.title_en || q.template_key || "—";
 }
 
-/**
- * Render objective HTML.
- */
-function QQ_renderObjective(obj) {
-  const current = obj.current || 0;
-  const target = obj.target || 0;
-  const ratio = target > 0 ? Math.min(current / target, 1) : 0;
+function QQ_desc(q) {
+  return q.description_fr || q.description_en || "";
+}
 
-  let label = "";
-  if (obj.kind === "collect_resource") {
-    label = `Récolter ${target} × ${obj.resource_key || "?"}`;
-  } else if (obj.kind === "craft_item") {
-    label = `Crafter ${target} × ${obj.item_key || "?"}`;
-  } else {
-    label = `${obj.kind} (${current}/${target})`;
-  }
+function QQ_isReady(q) {
+  return q.status === "ready";
+}
+
+function QQ_progressRatio(q) {
+  if (!q.objectives || !q.objectives.length) return 1;
+  const obj = q.objectives[0];
+  const cur = obj.current || 0;
+  const tgt = obj.target || 1;
+  return Math.min(cur / tgt, 1);
+}
+
+function QQ_progressText(q) {
+  if (!q.objectives || !q.objectives.length) return "";
+  const obj = q.objectives[0];
+  return `${obj.current || 0} / ${obj.target || 0}`;
+}
+
+/** Difficulty tier for a quest ("easy" | "medium" | "hard") */
+function QQ_difficulty(q) {
+  return q.difficulty || "easy";
+}
+
+/** Icon URL for the first objective */
+function QQ_questIcon(q) {
+  const obj = (q.objectives || [])[0];
+  if (!obj) return null;
+  if (obj.resource_key) return `/static/assets/img/items/resources/${obj.resource_key}.png`;
+  if (obj.item_key)     return `/static/assets/img/items/resources/${obj.item_key}.png`;
+  return null;
+}
+
+function QQ_formatExpiry(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  const now = new Date();
+  const diff = d - now;
+  if (diff < 0) return "Expirée";
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h >= 24) return `${Math.floor(h / 24)}j ${h % 24}h`;
+  return `${h}h ${m}m`;
+}
+
+// ---------------------------------------------------------------------------
+// Quest card (compact)
+// ---------------------------------------------------------------------------
+function QQ_renderCard(q) {
+  const title   = QQ_title(q);
+  const ratio   = QQ_progressRatio(q);
+  const pctText = QQ_progressText(q);
+  const icon    = QQ_questIcon(q);
+  const ready   = QQ_isReady(q);
+  const rewards = q.rewards || {};
+  const shards  = rewards.shards  || rewards.coins  || 0;
+  const essence = rewards.essence || rewards.diams  || 0;
+  const diff    = QQ_difficulty(q);
+
+  const diffLabels = { easy: "Facile", medium: "Moyen", hard: "Difficile" };
+
+  const iconHtml = icon
+    ? `<img class="qcard-icon" src="${icon}" alt="" onerror="this.style.display='none'">`
+    : `<div class="qcard-icon-placeholder">📦</div>`;
+
+  const xp = (q.rewards || {}).xp || 0;
+
+  const rewardBadge = shards
+    ? `<div class="qcard-reward"><img src="/static/assets/img/ui/shards.png" alt="shards"> ${shards}</div>`
+    : (essence
+      ? `<div class="qcard-reward essence"><img src="/static/assets/img/ui/essence.png" alt="essence"> ${essence}</div>`
+      : (xp
+        ? `<div class="qcard-reward xp">⭐ ${xp}</div>`
+        : ""));
+
+  const readyBadge = ready
+    ? `<div class="qcard-ready-badge">✔ Prêt</div>`
+    : `<div class="qcard-diff-badge diff-${diff}">${diffLabels[diff] || diff}</div>`;
 
   return `
-    <div class="quest-objective">
-      <div class="quest-objective-label">${label}</div>
-      <div class="quest-progress-bar">
-        <div class="quest-progress-fill" style="width: ${ratio * 100}%"></div>
+    <div class="qcard${ready ? " is-ready" : ""}" data-quest-id="${q.id}" role="button" tabindex="0">
+      ${rewardBadge}
+      ${readyBadge}
+      <div class="qcard-body">
+        ${iconHtml}
+        <div class="qcard-title">${title}</div>
       </div>
-      <div class="quest-progress-text">${current} / ${target}</div>
-    </div>
-  `;
-}
-
-/**
- * Render rewards
- */
-function QQ_renderRewards(rewards) {
-  if (!rewards) return "";
-
-  const shards = rewards.shards || 0;
-  const essence = rewards.essence || 0;
-  const parts = [];
-
-  if (shards > 0) {
-    parts.push(`
-      <div class="quest-reward-pill">
-        <span>🪙</span>
-        <span>+${shards} shards</span>
-      </div>
-    `);
-  }
-  if (essence > 0) {
-    parts.push(`
-      <div class="quest-reward-pill">
-        <span>💎</span>
-        <span>+${essence} essence</span>
-      </div>
-    `);
-  }
-
-  if (parts.length === 0) return "";
-  return `<div class="quest-rewards">${parts.join("")}</div>`;
-}
-
-function QQ_isQuestReady(q) {
-  if (q.status !== "ready") return false;
-  if (!q.objectives || !q.objectives.length) return true;
-
-  return q.objectives.every((obj) => {
-    const current = obj.current || 0;
-    const target = obj.target || 0;
-    return current >= target;
-  });
-}
-
-function QQ_formatExpiry(isoString) {
-  if (!isoString) return "";
-  const d = new Date(isoString);
-  if (Number.isNaN(d.getTime())) return "";
-
-  const dateStr = d.toLocaleDateString("fr-BE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  const timeStr = d.toLocaleTimeString("fr-BE", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return `${dateStr} ${timeStr}`;
-}
-
-
-function QQ_renderQuestCard(q) {
-  const typeLabel = QQ_questTypeLabel(q);
-  const badgeClass = `quest-badge ${q.quest_type}`;
-
-  const title = q.title_fr || q.title_en || q.template_key;
-  const desc = q.description_fr || q.description_en || "";
-
-  const objectivesHtml = (q.objectives || [])
-    .map(QQ_renderObjective)
-    .join("");
-
-  const rewardsHtml = QQ_renderRewards(q.rewards);
-
-  // Validité (pas pour les quêtes storyline)
-  let validityHtml = "";
-  if (q.quest_type !== "storyline" && q.expires_at) {
-    const formatted = QQ_formatExpiry(q.expires_at);
-    if (formatted) {
-      validityHtml = `
-        <div class="quest-validity">
-          <span class="quest-validity-label">Valide jusqu'au</span>
-          <span class="quest-validity-date">${formatted}</span>
+      <div class="qcard-footer">
+        <div class="qcard-bar-wrap">
+          <div class="qcard-bar-fill" style="width:${Math.round(ratio * 100)}%"></div>
         </div>
-      `;
-    }
-  }
-
-  
-  // 🔘 Boutons d'action (pour l'instant : seulement "Valider" si status=ready)
-  let actionsHtml = "";
-  if (QQ_isQuestReady(q)) {
-    actionsHtml = `
-      <div class="quest-actions">
-        <button
-          class="btn quest-claim-btn"
-          data-quest-id="${q.id}"
-        >
-          ✔ Valider
-        </button>
+        <div class="qcard-progress">${pctText}</div>
       </div>
-    `;
-  }
-
-
-  return `
-    <div class="quest-card">
-      <div class="quest-header">
-        <h3 class="quest-title">${title}</h3>
-        <span class="${badgeClass}">${typeLabel}</span>
-      </div>
-
-      <p class="quest-desc">${desc}</p>
-      ${objectivesHtml}
-      ${validityHtml} 
-      ${rewardsHtml}
-      ${actionsHtml}
     </div>
   `;
 }
 
+// ---------------------------------------------------------------------------
+// Render a grid section
+// ---------------------------------------------------------------------------
+function QQ_renderGrid(type) {
+  const grid = document.getElementById(`grid-${type}`);
+  if (!grid) return;
 
+  const list = QQ_quests[type] || [];
 
-/**
- * Render the whole quests list
- */
-function QQ_renderQuestsPanel() {
-  const container = $("quests-list");
-  if (!container) {
-    console.warn("[quests] container #quests-list NOT FOUND");
+  if (!list.length) {
+    grid.innerHTML = `<p class="quests-empty">Aucune quête ${type === "daily" ? "quotidienne" : type === "weekly" ? "hebdomadaire" : "continue"} en cours.</p>`;
     return;
   }
 
-  const filtered = QQ_currentQuests.filter((q) => {
-    const st = q.status;
+  grid.innerHTML = list.map(QQ_renderCard).join("");
+}
 
-    if (QQ_statusFilter === "completed") {
-      return st === "completed";
-    }
-    if (QQ_statusFilter === "expired") {
-      return st === "expired";
-    }
-
-    // "running" = quêtes en cours + prêtes à être validées
-    return st === "active" || st === "ready";
-  });
-
-
-
-  // 2) Filtre par TYPE (onglets)
-  const filteredByType = filtered.filter((q) => {
-    if (QQ_typeFilter === "all") return true;
-
-    if (QQ_typeFilter === "daily") return q.quest_type === "daily";
-    if (QQ_typeFilter === "storyline") return q.quest_type === "storyline";
-    if (QQ_typeFilter === "weekly") return q.quest_type === "weekly";
-    if (QQ_typeFilter === "monthly") return q.quest_type === "monthly";
-
-    if (QQ_typeFilter === "other") {
-      // "other" = tout ce qui n'est PAS daily / storyline / weekly / monthly
-      return (
-        q.quest_type !== "daily" &&
-        q.quest_type !== "storyline" &&
-        q.quest_type !== "weekly" &&
-        q.quest_type !== "monthly"
-      );
-    }
-
-    return true;
-  });
-
-  if (!filteredByType.length) {
-    container.innerHTML = `
-      <p class="quest-desc text-muted small">
-        Aucune quête pour ce filtre pour l'instant.
-      </p>
-    `;
-    return;
-  }
-
-  // 3) Si on est sur un onglet spécifique (daily / storyline / other…)
-  //    -> on affiche juste une liste de cartes, sans sous-groupes.
-  if (QQ_typeFilter !== "all") {
-    const cardsHtml = filteredByType.map(QQ_renderQuestCard).join("");
-    container.innerHTML = cardsHtml;
-    return;
-  }
-
-  // 4) Mode "Toutes" : on regroupe par type (comme avant, mais avec storyline séparé)
-  const groupsDef = [
-    { key: "daily",     label: "Quêtes quotidiennes" },
-    { key: "weekly",    label: "Quêtes hebdomadaires" },
-    { key: "storyline", label: "Quêtes storyline" },
-    { key: "other",     label: "Autres quêtes" },
-  ];
-
-  const groups = {
-    daily: [],
-    weekly: [],
-    storyline: [],
-    other: [],
-  };
-
-  filteredByType.forEach((q) => {
-    if (q.quest_type === "daily") {
-      groups.daily.push(q);
-    } else if (q.quest_type === "weekly") {
-      groups.weekly.push(q);
-    } else if (q.quest_type === "storyline") {
-      groups.storyline.push(q);
+function QQ_updateBadges() {
+  ["daily", "weekly", "continuous"].forEach(type => {
+    const el = document.getElementById(`badge-${type}`);
+    if (!el) return;
+    const ready = (QQ_quests[type] || []).filter(QQ_isReady).length;
+    if (ready > 0) {
+      el.textContent = ready;
+      el.style.display = "inline-flex";
     } else {
-      groups.other.push(q);
+      el.style.display = "none";
     }
   });
+}
 
-  const htmlParts = [];
+// ---------------------------------------------------------------------------
+// Detail modal
+// ---------------------------------------------------------------------------
+function QQ_openDetail(questId) {
+  const q = Object.values(QQ_quests).flat().find(q => q.id === questId);
+  if (!q) return;
 
-  groupsDef.forEach((g) => {
-    const list = groups[g.key];
-    if (!list.length) return;
+  QQ_detailQuestId = questId;
 
-    const cardsHtml = list.map(QQ_renderQuestCard).join("");
+  const modal = document.getElementById("quest-detail-modal");
+  const content = document.getElementById("quest-modal-content");
+  if (!modal || !content) return;
 
-    htmlParts.push(`
-      <div class="quests-group" data-group="${g.key}">
-        <div class="quests-group-header" onclick="QQ_toggleGroup('${g.key}')">
-          <span class="quests-group-title">${g.label}</span>
-          <span class="quests-group-chevron">⌄</span>
+  const rewards = q.rewards || {};
+  const shards  = rewards.shards  || rewards.coins  || 0;
+  const essence = rewards.essence || rewards.diams  || 0;
+  const ready   = QQ_isReady(q);
+
+  const typeLabels = { daily: "Quotidienne ☀️", weekly: "Hebdomadaire 📅", continuous: "Continue 🔄" };
+  const typeLabel  = typeLabels[q.quest_type] || q.quest_type;
+
+  const expiryStr  = QQ_formatExpiry(q.expires_at);
+  const expiryHtml = (expiryStr && q.quest_type !== "continuous")
+    ? `<div class="qdetail-expiry">⏱ Expire dans : <b>${expiryStr}</b></div>`
+    : "";
+
+  const objectivesHtml = (q.objectives || []).map(obj => {
+    const cur   = obj.current || 0;
+    const tgt   = obj.target || 1;
+    const ratio = Math.min(cur / tgt, 1);
+    const icon  = obj.resource_key
+      ? `<img class="qdetail-obj-icon" src="/static/assets/img/items/resources/${obj.resource_key}.png" alt="" onerror="this.style.display='none'">`
+      : (obj.item_key
+        ? `<img class="qdetail-obj-icon" src="/static/assets/img/items/resources/${obj.item_key}.png" alt="" onerror="this.style.display='none'">`
+        : "");
+    const kindLabel = obj.kind === "collect_resource" ? "Récolter"
+      : obj.kind === "craft_item" ? "Crafter"
+      : obj.kind === "unlock_land" ? "Débloquer"
+      : obj.kind;
+    const resourceName = obj.resource_key || obj.item_key || "?";
+
+    return `
+      <div class="qdetail-obj">
+        ${icon}
+        <div class="qdetail-obj-info">
+          <div class="qdetail-obj-label">${kindLabel} <b>${tgt}×</b> ${resourceName}</div>
+          <div class="qdetail-obj-bar-wrap">
+            <div class="qdetail-obj-bar-fill" style="width:${Math.round(ratio * 100)}%"></div>
+          </div>
+          <div class="qdetail-obj-progress">${cur} / ${tgt}</div>
         </div>
-        <div class="quests-group-body">
-          ${cardsHtml}
-        </div>
-      </div>
-    `);
-  });
+      </div>`;
+  }).join("");
 
-  container.innerHTML = htmlParts.join("");
+  const xp = rewards.xp || 0;
+
+  const rewardsHtml = `
+    <div class="qdetail-rewards">
+      ${shards  ? `<span class="qdetail-reward-pill"><img src="/static/assets/img/ui/shards.png" alt=""> +${shards}</span>` : ""}
+      ${essence ? `<span class="qdetail-reward-pill essence"><img src="/static/assets/img/ui/essence.png" alt=""> +${essence}</span>` : ""}
+      ${xp      ? `<span class="qdetail-reward-pill xp">⭐ +${xp} XP</span>` : ""}
+    </div>`;
+
+  const claimBtn = ready
+    ? `<button class="qdetail-claim-btn" id="qdetail-claim" data-quest-id="${q.id}">✔ Valider la quête</button>`
+    : "";
+
+  content.innerHTML = `
+    <div class="qdetail-type-badge ${q.quest_type}">${typeLabel}</div>
+    <h3 class="qdetail-title">${QQ_title(q)}</h3>
+    <p class="qdetail-desc">${QQ_desc(q)}</p>
+    <div class="qdetail-section-label">Objectifs</div>
+    <div class="qdetail-objectives">${objectivesHtml}</div>
+    <div class="qdetail-section-label">Récompenses</div>
+    ${rewardsHtml}
+    ${expiryHtml}
+    ${claimBtn}
+  `;
+
+  modal.classList.add("is-open");
 }
 
-
-
-/**
- * Load quests from /api/state
- */
-function QQ_loadQuestsFromState() {
-  return http("GET", "/api/state").then((r) => {
-    if (!r.ok) {
-      console.error("Failed to load quests:", r);
-      return;
-    }
-
-    console.log("[quests] state from /api/state =", r.data);
-
-    const state = r.data || {};
-    QQ_currentQuests = state.quests || [];
-    console.log("[quests] currentQuests =", QQ_currentQuests);
-
-    QQ_renderQuestsPanel();
-  });
-}
-
-
-/**
- * Show / hide panel
- */
-window.openQuestsPanel = function () {
-  console.log("[quests] openQuestsPanel()");
-  const panel = $("quests-panel");
-  if (panel) {
-    panel.classList.remove("hidden");
-    QQ_loadQuestsFromState();
-  } else {
-    console.warn("[quests] quests-panel not found");
-  }
-};
-
-window.closeQuestsPanel = function () {
-  const panel = $("quests-panel");
-  if (panel) {
-    panel.classList.add("hidden");
-  }
-};
-
-window.initQuestsUI = function () {
-  const btn = $("btn-quests");
-  const close = $("btn-quests-close");
-
-  if (btn) {
-    btn.addEventListener("click", () => {
-      console.log("[quests] Quests button clicked");
-      window.openQuestsPanel();
-    });
-  }
-
-  if (close) {
-    close.addEventListener("click", () => {
-      console.log("[quests] Quests close button clicked");
-      window.closeQuestsPanel();
-    });
-  }
-
-  // 1) Filtres statut : En cours / Terminées
-  const filterButtons = document.querySelectorAll(".qfilter-btn");
-  filterButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const mode = btn.getAttribute("data-filter") || "running";
-      if (mode === "completed" || mode === "expired" || mode === "running") {
-        QQ_statusFilter = mode;
-      } else {
-        QQ_statusFilter = "running";
-      }
-
-      filterButtons.forEach((b) => {
-        if (b === btn) {
-          b.classList.add("qfilter-active");
-        } else {
-          b.classList.remove("qfilter-active");
-        }
-      });
-
-      QQ_renderQuestsPanel();
-    });
-  });
-
-
-  // 2) Onglets de TYPE : Toutes / Quotidiennes / Storyline / Autres
-  const typeButtons = document.querySelectorAll(".qtype-btn");
-  typeButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const qtype = btn.getAttribute("data-qtype") || "all";
-      QQ_typeFilter = qtype;
-
-      // Style actif
-      typeButtons.forEach((b) => {
-        if (b === btn) {
-          b.classList.add("qtype-active");
-        } else {
-          b.classList.remove("qtype-active");
-        }
-      });
-
-      QQ_renderQuestsPanel();
-    });
-  });
-};
-
-
-window.QQ_toggleGroup = function (groupKey) {
-  const group = document.querySelector(`.quests-group[data-group="${groupKey}"]`);
-  if (!group) return;
-  group.classList.toggle("collapsed");
-};
-
-// ---------------------------------------------------------------------------
-// HUD helper: mettre à jour shards/essence après validation de quête
-// ---------------------------------------------------------------------------
-function QQ_updateHudFromPlayer(player) {
-  if (!player) return;
-
-  const coinEls = [
-    document.getElementById("hud-shards"),
-    document.getElementById("hud-shards-value"),
-    document.getElementById("hud-shards-amount"),
-  ];
-  coinEls.forEach((el) => {
-    if (el) el.textContent = player.shards;
-  });
-
-  const diamEls = [
-    document.getElementById("hud-essence"),
-    document.getElementById("hud-essence-value"),
-    document.getElementById("hud-essence-amount"),
-  ];
-  diamEls.forEach((el) => {
-    if (el) el.textContent = player.essence;
-  });
+function QQ_closeDetail() {
+  const modal = document.getElementById("quest-detail-modal");
+  if (modal) modal.classList.remove("is-open");
+  QQ_detailQuestId = null;
 }
 
 // ---------------------------------------------------------------------------
-// Valider une quête (status = "ready") via /api/quests/claim
+// Completion popup
 // ---------------------------------------------------------------------------
-window.QQ_claimQuest = function (questId) {
-  console.log("[quests] Claim quest", questId);
+function QQ_showCompletionPopup(quest) {
+  const popup   = document.getElementById("quest-complete-popup");
+  const nameEl  = document.getElementById("qcp-name");
+  const rwEl    = document.getElementById("qcp-rewards");
+  if (!popup || !nameEl || !rwEl) return;
 
-  http("POST", "/api/quests/claim", { quest_id: questId }).then((r) => {
-    if (!r.ok) {
-      console.warn("[quests] claim failed:", r);
+  const rewards = quest.rewards || {};
+  const shards  = rewards.shards  || rewards.coins  || 0;
+  const essence = rewards.essence || rewards.diams  || 0;
+  const xp      = rewards.xp || 0;
 
-      const err = (r.data && r.data.error) || "unknown";
+  nameEl.textContent = QQ_title(quest);
 
-      if (err === "quest_not_ready") {
-        alert(
-          "Impossible de valider cette quête.\n" +
-            "Les objectifs ne sont pas encore remplis ou la quête n'est pas en statut prêt."
-        );
-      } else if (err === "quest_expired") {
-        alert(
-          "Cette quête est expirée, tu ne peux plus la valider."
-        );
-      } else if (err === "not_authenticated") {
-        alert(
-          "Tu n'es plus connecté. Recharge la page ou reconnecte-toi."
-        );
-      } else {
-        alert("Impossible de valider cette quête (erreur inconnue).");
-      }
+  rwEl.innerHTML = `
+    ${shards  ? `<div class="qcp-reward-item"><img src="/static/assets/img/ui/shards.png" alt=""> <span>+${shards}</span></div>` : ""}
+    ${essence ? `<div class="qcp-reward-item"><img src="/static/assets/img/ui/essence.png" alt=""> <span>+${essence}</span></div>` : ""}
+    ${xp      ? `<div class="qcp-reward-item qcp-xp"><span class="qcp-xp-icon">⭐</span> <span>+${xp} XP</span></div>` : ""}
+  `;
 
-      return;
-    }
+  popup.classList.add("is-open");
+}
 
-    const data = r.data || {};
-    const player = data.player || null;
-    const quest = data.quest || null;
-
-    // 🔄 Mettre à jour le HUD shards/essence
-    if (player) {
-      QQ_updateHudFromPlayer(player);
-    }
-
-    // 🔄 Mettre à jour la quête dans QQ_currentQuests
-    if (quest) {
-      const idx = QQ_currentQuests.findIndex((q) => q.id === quest.id);
-      if (idx !== -1) {
-        QQ_currentQuests[idx] = quest; // status => "completed"
-      } else {
-        QQ_currentQuests.push(quest);
-      }
-    }
-
-    // 🔁 Re-render du panneau de quêtes
-    QQ_renderQuestsPanel();
-  });
-};
-
+function QQ_hideCompletionPopup() {
+  const popup = document.getElementById("quest-complete-popup");
+  if (popup) popup.classList.remove("is-open");
+}
 
 // ---------------------------------------------------------------------------
-// Bouton "Valider la quête" -> /api/quests/claim
+// Claim quest
 // ---------------------------------------------------------------------------
+async function QQ_claimQuest(questId) {
+  const btn = document.getElementById("qdetail-claim");
+  if (btn) { btn.disabled = true; btn.textContent = "…"; }
 
-document.addEventListener("click", function (e) {
-  const btn = e.target.closest(".quest-claim-btn");
-  if (!btn) return;
+  const r = await http("POST", "/api/quests/claim", { quest_id: questId });
 
-  const questId = btn.getAttribute("data-quest-id");
-  if (!questId) return;
-
-  if (!confirm("Valider cette quête et recevoir la récompense ?")) {
+  if (!r.ok) {
+    const err = (r.data && r.data.error) || "unknown";
+    if (btn) { btn.disabled = false; btn.textContent = "✔ Valider la quête"; }
+    alert(
+      err === "quest_not_ready" ? "Les objectifs ne sont pas encore remplis." :
+      err === "quest_expired"   ? "Cette quête est expirée." :
+      "Impossible de valider cette quête."
+    );
     return;
   }
 
-  QQ_claimQuest(parseInt(questId, 10));
-});
+  const data  = r.data || {};
+  const quest = data.quest || null;
+
+  // Update player HUD
+  if (data.player) {
+    QQ_updateHud(data.player);
+    if (typeof renderPlayer === "function") renderPlayer(data.player);
+  }
+
+  // Close detail modal first
+  QQ_closeDetail();
+
+  // Remove or update the quest in state, add new_quest if any
+  if (quest) {
+    // Remove completed quest from all lists
+    ["daily", "weekly", "continuous"].forEach(type => {
+      QQ_quests[type] = QQ_quests[type].filter(q => q.id !== quest.id);
+    });
+
+    // If a new continuous quest was assigned, add it (dedup by id)
+    if (data.new_quest) {
+      QQ_quests.continuous = [
+        ...QQ_quests.continuous.filter(q => q.id !== data.new_quest.id),
+        data.new_quest,
+      ];
+    }
+  }
+
+  QQ_renderGrid(QQ_activeTab);
+  QQ_updateBadges();
+
+  // Show completion popup
+  if (quest) QQ_showCompletionPopup(quest);
+}
+
+// ---------------------------------------------------------------------------
+// Load quests
+// ---------------------------------------------------------------------------
+async function QQ_load() {
+  ["daily", "weekly", "continuous"].forEach(type => {
+    const g = document.getElementById(`grid-${type}`);
+    if (g) g.innerHTML = `<p class="quests-loading">Chargement…</p>`;
+  });
+
+  const r = await http("GET", "/api/quests");
+
+  if (!r.ok) {
+    const grid = document.getElementById("grid-daily");
+    if (grid) grid.innerHTML = `<p class="quests-error">Impossible de charger les quêtes.</p>`;
+    return;
+  }
+
+  const data = r.data || {};
+
+  // Level-locked: quests not yet available
+  if (data.locked) {
+    QQ_locked = true;
+    const msg = `<p class="quests-locked">🔒 Les quêtes sont disponibles à partir du niveau ${data.min_level}.</p>`;
+    ["daily", "weekly", "continuous"].forEach(type => {
+      const g = document.getElementById(`grid-${type}`);
+      if (g) g.innerHTML = msg;
+    });
+    return;
+  }
+
+  QQ_locked = false;
+  QQ_quests.daily      = data.daily      || [];
+  QQ_quests.weekly     = data.weekly     || [];
+  QQ_quests.continuous = data.continuous || [];
+
+  ["daily", "weekly", "continuous"].forEach(QQ_renderGrid);
+  QQ_updateBadges();
+}
+
+// ---------------------------------------------------------------------------
+// HUD update
+// ---------------------------------------------------------------------------
+function QQ_updateHud(player) {
+  const map = {
+    "hud-shards": player.shards, "hud-shards-value": player.shards,
+    "hud-essence": player.essence, "hud-essence-value": player.essence,
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Panel open / close
+// ---------------------------------------------------------------------------
+let QQ_initialized = false;
+
+window.QQ_openPanel = function () {
+  const panel = document.getElementById("quests-panel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  // Charge les quêtes à chaque ouverture (données fraîches)
+  QQ_load();
+};
+
+window.QQ_closePanel = function () {
+  const panel = document.getElementById("quests-panel");
+  if (panel) panel.classList.add("hidden");
+  QQ_closeDetail();
+  QQ_hideCompletionPopup();
+};
+
+// ---------------------------------------------------------------------------
+// Init — event listeners (appelé une seule fois au démarrage)
+// ---------------------------------------------------------------------------
+window.initQuestsUI = function () {
+  if (QQ_initialized) return;
+  QQ_initialized = true;
+
+  // Tabs
+  document.querySelectorAll(".qtab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      QQ_activeTab = btn.dataset.tab;
+      document.querySelectorAll(".qtab").forEach(b => b.classList.toggle("is-active", b === btn));
+      document.querySelectorAll(".quests-tab-panel").forEach(p => p.classList.toggle("is-active", p.id === `panel-${QQ_activeTab}`));
+    });
+  });
+
+  // Card click → detail modal
+  document.addEventListener("click", e => {
+    const card = e.target.closest(".qcard");
+    if (card) {
+      QQ_openDetail(parseInt(card.dataset.questId, 10));
+      return;
+    }
+
+    // Claim button inside detail modal
+    const claimBtn = e.target.closest("#qdetail-claim");
+    if (claimBtn) {
+      QQ_claimQuest(parseInt(claimBtn.dataset.questId, 10));
+      return;
+    }
+
+    // Close detail modal
+    if (e.target.id === "quest-modal-backdrop" || e.target.id === "quest-modal-close") {
+      QQ_closeDetail();
+      return;
+    }
+
+    // Close completion popup
+    if (e.target.id === "qcp-ok") {
+      QQ_hideCompletionPopup();
+    }
+
+    // Close quest panel via backdrop
+    if (e.target.id === "quests-panel-backdrop") {
+      window.QQ_closePanel();
+    }
+  });
+
+  // ESC closes modals
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      QQ_closeDetail();
+      QQ_hideCompletionPopup();
+      window.QQ_closePanel();
+    }
+  });
+};

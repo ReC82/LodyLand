@@ -1,7 +1,358 @@
 quest_templates:
+  qt_continuous_branch_palm_supply:
+    key: qt_continuous_branch_palm_supply
+    quest_type: continuous
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Feuillages pour le village
+      en: Foliage for the village
+    description:
+      fr: Les habitants utilisent branches et feuilles de palmier pour tout.
+      en: The villagers use branches and palm leaves for everything.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - palm_leaf
+      quantity_min: 22
+      quantity_max: 32
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 28
+      shards_max: 48
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 55
+  qt_continuous_branch_supply:
+    key: qt_continuous_branch_supply
+    quest_type: continuous
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Réserve de branches
+      en: Branch reserve
+    description:
+      fr: Le village a toujours besoin de branches. Continue à en apporter régulièrement.
+      en: The village always needs branches. Keep bringing them regularly.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      quantity_min: 25
+      quantity_max: 35
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 28
+      shards_max: 48
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 55
+  qt_continuous_forest_mixed:
+    key: qt_continuous_forest_mixed
+    quest_type: continuous
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Ressources mixtes de la forêt
+      en: Mixed forest resources
+    description:
+      fr: Apporte un lot varié de ressources forestières au village.
+      en: Bring a varied batch of forest resources to the village.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - vine
+      - palm_leaf
+      quantity_min: 32
+      quantity_max: 48
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 45
+      shards_max: 70
+      essence_min: 0
+      essence_max: 1
+      xp_min: 45
+      xp_max: 75
+  qt_continuous_rope_craft:
+    key: qt_continuous_rope_craft
+    quest_type: continuous
+    difficulty: medium
+    category: crafting
+    enabled: true
+    min_player_level: 4
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Production régulière de cordes
+      en: Regular rope production
+    description:
+      fr: L'atelier a besoin d'un approvisionnement régulier en cordes.
+      en: The workshop needs a regular supply of ropes.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: craft_item
+      item_keys:
+      - item_rope
+      quantity_min: 3
+      quantity_max: 5
+    reward_templates:
+      shards_min: 48
+      shards_max: 72
+      essence_min: 0
+      essence_max: 2
+      xp_min: 50
+      xp_max: 80
+  qt_continuous_stone_supply:
+    key: qt_continuous_stone_supply
+    quest_type: continuous
+    difficulty: easy
+    category: mining
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Pierres en continu
+      en: Continuous stone supply
+    description:
+      fr: Les maçons ont besoin d'un flux constant de petites pierres.
+      en: The masons need a constant flow of small stones.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - small_stone
+      quantity_min: 20
+      quantity_max: 30
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 28
+      shards_max: 48
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 55
+  qt_continuous_wood_supply:
+    key: qt_continuous_wood_supply
+    quest_type: continuous
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Approvisionnement en bois
+      en: Steady wood supply
+    description:
+      fr: Le village a toujours besoin de bois. Continue à en apporter régulièrement.
+      en: The village always needs wood. Keep bringing it regularly.
+    sources:
+    - auto_continuous
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - wood
+      quantity_min: 18
+      quantity_max: 28
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 30
+      shards_max: 50
+      essence_min: 0
+      essence_max: 1
+      xp_min: 32
+      xp_max: 55
+  qt_daily_branch_easy:
+    key: qt_daily_branch_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 1
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Collecte de branches
+      en: Branch collection
+    description:
+      fr: Les villageois ont besoin de branches pour leurs travaux quotidiens.
+      en: The villagers need branches for their daily work.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      quantity_min: 12
+      quantity_max: 20
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+  qt_daily_branch_stone_medium:
+    key: qt_daily_branch_stone_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Branches et pierres
+      en: Branches and stones
+    description:
+      fr: Les constructeurs ont besoin de branches et de pierres pour leurs chantiers.
+      en: The builders need branches and stones for their construction sites.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - small_stone
+      quantity_min: 20
+      quantity_max: 30
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
+  qt_daily_branch_wood_medium:
+    key: qt_daily_branch_wood_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Bois brut et travaillé
+      en: Raw and worked wood
+    description:
+      fr: Le village a besoin des deux types de bois pour les réparations.
+      en: The village needs both types of wood for repairs.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      quantity_min: 20
+      quantity_max: 30
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
+  qt_daily_forest_all_hard:
+    key: qt_daily_forest_all_hard
+    quest_type: daily
+    difficulty: hard
+    category: gathering
+    enabled: true
+    min_player_level: 6
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Approvisionnement complet
+      en: Full forest resupply
+    description:
+      fr: Le village a besoin de toutes les ressources de la forêt pour les fêtes.
+      en: The village needs all forest resources for the celebration.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      - small_stone
+      - palm_leaf
+      quantity_min: 55
+      quantity_max: 75
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 55
+      shards_max: 80
+      essence_min: 1
+      essence_max: 3
+      xp_min: 65
+      xp_max: 100
+  qt_daily_forest_bulk_hard:
+    key: qt_daily_forest_bulk_hard
+    quest_type: daily
+    difficulty: hard
+    category: gathering
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Grande récolte de bois
+      en: Large wood harvest
+    description:
+      fr: Le village prépare de grandes constructions. Il faut énormément de bois.
+      en: The village is preparing for major construction. A lot of wood is needed.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      quantity_min: 45
+      quantity_max: 60
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 50
+      shards_max: 75
+      essence_min: 0
+      essence_max: 2
+      xp_min: 55
+      xp_max: 90
   qt_daily_forest_craft_rope:
     key: qt_daily_forest_craft_rope
     quest_type: daily
+    difficulty: medium
     category: crafting
     enabled: true
     min_player_level: 3
@@ -28,9 +379,45 @@ quest_templates:
       shards_max: 30
       essence_min: 0
       essence_max: 1
+      xp_min: 20
+      xp_max: 35
+  qt_daily_forest_emergency_hard:
+    key: qt_daily_forest_emergency_hard
+    quest_type: daily
+    difficulty: hard
+    category: gathering
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Ravitaillement d'urgence
+      en: Emergency supply run
+    description:
+      fr: Une tempête approche ! Il faut stocker un maximum de ressources vitales.
+      en: A storm is coming! Stock as many vital resources as possible.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - vine
+      - palm_leaf
+      quantity_min: 50
+      quantity_max: 65
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 50
+      shards_max: 72
+      essence_min: 1
+      essence_max: 2
+      xp_min: 55
+      xp_max: 85
   qt_daily_forest_leaves_and_vine:
     key: qt_daily_forest_leaves_and_vine
     quest_type: daily
+    difficulty: medium
     category: gathering
     enabled: true
     min_player_level: 4
@@ -59,9 +446,12 @@ quest_templates:
       shards_max: 32
       essence_min: 0
       essence_max: 1
+      xp_min: 22
+      xp_max: 38
   qt_daily_forest_mix_basic_resources:
     key: qt_daily_forest_mix_basic_resources
     quest_type: daily
+    difficulty: medium
     category: farming
     enabled: true
     min_player_level: 5
@@ -91,9 +481,12 @@ quest_templates:
       shards_max: 40
       essence_min: 0
       essence_max: 2
+      xp_min: 25
+      xp_max: 45
   qt_daily_forest_stone_small:
     key: qt_daily_forest_stone_small
     quest_type: daily
+    difficulty: easy
     category: mining
     enabled: true
     min_player_level: 2
@@ -121,9 +514,12 @@ quest_templates:
       shards_max: 22
       essence_min: 0
       essence_max: 1
+      xp_min: 10
+      xp_max: 18
   qt_daily_forest_wood_basic:
     key: qt_daily_forest_wood_basic
     quest_type: daily
+    difficulty: easy
     category: farming
     enabled: true
     min_player_level: 1
@@ -152,6 +548,290 @@ quest_templates:
       shards_max: 25
       essence_min: 0
       essence_max: 1
+      xp_min: 12
+      xp_max: 20
+  qt_daily_palm_easy:
+    key: qt_daily_palm_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 2
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Feuilles de palmier
+      en: Palm leaves
+    description:
+      fr: Récolte quelques feuilles de palmier pour les toits du village.
+      en: Collect some palm leaves for the village roofs.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - palm_leaf
+      quantity_min: 8
+      quantity_max: 14
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+  qt_daily_rope_medium:
+    key: qt_daily_rope_medium
+    quest_type: daily
+    difficulty: medium
+    category: crafting
+    enabled: true
+    min_player_level: 4
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Cordes pour l'atelier
+      en: Ropes for the workshop
+    description:
+      fr: L'atelier a besoin de cordes solides. Fabrique-en quelques-unes.
+      en: The workshop needs strong ropes. Craft a few.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: craft_item
+      item_keys:
+      - item_rope
+      quantity_min: 2
+      quantity_max: 4
+    reward_templates:
+      shards_min: 25
+      shards_max: 40
+      essence_min: 0
+      essence_max: 1
+      xp_min: 30
+      xp_max: 50
+  qt_daily_rope_production_hard:
+    key: qt_daily_rope_production_hard
+    quest_type: daily
+    difficulty: hard
+    category: crafting
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Production de cordes
+      en: Rope production run
+    description:
+      fr: Les pêcheurs ont besoin de nombreuses cordes solides pour leurs filets.
+      en: The fishermen need many strong ropes for their nets.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: craft_item
+      item_keys:
+      - item_rope
+      quantity_min: 5
+      quantity_max: 8
+    reward_templates:
+      shards_min: 55
+      shards_max: 80
+      essence_min: 0
+      essence_max: 2
+      xp_min: 60
+      xp_max: 95
+  qt_daily_stone_easy2:
+    key: qt_daily_stone_easy2
+    quest_type: daily
+    difficulty: easy
+    category: mining
+    enabled: true
+    min_player_level: 1
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Pierres pour les fondations
+      en: Stones for foundations
+    description:
+      fr: Ramasse quelques petites pierres pour renforcer les fondations du village.
+      en: Pick up some small stones to reinforce the village foundations.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - small_stone
+      quantity_min: 6
+      quantity_max: 12
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+  qt_daily_stone_mining_hard:
+    key: qt_daily_stone_mining_hard
+    quest_type: daily
+    difficulty: hard
+    category: mining
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Extraction massive
+      en: Mass extraction
+    description:
+      fr: Les ingénieurs ont besoin d'une grande quantité de pierres pour le chantier.
+      en: The engineers need a large quantity of stones for the site.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - small_stone
+      quantity_min: 40
+      quantity_max: 55
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 50
+      shards_max: 72
+      essence_min: 0
+      essence_max: 2
+      xp_min: 55
+      xp_max: 85
+  qt_daily_vine_easy:
+    key: qt_daily_vine_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 2
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Lianes pour le village
+      en: Vines for the village
+    description:
+      fr: Apporte quelques lianes aux artisans du village.
+      en: Bring some vines to the village crafters.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - vine
+      quantity_min: 6
+      quantity_max: 12
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+  qt_daily_vine_palm_medium:
+    key: qt_daily_vine_palm_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Fibres naturelles
+      en: Natural fibres
+    description:
+      fr: Les tisserands ont besoin de lianes et de feuilles de palmier.
+      en: The weavers need vines and palm leaves.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - vine
+      - palm_leaf
+      quantity_min: 16
+      quantity_max: 26
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
+  qt_daily_wood_easy:
+    key: qt_daily_wood_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 1
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Du bois pour l'atelier
+      en: Wood for the workshop
+    description:
+      fr: L'atelier du village manque de bois. Apporte-en un peu.
+      en: The village workshop is low on wood. Bring some over.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - wood
+      quantity_min: 6
+      quantity_max: 12
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+  qt_daily_wood_medium:
+    key: qt_daily_wood_medium
+    quest_type: daily
+    difficulty: medium
+    category: gathering
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Bois en quantité
+      en: Wood in quantity
+    description:
+      fr: L'atelier du village a besoin d'un bon lot de bois travaillé.
+      en: The village workshop needs a solid batch of worked wood.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - wood
+      quantity_min: 18
+      quantity_max: 28
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 22
+      shards_max: 36
+      essence_min: 0
+      essence_max: 1
+      xp_min: 25
+      xp_max: 45
   qt_story_beach_01_discover:
     key: qt_story_beach_01_discover
     quest_type: storyline
@@ -265,9 +945,12 @@ quest_templates:
   qt_weekly_forest_supply:
     key: qt_weekly_forest_supply
     quest_type: weekly
+    difficulty: easy
     category: forest
     enabled: true
     min_player_level: 3
+    required_land_keys:
+    - land_forest
     title:
       fr: Approvisionnement hebdomadaire de la forêt
       en: Weekly forest supplies
@@ -292,7 +975,77 @@ quest_templates:
       quantity_max: 80
       ignore_boosts: true
     reward_templates:
-      shards_min: 120
-      shards_max: 160
+      shards_min: 80
+      shards_max: 120
       essence_min: 0
       essence_max: 2
+      xp_min: 90
+      xp_max: 150
+  qt_weekly_full_supply_hard:
+    key: qt_weekly_full_supply_hard
+    quest_type: weekly
+    difficulty: hard
+    category: forest
+    enabled: true
+    min_player_level: 5
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Grand approvisionnement
+      en: Grand weekly supply
+    description:
+      fr: Le village prépare des festivités. Il faut des ressources de partout.
+      en: The village is preparing celebrations. Resources from everywhere needed.
+    sources:
+    - auto_weekly
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      - vine
+      - palm_leaf
+      - small_stone
+      quantity_min: 75
+      quantity_max: 100
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 140
+      shards_max: 200
+      essence_min: 1
+      essence_max: 3
+      xp_min: 160
+      xp_max: 260
+  qt_weekly_mixed_medium:
+    key: qt_weekly_mixed_medium
+    quest_type: weekly
+    difficulty: medium
+    category: forest
+    enabled: true
+    min_player_level: 3
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Approvisionnement mixte
+      en: Mixed weekly resupply
+    description:
+      fr: Le village a besoin d'un lot varié de ressources pour la semaine.
+      en: The village needs a varied batch of resources for the week.
+    sources:
+    - auto_weekly
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      - wood
+      - small_stone
+      quantity_min: 50
+      quantity_max: 70
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 100
+      shards_max: 145
+      essence_min: 0
+      essence_max: 2
+      xp_min: 110
+      xp_max: 180

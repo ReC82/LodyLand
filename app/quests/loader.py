@@ -107,7 +107,7 @@ def load_quest_templates() -> Dict[str, QuestTemplate]:
     # ----------------------------------------------------
     # 🔹 Déclaration ici : types autorisés + dict des valides
     # ----------------------------------------------------
-    allowed_types = {"storyline", "daily", "weekly", "monthly", "bonus", "event"}
+    allowed_types = {"storyline", "daily", "weekly", "monthly", "bonus", "event", "continuous"}
     valid: Dict[str, QuestTemplate] = {}
 
     # ----------------------------------------------------

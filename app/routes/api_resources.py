@@ -789,6 +789,7 @@ def collect():
             )
 
             loot_payload = []
+            newly_ready_quests = []
             for res_key, base_amount in raw_loot.items():
                 per_unit = _compute_collect_amount(s, p.id, res_key)
                 amount = base_amount * per_unit * land_loot_mult
@@ -827,7 +828,7 @@ def collect():
                 )
 
                 # Quests / progression hooks
-                on_resource_collected(
+                newly_ready_quests += on_resource_collected(
                     session=s,
                     player=p,
                     resource_key=res_key,
@@ -870,6 +871,10 @@ def collect():
                         },
                         "level_up": level_up,
                         "level_rewards": level_rewards,
+                        "quests_ready": [
+                            {"id": q.id, "title": q.title_fr}
+                            for q in newly_ready_quests
+                        ],
                     }
                 ),
                 200,
@@ -944,9 +949,10 @@ def collect():
             rs.qty = round(new_qty, 2)
 
             # Quest progression for collect_resource (tile mode)
+            tile_quests_ready = []
             if p:
                 # One tile collect = base_amount 1 for quest purposes.
-                on_resource_collected(
+                tile_quests_ready = on_resource_collected(
                     session=s,
                     player=p,
                     resource_key=t.resource,
@@ -968,6 +974,10 @@ def collect():
                     "essence": p.essence,
                 },
                 "level_up": level_up,
+                "quests_ready": [
+                    {"id": q.id, "title": q.title_fr}
+                    for q in tile_quests_ready
+                ],
             }
         )
 

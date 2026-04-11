@@ -1492,6 +1492,51 @@ window.handleLevelUpFront = handleLevelUpFront;
 // On met la fonction sur window pour l'appeler depuis les lands
 window.showLootToasts = showLootToasts;
 
+/**
+ * Initialise le bouton 📜 du HUD pour ouvrir/fermer le panel de quêtes.
+ */
+function _initQuestHudButton() {
+  const btn   = document.getElementById("btn-quests");
+  const close = document.getElementById("btn-quests-close");
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      if (typeof window.QQ_openPanel === "function") window.QQ_openPanel();
+    });
+  }
+
+  if (close) {
+    close.addEventListener("click", () => {
+      if (typeof window.QQ_closePanel === "function") window.QQ_closePanel();
+    });
+  }
+}
+
+/**
+ * Affiche un toast "quête prête à être réclamée" pour chaque quête de la liste.
+ * @param {Array<{id: number, title: string}>} quests
+ */
+function showQuestReadyToasts(quests) {
+  if (!Array.isArray(quests) || quests.length === 0) return;
+  const container = document.getElementById("loot-toasts");
+  if (!container) return;
+
+  quests.forEach((q, index) => {
+    const toast = document.createElement("div");
+    toast.className = "quest-ready-toast";
+    toast.textContent = `✔ Quête prête : ${q.title}`;
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => { toast.classList.add("show"); });
+
+    const lifetime = 3500 + index * 400;
+    setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => toast.remove(), 220);
+    }, lifetime);
+  });
+}
+window.showQuestReadyToasts = showQuestReadyToasts;
 
 
 // ---------------------------------------------------------------------------
@@ -1505,6 +1550,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupDailyModal();
   refreshDailyStatus();
   initQuestsUI();
+  _initQuestHudButton();
   initLevelsUI();
   initImageViewer(); 
   

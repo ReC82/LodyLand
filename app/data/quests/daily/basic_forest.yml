@@ -2,6 +2,7 @@ quest_templates:
   daily_forest_wood_basic:
     key: qt_daily_forest_wood_basic
     quest_type: daily
+    difficulty: easy
     category: farming
     enabled: true
     min_player_level: 1
@@ -30,9 +31,13 @@ quest_templates:
       shards_max: 25
       essence_min: 0
       essence_max: 1
+      xp_min: 12
+      xp_max: 20
+
   daily_forest_stone_small:
     key: qt_daily_forest_stone_small
     quest_type: daily
+    difficulty: easy
     category: mining
     enabled: true
     min_player_level: 2
@@ -60,9 +65,13 @@ quest_templates:
       shards_max: 22
       essence_min: 0
       essence_max: 1
+      xp_min: 10
+      xp_max: 18
+
   daily_forest_craft_rope:
     key: qt_daily_forest_craft_rope
     quest_type: daily
+    difficulty: medium
     category: crafting
     enabled: true
     min_player_level: 3
@@ -89,9 +98,13 @@ quest_templates:
       shards_max: 30
       essence_min: 0
       essence_max: 1
+      xp_min: 20
+      xp_max: 35
+
   daily_forest_leaves_and_vine:
     key: qt_daily_forest_leaves_and_vine
     quest_type: daily
+    difficulty: medium
     category: gathering
     enabled: true
     min_player_level: 4
@@ -120,9 +133,13 @@ quest_templates:
       shards_max: 32
       essence_min: 0
       essence_max: 1
+      xp_min: 22
+      xp_max: 38
+
   daily_forest_mix_basic_resources:
     key: qt_daily_forest_mix_basic_resources
     quest_type: daily
+    difficulty: medium
     category: farming
     enabled: true
     min_player_level: 5
@@ -152,3 +169,5 @@ quest_templates:
       shards_max: 40
       essence_min: 0
       essence_max: 2
+      xp_min: 25
+      xp_max: 45

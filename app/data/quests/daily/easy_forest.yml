@@ -1,0 +1,166 @@
+quest_templates:
+
+  daily_branch_easy:
+    key: qt_daily_branch_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 1
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Collecte de branches
+      en: Branch collection
+    description:
+      fr: Les villageois ont besoin de branches pour leurs travaux quotidiens.
+      en: The villagers need branches for their daily work.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - branch
+      quantity_min: 12
+      quantity_max: 20
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+
+  daily_palm_easy:
+    key: qt_daily_palm_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 2
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Feuilles de palmier
+      en: Palm leaves
+    description:
+      fr: Récolte quelques feuilles de palmier pour les toits du village.
+      en: Collect some palm leaves for the village roofs.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - palm_leaf
+      quantity_min: 8
+      quantity_max: 14
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+
+  daily_vine_easy:
+    key: qt_daily_vine_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 2
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Lianes pour le village
+      en: Vines for the village
+    description:
+      fr: Apporte quelques lianes aux artisans du village.
+      en: Bring some vines to the village crafters.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - vine
+      quantity_min: 6
+      quantity_max: 12
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+
+  daily_stone_easy2:
+    key: qt_daily_stone_easy2
+    quest_type: daily
+    difficulty: easy
+    category: mining
+    enabled: true
+    min_player_level: 1
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Pierres pour les fondations
+      en: Stones for foundations
+    description:
+      fr: Ramasse quelques petites pierres pour renforcer les fondations du village.
+      en: Pick up some small stones to reinforce the village foundations.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - small_stone
+      quantity_min: 6
+      quantity_max: 12
+      ignore_boosts: true
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18
+
+  daily_wood_easy:
+    key: qt_daily_wood_easy
+    quest_type: daily
+    difficulty: easy
+    category: gathering
+    enabled: true
+    min_player_level: 1
+    max_player_level: 15
+    required_land_keys:
+    - land_forest
+    title:
+      fr: Du bois pour l'atelier
+      en: Wood for the workshop
+    description:
+      fr: L'atelier du village manque de bois. Apporte-en un peu.
+      en: The village workshop is low on wood. Bring some over.
+    sources:
+    - auto_daily
+    objective_templates:
+    - kind: collect_resource
+      resource_keys:
+      - wood
+      quantity_min: 6
+      quantity_max: 12
+      ignore_boosts: false
+    reward_templates:
+      shards_min: 10
+      shards_max: 20
+      essence_min: 0
+      essence_max: 0
+      xp_min: 10
+      xp_max: 18

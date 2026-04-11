@@ -73,6 +73,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='GAME_UI/css/global/modals/notebook_modal.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/lands/village/quests.css') }}"
+    />
 
 
     <!-- 4) CSS spécifique à la page de jeu (layout, lands génériques, etc.) -->
@@ -321,33 +325,80 @@
       </div>
     </div>
 
-    <!-- Quests panel (HUD) -->
+    {% block quest_panel_modal %}
+    <!-- ===========================
+         Quest Panel (modal global — accessible depuis toutes les pages)
+         =========================== -->
     <div id="quests-panel" class="quests-panel hidden">
+      <div class="quests-panel-backdrop" id="quests-panel-backdrop"></div>
       <div class="quests-panel-dialog">
-        <!-- Header du panel -->
+
+        <!-- Header -->
         <div class="quests-panel-header">
-          <div>
-            <h2 class="quests-panel-title mb-0">{{ t("base.quests.title") }}</h2>
-            <p class="quests-panel-subtitle mb-0">
-              {{ t("base.quests.subtitle") }}
-            </p>
+          <div class="quests-panel-header-info">
+            <h2 class="quests-panel-title">{{ t("village.quests_page.title") }}</h2>
+            <p class="quests-panel-subtitle">{{ t("village.quests_page.subtitle") }}</p>
           </div>
-          <button
-            id="btn-quests-close"
-            type="button"
-            class="btn btn-sm btn-outline-light"
-          >
-            ✕
+          <button id="btn-quests-close" type="button" class="quests-panel-close" aria-label="Fermer">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="quests-tabs">
+          <button class="qtab is-active" data-tab="daily">
+            <span class="qtab-icon">☀️</span>
+            <span>Quotidiennes</span>
+            <span class="qtab-badge" id="badge-daily"></span>
+          </button>
+          <button class="qtab" data-tab="weekly">
+            <span class="qtab-icon">📅</span>
+            <span>Hebdomadaires</span>
+            <span class="qtab-badge" id="badge-weekly"></span>
+          </button>
+          <button class="qtab" data-tab="continuous">
+            <span class="qtab-icon">🔄</span>
+            <span>Continue</span>
+            <span class="qtab-badge" id="badge-continuous"></span>
           </button>
         </div>
 
-        <!-- Corps scrollable -->
+        <!-- Panels -->
         <div class="quests-panel-body">
-          <!-- Ici, quests_app.js rendra les cartes de quêtes -->
-          <div id="quests-list"></div>
+          <div class="quests-tab-panel is-active" id="panel-daily">
+            <div class="quests-grid" id="grid-daily">
+              <p class="quests-loading">Chargement…</p>
+            </div>
+          </div>
+          <div class="quests-tab-panel" id="panel-weekly">
+            <div class="quests-grid" id="grid-weekly"></div>
+          </div>
+          <div class="quests-tab-panel" id="panel-continuous">
+            <div class="quests-grid" id="grid-continuous"></div>
+          </div>
         </div>
+
       </div>
     </div>
+
+    <!-- Quest detail modal (global) -->
+    <div id="quest-detail-modal" class="quest-modal" role="dialog" aria-modal="true">
+      <div class="quest-modal-backdrop" id="quest-modal-backdrop"></div>
+      <div class="quest-modal-box">
+        <button class="quest-modal-close" id="quest-modal-close" aria-label="Fermer">✕</button>
+        <div id="quest-modal-content"></div>
+      </div>
+    </div>
+
+    <!-- Quest completion popup (global) -->
+    <div id="quest-complete-popup" class="quest-complete-popup">
+      <div class="quest-complete-box">
+        <div class="quest-complete-check">✅</div>
+        <h3 class="quest-complete-title">Quête accomplie !</h3>
+        <p class="quest-complete-name" id="qcp-name"></p>
+        <div class="quest-complete-rewards" id="qcp-rewards"></div>
+        <button class="quest-complete-ok" id="qcp-ok">OK</button>
+      </div>
+    </div>
+    {% endblock quest_panel_modal %}
 
     <!-- ===========================
         Craft Modal

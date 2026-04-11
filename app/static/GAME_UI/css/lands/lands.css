@@ -425,6 +425,44 @@
   opacity: 0.9;
 }
 
+/* ============================================================
+   8b) QUEST READY TOASTS
+   ============================================================ */
+
+.quest-ready-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.92);  /* emerald */
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+  pointer-events: none;
+  cursor: default;
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quest-ready-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 480px) {
+  .quest-ready-toast {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    max-width: 200px;
+  }
+}
 
 /* ============================================================
    9) LAND FOOTER / MISC

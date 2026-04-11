@@ -531,6 +531,15 @@
           window.showLootToasts(data.loot);
         }
 
+        // Quest ready toasts
+        if (
+          Array.isArray(data.quests_ready) &&
+          data.quests_ready.length > 0 &&
+          window.showQuestReadyToasts
+        ) {
+          window.showQuestReadyToasts(data.quests_ready);
+        }
+
         // Player HUD update
         if (data.player && window.renderPlayer) {
           window.renderPlayer({
