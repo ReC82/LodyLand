@@ -230,33 +230,59 @@ def apply_level_rewards(
         r_type = r.get("type")
 
         # ------------------------------------------------------------------ #
-        # Coins rewards
+        # Currency rewards (primary = shards, premium = essence)
         # ------------------------------------------------------------------ #
-        if r_type == "coins":
+        if r_type == "currency":
+            currency_kind = r.get("currency", "primary")
             amount = int(r.get("amount", 0))
-            player.coins = (player.coins or 0) + amount
+            if currency_kind == "premium":
+                player.essence = (player.essence or 0) + amount
+                applied.append(
+                    {
+                        "type": "essence",
+                        "amount": amount,
+                        "label": "Essence",
+                        "icon": "/static/assets/img/ui/essence.png",
+                    }
+                )
+            else:
+                player.shards = (player.shards or 0) + amount
+                applied.append(
+                    {
+                        "type": "shards",
+                        "amount": amount,
+                        "label": "Shards",
+                        "icon": "/static/assets/img/ui/shards.png",
+                    }
+                )
+
+        # ------------------------------------------------------------------ #
+        # Coins rewards (legacy — maps to shards)
+        # ------------------------------------------------------------------ #
+        elif r_type == "coins":
+            amount = int(r.get("amount", 0))
+            player.shards = (player.shards or 0) + amount
             applied.append(
                 {
-                    "type": "coins",
+                    "type": "shards",
                     "amount": amount,
-                    "label": "Coins",
-                    # NOTE: icon path for coins in the UI.
-                    "icon": "/static/GAME_UI/img/ui/coins.png",
+                    "label": "Shards",
+                    "icon": "/static/assets/img/ui/shards.png",
                 }
             )
 
         # ------------------------------------------------------------------ #
-        # Diams rewards
+        # Diams rewards (legacy — maps to essence)
         # ------------------------------------------------------------------ #
         elif r_type == "diams":
             amount = int(r.get("amount", 0))
-            player.diams = (player.diams or 0) + amount
+            player.essence = (player.essence or 0) + amount
             applied.append(
                 {
-                    "type": "diams",
+                    "type": "essence",
                     "amount": amount,
-                    "label": "Diams",
-                    "icon": "/static/GAME_UI/img/ui/diams.png",
+                    "label": "Essence",
+                    "icon": "/static/assets/img/ui/essence.png",
                 }
             )
 

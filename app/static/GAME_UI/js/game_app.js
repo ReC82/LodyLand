@@ -227,8 +227,18 @@ window.isFeatureUnlocked = isFeatureUnlocked;
 function formatRewardLabel(r) {
   const amount = r.amount ?? 0;
 
-  if (r.type === "shards" || r.type === "essence") {
-    return `${amount} ${r.label || r.type}`;
+  if (r.type === "shards") {
+    const label = (typeof I18n !== "undefined")
+      ? I18n.currencyLabel("primary", amount)
+      : (r.label || "Shards");
+    return `${amount} ${label}`;
+  }
+
+  if (r.type === "essence") {
+    const label = (typeof I18n !== "undefined")
+      ? I18n.currencyLabel("premium", amount)
+      : (r.label || "Essence");
+    return `${amount} ${label}`;
   }
 
   if (r.type === "resource") {
@@ -241,7 +251,7 @@ function formatRewardLabel(r) {
     return `${amount} x ${name}`;
   }
 
-  return JSON.stringify(r);
+  return r.label || r.type || "?";
 }
 
 function getRewardIconPath(r) {
