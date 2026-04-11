@@ -337,10 +337,8 @@ base:
 
   daily_modal:
     title: "Chest opened!"
-    reward_prefix: "You receive"
-    reward_suffix: "coins."
-    streak_current: "Current streak"
-    streak_best: "Best streak"
+    streak_current: "Streak"
+    streak_best: "Best"
 
   levelup_modal:
     title_prefix: "Level"

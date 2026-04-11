@@ -339,10 +339,8 @@ base:
 
   daily_modal:
     title: "Coffre ouvert !"
-    reward_prefix: "Tu reçois"
-    reward_suffix: "coins."
-    streak_current: "Série actuelle"
-    streak_best: "Meilleure série"
+    streak_current: "Série"
+    streak_best: "Meilleure"
 
   levelup_modal:
     title_prefix: "Niveau"

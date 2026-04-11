@@ -249,17 +249,25 @@
     <div id="dailyModal" class="daily-modal">
       <div class="daily-modal-backdrop"></div>
       <div class="daily-modal-box">
-        <div class="daily-modal-icon">🎁</div>
+
+        <!-- 7-day cycle timeline -->
+        <div class="daily-timeline" id="dailyTimeline">
+          <!-- Built dynamically by JS -->
+        </div>
+
         <h2 class="daily-modal-title">{{ t("base.daily_modal.title") }}</h2>
-        <p class="daily-modal-reward">
-          {{ t("base.daily_modal.reward_prefix") }}
-          <span id="dailyModalReward">0</span>
-          {{ t("base.daily_modal.reward_suffix") }}
-        </p>
+
+        <!-- Reward items list -->
+        <div class="daily-rewards-list" id="dailyRewardsList">
+          <!-- Built dynamically by JS -->
+        </div>
+
         <p class="daily-modal-streak">
-          {{ t("base.daily_modal.streak_current") }} : <span id="dailyModalStreakCurrent">0</span><br />
+          {{ t("base.daily_modal.streak_current") }} : <span id="dailyModalStreakCurrent">0</span>
+          &nbsp;·&nbsp;
           {{ t("base.daily_modal.streak_best") }} : <span id="dailyModalStreakBest">0</span>
         </p>
+
         <button id="dailyModalClose" class="daily-modal-close">
           {{ t("base.ok") }}
         </button>
