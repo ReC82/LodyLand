@@ -438,13 +438,6 @@
   margin-top: 4px;
 }
 
-/* Zone marquée comme feature-locked */
-.feature-locked {
-  opacity: 0.15;
-  pointer-events: none;
-}
-
-
 /* ============================================================
    10) LAND VIEW – responsive (tablettes + smartphones)
    ============================================================ */
