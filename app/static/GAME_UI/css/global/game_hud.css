@@ -439,3 +439,11 @@
 .notebook-panel.active {
   display: block;
 }
+
+/* ============================================================
+   FEATURE LOCK — globally grays out locked HUD elements
+   ============================================================ */
+.feature-locked {
+  opacity: 0.15;
+  pointer-events: none;
+}
