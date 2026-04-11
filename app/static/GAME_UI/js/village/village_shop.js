@@ -56,7 +56,14 @@ async function handleBuy(btn) {
     if (!r.ok) {
       btn.disabled = false;
       btn.textContent = oldLabel;
-      alert((i18n.buy_error || "Error") + " : " + ((r.data || {}).error || "?"));
+      const errData = r.data || {};
+      if (errData.error === "prerequisite_card_required") {
+        const reqKey = errData.requires_card || "";
+        const reqLabel = reqKey.replace(/_/g, " ");
+        alert(`Tu dois d'abord posséder la carte "${reqLabel}" pour acheter celle-ci.`);
+      } else {
+        alert((i18n.buy_error || "Error") + " : " + (errData.error || "?"));
+      }
       return;
     }
 

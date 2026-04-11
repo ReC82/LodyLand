@@ -33,7 +33,12 @@ from app.quests.service import (
 
 from app.services.cards import serialize_card_def
 #from app.routes.api_craft import _compute_craft_table_level, _update_craft_jobs_for_player
-from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
+from app.services.crafts import (
+    compute_craft_table_level,
+    update_craft_jobs_for_player,
+    get_craft_queue_max_slots,
+    get_craft_next_slot_cost,
+)
 from app.i18n import get_item, get_user_language  # ✅ AJOUTÉ
 from app.auth import get_current_player
 
@@ -450,24 +455,33 @@ def get_state():
         # Craft : niveau de table + jobs en cours
         # -------------------------------------------------------------------
 
-        # 1) Mettre à jour les jobs en cours (donne les items terminés)
-        #_update_craft_jobs_for_player(s, me)
+        # 1) Mettre à jour les jobs en cours (crédite les crafts finis, promeut la file)
+        just_completed_keys = update_craft_jobs_for_player(s, me)
+        s.flush()
 
         # 2) Niveau de table
         craft_table_level = compute_craft_table_level(s, me)
 
-        # 3) Charger les jobs actifs
+        # 3) Charger les jobs actifs ET en file d'attente
         now = dt.datetime.utcnow()
         job_rows = (
             s.query(PlayerCraftJob)
             .filter(PlayerCraftJob.player_id == me.id)
-            .filter(PlayerCraftJob.status == "active")
-            .order_by(PlayerCraftJob.started_at.asc())
+            .filter(PlayerCraftJob.status.in_(["active", "queued"]))
+            .order_by(PlayerCraftJob.id.asc())
             .all()
         )
 
-        jobs_payload = []
-        for job in job_rows:
+        # 4) Recently-completed jobs (dans les 60 dernières secondes)
+        recently_completed_rows = (
+            s.query(PlayerCraftJob)
+            .filter(PlayerCraftJob.player_id == me.id)
+            .filter(PlayerCraftJob.status == "done")
+            .filter(PlayerCraftJob.ends_at >= now - dt.timedelta(seconds=60))
+            .all()
+        )
+
+        def _serialize_job(job, now):
             total = int(job.quantity_total or 0)
             done = int(job.quantity_done or 0)
             remaining_units = max(0, total - done)
@@ -475,44 +489,29 @@ def get_state():
             started_at = job.started_at
             ends_at = job.ends_at
 
-            total_secs = max(
-                0, int((ends_at - started_at).total_seconds())
-            )
-            elapsed = max(0, int((now - started_at).total_seconds()))
-            remaining_total_secs = max(0, total_secs - elapsed)
-
-            # Durée par item (approx) si on a un total non nul
-            if total > 0 and total_secs > 0:
-                seconds_per_unit = total_secs / total
+            if job.status == "active":
+                total_secs = max(0, int((ends_at - started_at).total_seconds()))
+                elapsed = max(0, int((now - started_at).total_seconds()))
+                remaining_total_secs = max(0, total_secs - elapsed)
             else:
-                seconds_per_unit = 0
+                # queued: compute expected duration from defs
+                cfg_j = craft_defs.CRAFT_DEFS.get(job.item_key, {}) or {}
+                recipe_j = cfg_j.get("recipe") or {}
+                craft_time_per_unit = int(recipe_j.get("craft_time_seconds") or 0)
+                total_secs = craft_time_per_unit * total
+                elapsed = 0
+                remaining_total_secs = total_secs
 
-            # Temps jusqu'au prochain item (approx)
-            if remaining_units > 0 and seconds_per_unit > 0:
-                # Combien d'items *devraient* être finis à cet instant ?
-                units_should_be_done = min(
-                    total, int(elapsed // seconds_per_unit)
-                )
-                next_threshold_time = (
-                    units_should_be_done + 1
-                ) * seconds_per_unit
-                seconds_until_next_unit = max(
-                    0, int(next_threshold_time - elapsed)
-                )
-                if seconds_until_next_unit > remaining_total_secs:
-                    seconds_until_next_unit = remaining_total_secs
-            else:
-                seconds_until_next_unit = 0
+            cfg_j2 = craft_defs.CRAFT_DEFS.get(job.item_key, {}) or {}
+            label_j = cfg_j2.get("label") or job.item_key
+            icon_j = cfg_j2.get("icon") or None
 
-            # Label / meta depuis craft_defs si dispo
-            cfg = craft_defs.CRAFT_DEFS.get(job.item_key, {}) or {}
-            label = cfg.get("label") or job.item_key
-
-            job_payload = {
+            return {
                 "id": job.id,
                 "station_key": job.craft_location,
                 "item_key": job.item_key,
-                "label": label,
+                "label": label_j,
+                "icon": icon_j,
                 "quantity_total": total,
                 "quantity_done": done,
                 "remaining_units": remaining_units,
@@ -521,26 +520,42 @@ def get_state():
                 "seconds_total": total_secs,
                 "seconds_elapsed": elapsed,
                 "seconds_remaining_total": remaining_total_secs,
-                "seconds_per_unit": int(seconds_per_unit)
-                if seconds_per_unit
-                else 0,
-                "seconds_until_next_unit": seconds_until_next_unit,
                 "status": job.status,
             }
-            jobs_payload.append(job_payload)
 
-        # Pour l'instant, on considère qu'il n'y a qu'une seule table de craft "générique"
-        # -> on expose un "active_job" pratique pour l'UI sur craft_table
+        jobs_payload = [_serialize_job(j, now) for j in job_rows]
+
+        # active_job = first active job for craft_table
         active_job = None
+        queue_jobs = []
         for jp in jobs_payload:
             if jp["station_key"].startswith("craft_table"):
-                active_job = jp
-                break
+                if jp["status"] == "active" and active_job is None:
+                    active_job = jp
+                elif jp["status"] == "queued":
+                    queue_jobs.append(jp)
+
+        # recently completed info
+        recently_completed = []
+        for job in recently_completed_rows:
+            cfg_rc = craft_defs.CRAFT_DEFS.get(job.item_key, {}) or {}
+            recently_completed.append({
+                "id": job.id,
+                "item_key": job.item_key,
+                "label": cfg_rc.get("label") or job.item_key,
+                "icon": cfg_rc.get("icon") or None,
+                "quantity_total": job.quantity_total,
+            })
 
         craft_payload = {
             "craft_table_level": craft_table_level,
             "jobs": jobs_payload,
             "active_job": active_job,
+            "queue_jobs": queue_jobs,
+            "max_queue_slots": get_craft_queue_max_slots(me),
+            "extra_slots": int(getattr(me, "craft_queue_extra_slots", 0) or 0),
+            "next_slot_cost": get_craft_next_slot_cost(me),
+            "recently_completed": recently_completed,
         }
 
         # -------------------------------------------------------------------

@@ -61,6 +61,9 @@ class Player(Base):
     
     lang: Mapped[str] = mapped_column(String(5), default="fr", nullable=False)
 
+    # Craft queue: number of extra slots purchased beyond the base 2 (1 active + 1 queued)
+    craft_queue_extra_slots: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
     account: Mapped["Account"] = relationship(
         "Account",
         back_populates="player",

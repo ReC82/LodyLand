@@ -423,12 +423,41 @@
             </button>
           </div>
         </div>
-        <!-- Craft status (always visible) -->
-        <div id="craft-status" class="craft-status">
-          <div id="craft-status-text" class="craft-status-text">
-            {{ t("base.craft.no_job") }}
+        <!-- Queue status bar (always visible when job running) -->
+        <div id="craft-queue-bar" class="craft-queue-bar" style="display:none;">
+          <!-- Active job progress -->
+          <div id="craft-active-job-display" class="craft-active-job-display">
+            <div class="craft-job-header">
+              <div class="craft-job-icon-wrap">
+                <img id="craft-job-icon" src="" alt="" class="craft-job-icon" style="display:none;" />
+                <span id="craft-job-icon-fallback" class="craft-job-icon-fallback">⚙</span>
+              </div>
+              <div class="craft-job-info">
+                <div class="craft-job-name" id="craft-job-name">—</div>
+                <div class="craft-job-timer" id="craft-job-timer">
+                  <span class="craft-timer-clock" id="craft-timer-clock">--:--</span>
+                  <span class="craft-timer-sep">·</span>
+                  <span class="craft-timer-qty" id="craft-timer-qty">×1</span>
+                </div>
+              </div>
+            </div>
+            <div class="craft-progress-wrap">
+              <div class="craft-progress-bar" id="craft-progress-bar" style="width:0%"></div>
+            </div>
           </div>
+
+          <!-- Queue slots (waiting jobs) -->
+          <div id="craft-queue-slots" class="craft-queue-slots">
+            <!-- JS-rendered -->
+          </div>
+
+          <!-- Unlock slot button -->
+          <button id="craft-unlock-slot-btn" class="craft-unlock-slot-btn" title="Débloquer un emplacement">
+            <span class="craft-unlock-slot-icon">+</span>
+            <span id="craft-unlock-slot-cost" class="craft-unlock-slot-cost">2 ✦</span>
+          </button>
         </div>
+
         <div class="craft-modal-body">
           <!-- Left: ingredients + (recipes via toggle) -->
           <div class="craft-left-panel">
@@ -488,11 +517,17 @@
             </div>
           </div>
 
-          <!-- Center: craft grid -->
+          <!-- Right: craft grid + action -->
           <div class="craft-grid-panel">
             <h3 class="craft-section-title">
-              {{ t("base.craft.table") }} ({{ t("base.craft.level") }} <span id="craft-table-level">1</span>)
+              Table (niv.&nbsp;<span id="craft-table-level">1</span>)
             </h3>
+
+            <!-- Selected recipe duration hint -->
+            <div id="craft-recipe-duration" class="craft-recipe-duration" style="display:none;">
+              <span class="craft-duration-icon">⏱</span>
+              <span id="craft-duration-text">—</span>
+            </div>
 
             <div class="craft-grid">
               <div class="craft-slot" data-slot="0"></div>
@@ -500,23 +535,12 @@
               <div class="craft-slot" data-slot="2"></div>
             </div>
 
-            <div class="craft-quantity-row">
-              <label for="craft-quantity-input">{{ t("base.craft.quantity") }}</label>
-              <input
-                id="craft-quantity-input"
-                type="number"
-                min="1"
-                value="1"
-                step="1"
-              />
-            </div>
-
             <button
               id="craft-perform-btn"
               class="craft-perform-btn"
               disabled
             >
-              {{ t("base.craft.perform") }}
+              Craft
             </button>
           </div>
         </div>
@@ -525,7 +549,6 @@
 
     <!-- HUD bottom-left actions -->
     <div class="hud-bottom-left">
-      <!-- autres boutons éventuels... -->
       <button
         id="craft-open-btn"
         class="craft-fab-btn"
@@ -535,6 +558,7 @@
           src="{{ url_for('static', filename='assets/img/ui/craft.png') }}"
           alt="{{ t('base.craft.alt') }}"
         />
+        <span id="craft-fab-dot" class="craft-fab-dot" style="display:none;"></span>
       </button>
     </div>
 

@@ -15,7 +15,12 @@ from app.db import SessionLocal
 from app.models import Player, PlayerCard, ResourceStock, PlayerItem, PlayerCraftJob
 from app.auth import get_current_player
 from app.quests.service import on_item_crafted
-from app.services.crafts import compute_craft_table_level, update_craft_jobs_for_player
+from app.services.crafts import (
+    compute_craft_table_level,
+    update_craft_jobs_for_player,
+    get_craft_queue_max_slots,
+    get_craft_next_slot_cost,
+)
 from app.progression import next_threshold, apply_xp_and_level_up
 
 from datetime import datetime, timedelta
@@ -552,6 +557,23 @@ def perform_craft():
                 }
             ), 403
 
+        # --- Check queue capacity (only for delayed crafts) ----------------
+        craft_time_seconds = int(recipe.get("craft_time_seconds") or 0)
+        if craft_time_seconds > 0:
+            max_slots = get_craft_queue_max_slots(player)
+            occupied = (
+                session.query(PlayerCraftJob)
+                .filter(PlayerCraftJob.player_id == player.id)
+                .filter(PlayerCraftJob.status.in_(["active", "queued"]))
+                .count()
+            )
+            if occupied >= max_slots:
+                return jsonify({
+                    "error": "craft_queue_full",
+                    "max_slots": max_slots,
+                    "occupied": occupied,
+                }), 400
+
         # --- Compute total cost (resources + items) -------------------------
         required_resources, required_items = _compute_required_cost(
             recipe,
@@ -648,7 +670,6 @@ def perform_craft():
 
         # --- Compute total output ------------------------------------------
         output_qty = int(recipe.get("output_quantity") or 1) * times
-        craft_time_seconds = int(recipe.get("craft_time_seconds") or 0)
         
         # --- XP reward -----------------------------------------------------
         xp_reward = float(item_cfg.get("xp_reward") or 0.0)
@@ -697,21 +718,42 @@ def perform_craft():
             delayed = False
             job_payload = None
 
-        # --- Delayed craft: create PlayerCraftJob --------------------------
+        # --- Delayed craft: create PlayerCraftJob (active or queued) -------
         else:
-            total_seconds = craft_time_seconds * output_qty
-            ends_at = now + timedelta(seconds=total_seconds)
+            # Determine if we should queue or activate immediately
+            has_active = (
+                session.query(PlayerCraftJob)
+                .filter(PlayerCraftJob.player_id == player.id)
+                .filter(PlayerCraftJob.status == "active")
+                .count()
+            ) > 0
 
-            job = PlayerCraftJob(
-                player_id=player.id,
-                item_key=item_cfg.get("key"),
-                craft_location=craft_location or recipe_location,
-                quantity_total=output_qty,
-                quantity_done=0,
-                started_at=now,
-                ends_at=ends_at,
-                status="active",
-            )
+            total_seconds = craft_time_seconds * output_qty
+
+            if has_active:
+                # Queue it: started_at/ends_at will be set when promoted
+                job = PlayerCraftJob(
+                    player_id=player.id,
+                    item_key=item_cfg.get("key"),
+                    craft_location=craft_location or recipe_location,
+                    quantity_total=output_qty,
+                    quantity_done=0,
+                    started_at=now,
+                    ends_at=now + timedelta(seconds=total_seconds),  # placeholder
+                    status="queued",
+                )
+            else:
+                ends_at = now + timedelta(seconds=total_seconds)
+                job = PlayerCraftJob(
+                    player_id=player.id,
+                    item_key=item_cfg.get("key"),
+                    craft_location=craft_location or recipe_location,
+                    quantity_total=output_qty,
+                    quantity_done=0,
+                    started_at=now,
+                    ends_at=ends_at,
+                    status="active",
+                )
             session.add(job)
 
             delayed = True
@@ -723,6 +765,7 @@ def perform_craft():
                 "started_at": job.started_at.isoformat(),
                 "ends_at": job.ends_at.isoformat(),
                 "seconds_total": total_seconds,
+                "status": job.status,
             }
 
         session.commit()
@@ -757,3 +800,50 @@ def perform_craft():
             resp["job"] = job_payload
 
         return jsonify(resp)
+
+
+# ---------------------------------------------------------------------------
+# POST /api/craft/queue/buy_slot
+# ---------------------------------------------------------------------------
+@bp.post("/craft/queue/buy_slot")
+def buy_craft_queue_slot():
+    """
+    Purchase an additional craft queue slot using essence.
+
+    Cost doubles each time: 2, 4, 8, 16 ... essence.
+    """
+    data = request.get_json(silent=True) or {}
+
+    with SessionLocal() as session:
+        player = _resolve_player(session, data)
+        if not player:
+            return jsonify({"error": "player_required"}), 400
+
+        cost = get_craft_next_slot_cost(player)
+
+        if player.essence < cost:
+            return jsonify({
+                "error": "not_enough_essence",
+                "required": cost,
+                "owned": player.essence,
+            }), 400
+
+        player.essence -= cost
+        player.craft_queue_extra_slots = int(
+            getattr(player, "craft_queue_extra_slots", 0) or 0
+        ) + 1
+
+        session.commit()
+        session.refresh(player)
+
+        return jsonify({
+            "ok": True,
+            "extra_slots": player.craft_queue_extra_slots,
+            "max_queue_slots": get_craft_queue_max_slots(player),
+            "next_slot_cost": get_craft_next_slot_cost(player),
+            "player": {
+                "id": player.id,
+                "essence": player.essence,
+                "shards": player.shards,
+            },
+        })
