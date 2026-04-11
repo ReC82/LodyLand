@@ -472,6 +472,13 @@ village:
         text: "Trade certain resources for rare items or unique cards. Some trades are limited per day or per rotation."
         button: "View trades"
 
+      pedro:
+        alt: "Pedro — Master Builder"
+        title: "Pedro — Master Builder"
+        text: "Build permanent structures by gathering required materials. Once built, they produce continuously!"
+        button: "View buildings"
+        badge_new: "New!"
+
   market:
     tab_title: "Village market — LodyLand"
     title: "Village market"
@@ -570,6 +577,45 @@ village:
       coin_multiplier: "Coins ×"
       target_resource: "Target resource"
       unlocks: "Unlocks"
+
+  pedro:
+    tab_title: "Pedro — Master Builder — LodyLand"
+    title: "Pedro — Master Builder"
+    back_to_village: "Back to village"
+    subtitle: "Build permanent structures by gathering the required materials."
+    locked: "Pedro will appear once you reach level 11."
+    no_cards: "You don't have any building cards yet. Buy one at the Village Card Shop!"
+
+    grid:
+      title: "Your buildings"
+      empty: "No buildings available."
+
+    status:
+      pending_resources: "Awaiting resources"
+      pending_construction: "Ready to build"
+      under_construction: "Under construction…"
+      operational: "Operational"
+
+    materials:
+      title: "Required materials"
+      progress_label: "Deposited"
+      in_stock: "In stock"
+      deposit_btn: "Deposit"
+      warning_irrecoverable: "⚠ Deposited resources cannot be recovered."
+
+    construction:
+      start_btn: "Start construction"
+      time_remaining: "Time remaining"
+      started: "Construction started!"
+
+    production:
+      fuel_label: "Fuel"
+      fuel_add_btn: "Add fuel"
+      tank_label: "Tank"
+      queue_label: "Production queue"
+      start_btn: "Start"
+      recipe_label: "Recipe"
+      duration_label: "Duration"
 
 items:
   branch:

@@ -414,6 +414,54 @@ class TempleRun(Base):
 # Temple Reconstruction — persistent bricks placed by each player
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Buildings — construction + état opérationnel par joueur
+# ---------------------------------------------------------------------------
+
+class PlayerBuilding(Base):
+    """
+    Un building en cours de construction ou opérationnel pour un joueur.
+
+    Statuts :
+      pending_resources   → le joueur doit déposer les matériaux
+      pending_construction → tous les matériaux réunis, prêt à lancer
+      under_construction  → construction en cours (ends_at = fin)
+      operational         → building actif
+    """
+
+    __tablename__ = "player_buildings"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "player_id", "building_key",
+            name="uq_player_building",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(Integer, ForeignKey("players.id"), index=True, nullable=False)
+    building_key: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # Statut du cycle de vie
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending_resources"
+    )
+
+    # Ressources déjà déposées (dict : resource_key → qty_deposited)
+    # Irrécupérables une fois déposées.
+    banked_materials: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Timestamps construction
+    construction_started_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+    construction_ends_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime, nullable=False, default=dt.datetime.utcnow
+    )
+
+    player = relationship("Player", backref="buildings")
+
+
 class TempleReconstructionBrick(Base):
     """
     One row per brick placed by a player.

@@ -62,11 +62,11 @@ def api_village_cardshop_buy():
         if not shop_cfg.get("show_in_village_shop"):
             return jsonify({"ok": False, "error": "unknown_offer"}), 404
 
-        # 2) Prix : même logique que dans frontend.village_shop()
+        # 2) Prix : coins → shards, diams → essence (voir Player.coins/diams properties)
         prices = shop_cfg.get("prices") or []
         price_cfg = (prices[0] or {}) if prices else {}
-        price_shards = int(price_cfg.get("shards", 0) or 0)
-        price_essence = int(price_cfg.get("essence", 0) or 0)
+        price_shards = int(price_cfg.get("coins", 0) or 0)   # "coins" dans le YAML = shards en DB
+        price_essence = int(price_cfg.get("diams", 0) or 0)  # "diams" dans le YAML = essence en DB
         res_costs = price_cfg.get("resources") or {}
 
         # 3) Quantité possédée + max_owned
@@ -91,12 +91,12 @@ def api_village_cardshop_buy():
             # TODO: vérifier les ressources du joueur
             pass
 
-        # 4) Vérifier les shards/essence du joueur
+        # 4) Vérifier les fonds du joueur
         if player.shards < price_shards:
-            return jsonify({"ok": False, "error": "not_enough_shards"}), 400
+            return jsonify({"ok": False, "error": "not_enough_coins"}), 400
 
         if player.essence < price_essence:
-            return jsonify({"ok": False, "error": "not_enough_essence"}), 400
+            return jsonify({"ok": False, "error": "not_enough_diams"}), 400
 
         # 5) Item type : ici, uniquement des cartes
         item_type = "card"
@@ -129,6 +129,8 @@ def api_village_cardshop_buy():
                     "xp": player.xp,
                     "shards": player.shards,
                     "essence": player.essence,
+                    "coins": player.shards,    # alias pour le HUD
+                    "diams": player.essence,   # alias pour le HUD
                 },
                 "item": {
                     "item_type": item_type,
