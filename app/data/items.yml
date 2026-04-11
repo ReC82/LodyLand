@@ -498,7 +498,7 @@ items:
     kind: resource
     label: Étoile de mer
     description: Une étoile de mer colorée.
-    icon: /static/assets/img/items/resources/star.png
+    icon: /static/assets/img/items/resources/starfish.png
     base_sell_price: 8
     enabled: true
     unlock_description: Trouvée très rarement en fouillant la plage.

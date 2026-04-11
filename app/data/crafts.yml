@@ -48,7 +48,7 @@ crafts:
           quantity: 1
         N:
           kind: item
-          key: branch_net
+          key: basic_net
           quantity: 1
       required_table_level: 3
     craft_time_seconds: 300
