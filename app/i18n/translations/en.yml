@@ -327,7 +327,7 @@ lands:
 
 base:
   beta_banner: "Beta version – progression and data may change"
-
+  ok: "OK"
   level_zone:
     title: "View level progression"
     level: "Level"
