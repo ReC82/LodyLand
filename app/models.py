@@ -71,6 +71,8 @@ class Player(Base):
     )
 
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    theme: Mapped[str] = mapped_column(String(30), default="light", nullable=False, server_default="light")
 class Account(Base):
     __tablename__ = "accounts"
 

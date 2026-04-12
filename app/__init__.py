@@ -46,7 +46,19 @@ def create_app() -> Flask:
     app.register_blueprint(frontend_bp)
     
     # Admin panel
-    app.register_blueprint(admin_bp)    
+    app.register_blueprint(admin_bp)
+
+    # ── Theme context processor ────────────────────────────────────
+    @app.context_processor
+    def inject_theme():
+        from flask import g
+        player = getattr(g, "player", None)
+        theme = getattr(player, "theme", "default") if player else "default"
+        # Whitelist to avoid injection
+        valid = {"default", "light", "monochrome", "medieval", "fantasy", "emerald"}
+        if theme not in valid:
+            theme = "light"
+        return {"current_theme": theme}
 
     @app.get("/")
     def index():

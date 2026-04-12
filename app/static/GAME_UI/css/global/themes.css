@@ -1,0 +1,1638 @@
+/* ================================================================
+   THEMES — LodyLand color themes
+   Applied via class on <body>: theme-default | theme-monochrome |
+   theme-medieval | theme-fantasy | theme-emerald
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   THEME: default (Cosmic Dark — unchanged, no overrides needed)
+   --------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------
+   THEME: light (Machine à écrire — Blanc & Noir pur)
+   --------------------------------------------------------------- */
+
+/* Police machine à écrire via Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+/* ── Variables Bootstrap + base ─────────────────────────────── */
+body.theme-light {
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #000000;
+  --bs-border-color: #000000;
+  --bs-secondary-color: #444444;
+  --bs-secondary-bg: #f0f0f0;
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+
+/* Appliquer la police partout */
+body.theme-light *,
+body.theme-light h1, body.theme-light h2, body.theme-light h3,
+body.theme-light h4, body.theme-light h5, body.theme-light h6,
+body.theme-light p, body.theme-light span, body.theme-light a,
+body.theme-light button, body.theme-light input, body.theme-light label,
+body.theme-light .btn {
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+
+/* ── HUD ─────────────────────────────────────────────────────── */
+body.theme-light .game-header {
+  background: #ffffff !important;
+  border-bottom: 2px solid #000000 !important;
+  box-shadow: none !important;
+}
+body.theme-light .gh-xp-fill { background: #000000 !important; }
+body.theme-light .gh-xp-label { color: #000000 !important; }
+body.theme-light #hud-xp-current,
+body.theme-light #hud-xp-next,
+body.theme-light #hud-level,
+body.theme-light #hud-shards,
+body.theme-light #hud-essence { color: #000000 !important; }
+body.theme-light .gh-level-zone { color: #000000 !important; }
+body.theme-light .progress { background: #e0e0e0 !important; }
+body.theme-light .gh-xp-bar { background: #e0e0e0 !important; border: 1px solid #000 !important; }
+
+/* Beta bar */
+body.theme-light .beta-banner {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Texte général ───────────────────────────────────────────── */
+body.theme-light .text-light   { color: #000000 !important; }
+body.theme-light .text-muted,
+body.theme-light .text-secondary { color: #444444 !important; }
+body.theme-light .text-warning  { color: #000000 !important; }
+body.theme-light .fw-semibold.text-warning { color: #000000 !important; }
+
+/* ── Cartes NPC (village) ────────────────────────────────────── */
+body.theme-light .npc-card-inner {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .npc-card-inner::before { display: none !important; }
+body.theme-light .npc-card-inner:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 #000000 !important;
+  border-color: #000000 !important;
+  background: #f8f8f8 !important;
+}
+body.theme-light .npc-title { color: #000000 !important; }
+body.theme-light .npc-text  { color: #444444 !important; }
+
+/* ── Panels village ──────────────────────────────────────────── */
+body.theme-light .village-panel {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .village-panel .card-header {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #000000 !important;
+}
+body.theme-light .village-panel .card-footer {
+  background: #f0f0f0 !important;
+  border-top: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* ── Header de land ──────────────────────────────────────────── */
+body.theme-light .land-header {
+  border-bottom: none !important;
+}
+body.theme-light .land-village .land-header .text-muted { color: #444444 !important; }
+
+/* ── Cartes de quêtes ────────────────────────────────────────── */
+body.theme-light .quest-card {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quests-group {
+  background: #f8f8f8 !important;
+  border: 2px solid #000000 !important;
+}
+body.theme-light .quests-group-header {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .quests-group-title { color: #ffffff !important; }
+body.theme-light .quest-desc         { color: #444444 !important; }
+body.theme-light .quest-progress-bar { background: #e0e0e0 !important; border: 1px solid #000 !important; }
+body.theme-light .quest-progress-fill { background: #000000 !important; }
+body.theme-light .quest-progress-text { color: #444444 !important; }
+body.theme-light .quest-badge {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quest-badge.daily   { border-color: #000000 !important; }
+body.theme-light .quest-badge.weekly  { border-color: #000000 !important; }
+body.theme-light .quest-reward-pill {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .qfilter-btn {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .qfilter-btn.qfilter-active {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+body.theme-light .land-village,
+body.theme-light .land-village p,
+body.theme-light .land-village small,
+body.theme-light .land-village .text-muted,
+body.theme-light .land-village .card,
+body.theme-light .land-village .card-body,
+body.theme-light .land-village .table td,
+body.theme-light .land-village .table th { color: #000000 !important; }
+body.theme-light .land-village .table { color: #000000 !important; }
+body.theme-light .land-village .table thead th {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #000000 !important;
+}
+body.theme-light .land-village .table tbody td {
+  background: #ffffff !important;
+  border-top: 1px solid #cccccc !important;
+}
+body.theme-light .village-market-table tbody tr:hover {
+  background-color: #f0f0f0 !important;
+}
+body.theme-light .land-village .form-control {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* ── Shop / offres ───────────────────────────────────────────── */
+body.theme-light .vs-offer-card {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .vs-offer-card:hover { border-color: #000000 !important; box-shadow: 6px 6px 0 #000000 !important; }
+body.theme-light .vs-price-pill {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .vs-info-bar {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+}
+body.theme-light .vs-info-pill {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .vs-offer-rarity {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Profile cards ───────────────────────────────────────────── */
+body.theme-light .profile-card {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+body.theme-light .profile-info-label,
+body.theme-light .profile-subtitle { color: #444444 !important; }
+body.theme-light .profile-info-row { border-bottom-color: #cccccc !important; }
+body.theme-light .profile-stat {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem !important;
+}
+
+/* ── Boutons ─────────────────────────────────────────────────── */
+body.theme-light .btn-warning,
+body.theme-light .btn-primary,
+body.theme-light .btn-success,
+body.theme-light .btn-danger {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .btn-warning:hover,
+body.theme-light .btn-primary:hover,
+body.theme-light .btn-success:hover,
+body.theme-light .btn-danger:hover {
+  background: #333333 !important;
+  border-color: #333333 !important;
+}
+body.theme-light .btn-warning.text-dark { color: #ffffff !important; }
+body.theme-light .btn-outline-warning,
+body.theme-light .btn-outline-light,
+body.theme-light .btn-outline-secondary,
+body.theme-light .btn-outline-danger {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+body.theme-light .btn-outline-warning:hover,
+body.theme-light .btn-outline-light:hover,
+body.theme-light .btn-outline-secondary:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .btn-secondary {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* ── Badges ──────────────────────────────────────────────────── */
+body.theme-light .badge.bg-warning  { background-color: #000000 !important; color: #ffffff !important; }
+body.theme-light .badge.bg-success  { background-color: #000000 !important; color: #ffffff !important; }
+body.theme-light .badge.bg-secondary { background-color: #666666 !important; color: #ffffff !important; }
+body.theme-light .badge.bg-primary  { background-color: #000000 !important; color: #ffffff !important; }
+
+/* ── Modales ─────────────────────────────────────────────────── */
+body.theme-light .modal-content {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+}
+body.theme-light .modal-header,
+body.theme-light .modal-footer { border-color: #000000 !important; }
+body.theme-light .modal-header { background: #000000 !important; }
+body.theme-light .modal-title  { color: #ffffff !important; }
+body.theme-light .btn-close,
+body.theme-light .btn-close-white { filter: invert(1) !important; }
+
+/* ── Alertes ─────────────────────────────────────────────────── */
+body.theme-light .alert-warning {
+  background: #f8f8f8 !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .alert-secondary,
+body.theme-light .alert-danger {
+  background: #f0f0f0 !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* ── Divers ──────────────────────────────────────────────────── */
+body.theme-light .border-secondary { border-color: #000000 !important; }
+body.theme-light .form-control {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .form-control:focus {
+  box-shadow: 0 0 0 2px #000000 !important;
+  border-color: #000000 !important;
+}
+body.theme-light .brick-btn.btn-warning {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .brick-btn.btn-outline-warning {
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+body.theme-light .brick-btn.btn-success { background: #000000 !important; border-color: #000000 !important; }
+/* Temple resource rows */
+body.theme-light .temple-res-row { background: #f8f8f8 !important; border-color: #cccccc !important; color: #000000 !important; }
+body.theme-light .temple-res-row.is-ok     { border-color: #000000 !important; background: #f0f0f0 !important; }
+body.theme-light .temple-res-row.is-missing { border-color: #888888 !important; background: #f8f8f8 !important; }
+body.theme-light .is-ok .temple-res-stock { color: #000000 !important; }
+body.theme-light .is-missing .temple-res-stock { color: #666666 !important; }
+
+/* ── Card shop overlay modal (styles inline → override via ID) ─ */
+body.theme-light #cardDetailOverlay {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.theme-light #cardDetailModal {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  border-radius: 8px !important;
+}
+body.theme-light #mdl-img-wrap {
+  background: #f0f0f0 !important;
+  border-bottom: 2px solid #000000 !important;
+}
+/* Effet / gameplay block */
+body.theme-light #cardDetailModal [style*="background:rgba(250,204,21"],
+body.theme-light #cardDetailModal [style*="background: rgba(250,204,21"] {
+  background: #f0f0f0 !important;
+  border-color: #000000 !important;
+}
+/* Label "Effet" jaune → noir */
+body.theme-light #cardDetailModal [style*="color:#facc15"] { color: #000000 !important; }
+/* Raison non-achat */
+body.theme-light #mdl-cant-buy-reason {
+  background: #f0f0f0 !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+/* Prix gratuit */
+body.theme-light #mdl-price-free {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+/* Bouton Fermer */
+body.theme-light [data-close-card-modal] {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light [data-close-card-modal]:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+/* Bouton Acheter */
+body.theme-light #mdl-buy-btn {
+  background: #000000 !important;
+  border: 2px solid #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light #mdl-buy-btn:hover { background: #333333 !important; }
+/* Texte générique dans la modal */
+body.theme-light #cardDetailModal p,
+body.theme-light #cardDetailModal span,
+body.theme-light #cardDetailModal div { color: #000000 !important; }
+
+/* ── HUD : zone niveau / XP ─────────────────────────────────── */
+body.theme-light .gh-level-zone {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  border-radius: 8px !important;
+  color: #000000 !important;
+}
+body.theme-light .gh-level-zone:hover { background: #f0f0f0 !important; }
+body.theme-light .gh-xp-label  { color: #000000 !important; }
+body.theme-light .gh-xp-text   { color: #000000 !important; }
+body.theme-light .gh-xp-bar {
+  background: #e0e0e0 !important;
+  border: 1px solid #000000 !important;
+}
+body.theme-light .gh-xp-fill   { background: #000000 !important; }
+body.theme-light #hud-level,
+body.theme-light #hud-xp-current,
+body.theme-light #hud-xp-next  { color: #000000 !important; }
+
+/* ── HUD : shards & essence ──────────────────────────────────── */
+body.theme-light .gh-currency {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  border-radius: 999px !important;
+  color: #000000 !important;
+}
+body.theme-light .gh-coins  { color: #000000 !important; }
+body.theme-light .gh-diams  { color: #000000 !important; }
+body.theme-light #hud-shards,
+body.theme-light #hud-essence { color: #000000 !important; }
+
+/* ── HUD : icônes (notebook, travel, quests, menu) ───────────── */
+body.theme-light .hud-icon-wrapper {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  border-radius: 8px !important;
+  color: #000000 !important;
+}
+body.theme-light .hud-icon-wrapper:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .hud-icon-emoji { color: #000000 !important; }
+body.theme-light .hud-icon-wrapper:hover .hud-icon-emoji { color: #ffffff !important; }
+
+body.theme-light .gh-menu-btn {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  border-radius: 8px !important;
+  color: #000000 !important;
+}
+body.theme-light .gh-menu-btn:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── HUD : land pill ─────────────────────────────────────────── */
+body.theme-light .gh-land {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* ── Shop : bouton "Acheter la carte" (vs-buy-btn) ───────────── */
+body.theme-light .vs-buy-btn.btn-success,
+body.theme-light .vs-buy-btn.btn-secondary,
+body.theme-light .vs-buy-btn {
+  background: #000000 !important;
+  border: 2px solid #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 2px 2px 0 #555555 !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light .vs-buy-btn:disabled {
+  background: #888888 !important;
+  border-color: #888888 !important;
+  box-shadow: none !important;
+  opacity: 0.65 !important;
+}
+
+/* ── Shop : badges de rareté (BASIC, UNCOMMON, RARE…) ───────── */
+body.theme-light .vs-offer-rarity,
+body.theme-light .vs-offer-rarity-common,
+body.theme-light .vs-offer-rarity-uncommon,
+body.theme-light .vs-offer-rarity-rare,
+body.theme-light .vs-offer-rarity-epic,
+body.theme-light .vs-offer-rarity-legendary {
+  background: #000000 !important;
+  border: 1px solid #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Badge rareté dans la modal (inline style → ID ciblé) */
+body.theme-light #mdl-rarity {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000 !important;
+}
+
+/* ── Coffre quotidien (hud-daily) ────────────────────────────── */
+body.theme-light .hud-daily-icon {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  border-radius: 8px !important;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+body.theme-light .hud-daily-icon:hover { background: #f0f0f0 !important; }
+body.theme-light .hud-daily-tooltip {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+}
+body.theme-light .daily-alert-badge {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* ── Bouton Quêtes (gh-btn-quests) ──────────────────────────── */
+body.theme-light .gh-btn.gh-btn-quests {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  color: #000000 !important;
+  border-radius: 8px !important;
+}
+body.theme-light .gh-btn.gh-btn-quests:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+body.theme-light .gh-btn-icon { color: #000000 !important; }
+body.theme-light .gh-btn.gh-btn-quests:hover .gh-btn-icon { color: #ffffff !important; }
+
+/* ── Page sélection des lands ────────────────────────────────── */
+body.theme-light .land-search-input {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+body.theme-light .land-search-input::placeholder { color: #888888 !important; }
+body.theme-light .land-search-input:focus {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.15) !important;
+}
+
+body.theme-light .land-select-tile {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  color: #000000 !important;
+  border-radius: 12px !important;
+}
+body.theme-light .land-select-tile:hover {
+  background: #f0f0f0 !important;
+  border-color: #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  transform: translateY(-2px);
+}
+body.theme-light .land-select-tile-special {
+  border-color: #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+body.theme-light .land-select-label { color: #000000 !important; }
+body.theme-light .land-select-title,
+body.theme-light .land-select-subtitle,
+body.theme-light .land-select-section-title { color: #000000 !important; }
+
+/* ── Page quêtes — onglets ───────────────────────────────────── */
+body.theme-light .qtab {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+body.theme-light .qtab:hover {
+  background: #f0f0f0 !important;
+  color: #000000 !important;
+}
+body.theme-light .qtab.is-active {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 2px 2px 0 #444444 !important;
+}
+body.theme-light .qtab-badge {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Cartes de quête (qcard) ─────────────────────────────────── */
+body.theme-light .qcard {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .qcard:hover {
+  background: #f8f8f8 !important;
+  border-color: #000000 !important;
+  box-shadow: 5px 5px 0 #000000 !important;
+  transform: translateY(-1px);
+}
+body.theme-light .qcard.is-ready {
+  border-color: #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+}
+
+body.theme-light .qcard-title { color: #000000 !important; }
+
+/* Badges difficulté (top-left) */
+body.theme-light .qcard-diff-badge,
+body.theme-light .qcard-diff-badge.diff-easy,
+body.theme-light .qcard-diff-badge.diff-medium,
+body.theme-light .qcard-diff-badge.diff-hard {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .qcard-ready-badge {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Badge récompense (top-right) */
+body.theme-light .qcard-reward,
+body.theme-light .qcard-reward.essence,
+body.theme-light .qcard-reward.xp {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* Barre de progression */
+body.theme-light .qcard-bar-wrap {
+  background: #e0e0e0 !important;
+  border: 1px solid #cccccc !important;
+  border-radius: 999px !important;
+}
+body.theme-light .qcard-bar-fill,
+body.theme-light .is-ready .qcard-bar-fill {
+  background: #000000 !important;
+}
+body.theme-light .qcard-progress { color: #444444 !important; }
+
+/* ── Modal détail quête ──────────────────────────────────────── */
+body.theme-light .quest-modal-backdrop {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.theme-light .quest-modal-box {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quest-modal-close {
+  color: #444444 !important;
+  background: transparent !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .quest-modal-close:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+body.theme-light .qdetail-type-badge,
+body.theme-light .qdetail-type-badge.daily,
+body.theme-light .qdetail-type-badge.weekly,
+body.theme-light .qdetail-type-badge.continuous {
+  background: #f0f0f0 !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .qdetail-title   { color: #000000 !important; }
+body.theme-light .qdetail-desc    { color: #444444 !important; }
+body.theme-light .qdetail-section-label { color: #444444 !important; }
+body.theme-light .qdetail-obj-label    { color: #000000 !important; }
+body.theme-light .qdetail-obj-bar-wrap {
+  background: #e0e0e0 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .qdetail-obj-bar-fill { background: #000000 !important; }
+body.theme-light .qdetail-obj-progress { color: #444444 !important; }
+body.theme-light .qdetail-reward-pill,
+body.theme-light .qdetail-reward-pill.essence,
+body.theme-light .qdetail-reward-pill.xp {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .qdetail-expiry { color: #444444 !important; }
+body.theme-light .qdetail-claim-btn {
+  background: #000000 !important;
+  border: 2px solid #000000 !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light .qdetail-claim-btn:hover { background: #333333 !important; }
+body.theme-light .qdetail-claim-btn:disabled { background: #888888 !important; border-color: #888888 !important; }
+
+/* ── Popup complétion quête ──────────────────────────────────── */
+body.theme-light .quest-complete-popup {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.theme-light .quest-complete-box {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quest-complete-title { color: #000000 !important; }
+body.theme-light .quest-complete-name  { color: #444444 !important; }
+body.theme-light .qcp-reward-item,
+body.theme-light .qcp-reward-item.qcp-xp {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quest-complete-ok {
+  background: #000000 !important;
+  border: 2px solid #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light .quest-complete-ok:hover { background: #333333 !important; }
+
+/* ── Panel quêtes HUD (quests-panel) ────────────────────────── */
+body.theme-light .quests-panel-backdrop {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.theme-light .quests-panel-dialog {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quests-panel-header {
+  border-bottom: 1px solid #cccccc !important;
+  background: #ffffff !important;
+}
+body.theme-light .quests-panel-title { color: #000000 !important; }
+body.theme-light .quests-panel-subtitle { color: #444444 !important; }
+body.theme-light .quests-panel-close {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .quests-panel-close:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .quests-panel-body { background: #ffffff !important; }
+
+/* ── Menu latéral (game-menu) ────────────────────────────────── */
+body.theme-light .game-menu.is-open {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+body.theme-light .game-menu-card {
+  background: #ffffff !important;
+  border-left: 2px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: -4px 0 0 #000000 !important;
+}
+body.theme-light .game-menu-header { border-bottom: 1px solid #cccccc !important; }
+body.theme-light .game-menu-title { color: #000000 !important; }
+body.theme-light .game-menu-close {
+  background: transparent !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .game-menu-close:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .game-menu-item {
+  background: transparent !important;
+  color: #000000 !important;
+}
+body.theme-light .game-menu-item:hover,
+body.theme-light .game-menu-item:focus-visible {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .game-menu-section + .game-menu-section {
+  border-top: 1px solid #cccccc !important;
+}
+body.theme-light .game-menu-logout { color: #000000 !important; }
+body.theme-light .game-menu-logout:hover,
+body.theme-light .game-menu-logout:focus-visible {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Coffre quotidien — modal (daily-modal) ──────────────────── */
+body.theme-light .daily-modal-backdrop {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.theme-light .daily-modal-box {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .daily-modal-title { color: #000000 !important; }
+body.theme-light .daily-modal-streak { color: #444444 !important; }
+body.theme-light .daily-modal-close {
+  background: #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light .daily-modal-close:hover { background: #333333 !important; }
+/* Jours de la timeline */
+body.theme-light .daily-day-label { color: #444444 !important; }
+body.theme-light .daily-day.is-past .daily-day-icon {
+  background: #e0e0e0 !important;
+  border-color: #bbbbbb !important;
+}
+body.theme-light .daily-day.is-future .daily-day-icon {
+  background: #f0f0f0 !important;
+  border-color: #cccccc !important;
+}
+body.theme-light .daily-day.is-today .daily-day-icon {
+  background: #000000 !important;
+  border-color: #000000 !important;
+}
+body.theme-light .daily-day.is-today .daily-day-label { color: #000000 !important; font-weight: 700; }
+body.theme-light .daily-day.is-day7 .daily-day-icon {
+  background: #333333 !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+}
+body.theme-light .daily-day.is-day7 .daily-day-label { color: #000000 !important; }
+body.theme-light .daily-timeline-connector { background: #cccccc !important; }
+/* Récompenses */
+body.theme-light .daily-reward-item {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .daily-rewards-hint { color: #444444 !important; }
+
+/* ── Progression des niveaux (ll-modal) ──────────────────────── */
+body.theme-light .ll-modal-backdrop {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+body.theme-light .ll-modal-dialog {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .ll-modal-title { color: #000000 !important; }
+body.theme-light .ll-modal-close-btn {
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+body.theme-light .ll-modal-close-btn:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .level-row {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .level-row.current {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.3) !important;
+}
+body.theme-light .level-badge {
+  background: #e0e0e0 !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+body.theme-light .level-xp-range { color: #444444 !important; }
+body.theme-light .level-progress-bar {
+  background: #e0e0e0 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .level-progress-fill { background: #000000 !important; }
+body.theme-light .level-reward-pill {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .level-chevron { color: #444444 !important; }
+
+/* ── Modal de voyage : gh-modal-dialog ──────────────────────── */
+body.theme-light .gh-modal-dialog {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .gh-modal-title { color: #000000 !important; }
+body.theme-light .gh-modal-close-btn { color: #000000 !important; }
+body.theme-light .gh-modal-backdrop { background: rgba(0,0,0,0.5) !important; }
+body.theme-light .travel-list { border-color: #cccccc !important; }
+body.theme-light .travel-item {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .travel-item:hover {
+  background: #eeeeee !important;
+  border-color: #000000 !important;
+}
+body.theme-light .travel-item-selected {
+  background: #f5f0d0 !important;
+  border-color: #000000 !important;
+}
+body.theme-light .travel-item-label { color: #000000 !important; }
+
+/* ── Toasts de récolte (loot-toast) ─────────────────────────── */
+body.theme-light .loot-toast {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .loot-toast-qty,
+body.theme-light .loot-toast-name { color: #000000 !important; }
+
+/* ── Table de craft (craft-modal) ────────────────────────────── */
+body.theme-light .craft-modal-backdrop { background: rgba(0,0,0,0.45) !important; }
+body.theme-light .craft-modal-box {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .craft-modal-header { border-bottom: 1px solid #cccccc !important; }
+body.theme-light .craft-modal-title  { color: #000000 !important; }
+/* Boutons header (icône, fermer) */
+body.theme-light .craft-modal-header-actions button {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+  border-radius: 8px !important;
+}
+body.theme-light .craft-modal-header-actions button:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+/* Panneau gauche / droit */
+body.theme-light .craft-modal-body > * { border-color: #cccccc !important; }
+/* Input filtre */
+body.theme-light .craft-modal-box input[type="text"],
+body.theme-light .craft-modal-box input[type="search"] {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+/* Ingrédient item */
+body.theme-light .craft-ingredient-item,
+body.theme-light [class*="ingredient"] {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .craft-ingredient-item:hover,
+body.theme-light [class*="ingredient"]:hover {
+  background: #f0f0f0 !important;
+  border-color: #000000 !important;
+}
+body.theme-light .craft-ingredient-item.active,
+body.theme-light [class*="ingredient"].active {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+/* Slot de recette (cases pointillées) */
+body.theme-light [class*="recipe-slot"],
+body.theme-light [class*="craft-slot"] {
+  background: #f0f0f0 !important;
+  border: 1px dashed #000000 !important;
+  color: #000000 !important;
+}
+/* Panneau droite — table */
+body.theme-light [class*="craft-table"],
+body.theme-light [class*="craft-panel"] {
+  background: #f8f8f8 !important;
+  border-color: #cccccc !important;
+  color: #000000 !important;
+}
+/* Barre de progression craft */
+body.theme-light [class*="craft-progress-bar"],
+body.theme-light [class*="craft-status"] {
+  background: #e0e0e0 !important;
+  border-color: #cccccc !important;
+}
+body.theme-light [class*="craft-progress-fill"] { background: #000000 !important; }
+/* Bouton Craft */
+body.theme-light .craft-modal-box button[class*="craft-btn"],
+body.theme-light .craft-modal-box button[class*="btn-craft"],
+body.theme-light .craft-modal-box .btn-success,
+body.theme-light .craft-modal-box .btn-primary {
+  background: #000000 !important;
+  border: 2px solid #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+/* File craft queue bar (barre sombre du haut) */
+body.theme-light .craft-queue-bar {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+}
+body.theme-light .craft-queue-bar.has-active-job {
+  border-color: #000000 !important;
+}
+body.theme-light .craft-job-icon-wrap,
+body.theme-light .craft-recipe-icon {
+  background: #f0f0f0 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .craft-recipe-item {
+  background: #f8f8f8 !important;
+  border-color: #cccccc !important;
+}
+body.theme-light .craft-recipe-item:hover {
+  background: #eeeeee !important;
+  border-color: #000000 !important;
+}
+body.theme-light .craft-recipe-item.is-selected {
+  background: #f0fff4 !important;
+  border-color: #000000 !important;
+}
+body.theme-light .craft-recipe-label { color: #000000 !important; }
+body.theme-light .craft-recipe-time  { color: #444444 !important; }
+body.theme-light .craft-section-title { color: #444444 !important; }
+body.theme-light .craft-filter-input {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .craft-slot {
+  background: #f0f0f0 !important;
+  border: 1px dashed #888888 !important;
+  color: #444444 !important;
+}
+body.theme-light .craft-slot-qty-badge {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .craft-recipes-toggle-btn {
+  background: #f0f0f0 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .craft-left-panel,
+body.theme-light .craft-recipes-panel {
+  border-right-color: #cccccc !important;
+}
+body.theme-light .craft-close-btn { color: #000000 !important; }
+body.theme-light .craft-close-btn:hover { color: #cc0000 !important; }
+
+/* ── Notebook ────────────────────────────────────────────────── */
+body.theme-light .notebook-dialog {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .notebook-header {
+  background: #000000 !important;
+  border-bottom: 2px solid #000000 !important;
+}
+body.theme-light .notebook-title    { color: #ffffff !important; }
+body.theme-light .notebook-subtitle { color: #cccccc !important; }
+body.theme-light .notebook-badge {
+  background: #ffffff !important;
+  border: 1px solid #ffffff !important;
+  color: #000000 !important;
+}
+body.theme-light .notebook-close-btn {
+  background: transparent !important;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+}
+body.theme-light .notebook-close-btn:hover {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+body.theme-light .notebook-body { background: #ffffff !important; }
+body.theme-light .notebook-tabs { background: #f0f0f0 !important; border-bottom: 1px solid #cccccc !important; }
+body.theme-light .notebook-tab {
+  background: #ffffff !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .notebook-tab.is-active {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .notebook-h3    { color: #000000 !important; }
+body.theme-light .notebook-muted { color: #444444 !important; }
+body.theme-light .notebook-empty {
+  background: #f0f0f0 !important;
+  border: 1px solid #cccccc !important;
+  color: #444444 !important;
+}
+body.theme-light .notebook-card {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .notebook-card:hover { border-color: #000000 !important; }
+body.theme-light .notebook-card-title { color: #000000 !important; }
+body.theme-light .notebook-card-desc  { color: #444444 !important; }
+body.theme-light .notebook-land-thumb {
+  background: #e8e8e8 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .notebook-meta-label { color: #444444 !important; }
+body.theme-light .notebook-meta-row   { color: #000000 !important; }
+/* Input recherche notebook */
+body.theme-light .notebook-dialog input,
+body.theme-light .nb-search-input {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .nb-search-clear {
+  background: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .notebook-dialog button,
+body.theme-light .nb-search-clear {
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light .notebook-pill {
+  background: #f0f0f0 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+/* Notebook accordion land rows (nb- classes) */
+body.theme-light .nb-land-row {
+  background: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-land-head {
+  background: #f8f8f8 !important;
+  color: #000000 !important;
+}
+body.theme-light .nb-land-head:hover {
+  background: #eeeeee !important;
+}
+body.theme-light .nb-land-thumb,
+body.theme-light .nb-land-icon {
+  background: #e8e8e8 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-land-title  { color: #000000 !important; }
+body.theme-light .nb-land-sub    { color: #444444 !important; }
+body.theme-light .nb-land-meta   { color: #000000 !important; }
+body.theme-light .nb-land-meta .muted { color: #666666 !important; }
+body.theme-light .nb-land-chevron { color: #000000 !important; }
+body.theme-light .nb-land-lock-hint { color: #666666 !important; }
+body.theme-light .nb-land-details {
+  background: #f8f8f8 !important;
+  border-top: 1px solid #cccccc !important;
+}
+body.theme-light .nb-details-section-title { color: #000000 !important; }
+body.theme-light .nb-tool-block {
+  background: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-tool-row {
+  background: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-tool-body {
+  background: #f8f8f8 !important;
+  border-top: 1px solid #cccccc !important;
+}
+body.theme-light .nb-tool-ico {
+  background: #e8e8e8 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-tool-name  { color: #000000 !important; }
+body.theme-light .nb-tool-meta  { color: #444444 !important; }
+body.theme-light .nb-tool-right { color: #444444 !important; }
+body.theme-light .nb-tool-chevron { color: #000000 !important; }
+body.theme-light .nb-tool-cd    { color: #444444 !important; }
+body.theme-light .nb-loot-item {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light .nb-loot-item .pct   { color: #007700 !important; }
+body.theme-light .nb-loot-item .range { color: #444444 !important; }
+body.theme-light .nb-loot-tile {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-loot-ico {
+  background: #e8e8e8 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .nb-loot-line1 { color: #000000 !important; }
+body.theme-light .nb-loot-line2 { color: #444444 !important; }
+body.theme-light .nb-loot-pct   { color: #007700 !important; }
+body.theme-light .nb-muted-line { color: #444444 !important; }
+
+/* ── Modal de voyage (travel-modal) ──────────────────────────── */
+body.theme-light .travel-modal,
+body.theme-light [class*="travel-modal"] > div:first-child {
+  background: rgba(0,0,0,0.45) !important;
+}
+/* La boîte de voyage (fond sombre inline → on cible par contexte) */
+body.theme-light [style*="background: rgba(20, 20, 30"],
+body.theme-light [style*="background:rgba(20,20,30"],
+body.theme-light [style*="background: rgba(20,20,30"] {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+/* Classes travel-modal génériques */
+body.theme-light .travel-modal-box,
+body.theme-light .travel-box,
+body.theme-light [class*="travel-box"],
+body.theme-light [class*="travel-modal-box"] {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light [class*="travel"] input {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light [class*="travel-land-btn"],
+body.theme-light [class*="travel-item"],
+body.theme-light [class*="travel-option"] {
+  background: #f8f8f8 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+}
+body.theme-light [class*="travel-land-btn"]:hover,
+body.theme-light [class*="travel-item"]:hover,
+body.theme-light [class*="travel-option"]:hover,
+body.theme-light [class*="travel-land-btn"].selected,
+body.theme-light [class*="travel-item"].selected {
+  background: #f5f0d0 !important;
+  border-color: #000000 !important;
+}
+body.theme-light [class*="travel-confirm"],
+body.theme-light [class*="travel-go"] {
+  background: #000000 !important;
+  border: 2px solid #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light [class*="travel-close"],
+body.theme-light [class*="travel-cancel"] {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+
+/* ── Slots & outils dans les lands ───────────────────────────── */
+body.theme-light .slot-tile {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .slot-tile:hover {
+  background: #f0f0f0 !important;
+  box-shadow: 5px 5px 0 #000000 !important;
+  transform: translateY(-2px);
+}
+/* Masquer numéro et texte sur les tuiles : garder uniquement l'image */
+body.theme-light .slot-index { display: none !important; }
+body.theme-light .slot-status { display: none !important; }
+body.theme-light .slot-label { color: #000000 !important; font-weight: 600; }
+body.theme-light .slot-cooldown-bar { background: #e0e0e0 !important; border: 1px solid #cccccc !important; }
+body.theme-light .slot-cooldown-fill { background: #000000 !important; }
+/* Emplacement "+" (slot-add) — sans halo vert */
+body.theme-light .slot-tile.slot-add {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+}
+body.theme-light .slot-tile.slot-add:hover {
+  background: #f0f0f0 !important;
+  box-shadow: 5px 5px 0 #000000 !important;
+}
+body.theme-light .slot-tile.slot-add .slot-label  { color: #000000 !important; font-weight: 700; }
+body.theme-light .slot-add .land-slot-icon { filter: none !important; }
+
+/* Sélecteur d'outil (dropdown) */
+body.theme-light .land-tool-dropdown-toggle {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .land-tool-dropdown-toggle:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .land-tool-icon-wrapper,
+body.theme-light .land-tool-toggle-icon-wrapper {
+  background: #e0e0e0 !important;
+  border: 1px solid #000000 !important;
+}
+body.theme-light .land-tool-dropdown-menu {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+body.theme-light .land-tool-dropdown-item.land-tool-btn {
+  background: transparent !important;
+  color: #000000 !important;
+}
+body.theme-light .land-tool-dropdown-item.land-tool-btn:hover {
+  background: #f0f0f0 !important;
+}
+body.theme-light .land-tool-dropdown-item.land-tool-btn.active {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Inventaire ──────────────────────────────────────────────── */
+body.theme-light .inv-container {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 6px 6px 0 #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .inv-header .text-muted { color: #444444 !important; }
+body.theme-light .inv-tabs {
+  background: #f0f0f0 !important;
+  border: 1px solid #cccccc !important;
+}
+body.theme-light .inv-tab {
+  background: transparent !important;
+  color: #444444 !important;
+}
+body.theme-light .inv-tab:hover { background: #e0e0e0 !important; color: #000000 !important; }
+body.theme-light .inv-tab-active {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .inv-filter-input,
+body.theme-light .inv-filter-select {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important;
+}
+body.theme-light .inv-toolbar-btn {
+  background: #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace !important;
+}
+body.theme-light .inv-toolbar-btn:hover { background: #333333 !important; }
+body.theme-light .inv-resource-qty-badge {
+  background: #000000 !important;
+  border: 1px solid #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-light .inv-resource-placeholder {
+  border: 1px dashed #000000 !important;
+  background: #f8f8f8 !important;
+}
+
+/* ---------------------------------------------------------------
+   THEME: monochrome (Noir & Blanc)
+   --------------------------------------------------------------- */
+body.theme-monochrome {
+  --bs-body-bg: #0a0a0a;
+  --bs-body-color: #f0f0f0;
+  --bs-border-color: #3a3a3a;
+  --bs-secondary-color: #888888;
+  --bs-secondary-bg: #1a1a1a;
+  background: #0a0a0a !important;
+  color: #f0f0f0;
+}
+body.theme-monochrome .game-header {
+  background: #111111 !important;
+  border-bottom-color: rgba(200, 200, 200, 0.2) !important;
+}
+body.theme-monochrome .profile-card {
+  background: rgba(28, 28, 28, 0.95) !important;
+  border-color: rgba(180, 180, 180, 0.22) !important;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.8) !important;
+}
+body.theme-monochrome .profile-info-label,
+body.theme-monochrome .profile-subtitle { color: #888888 !important; }
+body.theme-monochrome .profile-info-row { border-bottom-color: rgba(180, 180, 180, 0.18) !important; }
+body.theme-monochrome .gh-xp-fill { background: #dedede !important; }
+body.theme-monochrome .gh-xp-label { color: #cccccc !important; }
+body.theme-monochrome .text-warning { color: #e0e0e0 !important; }
+body.theme-monochrome .fw-semibold.text-warning { color: #ffffff !important; }
+body.theme-monochrome .badge.bg-warning { background-color: #d0d0d0 !important; color: #000 !important; }
+body.theme-monochrome .badge.bg-success { background-color: #555555 !important; }
+body.theme-monochrome .btn-warning {
+  background-color: #d8d8d8 !important;
+  border-color: #d8d8d8 !important;
+  color: #000 !important;
+}
+body.theme-monochrome .btn-warning:hover {
+  background-color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+body.theme-monochrome .btn-outline-warning {
+  color: #d0d0d0 !important;
+  border-color: #d0d0d0 !important;
+}
+body.theme-monochrome .border-secondary { border-color: #3a3a3a !important; }
+body.theme-monochrome .text-light { color: #f0f0f0 !important; }
+body.theme-monochrome .text-muted,
+body.theme-monochrome .text-secondary { color: #888888 !important; }
+body.theme-monochrome .modal-content {
+  background: #111111 !important;
+  border-color: #444444 !important;
+  color: #f0f0f0 !important;
+}
+body.theme-monochrome .modal-header,
+body.theme-monochrome .modal-footer { border-color: #333333 !important; }
+body.theme-monochrome .progress { background: #222222 !important; }
+
+/* ---------------------------------------------------------------
+   THEME: medieval (Parchemin Médiéval)
+   --------------------------------------------------------------- */
+body.theme-medieval {
+  --bs-body-bg: #1a0f02;
+  --bs-body-color: #f5deb3;
+  --bs-border-color: #8b6343;
+  --bs-secondary-color: #c4a882;
+  --bs-secondary-bg: #2a1908;
+  background: #1a0f02 !important;
+  color: #f5deb3;
+}
+body.theme-medieval .game-header {
+  background: radial-gradient(circle at top, #3a2010, #1a0f02) !important;
+  border-bottom-color: rgba(180, 130, 80, 0.35) !important;
+}
+body.theme-medieval .profile-card {
+  background: rgba(42, 25, 8, 0.96) !important;
+  border-color: rgba(180, 130, 80, 0.32) !important;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.65) !important;
+}
+body.theme-medieval .profile-info-label,
+body.theme-medieval .profile-subtitle { color: #c4a882 !important; }
+body.theme-medieval .profile-info-row { border-bottom-color: rgba(180, 130, 80, 0.22) !important; }
+body.theme-medieval .gh-xp-fill { background: linear-gradient(90deg, #b8860b, #d4af37) !important; }
+body.theme-medieval .gh-xp-label { color: #d4af37 !important; }
+body.theme-medieval .text-warning { color: #d4af37 !important; }
+body.theme-medieval .fw-semibold.text-warning { color: #e8c84a !important; }
+body.theme-medieval .badge.bg-warning { background-color: #b8860b !important; color: #f5deb3 !important; }
+body.theme-medieval .badge.bg-success { background-color: #4a6741 !important; }
+body.theme-medieval .badge.bg-secondary { background-color: #5a4030 !important; }
+body.theme-medieval .btn-warning {
+  background-color: #b8860b !important;
+  border-color: #b8860b !important;
+  color: #f5deb3 !important;
+}
+body.theme-medieval .btn-warning:hover {
+  background-color: #d4af37 !important;
+  border-color: #d4af37 !important;
+  color: #1a0f02 !important;
+}
+body.theme-medieval .btn-outline-warning {
+  color: #d4af37 !important;
+  border-color: #d4af37 !important;
+}
+body.theme-medieval .btn-outline-light,
+body.theme-medieval .btn-outline-secondary {
+  color: #f5deb3 !important;
+  border-color: #8b6343 !important;
+}
+body.theme-medieval .border-secondary { border-color: #8b6343 !important; }
+body.theme-medieval .text-light { color: #f5deb3 !important; }
+body.theme-medieval .text-muted,
+body.theme-medieval .text-secondary { color: #c4a882 !important; }
+body.theme-medieval .modal-content {
+  background: #2a1908 !important;
+  border-color: #8b6343 !important;
+  color: #f5deb3 !important;
+}
+body.theme-medieval .modal-header,
+body.theme-medieval .modal-footer { border-color: #6b4a28 !important; }
+body.theme-medieval .progress { background: #3a2810 !important; }
+body.theme-medieval .form-control {
+  background: #2a1908 !important;
+  border-color: #8b6343 !important;
+  color: #f5deb3 !important;
+}
+
+/* ---------------------------------------------------------------
+   THEME: fantasy (Arcane Violet)
+   --------------------------------------------------------------- */
+body.theme-fantasy {
+  --bs-body-bg: #0d0520;
+  --bs-body-color: #e9d5ff;
+  --bs-border-color: #4c1d95;
+  --bs-secondary-color: #a78bfa;
+  --bs-secondary-bg: #1a0a33;
+  background: #0d0520 !important;
+  color: #e9d5ff;
+}
+body.theme-fantasy .game-header {
+  background: radial-gradient(circle at top, #2d1b69, #0d0520) !important;
+  border-bottom-color: rgba(167, 139, 250, 0.28) !important;
+}
+body.theme-fantasy .profile-card {
+  background: rgba(26, 10, 51, 0.96) !important;
+  border-color: rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 18px 30px rgba(13, 5, 32, 0.8) !important;
+}
+body.theme-fantasy .profile-info-label,
+body.theme-fantasy .profile-subtitle { color: #a78bfa !important; }
+body.theme-fantasy .profile-info-row { border-bottom-color: rgba(139, 92, 246, 0.22) !important; }
+body.theme-fantasy .gh-xp-fill { background: linear-gradient(90deg, #7c3aed, #a78bfa) !important; }
+body.theme-fantasy .gh-xp-label { color: #c4b5fd !important; }
+body.theme-fantasy .text-warning { color: #a78bfa !important; }
+body.theme-fantasy .fw-semibold.text-warning { color: #c4b5fd !important; }
+body.theme-fantasy .badge.bg-warning { background-color: #6d28d9 !important; color: #e9d5ff !important; }
+body.theme-fantasy .badge.bg-success { background-color: #1a4a6b !important; }
+body.theme-fantasy .badge.bg-secondary { background-color: #3b1d6e !important; }
+body.theme-fantasy .btn-warning {
+  background-color: #7c3aed !important;
+  border-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+body.theme-fantasy .btn-warning:hover {
+  background-color: #6d28d9 !important;
+  border-color: #6d28d9 !important;
+}
+body.theme-fantasy .btn-warning.text-dark { color: #ffffff !important; }
+body.theme-fantasy .btn-outline-warning {
+  color: #a78bfa !important;
+  border-color: #a78bfa !important;
+}
+body.theme-fantasy .btn-outline-light,
+body.theme-fantasy .btn-outline-secondary {
+  color: #e9d5ff !important;
+  border-color: #4c1d95 !important;
+}
+body.theme-fantasy .border-secondary { border-color: #4c1d95 !important; }
+body.theme-fantasy .text-light { color: #e9d5ff !important; }
+body.theme-fantasy .text-muted,
+body.theme-fantasy .text-secondary { color: #a78bfa !important; }
+body.theme-fantasy .modal-content {
+  background: #1a0a33 !important;
+  border-color: #4c1d95 !important;
+  color: #e9d5ff !important;
+}
+body.theme-fantasy .modal-header,
+body.theme-fantasy .modal-footer { border-color: #3b1d6e !important; }
+body.theme-fantasy .progress { background: #1e0a3a !important; }
+body.theme-fantasy .form-control {
+  background: #1a0a33 !important;
+  border-color: #4c1d95 !important;
+  color: #e9d5ff !important;
+}
+body.theme-fantasy .alert-warning {
+  background-color: rgba(109, 40, 217, 0.2) !important;
+  border-color: #7c3aed !important;
+  color: #c4b5fd !important;
+}
+
+/* ---------------------------------------------------------------
+   THEME: emerald (Forêt Émeraude)
+   --------------------------------------------------------------- */
+body.theme-emerald {
+  --bs-body-bg: #021a0e;
+  --bs-body-color: #d1fae5;
+  --bs-border-color: #166534;
+  --bs-secondary-color: #6ee7b7;
+  --bs-secondary-bg: #031a0e;
+  background: #021a0e !important;
+  color: #d1fae5;
+}
+body.theme-emerald .game-header {
+  background: radial-gradient(circle at top, #0f3a22, #021a0e) !important;
+  border-bottom-color: rgba(74, 222, 128, 0.22) !important;
+}
+body.theme-emerald .profile-card {
+  background: rgba(5, 30, 18, 0.96) !important;
+  border-color: rgba(74, 222, 128, 0.2) !important;
+  box-shadow: 0 18px 30px rgba(2, 26, 14, 0.8) !important;
+}
+body.theme-emerald .profile-info-label,
+body.theme-emerald .profile-subtitle { color: #6ee7b7 !important; }
+body.theme-emerald .profile-info-row { border-bottom-color: rgba(74, 222, 128, 0.18) !important; }
+body.theme-emerald .gh-xp-fill { background: linear-gradient(90deg, #15803d, #4ade80) !important; }
+body.theme-emerald .gh-xp-label { color: #86efac !important; }
+body.theme-emerald .text-warning { color: #4ade80 !important; }
+body.theme-emerald .fw-semibold.text-warning { color: #86efac !important; }
+body.theme-emerald .badge.bg-warning { background-color: #15803d !important; color: #d1fae5 !important; }
+body.theme-emerald .badge.bg-success { background-color: #166534 !important; }
+body.theme-emerald .badge.bg-secondary { background-color: #1a3a28 !important; }
+body.theme-emerald .btn-warning {
+  background-color: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+}
+body.theme-emerald .btn-warning:hover {
+  background-color: #15803d !important;
+  border-color: #15803d !important;
+}
+body.theme-emerald .btn-warning.text-dark { color: #ffffff !important; }
+body.theme-emerald .btn-outline-warning {
+  color: #4ade80 !important;
+  border-color: #4ade80 !important;
+}
+body.theme-emerald .btn-outline-light,
+body.theme-emerald .btn-outline-secondary {
+  color: #d1fae5 !important;
+  border-color: #166534 !important;
+}
+body.theme-emerald .border-secondary { border-color: #166534 !important; }
+body.theme-emerald .text-light { color: #d1fae5 !important; }
+body.theme-emerald .text-muted,
+body.theme-emerald .text-secondary { color: #6ee7b7 !important; }
+body.theme-emerald .modal-content {
+  background: #031a0e !important;
+  border-color: #166534 !important;
+  color: #d1fae5 !important;
+}
+body.theme-emerald .modal-header,
+body.theme-emerald .modal-footer { border-color: #1a4a2a !important; }
+body.theme-emerald .progress { background: #0a2a18 !important; }
+body.theme-emerald .form-control {
+  background: #031a0e !important;
+  border-color: #166534 !important;
+  color: #d1fae5 !important;
+}
+body.theme-emerald .alert-warning {
+  background-color: rgba(21, 128, 61, 0.2) !important;
+  border-color: #16a34a !important;
+  color: #86efac !important;
+}

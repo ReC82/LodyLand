@@ -1,11 +1,13 @@
 /* -------- Home page basic styles -------- */
 
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
 .home-body {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #050816; /* fond sombre un peu mystique */
-  color: #e5e7eb;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace;
+  background: #ffffff;
+  color: #000000;
 }
 
 .home-wrapper {
@@ -17,12 +19,13 @@
 }
 
 .home-card {
-  background: #0b1120;
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 0;
+  border: 3px solid #000000;
+  box-shadow: 8px 8px 0 #000000;
   max-width: 700px;
   width: 100%;
   padding: 2rem 2.5rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 .home-logo-container {
@@ -46,7 +49,8 @@
   margin-bottom: 1.5rem;
   font-size: 1rem;
   font-weight: 400;
-  color: #a5b4fc;
+  color: #444444;
+  font-style: italic;
 }
 
 .home-text p {
@@ -62,27 +66,34 @@
   margin: 1.8rem 0 1.2rem 0;
 }
 
-/* Tu peux réutiliser ton style .btn existant si tu en as un.
-   Sinon, petit style générique : */
+/* Style générique des boutons */
 .btn {
   display: inline-block;
   padding: 0.7rem 1.4rem;
-  border-radius: 999px;
+  border-radius: 0;
   text-decoration: none;
   font-weight: 600;
-  border: none;
   cursor: pointer;
   text-align: center;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace;
+}
+
+.home-text {
+  color: #000000;
 }
 
 .btn-primary {
-  background: #22c55e;
-  color: #022c22;
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0 #444444;
 }
 
 .btn-secondary {
-  background: #1f2937;
-  color: #e5e7eb;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0 #000000;
 }
 
 .home-links {
@@ -93,8 +104,8 @@
 
 .home-link {
   display: block;
-  color: #a5b4fc;
-  text-decoration: none;
+  color: #000000;
+  text-decoration: underline;
   margin: 0.3rem 0;
 }
 

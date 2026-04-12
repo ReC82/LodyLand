@@ -744,6 +744,26 @@ def get_levels_definitions():
 
     return jsonify(payload)
 
+_VALID_THEMES = {"default", "light", "monochrome", "medieval", "fantasy", "emerald"}
+
+
+@bp.post("/player/theme")
+def set_theme():
+    """Save the player's chosen UI theme."""
+    data = request.get_json(silent=True) or {}
+    theme = (data.get("theme") or "default").strip()
+    if theme not in _VALID_THEMES:
+        return jsonify({"error": "invalid_theme", "valid": sorted(_VALID_THEMES)}), 400
+
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            return jsonify({"error": "not_authenticated"}), 401
+        me.theme = theme
+        s.commit()
+        return jsonify({"ok": True, "theme": theme}), 200
+
+
 @bp.post("/player/beta-reset")
 def beta_reset():
     """Reset all player progression data (beta only). Keeps account and name."""

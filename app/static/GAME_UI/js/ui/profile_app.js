@@ -4,8 +4,8 @@ console.log("[Profile] profile_app.js loaded!");
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[Profile] DOMContentLoaded fired");
   initLanguageSelector();
-  initLanguageSelector();
-  initBetaReset();  
+  initThemeSelector();
+  initBetaReset();
 });
 
 /**
@@ -113,6 +113,51 @@ function showLanguageError() {
       currentInput.checked = true;
     }
   }
+}
+
+/**
+ * Theme selector
+ */
+function initThemeSelector() {
+  const picker = document.getElementById("theme-picker");
+  if (!picker) return;
+
+  picker.querySelectorAll(".theme-option").forEach(option => {
+    option.addEventListener("click", async () => {
+      const theme = option.dataset.theme;
+      if (!theme) return;
+
+      // Optimistic UI: apply class immediately
+      const body = document.body;
+      body.className = body.className.replace(/theme-\S+/, "").trim() + " theme-" + theme;
+
+      // Update active state in picker
+      picker.querySelectorAll(".theme-option").forEach(o => {
+        o.classList.remove("active");
+        o.querySelector(".theme-check").textContent = "";
+      });
+      option.classList.add("active");
+      option.querySelector(".theme-check").textContent = "✓";
+
+      // Save to server
+      const msg = document.getElementById("theme-save-msg");
+      try {
+        const res = await fetch("/api/player/theme", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ theme }),
+        });
+        if (res.ok) {
+          if (msg) { msg.style.color = "#4ade80"; msg.textContent = "Thème sauvegardé !"; }
+        } else {
+          if (msg) { msg.style.color = "#f87171"; msg.textContent = "Erreur lors de la sauvegarde."; }
+        }
+      } catch (e) {
+        if (msg) { msg.style.color = "#f87171"; msg.textContent = "Erreur réseau."; }
+      }
+      if (msg) setTimeout(() => { msg.textContent = ""; }, 2500);
+    });
+  });
 }
 
 /**

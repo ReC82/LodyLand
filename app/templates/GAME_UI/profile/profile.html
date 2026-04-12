@@ -2,7 +2,7 @@
 
 {% block title %}{{ t("profile.title") }} – LodyLand{% endblock %}
 
-{% block body_class %}game-body profile-body{% endblock %}
+{% block body_class %}profile-body{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/profile/profile.css') }}" />
@@ -178,6 +178,80 @@
               <span class="language-name">English</span>
             </label>
           </div>
+        </div>
+      </section>
+
+      <!-- Thèmes -->
+      <section class="profile-card mt-3 mt-md-4">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">🎨 Thème de l'interface</h2>
+        </div>
+        <div class="profile-card-body">
+          <p class="mb-3 small" style="color:#a0aec0;">Choisissez l'habillage visuel du jeu. Le contraste reste garanti pour chaque thème.</p>
+          <div class="theme-picker" id="theme-picker">
+
+            <label class="theme-option {% if current_theme == 'default' %}active{% endif %}" data-theme="default" title="Cosmique sombre (défaut)">
+              <div class="theme-preview" style="background: linear-gradient(135deg, #020617 50%, #1d283a 100%); border-color: #374151;">
+                <span class="theme-dot" style="background:#fbbf24;"></span>
+                <span class="theme-dot" style="background:#6366f1;"></span>
+                <span class="theme-dot" style="background:#e5e7eb;"></span>
+              </div>
+              <span class="theme-name">Cosmique</span>
+              <span class="theme-check">{% if current_theme == 'default' %}✓{% endif %}</span>
+            </label>
+
+            <label class="theme-option {% if current_theme == 'light' %}active{% endif %}" data-theme="light" title="Blanc & Noir">
+              <div class="theme-preview" style="background: linear-gradient(135deg, #f4f4f6 50%, #ffffff 100%); border-color: #c8cdd6;">
+                <span class="theme-dot" style="background:#1f2937;"></span>
+                <span class="theme-dot" style="background:#5a6272;"></span>
+                <span class="theme-dot" style="background:#c8cdd6;"></span>
+              </div>
+              <span class="theme-name">Clair</span>
+              <span class="theme-check">{% if current_theme == 'light' %}✓{% endif %}</span>
+            </label>
+
+            <label class="theme-option {% if current_theme == 'monochrome' %}active{% endif %}" data-theme="monochrome" title="Noir & Blanc">
+              <div class="theme-preview" style="background: linear-gradient(135deg, #0a0a0a 50%, #222 100%); border-color: #3a3a3a;">
+                <span class="theme-dot" style="background:#ffffff;"></span>
+                <span class="theme-dot" style="background:#888;"></span>
+                <span class="theme-dot" style="background:#444;"></span>
+              </div>
+              <span class="theme-name">Monochrome</span>
+              <span class="theme-check">{% if current_theme == 'monochrome' %}✓{% endif %}</span>
+            </label>
+
+            <label class="theme-option {% if current_theme == 'medieval' %}active{% endif %}" data-theme="medieval" title="Parchemin médiéval">
+              <div class="theme-preview" style="background: linear-gradient(135deg, #1a0f02 50%, #3a2010 100%); border-color: #8b6343;">
+                <span class="theme-dot" style="background:#d4af37;"></span>
+                <span class="theme-dot" style="background:#c4a882;"></span>
+                <span class="theme-dot" style="background:#f5deb3;"></span>
+              </div>
+              <span class="theme-name">Médiéval</span>
+              <span class="theme-check">{% if current_theme == 'medieval' %}✓{% endif %}</span>
+            </label>
+
+            <label class="theme-option {% if current_theme == 'fantasy' %}active{% endif %}" data-theme="fantasy" title="Arcane violet">
+              <div class="theme-preview" style="background: linear-gradient(135deg, #0d0520 50%, #2d1b69 100%); border-color: #4c1d95;">
+                <span class="theme-dot" style="background:#a78bfa;"></span>
+                <span class="theme-dot" style="background:#7c3aed;"></span>
+                <span class="theme-dot" style="background:#e9d5ff;"></span>
+              </div>
+              <span class="theme-name">Arcane</span>
+              <span class="theme-check">{% if current_theme == 'fantasy' %}✓{% endif %}</span>
+            </label>
+
+            <label class="theme-option {% if current_theme == 'emerald' %}active{% endif %}" data-theme="emerald" title="Forêt émeraude">
+              <div class="theme-preview" style="background: linear-gradient(135deg, #021a0e 50%, #0f3a22 100%); border-color: #166534;">
+                <span class="theme-dot" style="background:#4ade80;"></span>
+                <span class="theme-dot" style="background:#16a34a;"></span>
+                <span class="theme-dot" style="background:#d1fae5;"></span>
+              </div>
+              <span class="theme-name">Émeraude</span>
+              <span class="theme-check">{% if current_theme == 'emerald' %}✓{% endif %}</span>
+            </label>
+
+          </div>
+          <div id="theme-save-msg" class="small mt-2" style="min-height:1.2em;"></div>
         </div>
       </section>
 
