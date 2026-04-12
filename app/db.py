@@ -35,3 +35,16 @@ def init_db():
     # Import models so metadata sees them before create_all
     from . import models  # noqa: F401
     Base.metadata.create_all(engine)
+
+    # Incremental migrations: add new columns if missing
+    from sqlalchemy import text, inspect
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        player_cols = [c["name"] for c in inspector.get_columns("players")]
+        if "theme" not in player_cols:
+            conn.execute(text("ALTER TABLE players ADD COLUMN theme TEXT NOT NULL DEFAULT 'light'"))
+            conn.commit()
+        else:
+            # Migrate existing players who still have the old default
+            conn.execute(text("UPDATE players SET theme = 'light' WHERE theme = 'default'"))
+            conn.commit()

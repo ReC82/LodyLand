@@ -91,11 +91,17 @@
       href="{{ url_for('static', filename='GAME_UI/css/global/responsive.css') }}"
     />
 
+    <!-- 5b) Thèmes couleur -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/themes.css') }}"
+    />
+
     <!-- 6) CSS additionnel spécifique à une page (lands, village, etc.) -->
     {% block extra_css %}{% endblock %}
   </head>
 
-  <body class="{% block body_class %}game-body{% endblock %}">
+  <body class="game-body theme-{{ current_theme|default('default') }} {% block body_class %}{% endblock %}">
   {% from 'macros/currency_macros.html' import coin_icon, diam_icon %}
     <!-- Full-width beta banner (mainly for tablet/mobile) -->
     <div class="beta-banner">
