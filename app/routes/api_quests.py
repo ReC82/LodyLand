@@ -8,6 +8,7 @@ from flask import Blueprint, jsonify, request
 from app.auth import get_current_player
 from app.db import SessionLocal
 from app.models import PlayerQuest
+from app.progression import next_threshold, apply_xp_and_level_up
 from app.quests.service import (
     QUEST_MIN_LEVEL,
     _apply_quest_rewards,
@@ -116,7 +117,20 @@ def claim_quest():
             s.commit()
             return jsonify({"error": "quest_expired"}), 400
 
+        # Apply non-XP rewards (shards, essence) via service helper,
+        # then handle XP separately so level-ups are triggered properly.
+        rewards = quest.rewards_json or {}
+        quest_xp = int(rewards.get("xp", 0) or 0)
+
         _apply_quest_rewards(me, quest)
+
+        # Re-apply XP through the proper leveling pipeline (undo the direct add first)
+        if quest_xp > 0:
+            me.xp = float(me.xp or 0) - quest_xp  # undo direct add from _apply_quest_rewards
+            level_up, new_level, level_rewards = apply_xp_and_level_up(s, me, quest_xp)
+        else:
+            level_up, new_level, level_rewards = False, me.level or 0, []
+
         completed_type = quest.quest_type
         completed_key  = quest.template_key
 
@@ -141,9 +155,13 @@ def claim_quest():
                 "name":    me.name,
                 "level":   me.level,
                 "xp":      me.xp,
+                "next_xp": next_threshold(me.level),
                 "shards":  me.shards,
                 "essence": me.essence,
             },
+            "level_up":     level_up,
+            "new_level":    new_level if level_up else None,
+            "level_rewards": level_rewards if level_up else [],
             "quest":     serialize_quest(quest),
             "new_quest": serialize_quest(new_quest) if new_quest else None,
         }), 200

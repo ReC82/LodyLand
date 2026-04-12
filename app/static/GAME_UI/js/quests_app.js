@@ -321,6 +321,11 @@ async function QQ_claimQuest(questId) {
 
   // Show completion popup
   if (quest) QQ_showCompletionPopup(quest);
+
+  // Trigger level-up modal if applicable
+  if (data.level_up && typeof showLevelUpModal === "function") {
+    setTimeout(() => showLevelUpModal(data.new_level, data.level_rewards || []), 800);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -374,6 +379,17 @@ function QQ_updateHud(player) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   });
+
+  // Update full XP/level HUD if available
+  if (typeof updatePlayerHUD === "function") {
+    updatePlayerHUD({
+      level:   player.level,
+      xp:      player.xp,
+      xp_next: player.next_xp ?? player.xp_next ?? null,
+      shards:  player.shards,
+      essence: player.essence,
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
