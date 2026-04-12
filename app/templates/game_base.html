@@ -757,6 +757,23 @@
 
 
 
+    <!-- Dev toolbar (hidden in production) -->
+    <div id="dev-toolbar" style="display:none; position:fixed; bottom:12px; left:12px; z-index:9999; background:#1a1a2e; border:1px solid #4a4a8a; border-radius:8px; padding:8px 10px; font-size:12px; color:#ccc; box-shadow:0 4px 16px rgba(0,0,0,.5); min-width:170px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-weight:700; color:#a78bfa; letter-spacing:.5px;">⚙ DEV</span>
+        <button onclick="document.getElementById('dev-toolbar').style.display='none'" style="background:none;border:none;color:#888;cursor:pointer;font-size:14px;padding:0 2px;">✕</button>
+      </div>
+      <div style="margin-bottom:4px; color:#999; font-size:11px;">Set level</div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <input id="dev-level-input" type="number" min="1" value="1"
+          style="width:60px; padding:3px 6px; border-radius:4px; border:1px solid #555; background:#111; color:#eee; font-size:12px;" />
+        <button id="dev-set-level-btn" onclick="devSetLevel()"
+          style="padding:3px 10px; border-radius:4px; background:#6d28d9; color:#fff; border:none; cursor:pointer; font-size:12px;">Go</button>
+      </div>
+      <div id="dev-toolbar-msg" style="margin-top:5px; min-height:16px; font-size:11px; color:#86efac;"></div>
+    </div>
+    <button id="dev-toolbar-toggle" style="display:none; position:fixed; bottom:12px; left:12px; z-index:10000; background:#1a1a2e; border:1px solid #4a4a8a; border-radius:6px; padding:4px 10px; color:#a78bfa; font-size:12px; cursor:pointer; font-weight:700;" onclick="document.getElementById('dev-toolbar').style.display='block'; this.style.display='none';">⚙ DEV</button>
+
     <!-- JS commun -->
 
     <!-- Config dynamique -->
@@ -771,5 +788,55 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/story_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/notebook_app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
+
+    <script>
+    // Dev toolbar init — runs after config.js is loaded
+    (function() {
+      function initDevToolbar() {
+        if (!window.DEV_MODE) return;
+        var toggle = document.getElementById('dev-toolbar-toggle');
+        var toolbar = document.getElementById('dev-toolbar');
+        if (!toggle || !toolbar) return;
+        // Show toggle button by default, toolbar hidden
+        toggle.style.display = 'block';
+        // Set max on level input
+        var input = document.getElementById('dev-level-input');
+        if (input && window.MAX_LEVEL) input.max = window.MAX_LEVEL;
+      }
+      // Config script loads synchronously before this block, so MAX_LEVEL is available
+      initDevToolbar();
+    })();
+
+    function devSetLevel() {
+      var input = document.getElementById('dev-level-input');
+      var msg   = document.getElementById('dev-toolbar-msg');
+      var btn   = document.getElementById('dev-set-level-btn');
+      var level = parseInt(input.value, 10);
+      if (!level || level < 1) { msg.textContent = 'Invalid level'; msg.style.color='#f87171'; return; }
+      btn.disabled = true;
+      btn.textContent = '…';
+      msg.textContent = '';
+      fetch('/api/dev/set-level', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({level: level})
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          msg.textContent = 'Level ' + data.level + ' ✔';
+          msg.style.color = '#86efac';
+          // Refresh HUD if game_app exposes it
+          if (typeof refreshHUD === 'function') refreshHUD();
+          else location.reload();
+        } else {
+          msg.textContent = data.error || 'Error';
+          msg.style.color = '#f87171';
+        }
+      })
+      .catch(function() { msg.textContent = 'Network error'; msg.style.color = '#f87171'; })
+      .finally(function() { btn.disabled = false; btn.textContent = 'Go'; });
+    }
+    </script>
   </body>
 </html>

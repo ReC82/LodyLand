@@ -171,7 +171,8 @@ def home():
 
 @frontend_bp.route('/static-config.js')
 def static_config():
-    return render_template('config.js.html'), 200, {'Content-Type': 'application/javascript'}
+    from .progression import MAX_LEVEL
+    return render_template('config.js.html', max_level=MAX_LEVEL), 200, {'Content-Type': 'application/javascript'}
 
 @frontend_bp.get("/play")
 def play_redirect():
