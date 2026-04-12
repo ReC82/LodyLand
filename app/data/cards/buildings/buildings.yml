@@ -1,0 +1,210 @@
+# =====================================================================
+# BUILDING ACCESS CARDS
+# card_type: building_access
+# card_category: building
+#
+# Ces cartes débloquent la possibilité de construire un building.
+# Achetables au Village Card Shop (boutique de raretés) à partir du niveau 11.
+# Une fois possédée, le joueur peut lancer la construction via Pedro.
+# card_max_owned: 1 — on ne peut construire qu'un exemplaire de chaque.
+# =====================================================================
+
+# ------------------------------------------------------------------
+# CUISINE DE BASE
+# Production : plats cuisinés → buffs temporaires (XP, récolte)
+# Carburant  : bois
+# ------------------------------------------------------------------
+- key: building_basic_kitchen
+  enabled: true
+  card_type: building_access
+  card_category: building
+  card_tags:
+  - building
+  - kitchen
+  - food
+  card_label: Cuisine de base
+  card_description: >
+    Débloque la construction d'une Cuisine de base.
+    Cuisinez des plats qui vous accorderont des bonus temporaires
+    d'XP et de récolte. Fonctionne au bois.
+  card_image: /static/assets/img/cards/buildings/card_building_basic_kitchen.png
+  card_rarity: uncommon
+  card_gameplay:
+    building_key: basic_kitchen
+  shop:
+    prices:
+    - coins: 5000
+      diams: 0
+      resources: {}
+    - coins: 0
+      diams: 20
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules:
+      min_level: 11
+  tradable: false
+  giftable: false
+  card_quantity: null   # illimité en stock
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+# ------------------------------------------------------------------
+# FONDERIE
+# Production : fusion de minerais en lingots (plus rapide qu'à la table)
+# Carburant  : charbon
+# ------------------------------------------------------------------
+- key: building_foundry
+  enabled: true
+  card_type: building_access
+  card_category: building
+  card_tags:
+  - building
+  - foundry
+  - smelting
+  card_label: Fonderie
+  card_description: >
+    Débloque la construction d'une Fonderie.
+    Faites fondre vos minerais en lingots à grande vitesse.
+    Fonctionne au charbon.
+  card_image: /static/assets/img/cards/buildings/card_building_foundry.png
+  card_rarity: rare
+  card_gameplay:
+    building_key: foundry
+  shop:
+    prices:
+    - coins: 12000
+      diams: 0
+      resources: {}
+    - coins: 0
+      diams: 40
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules:
+      min_level: 11
+  tradable: false
+  giftable: false
+  card_quantity: null
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+# ------------------------------------------------------------------
+# FORGE
+# Production : outils et armes en métal (nécessite lingots)
+# Carburant  : charbon
+# ------------------------------------------------------------------
+- key: building_forge
+  enabled: true
+  card_type: building_access
+  card_category: building
+  card_tags:
+  - building
+  - forge
+  - smithing
+  card_label: Forge
+  card_description: >
+    Débloque la construction d'une Forge.
+    Fabriquez des outils et des armes en métal de haute qualité.
+    Nécessite des lingots. Fonctionne au charbon.
+  card_image: /static/assets/img/cards/buildings/card_building_forge.png
+  card_rarity: rare
+  card_gameplay:
+    building_key: forge
+  shop:
+    prices:
+    - coins: 20000
+      diams: 0
+      resources: {}
+    - coins: 0
+      diams: 60
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules:
+      min_level: 11
+  tradable: false
+  giftable: false
+  card_quantity: null
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+# ------------------------------------------------------------------
+# USINE À CRAFT
+# Production : craft automatisé (recettes de la table de craft, en boucle)
+# Carburant  : bois ou charbon
+# ------------------------------------------------------------------
+- key: building_craft_factory
+  enabled: true
+  card_type: building_access
+  card_category: building
+  card_tags:
+  - building
+  - factory
+  - craft
+  card_label: Usine à craft
+  card_description: >
+    Débloque la construction d'une Usine à craft.
+    Automatisez vos recettes de craft : une file de travaux
+    tourne en continu pendant votre absence.
+    Fonctionne au bois ou au charbon.
+  card_image: /static/assets/img/cards/buildings/card_building_craft_factory.png
+  card_rarity: epic
+  card_gameplay:
+    building_key: craft_factory
+  shop:
+    prices:
+    - coins: 50000
+      diams: 0
+      resources: {}
+    - coins: 0
+      diams: 150
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules:
+      min_level: 11
+  tradable: false
+  giftable: false
+  card_quantity: null
+  card_purchase_limit_quantity: null
+  card_max_owned: 1
+
+# ------------------------------------------------------------------
+# ENTREPÔT
+# Passif : augmente la capacité de stockage de ressources
+# Pas de carburant
+# ------------------------------------------------------------------
+- key: building_warehouse
+  enabled: true
+  card_type: building_access
+  card_category: building
+  card_tags:
+  - building
+  - storage
+  card_label: Entrepôt
+  card_description: >
+    Débloque la construction d'un Entrepôt.
+    Augmente la capacité maximale de stockage pour toutes vos ressources.
+    Bâtiment passif — aucun carburant requis.
+  card_image: /static/assets/img/cards/buildings/card_building_warehouse.png
+  card_rarity: uncommon
+  card_gameplay:
+    building_key: warehouse
+  shop:
+    prices:
+    - coins: 8000
+      diams: 0
+      resources: {}
+    - coins: 0
+      diams: 25
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: true
+    buy_rules:
+      min_level: 11
+  tradable: false
+  giftable: false
+  card_quantity: null
+  card_purchase_limit_quantity: null
+  card_max_owned: 1

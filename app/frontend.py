@@ -31,7 +31,9 @@ from .models import (
     PlayerCard,
     CardDef,
     LandSlotState,
-    PlayerQuest, 
+    PlayerQuest,
+    PlayerBuilding,
+    ResourceStock,
 )
 from .routes.api_players import _ensure_starting_land_card
 from .lands import get_land_def, get_player_land_state
@@ -336,7 +338,7 @@ def land_page(slug: str):
     # -------------------------------
     if slug == "village":
         # Si tu veux plus tard vérifier la carte land_village, tu peux le faire ici.
-        return render_template("GAME_UI/lands/village/village_home.html")
+        return render_template("GAME_UI/lands/village/village_home.html", player=player)
     
     # -------------------------------
     # Special case: temple
@@ -657,6 +659,106 @@ def village_shop():
         "GAME_UI/lands/village/village_shop.html",
         player=player,
         shop_items=shop_items,
+    )
+
+
+@frontend_bp.get("/village/pedro")
+@login_required
+def village_pedro():
+    """Pedro — Master Builder hub (buildings construction & production)."""
+    import yaml, os
+    from flask import abort
+    player = g.player
+    if player.level < 11:
+        abort(403)
+
+    # Charger les définitions de buildings
+    buildings_path = os.path.join(os.path.dirname(__file__), "data", "buildings.yml")
+    with open(buildings_path, encoding="utf-8") as f:
+        buildings_data = yaml.safe_load(f)
+    all_buildings = buildings_data.get("buildings", {})
+
+    # Récupérer les cartes building_access possédées par le joueur
+    player_building_cards = (
+        g.db_session.query(PlayerCard)
+        .join(CardDef, CardDef.key == PlayerCard.card_key)
+        .filter(
+            PlayerCard.player_id == player.id,
+            PlayerCard.qty > 0,
+            CardDef.card_type == "building_access",
+        )
+        .all()
+    )
+    owned_card_keys = {pc.card_key for pc in player_building_cards}
+
+    # Charger l'état de construction existant depuis la DB
+    pb_rows = (
+        g.db_session.query(PlayerBuilding)
+        .filter_by(player_id=player.id)
+        .all()
+    )
+    pb_by_key = {pb.building_key: pb for pb in pb_rows}
+
+    # Stock de ressources du joueur (dict resource_key → qty)
+    resource_stocks = {
+        rs.resource: int(rs.qty)
+        for rs in g.db_session.query(ResourceStock).filter_by(player_id=player.id).all()
+    }
+
+    # Construire la liste des buildings disponibles (carte possédée)
+    import datetime as _dt
+    available_buildings = []
+    for bkey, bdef in all_buildings.items():
+        if bdef.get("card_key") not in owned_card_keys:
+            continue
+        pb = pb_by_key.get(bkey)
+        required = bdef.get("construction", {}).get("materials", {})
+        banked   = dict(pb.banked_materials or {}) if pb else {}
+        status   = pb.status if pb else "pending_resources"
+
+        # Si under_construction, vérifier si c'est terminé
+        ends_at = None
+        if pb and pb.construction_ends_at:
+            ends_at = pb.construction_ends_at.isoformat() + "Z"
+            if status == "under_construction" and pb.construction_ends_at <= _dt.datetime.utcnow():
+                status = "operational"
+                pb.status = "operational"
+                g.db_session.commit()
+
+        # Barres de progression par matériau (+ stock joueur)
+        materials_progress = [
+            {
+                "key": mat,
+                "required": int(qty),
+                "banked": int(banked.get(mat, 0)),
+                "player_stock": resource_stocks.get(mat, 0),
+            }
+            for mat, qty in required.items()
+        ]
+
+        available_buildings.append({
+            "key": bkey,
+            "label": bdef.get("label", bkey),
+            "description": bdef.get("description", ""),
+            "image": bdef.get("image", ""),
+            "construction": bdef.get("construction", {}),
+            "production_type": (bdef.get("production") or {}).get("type", ""),
+            "status": status,
+            "banked_materials": banked,
+            "materials_progress": materials_progress,
+            "construction_ends_at": ends_at,
+            "duration_seconds": bdef.get("construction", {}).get("duration_seconds", 0),
+        })
+
+    land_logo = url_for(
+        "static",
+        filename="assets/img/lands/village_logo.png",
+    )
+    return render_template(
+        "GAME_UI/lands/village/village_pedro.html",
+        land_logo=land_logo,
+        player=player,
+        available_buildings=available_buildings,
     )
 
 

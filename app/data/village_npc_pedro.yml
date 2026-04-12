@@ -1,0 +1,79 @@
+# app/data/village_npc_pedro.yml
+# =====================================================================
+# NPC : PEDRO — Maître constructeur du village
+#
+# Pedro apparaît au Village dès que le joueur atteint le niveau 11.
+# Il gère la construction de tous les buildings.
+#
+# RÔLE :
+#   - Affiche la grille des buildings disponibles (carte possédée = accès)
+#   - Permet de démarrer la construction après avoir réuni les matériaux
+#   - Suit l'état de chaque building du joueur
+#
+# DÉCLENCHEUR D'APPARITION :
+#   Condition : player.level >= 11
+#   (même condition que les cartes building dans buy_rules.min_level)
+# =====================================================================
+
+npc:
+  key: pedro
+  enabled: true
+  name: Pedro
+  title:
+    fr: Maître constructeur
+    en: Master Builder
+  description:
+    fr: >
+      Pedro est un vieil artisan tailleur de pierre arrivé sur l'île bien
+      avant toi. Il connaît chaque rocher, chaque jointure. Si tu veux
+      bâtir quelque chose qui dure, c'est lui qu'il faut voir.
+    en: >
+      Pedro is an old stone-cutter craftsman who arrived on the island long
+      before you. He knows every rock, every joint. If you want to build
+      something that lasts, he's the one to see.
+
+  # Apparence / asset
+  image: /static/assets/img/pnj/pedro.png
+  portrait: /static/assets/img/pnj/portraits/pedro_portrait.png
+
+  # Position dans l'UI du village (secteur ou identifiant de zone)
+  village_zone: construction_yard         # zone à créer dans le village
+
+  # Condition d'apparition
+  unlock:
+    min_level: 11
+
+  # Dialogues d'accueil (sélectionnés aléatoirement)
+  greetings:
+    - fr: "Alors, on veut construire quelque chose de grand ?"
+      en: "So, want to build something big?"
+    - fr: "Les pierres ne se posent pas toutes seules. Qu'est-ce que je peux faire pour toi ?"
+      en: "Stones don't lay themselves. What can I do for you?"
+    - fr: "Un bon bâtiment, ça commence par de bonnes fondations. Tu es prêt ?"
+      en: "A good building starts with good foundations. Are you ready?"
+
+  # Dialogue si le joueur n'a aucune carte building
+  no_buildings_dialogue:
+    fr: >
+      Tu n'as encore aucune carte de construction. Va au Card Shop du village —
+      Anna ou Jo pourront peut-être t'aider à en trouver une.
+    en: >
+      You don't have any building cards yet. Head to the Village Card Shop —
+      Anna or Jo might be able to help you find one.
+
+  # Dialogue pendant une construction en cours
+  building_in_progress_dialogue:
+    fr: "Je m'en occupe ! Reviens dans un moment, ça avance bien."
+    en: "I'm on it! Come back in a while, things are progressing well."
+
+  # Ce que Pedro affiche (interface)
+  ui:
+    # Vue principale : grille des buildings que le joueur peut construire
+    view: building_grid
+
+    # Pour chaque building, Pedro montre :
+    #   - L'image + le nom du building
+    #   - Le statut (pending_resources / pending_construction / under_construction / operational)
+    #   - Si pending_resources : liste des matériaux avec barres de progression
+    #   - Si under_construction : barre de progression temps restant
+    #   - Si operational : boutons de production selon le type du building

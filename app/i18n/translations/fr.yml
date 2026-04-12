@@ -462,6 +462,13 @@ village:
         text: "Échange certaines ressources contre des items rares ou des cartes uniques. Certains échanges sont limités par jour ou par rotation."
         button: "Voir les échanges"
 
+      pedro:
+        alt: "Pedro — Maître constructeur"
+        title: "Pedro — Maître constructeur"
+        text: "Construis des bâtiments permanents en réunissant les matériaux nécessaires. Une fois construits, ils produisent en continu !"
+        button: "Voir les bâtiments"
+        badge_new: "Nouveau !"
+
   market:
     tab_title: "Marché du village — LodyLand"
     title: "Marché du village"
@@ -560,6 +567,45 @@ village:
       coin_multiplier: "Pièces ×"
       target_resource: "Ressource cible"
       unlocks: "Débloque"
+
+  pedro:
+    tab_title: "Pedro — Maître constructeur — LodyLand"
+    title: "Pedro — Maître constructeur"
+    back_to_village: "Retour au village"
+    subtitle: "Construisez des bâtiments permanents en réunissant les matériaux nécessaires."
+    locked: "Pedro n'apparaîtra qu'à partir du niveau 11."
+    no_cards: "Tu n'as encore aucune carte de construction. Achète-en une au Card Shop du village !"
+
+    grid:
+      title: "Tes bâtiments"
+      empty: "Aucun bâtiment disponible."
+
+    status:
+      pending_resources: "En attente des ressources"
+      pending_construction: "Prêt à construire"
+      under_construction: "En construction…"
+      operational: "En fonctionnement"
+
+    materials:
+      title: "Matériaux nécessaires"
+      progress_label: "Apportés"
+      in_stock: "En stock"
+      deposit_btn: "Déposer"
+      warning_irrecoverable: "⚠ Les ressources déposées sont irrécupérables."
+
+    construction:
+      start_btn: "Lancer la construction"
+      time_remaining: "Temps restant"
+      started: "Construction lancée !"
+
+    production:
+      fuel_label: "Carburant"
+      fuel_add_btn: "Ajouter du carburant"
+      tank_label: "Réservoir"
+      queue_label: "File de production"
+      start_btn: "Lancer"
+      recipe_label: "Recette"
+      duration_label: "Durée"
 
 items:
   branch:
