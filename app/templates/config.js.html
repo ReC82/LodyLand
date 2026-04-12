@@ -4,3 +4,7 @@ window.STATIC_URL = "{{ url_for('static', filename='') }}";
 window.RESOURCE_IMG_PATH = "{{ url_for('static', filename='assets/img/items/resources/') }}";
 window.TREASURE_IMG_PATH = "{{ url_for('static', filename='assets/img/items/treasures/') }}";
 window.UI_IMG_PATH = "{{ url_for('static', filename='assets/img/ui/') }}";
+
+// Dev mode flags
+window.DEV_MODE = {{ 'true' if config.DEBUG or config.get('ADMIN_ENABLED') else 'false' }};
+window.MAX_LEVEL = {{ max_level }};
