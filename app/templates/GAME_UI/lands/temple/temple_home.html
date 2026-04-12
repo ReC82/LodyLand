@@ -66,17 +66,13 @@
         <h6 id="detail-brick-name" class="text-light mb-1"></h6>
         <p id="detail-brick-desc" class="small mb-3" style="color:#aaa;"></p>
 
-        <p class="small text-light mb-2 fw-semibold">Ressources à apporter :</p>
-        <table class="table table-sm mb-3" style="color:#ddd; background:transparent;">
-          <thead>
-            <tr style="color:#888; border-color:#444;">
-              <th class="ps-0" style="border-color:#444;">Ressource</th>
-              <th class="text-end" style="border-color:#444;">Requis</th>
-              <th class="text-end" style="border-color:#444;">Stock</th>
-            </tr>
-          </thead>
-          <tbody id="detail-cost-tbody" style="border-color:#444;"></tbody>
-        </table>
+        <p class="small mb-2 fw-semibold" style="color:#a78bfa;">Ressources à apporter :</p>
+        <div class="temple-res-header">
+          <span>Ressource</span>
+          <span>Requis</span>
+          <span>Stock</span>
+        </div>
+        <div id="detail-cost-tbody"></div>
 
         <div id="detail-afford-warning" class="small mb-2 d-none" style="color:#f87;">
           ⚠️ Ressources insuffisantes — continuez à récolter !
@@ -249,31 +245,34 @@ function showDetail(brick) {
   for (const [resKey, detail] of Object.entries(brick.cost_detail)) {
     if (!detail.ok) allOk = false;
 
-    // Source hint
-    let sourceHtml = "";
+    // Source hints
+    let sourcesHtml = "";
     if (detail.sources && detail.sources.length > 0) {
-      const hints = detail.sources.map(s =>
-        '<span style="color:#888;">📍 ' + s.land_fr + ' — ' + s.tools_fr + '</span>'
-      ).join("<br>");
-      sourceHtml = '<br><small style="line-height:1.3;">' + hints + '</small>';
+      sourcesHtml = '<div class="temple-res-sources">' +
+        detail.sources.map(s =>
+          '<span>📍 ' + s.land_fr + ' — ' + s.tools_fr + '</span>'
+        ).join("") +
+      '</div>';
     }
 
-    const tr = document.createElement("tr");
-    tr.style.borderColor = "#444";
-    tr.innerHTML =
-      '<td class="ps-0" style="border-color:#444; vertical-align:top;">' +
+    const row = document.createElement("div");
+    row.className = "temple-res-row" + (detail.ok ? " is-ok" : " is-missing");
+    row.innerHTML =
+      '<div class="temple-res-name">' +
         (detail.icon
-          ? '<img src="' + detail.icon + '" width="16" height="16" class="me-1" style="object-fit:contain;">'
-          : '') +
-        '<span style="color:#ddd;">' + detail.label + '</span>' +
-        sourceHtml +
-      '</td>' +
-      '<td class="text-end" style="border-color:#444; color:#eee; vertical-align:top;">' + detail.needed.toLocaleString() + '</td>' +
-      '<td class="text-end fw-semibold" style="border-color:#444; color:' + (detail.ok ? '#4caf50' : '#f87') + '; vertical-align:top;">' +
+          ? '<img src="' + detail.icon + '" width="18" height="18" style="object-fit:contain; border-radius:3px;">'
+          : '<span class="temple-res-dot"></span>') +
+        '<div>' +
+          '<span class="temple-res-label">' + detail.label + '</span>' +
+          sourcesHtml +
+        '</div>' +
+      '</div>' +
+      '<span class="temple-res-needed">' + detail.needed.toLocaleString() + '</span>' +
+      '<span class="temple-res-stock">' +
         Math.floor(detail.owned).toLocaleString() +
-        (detail.ok ? ' ✓' : ' ✗') +
-      '</td>';
-    tbody.appendChild(tr);
+        (detail.ok ? ' <span class="temple-check">✓</span>' : ' <span class="temple-cross">✗</span>') +
+      '</span>';
+    tbody.appendChild(row);
   }
 
   const warning = document.getElementById("detail-afford-warning");
@@ -360,7 +359,82 @@ loadState();
 <style>
 .brick-btn { border-radius: 6px !important; transition: transform .1s; }
 .brick-btn:hover:not(:disabled) { transform: scale(1.1); }
-#pyramid   { user-select: none; }
-#detail-cost-tbody tr { border-color: #444 !important; }
+#pyramid { user-select: none; }
+
+/* Resource list */
+.temple-res-header {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0 12px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 1px solid #2d2d4a;
+  margin-bottom: 4px;
+}
+.temple-res-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0 12px;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background: #12122a;
+  border: 1px solid #2a2a4a;
+  transition: background .15s;
+}
+.temple-res-row.is-ok   { border-color: #1e3a2e; background: #0f1f18; }
+.temple-res-row.is-missing { border-color: #3a1e1e; background: #1e100f; }
+
+.temple-res-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.temple-res-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.temple-res-label {
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  display: block;
+}
+.temple-res-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 3px;
+}
+.temple-res-sources span {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+.temple-res-needed {
+  color: #94a3b8;
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+.temple-res-stock {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+.is-ok   .temple-res-stock { color: #4ade80; }
+.is-missing .temple-res-stock { color: #f87171; }
+.temple-check { color: #4ade80; }
+.temple-cross { color: #f87171; }
 </style>
 {% endblock %}
