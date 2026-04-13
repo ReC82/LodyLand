@@ -461,3 +461,272 @@ levels:
           J'ai hâte de voir ce que cette île a encore à m'offrir !
         en: The temple, that's done. But what am I going to discover next? I can't
           wait to see what else this island has to offer!
+- level: 12
+  xp_required: 2200
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 1200
+  story_events:
+  - id: level_12_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: Le temple m'a appris beaucoup de choses… mais j'ai l'impression que cette
+          île cache encore bien des mystères. Il paraît qu'il existerait des terres
+          encore plus lointaines.
+        en: The temple taught me a lot… but I feel this island still hides many mysteries.
+          They say there are lands even further away.
+- level: 13
+  xp_required: 3200
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 1500
+  - type: card
+    card_key: land_jurassic
+  - type: currency
+    currency: premium
+    amount: 2
+  story_events:
+  - id: unlock_jurassic_card
+    trigger: on_level_reached
+    land_key: land_jurassic
+    show_once: true
+    modal_variant: centered
+    pages:
+    - speaker: self
+      mood: surprised
+      text:
+        fr: Des fossiles… des empreintes gigantesques dans la roche… Cette partie
+          de l'île est bien plus ancienne que tout ce que j'ai vu jusqu'ici.
+        en: Fossils… giant footprints in the rock… This part of the island is far
+          older than anything I've seen so far.
+    - speaker: self
+      mood: curious
+      text:
+        fr: Des créatures préhistoriques rodent peut-être encore ici. Il faudra être
+          prudent. Mais les ressources qu'on peut y trouver… ça en vaut le risque.
+        en: Prehistoric creatures may still roam here. I'll need to be careful. But
+          the resources you can find here… it's worth the risk.
+    - speaker: self
+      mood: determined
+      text:
+        fr: Bienvenue dans les terres Jurassiques. Tâchons de ne pas finir en ambre.
+        en: Welcome to the Jurassic lands. Let's try not to end up in amber.
+- level: 14
+  xp_required: 4800
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 1800
+  story_events:
+  - id: level_14_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: Je sens un froid inhabituel venant du nord de l'île. Quelque chose d'immense
+          et de silencieux m'attend là-bas.
+        en: I feel an unusual cold coming from the north of the island. Something
+          vast and silent awaits me there.
+- level: 15
+  xp_required: 7000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 2000
+  - type: card
+    card_key: land_frozen
+  - type: currency
+    currency: premium
+    amount: 3
+  story_events:
+  - id: unlock_frozen_card
+    trigger: on_level_reached
+    land_key: land_frozen
+    show_once: true
+    modal_variant: centered
+    pages:
+    - speaker: self
+      mood: surprised
+      text:
+        fr: C'est… magnifique. Et glacial. Le sol est recouvert d'une glace ancienne
+          qui réfléchit la lumière comme du verre.
+        en: It's… beautiful. And freezing. The ground is covered in ancient ice that
+          reflects light like glass.
+    - speaker: self
+      mood: curious
+      text:
+        fr: Sous cette surface, je vois des formes… des cristaux, des silhouettes
+          figées dans le temps. Cette terre recèle des trésors que personne n'a touchés
+          depuis des siècles.
+        en: Under the surface, I can see shapes… crystals, figures frozen in time.
+          This land holds treasures no one has touched in centuries.
+    - speaker: self
+      mood: determined
+      text:
+        fr: Il fait froid, mais j'avance. Les Terres Gelées ne vont pas s'explorer
+          toutes seules.
+        en: It's cold, but I push on. The Frozen Lands won't explore themselves.
+- level: 16
+  xp_required: 10000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 2500
+  story_events:
+  - id: level_16_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: Des vieilles cartes trouvées dans le temple mentionnaient un lieu oublié
+          de tous… des ruines d'une civilisation disparue. Je crois que j'approche.
+        en: Old maps found in the temple mentioned a place forgotten by all… ruins
+          of a vanished civilization. I think I'm getting close.
+- level: 17
+  xp_required: 14500
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 3000
+  - type: card
+    card_key: land_ruins
+  - type: currency
+    currency: premium
+    amount: 4
+  story_events:
+  - id: unlock_ruins_card
+    trigger: on_level_reached
+    land_key: land_ruins
+    show_once: true
+    modal_variant: centered
+    pages:
+    - speaker: self
+      mood: observing
+      text:
+        fr: Des colonnes brisées, des murs effondrés, des inscriptions dans une langue
+          que je ne reconnais pas… Qui étaient ces gens ?
+        en: Broken columns, collapsed walls, inscriptions in a language I don't recognize…
+          Who were these people?
+    - speaker: self
+      mood: curious
+      text:
+        fr: Le sol est jonché de pierres taillées et d'objets à moitié enfouis. Chaque
+          coup de pioche pourrait révéler un fragment du passé… ou déclencher quelque
+          chose de dormant.
+        en: The ground is strewn with carved stones and half-buried objects. Every
+          strike of the pickaxe could reveal a fragment of the past… or awaken something
+          dormant.
+    - speaker: self
+      mood: determined
+      text:
+        fr: Cette civilisation a disparu pour une raison. Je trouverai laquelle.
+        en: This civilization vanished for a reason. I'll find out which one.
+- level: 18
+  xp_required: 21000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 3500
+  story_events:
+  - id: level_18_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: worried
+      text:
+        fr: Les villageois m'ont déconseillé d'aller plus loin vers l'est. Ils parlent
+          d'une forêt où les arbres bougent tout seuls et où les lumières dansent
+          la nuit. Je dois y aller.
+        en: The villagers warned me not to go further east. They speak of a forest
+          where trees move on their own and lights dance at night. I have to go.
+- level: 19
+  xp_required: 30000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 4000
+  - type: card
+    card_key: land_haunted_forest
+  - type: currency
+    currency: premium
+    amount: 5
+  story_events:
+  - id: unlock_haunted_forest_card
+    trigger: on_level_reached
+    land_key: land_haunted_forest
+    show_once: true
+    modal_variant: centered
+    pages:
+    - speaker: self
+      mood: worried
+      text:
+        fr: Les arbres ici sont noirs jusqu'à la moelle. L'air sent la cendre froide
+          et quelque chose d'autre… quelque chose que je n'arrive pas à nommer.
+        en: The trees here are black to the core. The air smells of cold ash and something
+          else… something I can't quite name.
+    - speaker: self
+      mood: curious
+      text:
+        fr: Des silhouettes glissent entre les branches. Ce ne sont pas des animaux.
+          Ni des humains. Mais elles ne semblent pas hostiles… pour l'instant.
+        en: Shapes slip between the branches. They're not animals. Not humans either.
+          But they don't seem hostile… for now.
+    - speaker: self
+      mood: determined
+      text:
+        fr: Bois maudit, essences fantômes, reliques corrompues… Je récolterai tout.
+          Cette forêt hantée ne me fait pas peur.
+        en: Cursed wood, ghost essences, corrupted relics… I'll gather it all. This
+          haunted forest doesn't scare me.
+- level: 20
+  xp_required: 45000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 5000
+  - type: currency
+    currency: premium
+    amount: 10
+  story_events:
+  - id: level_20_final
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: full
+    pages:
+    - speaker: self
+      mood: determined
+      text:
+        fr: J'ai parcouru chaque recoin de cette île. La forêt, la plage, les grottes,
+          le désert, le temple, les terres jurassiques, les terres gelées, les ruines,
+          la forêt hantée…
+        en: I've explored every corner of this island. The forest, the beach, the
+          caves, the desert, the temple, the jurassic lands, the frozen lands, the
+          ruins, the haunted forest…
+    - speaker: self
+      mood: surprised
+      text:
+        fr: Et pourtant… j'ai l'impression que ce n'est pas la fin. Cette île respire,
+          comme si elle attendait quelque chose. Ou quelqu'un.
+        en: And yet… I feel like this isn't the end. This island breathes, as if it's
+          waiting for something. Or someone.
+    - speaker: self
+      mood: thinking
+      text:
+        fr: Ce que j'ai appris ici changera tout. Ma prochaine aventure commence maintenant.
+        en: What I've learned here will change everything. My next adventure begins
+          now.

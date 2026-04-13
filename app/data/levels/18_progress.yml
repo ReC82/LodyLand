@@ -1,0 +1,18 @@
+levels:
+- level: 18
+  xp_required: 21000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 3500
+  story_events:
+  - id: level_18_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: worried
+      text:
+        fr: "Les villageois m'ont déconseillé d'aller plus loin vers l'est. Ils parlent d'une forêt où les arbres bougent tout seuls et où les lumières dansent la nuit. Je dois y aller."
+        en: "The villagers warned me not to go further east. They speak of a forest where trees move on their own and lights dance at night. I have to go."

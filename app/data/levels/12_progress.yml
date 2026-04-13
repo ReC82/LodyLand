@@ -1,0 +1,18 @@
+levels:
+- level: 12
+  xp_required: 2200
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 1200
+  story_events:
+  - id: level_12_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: "Le temple m'a appris beaucoup de choses… mais j'ai l'impression que cette île cache encore bien des mystères. Il paraît qu'il existerait des terres encore plus lointaines."
+        en: "The temple taught me a lot… but I feel this island still hides many mysteries. They say there are lands even further away."

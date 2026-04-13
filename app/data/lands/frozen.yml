@@ -1,0 +1,74 @@
+frozen:
+  card_key: land_frozen
+  label: "Terres Gelées"
+  short_description: "Un vaste territoire recouvert de glace et de neige"
+  full_description: land_frozen_description
+
+  starting_land: false
+  slots: 3
+  slot_icon: static/assets/img/lands/nopic_slot.png
+  logo: static/assets/img/lands/frozen_logo.png
+
+  additional_slot_base_cost_diams: 35
+  additional_slot_cost_multiplier: 1.6
+
+  xp_per_collect: 6
+
+  tools:
+    any:
+      extra_loot:
+        - resource: ice_shard
+          chance: 0.03
+          min: 1
+          max: 1
+    hands:
+      label: "Mains nues"
+      emoji: "🤲"
+      cooldown_seconds: 35
+      xp_multiplier: 1.0
+      base_loot:
+        - resource: frost_bark
+          chance: 1.0
+          min: 1
+          max: 2
+      extra_loot:
+        - resource: snowflake
+          chance: 0.3
+          min: 1
+          max: 1
+
+    tool_wooden_pickaxe:
+      label: "Pioche en bois"
+      emoji: "⛏️"
+      cooldown_seconds: 60
+      xp_multiplier: 1.2
+      base_loot:
+        - resource: ice_block
+          chance: 1.0
+          min: 1
+          max: 2
+      extra_loot:
+        - resource: ice_shard
+          chance: 0.12
+          min: 1
+          max: 1
+
+    tool_iron_pickaxe:
+      label: "Pioche en fer"
+      emoji: "⛏️"
+      cooldown_seconds: 140
+      xp_multiplier: 1.5
+      base_loot:
+        - resource: ice_block
+          chance: 1.0
+          min: 2
+          max: 4
+      extra_loot:
+        - resource: ice_shard
+          chance: 0.2
+          min: 1
+          max: 2
+        - resource: frozen_crystal
+          chance: 0.06
+          min: 1
+          max: 1

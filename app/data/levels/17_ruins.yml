@@ -1,0 +1,34 @@
+levels:
+- level: 17
+  xp_required: 14500
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 3000
+  - type: card
+    card_key: land_ruins
+  - type: currency
+    currency: premium
+    amount: 4
+  story_events:
+  - id: unlock_ruins_card
+    trigger: on_level_reached
+    land_key: land_ruins
+    show_once: true
+    modal_variant: centered
+    pages:
+    - speaker: self
+      mood: observing
+      text:
+        fr: "Des colonnes brisées, des murs effondrés, des inscriptions dans une langue que je ne reconnais pas… Qui étaient ces gens ?"
+        en: "Broken columns, collapsed walls, inscriptions in a language I don't recognize… Who were these people?"
+    - speaker: self
+      mood: curious
+      text:
+        fr: "Le sol est jonché de pierres taillées et d'objets à moitié enfouis. Chaque coup de pioche pourrait révéler un fragment du passé… ou déclencher quelque chose de dormant."
+        en: "The ground is strewn with carved stones and half-buried objects. Every strike of the pickaxe could reveal a fragment of the past… or awaken something dormant."
+    - speaker: self
+      mood: determined
+      text:
+        fr: "Cette civilisation a disparu pour une raison. Je trouverai laquelle."
+        en: "This civilization vanished for a reason. I'll find out which one."
