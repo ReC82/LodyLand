@@ -170,8 +170,8 @@
 /* Icône de carte + badge "owned" */
 .shop-card-icon {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 96px;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -179,8 +179,8 @@
 }
 
 .shop-card-icon img {
-  max-width: 72px;
-  max-height: 72px;
+  max-width: 88px;
+  max-height: 88px;
   display: block;
   object-fit: contain;
 }
@@ -228,6 +228,11 @@
 .shop-card-desc {
   font-size: 0.82rem;
   color: #9ca3af;
+  height: 3.2rem;
+  overflow-y: auto;
+  line-height: 1.4;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
 
 /* Colonne droite : prix + bouton */

@@ -13,8 +13,8 @@ let SHOP_STATE_DEFS_BY_KEY = {};
 
 let SHOP_STATE_CARDS_ALL = [];
 
+// Version texte (pour les <option> de select)
 function formatPriceOption(price) {
-  
   if (!price) return "Gratuit";
 
   const parts = [];
@@ -24,6 +24,25 @@ function formatPriceOption(price) {
 
   if (shards) parts.push(`${shards} shards`);
   if (essence) parts.push(`${essence} 💎`);
+
+  Object.entries(resCosts).forEach(([resKey, qty]) => {
+    parts.push(`${qty} ${resKey}`);
+  });
+
+  return parts.length ? parts.join(" + ") : "Gratuit";
+}
+
+// Version HTML (pour les divs de prix avec icônes)
+function formatPriceHtml(price) {
+  if (!price) return "Gratuit";
+
+  const parts = [];
+  const shards = price.shards || 0;
+  const essence = price.essence || 0;
+  const resCosts = price.resources || {};
+
+  if (shards) parts.push(`${shards} <span class="ui-icon ui-icon-coin"></span>`);
+  if (essence) parts.push(`${essence} <span class="ui-icon ui-icon-diam"></span>`);
 
   Object.entries(resCosts).forEach(([resKey, qty]) => {
     parts.push(`${qty} ${resKey}`);
@@ -383,8 +402,6 @@ function renderCardShopList(cards) {
       const hasMultiplePrices = effectivePrices.length > 1;
       const firstPrice = effectivePrices[0];
 
-      const priceText = formatPriceOption(firstPrice);
-
       let canBuy = true;
       let btnLabel = "Acheter";
 
@@ -406,17 +423,16 @@ function renderCardShopList(cards) {
               .join("")}
           </select>
         `
-        : `<div class="shop-card-price">${priceText}</div>`;
+        : `<div class="shop-card-price">${formatPriceHtml(firstPrice)}</div>`;
+
+      const cardIconSrc = card.icon || "/static/assets/img/cards/card_no_pic.png";
 
           return `
             <div class="shop-card-row ${canBuy ? "" : "shop-card-row-disabled"}" data-card-key="${card.key}">
               <div class="shop-card-main">
                 <div class="shop-card-icon">
-                  ${
-                    card.icon
-                      ? `<img src="${card.icon}" alt="${card.label}" />`
-                      : "🃏"
-                  }
+                  <img src="${cardIconSrc}" alt="${card.label}"
+                       onerror="this.onerror=null;this.src='/static/assets/img/cards/card_no_pic.png';" />
                   ${
                     owned > 0
                       ? `<div class="shop-card-owned-badge">x${owned}</div>`

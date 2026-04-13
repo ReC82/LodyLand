@@ -546,6 +546,14 @@ def village_quests():
 
 
 
+# Hiérarchie des cartes d'accès craft (du plus bas au plus élevé)
+_CRAFT_ACCESS_GROUP: list[str] = [
+    "access_craft_table_basic",
+    "access_craft_table_medium",
+    "access_craft_table_advanced",
+]
+
+
 @frontend_bp.get("/village/shop")
 @login_required
 def village_shop():
@@ -603,21 +611,40 @@ def village_shop():
         if max_owned is None:
             max_owned = cd.card_max_owned
 
-        can_buy = True
-        cant_buy_reason = ""
-        if max_owned is not None and owned_qty >= max_owned:
-            can_buy = False
-            cant_buy_reason = "Tu as déjà cette carte au maximum."
-
         # --- Vérification du prérequis (requires_card) ---
         buy_rules = shop_cfg.get("buy_rules") or {}
         requires_card_key = buy_rules.get("requires_card") or None
         requires_card_label = label_by_key.get(requires_card_key) if requires_card_key else None
 
+        can_buy = True
+        cant_buy_reason = ""
+        button_text = ""  # vide = utilise le défaut du template
+
+        if max_owned is not None and owned_qty >= max_owned:
+            can_buy = False
+            cant_buy_reason = "Tu as déjà cette carte au maximum."
+            button_text = "Déjà possédé"
+
+        # --- Vérification hiérarchie craft access (carte supérieure déjà possédée) ---
+        # Ce check doit passer AVANT requires_card : posséder Advanced rend inutile
+        # l'achat de Basic/Medium même si le prérequis n'est plus satisfait.
+        if can_buy and cd.key in _CRAFT_ACCESS_GROUP:
+            current_tier = _CRAFT_ACCESS_GROUP.index(cd.key)
+            for higher_key in _CRAFT_ACCESS_GROUP[current_tier + 1:]:
+                if owned_by_key.get(higher_key, 0) > 0:
+                    higher_label = label_by_key.get(higher_key, higher_key)
+                    can_buy = False
+                    cant_buy_reason = f"Tu possèdes déjà une version supérieure : {higher_label}."
+                    button_text = "Carte supérieure possédée"
+                    requires_card_key = None
+                    requires_card_label = None
+                    break
+
         if can_buy and requires_card_key and owned_by_key.get(requires_card_key, 0) == 0:
             can_buy = False
             req_label = requires_card_label or requires_card_key
             cant_buy_reason = f"Nécessite la carte « {req_label} »."
+            button_text = "Carte requise manquante"
 
         # --- Type et catégorie de filtre pour les onglets ---
         raw_type = (cd.card_type or "").lower()
@@ -662,6 +689,7 @@ def village_shop():
                 "max_owned": max_owned,
                 "can_buy": can_buy,
                 "cant_buy_reason": cant_buy_reason,
+                "button_text": button_text,
                 "requires_card_key": requires_card_key,
                 "requires_card_label": requires_card_label,
                 "card_gameplay": cd.card_gameplay or {},
