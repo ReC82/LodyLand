@@ -304,6 +304,29 @@
   opacity: 0.75;
 }
 
+/* Timer mm:ss — coin supérieur droit de la tuile */
+.slot-timer {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 4px;
+  padding: 1px 4px;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;          /* caché hors cooldown */
+  transition: opacity 0.2s;
+}
+
+.slot-on-cooldown .slot-timer {
+  opacity: 1;
+}
+
 /* Base cooldown visual */
 .slot-on-cooldown {
   opacity: 0.5;

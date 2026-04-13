@@ -125,6 +125,9 @@
             data-cooldown-duration="{{ cd.duration }}"
           {% endif %}
         >
+          <!-- Timer mm:ss (visible uniquement en cooldown) -->
+          <div class="slot-timer"></div>
+
           <div class="slot-icon">
             <img
               src="{{ url_for('static', filename=state.slot_icon.replace('static/', '')) }}"
