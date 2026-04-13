@@ -566,6 +566,19 @@ def village_shop():
         .all()
     )
 
+    # Lookup label par key (pour afficher les prérequis)
+    label_by_key: dict[str, str] = {
+        cd.key: (cd.card_label or cd.key) for cd in all_defs
+    }
+
+    # Lookup quantité possédée par le joueur (pour vérifier les prérequis)
+    player_cards_rows = (
+        session.query(PlayerCard)
+        .filter_by(player_id=player.id)
+        .all()
+    )
+    owned_by_key: dict[str, int] = {row.card_key: int(row.qty or 0) for row in player_cards_rows}
+
     shop_items: list[dict] = []
 
     for cd in all_defs:
@@ -583,12 +596,7 @@ def village_shop():
         res_costs = price_cfg.get("resources") or {}
 
         # --- Quantité possédée par le joueur ---
-        owned_row = (
-            session.query(PlayerCard)
-            .filter_by(player_id=player.id, card_key=cd.key)
-            .first()
-        )
-        owned_qty = owned_row.qty if owned_row else 0
+        owned_qty = owned_by_key.get(cd.key, 0)
 
         # --- Limites d’achat (max_owned) ---
         max_owned = shop_cfg.get("max_owned")
@@ -600,6 +608,16 @@ def village_shop():
         if max_owned is not None and owned_qty >= max_owned:
             can_buy = False
             cant_buy_reason = "Tu as déjà cette carte au maximum."
+
+        # --- Vérification du prérequis (requires_card) ---
+        buy_rules = shop_cfg.get("buy_rules") or {}
+        requires_card_key = buy_rules.get("requires_card") or None
+        requires_card_label = label_by_key.get(requires_card_key) if requires_card_key else None
+
+        if can_buy and requires_card_key and owned_by_key.get(requires_card_key, 0) == 0:
+            can_buy = False
+            req_label = requires_card_label or requires_card_key
+            cant_buy_reason = f"Nécessite la carte « {req_label} »."
 
         # --- Type et catégorie de filtre pour les onglets ---
         raw_type = (cd.card_type or "").lower()
@@ -644,6 +662,8 @@ def village_shop():
                 "max_owned": max_owned,
                 "can_buy": can_buy,
                 "cant_buy_reason": cant_buy_reason,
+                "requires_card_key": requires_card_key,
+                "requires_card_label": requires_card_label,
                 "card_gameplay": cd.card_gameplay or {},
                 # NEW: used by filters/search
                 "card_type": raw_type,

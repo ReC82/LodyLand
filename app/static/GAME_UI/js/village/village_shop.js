@@ -21,13 +21,45 @@ const ITEMS_BY_KEY = {};
 });
 
 // ============================================================
+// Modal d'info / erreur thémée (remplace les alert() natifs)
+// ============================================================
+function showShopInfoModal({ icon = "⚠️", title = "", msg = "" } = {}) {
+  const overlay = document.getElementById("shopInfoOverlay");
+  if (!overlay) { alert(msg); return; }
+  document.getElementById("shopInfoIcon").textContent  = icon;
+  document.getElementById("shopInfoTitle").textContent = title;
+  document.getElementById("shopInfoMsg").textContent   = msg;
+  overlay.style.display = "flex";
+}
+
+function closeShopInfoModal() {
+  const overlay = document.getElementById("shopInfoOverlay");
+  if (overlay) overlay.style.display = "none";
+}
+
+// ============================================================
 // Init
 // ============================================================
 document.addEventListener("DOMContentLoaded", () => {
   setupFiltersAndSearch();
   setupBuyButtons();
   setupCardModal();
+  setupShopInfoModal();
 });
+
+function setupShopInfoModal() {
+  const overlay = document.getElementById("shopInfoOverlay");
+  const closeBtn = document.getElementById("shopInfoCloseBtn");
+  if (!overlay) return;
+
+  closeBtn?.addEventListener("click", closeShopInfoModal);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeShopInfoModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.style.display === "flex") closeShopInfoModal();
+  });
+}
 
 // ============================================================
 // Buy buttons
@@ -57,12 +89,27 @@ async function handleBuy(btn) {
       btn.disabled = false;
       btn.textContent = oldLabel;
       const errData = r.data || {};
+
       if (errData.error === "prerequisite_card_required") {
-        const reqKey = errData.requires_card || "";
-        const reqLabel = reqKey.replace(/_/g, " ");
-        alert(`Tu dois d'abord posséder la carte "${reqLabel}" pour acheter celle-ci.`);
+        const reqLabel = errData.requires_card_label || (errData.requires_card || "").replace(/_/g, " ");
+        showShopInfoModal({
+          icon: "🔒",
+          title: i18n.err_prereq_title || "Prérequis manquant",
+          msg: (i18n.err_prereq_msg || "Tu dois d'abord posséder la carte :") + " « " + reqLabel + " »",
+        });
+      } else if (errData.error === "craft_access_already_upgraded") {
+        const higherLabel = errData.owns_higher_card_label || (errData.owns_higher_card || "").replace(/_/g, " ");
+        showShopInfoModal({
+          icon: "⬆️",
+          title: i18n.err_upgraded_title || "Déjà amélioré",
+          msg: (i18n.err_upgraded_msg || "Tu possèdes déjà une version supérieure :") + " « " + higherLabel + " »",
+        });
       } else {
-        alert((i18n.buy_error || "Error") + " : " + (errData.error || "?"));
+        showShopInfoModal({
+          icon: "❌",
+          title: i18n.buy_error || "Achat impossible",
+          msg: errData.error || "?",
+        });
       }
       return;
     }
@@ -75,7 +122,11 @@ async function handleBuy(btn) {
     btn.classList.replace("btn-success", "btn-secondary");
   } catch (e) {
     console.error("[village_shop] network error", e);
-    alert(i18n.network_error || "Network error.");
+    showShopInfoModal({
+      icon: "📡",
+      title: i18n.network_error || "Erreur réseau",
+      msg: String(e?.message || e || "?"),
+    });
     btn.disabled = false;
     btn.textContent = oldLabel;
   }
@@ -169,6 +220,18 @@ function populateModal(item) {
     gpBlock.style.display = "";
   } else {
     gpBlock.style.display = "none";
+  }
+
+  // Prérequis d'achat
+  const prereqBlock = document.getElementById("mdl-prereq-block");
+  const prereqName  = document.getElementById("mdl-prereq-name");
+  if (prereqBlock && prereqName) {
+    if (item.requires_card_label) {
+      prereqName.textContent  = item.requires_card_label;
+      prereqBlock.style.display = "";
+    } else {
+      prereqBlock.style.display = "none";
+    }
   }
 
   // Prix

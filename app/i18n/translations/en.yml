@@ -545,6 +545,7 @@ village:
       unavailable: "Unavailable"
       buy: "Buy Card"
       already_owned: "Already owned"
+      requires_card: "Requires:"
 
     filters:
       all: "All"
@@ -567,6 +568,11 @@ village:
       bought: "Bought ✔"
       buy_error: "Purchase failed"
       network_error: "Network error during purchase."
+      requires_card_label: "Requires card"
+      err_prereq_title: "Missing prerequisite"
+      err_prereq_msg: "You must first own the card:"
+      err_upgraded_title: "Already upgraded"
+      err_upgraded_msg: "You already own a higher-tier version:"
 
     gameplay:
       harvest_bonus: "Harvest bonus"

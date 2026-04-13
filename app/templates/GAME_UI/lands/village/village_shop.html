@@ -129,11 +129,13 @@
         {% set icon        = offer.icon or "" %}
         {% set filter_type = offer.filter_type or "other" %}
         {% set search_text = offer.search_text or "" %}
-        {% set owned_qty   = offer.owned_qty or 0 %}
-        {% set price_coins = offer.price_coins or 0 %}
-        {% set price_diams = offer.price_diams or 0 %}
-        {% set can_buy     = offer.can_buy %}
-        {% set stock_disabled = offer.stock is not none and offer.stock <= 0 %}
+        {% set owned_qty        = offer.owned_qty or 0 %}
+        {% set price_coins      = offer.price_coins or 0 %}
+        {% set price_diams      = offer.price_diams or 0 %}
+        {% set can_buy          = offer.can_buy %}
+        {% set stock_disabled   = offer.stock is not none and offer.stock <= 0 %}
+        {% set req_card_label   = offer.requires_card_label or "" %}
+        {% set req_card_key     = offer.requires_card_key or "" %}
 
         <article
           class="vs-offer-card"
@@ -174,6 +176,9 @@
               {% if price_coins == 0 and price_diams == 0 %}
                 <span class="vs-price-pill vs-price-pill-free">{{ t("village.shop_page.offer.free") }}</span>
               {% endif %}
+              {% if req_card_label %}
+                <span class="vs-prereq-badge">{{ t("village.shop_page.offer.requires_card") }} {{ req_card_label }}</span>
+              {% endif %}
             </div>
 
             {% if owned_qty > 0 %}
@@ -208,6 +213,24 @@
 </div>
 
 <!-- ================================================================
+     Modal d'information / erreur thémée (remplace les alert JS)
+     ================================================================ -->
+<div id="shopInfoOverlay" style="display:none; position:fixed; inset:0; z-index:1200; background:rgba(0,0,0,.75); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem;">
+  <div id="shopInfoModal" style="background:linear-gradient(135deg,#1e293b,#0f172a); color:#e2e8f0; border-radius:16px; width:100%; max-width:360px; box-shadow:0 8px 40px rgba(0,0,0,.7); border:1px solid rgba(255,255,255,.08); overflow:hidden;">
+    <div style="padding:1.5rem 1.5rem 1rem; display:flex; flex-direction:column; align-items:center; gap:.75rem; text-align:center;">
+      <div id="shopInfoIcon" style="font-size:2.2rem; line-height:1;">⚠️</div>
+      <div id="shopInfoTitle" style="font-size:1rem; font-weight:700; color:#f1f5f9;"></div>
+      <div id="shopInfoMsg" style="font-size:.875rem; color:#94a3b8; line-height:1.5;"></div>
+    </div>
+    <div style="padding:.75rem 1.5rem 1.25rem;">
+      <button id="shopInfoCloseBtn" style="width:100%; padding:.5rem; border-radius:8px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#cbd5e1; font-size:.875rem; font-weight:600; cursor:pointer; transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+        {{ t("village.shop_page.modal.close") }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
      Overlay + modal détail carte (vanilla JS, sans Bootstrap Modal)
      ================================================================ -->
 <div id="cardDetailOverlay" style="display:none; position:fixed; inset:0; z-index:1050; background:rgba(0,0,0,.7); align-items:center; justify-content:center; padding:1rem;">
@@ -233,6 +256,12 @@
       <div id="mdl-gameplay-block" style="display:none; background:rgba(250,204,21,.08); border:1px solid rgba(250,204,21,.3); border-radius:8px; padding:.6rem .8rem; margin-bottom:.75rem;">
         <div style="font-size:.75rem; font-weight:700; color:#facc15; margin-bottom:.3rem;">{{ t("village.shop_page.modal.effect_label") }}</div>
         <div id="mdl-gameplay-content" style="font-size:.85rem; color:#ddd;"></div>
+      </div>
+
+      <!-- Prérequis d'achat -->
+      <div id="mdl-prereq-block" style="display:none; background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.35); border-radius:8px; padding:.5rem .8rem; margin-bottom:.75rem; font-size:.82rem; color:#93c5fd;">
+        <span style="font-weight:700;">{{ t("village.shop_page.modal.requires_card_label") }} :</span>
+        <span id="mdl-prereq-name"></span>
       </div>
 
       <!-- Prix -->
@@ -268,12 +297,17 @@
   window.VS_ITEMS = {{ shop_items | tojson }};
   window.VS_I18N = {
     modal: {
-      buy:          {{ t("village.shop_page.modal.buy")         | tojson }},
-      unavailable:  {{ t("village.shop_page.modal.unavailable") | tojson }},
-      buying:       {{ t("village.shop_page.modal.buying")      | tojson }},
-      bought:       {{ t("village.shop_page.modal.bought")      | tojson }},
-      buy_error:    {{ t("village.shop_page.modal.buy_error")   | tojson }},
-      network_error:{{ t("village.shop_page.modal.network_error")| tojson }}
+      buy:                  {{ t("village.shop_page.modal.buy")                   | tojson }},
+      unavailable:          {{ t("village.shop_page.modal.unavailable")           | tojson }},
+      buying:               {{ t("village.shop_page.modal.buying")                | tojson }},
+      bought:               {{ t("village.shop_page.modal.bought")                | tojson }},
+      buy_error:            {{ t("village.shop_page.modal.buy_error")             | tojson }},
+      network_error:        {{ t("village.shop_page.modal.network_error")         | tojson }},
+      requires_card_label:  {{ t("village.shop_page.modal.requires_card_label")   | tojson }},
+      err_prereq_title:     {{ t("village.shop_page.modal.err_prereq_title")      | tojson }},
+      err_prereq_msg:       {{ t("village.shop_page.modal.err_prereq_msg")        | tojson }},
+      err_upgraded_title:   {{ t("village.shop_page.modal.err_upgraded_title")    | tojson }},
+      err_upgraded_msg:     {{ t("village.shop_page.modal.err_upgraded_msg")      | tojson }}
     },
     gameplay: {
       harvest_bonus:  {{ t("village.shop_page.gameplay.harvest_bonus")  | tojson }},
