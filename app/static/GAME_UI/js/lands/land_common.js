@@ -314,19 +314,27 @@
       if (!iso) return false;
 
       const durationSec = Number(slot.dataset.cooldownDuration || "0");
-      const statusEl = slot.querySelector(".slot-status");
-      const barFill = slot.querySelector(".slot-cooldown-fill");
+      const statusEl  = slot.querySelector(".slot-status");
+      const barFill   = slot.querySelector(".slot-cooldown-fill");
+      const timerEl   = slot.querySelector(".slot-timer");
 
       const now = Date.now();
       const msEnd = new Date(iso).getTime();
       const diffSec = Math.ceil((msEnd - now) / 1000);
 
-      // Text
+      // Texte de statut
       if (statusEl) {
+        statusEl.textContent = diffSec > 0 ? "Cooldown…" : "Prêt à fouiller.";
+      }
+
+      // Timer mm:ss en coin supérieur droit
+      if (timerEl) {
         if (diffSec > 0) {
-          statusEl.textContent = `Cooldown : ${diffSec}s`;
+          const m = Math.floor(diffSec / 60);
+          const s = diffSec % 60;
+          timerEl.textContent = `${m}:${String(s).padStart(2, "0")}`;
         } else {
-          statusEl.textContent = "Prêt à fouiller.";
+          timerEl.textContent = "";
         }
       }
 
@@ -345,9 +353,8 @@
         slot.classList.remove("slot-on-cooldown");
         delete slot.dataset.cooldownUntil;
         delete slot.dataset.cooldownDuration;
-        if (barFill) {
-          barFill.style.transform = "scaleX(0)";
-        }
+        if (barFill) barFill.style.transform = "scaleX(0)";
+        if (timerEl) timerEl.textContent = "";
         return false;
       }
     }
