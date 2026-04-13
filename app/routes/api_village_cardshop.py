@@ -16,6 +16,15 @@ from app.models import CardDef, PlayerCard  # 👈 important
 
 bp = Blueprint("village_cardshop", __name__)
 
+# Cartes d'accès craft ordonnées du plus bas au plus haut niveau.
+# Un joueur ne peut posséder qu'une seule de ces cartes à la fois.
+# Acheter un niveau supérieur retire automatiquement la carte du niveau précédent.
+CRAFT_ACCESS_GROUP: list[str] = [
+    "access_craft_table_basic",
+    "access_craft_table_medium",
+    "access_craft_table_advanced",
+]
+
 
 # ---------------------------------------------------------------------------
 # POST /api/village/cardshop/buy
@@ -96,11 +105,35 @@ def api_village_cardshop_buy():
                 .count()
             ) > 0
             if not has_prereq:
+                # Trouver le label lisible de la carte prérequise
+                req_cd = session.query(CardDef).filter_by(key=requires_card).first()
+                req_label = req_cd.card_label if req_cd else requires_card.replace("_", " ").title()
                 return jsonify({
                     "ok": False,
                     "error": "prerequisite_card_required",
                     "requires_card": requires_card,
+                    "requires_card_label": req_label,
                 }), 400
+
+        # Vérification groupe craft access : on ne peut pas acheter une carte
+        # si on possède déjà une carte de niveau supérieur du même groupe.
+        if offer_key in CRAFT_ACCESS_GROUP:
+            current_tier = CRAFT_ACCESS_GROUP.index(offer_key)
+            for higher_key in CRAFT_ACCESS_GROUP[current_tier + 1:]:
+                owns_higher = (
+                    session.query(PlayerCard)
+                    .filter_by(player_id=player.id, card_key=higher_key)
+                    .count()
+                ) > 0
+                if owns_higher:
+                    higher_cd = session.query(CardDef).filter_by(key=higher_key).first()
+                    higher_label = higher_cd.card_label if higher_cd else higher_key.replace("_", " ").title()
+                    return jsonify({
+                        "ok": False,
+                        "error": "craft_access_already_upgraded",
+                        "owns_higher_card": higher_key,
+                        "owns_higher_card_label": higher_label,
+                    }), 400
 
         # (optionnel) Ressources requises -> à implémenter plus tard
         if res_costs:
@@ -126,7 +159,19 @@ def api_village_cardshop_buy():
                 {"ok": False, "error": reason or "cannot_grant_card"}
             ), 400
 
-        # 6) Déduction du prix
+        # 6) Groupe craft access : retirer les cartes de niveau inférieur
+        if offer_key in CRAFT_ACCESS_GROUP:
+            current_tier = CRAFT_ACCESS_GROUP.index(offer_key)
+            for lower_key in CRAFT_ACCESS_GROUP[:current_tier]:
+                lower_row = (
+                    session.query(PlayerCard)
+                    .filter_by(player_id=player.id, card_key=lower_key)
+                    .first()
+                )
+                if lower_row:
+                    session.delete(lower_row)
+
+        # 7) Déduction du prix
         player.shards -= price_shards
         player.essence -= price_essence
 

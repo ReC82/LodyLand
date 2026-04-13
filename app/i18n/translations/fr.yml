@@ -537,6 +537,7 @@ village:
       unavailable: "Indisponible"
       buy: "Acheter la carte"
       already_owned: "Déjà possédé"
+      requires_card: "Nécessite :"
 
     filters:
       all: "Tous"
@@ -559,6 +560,11 @@ village:
       bought: "Acheté ✔"
       buy_error: "Achat impossible"
       network_error: "Erreur réseau pendant l'achat."
+      requires_card_label: "Nécessite la carte"
+      err_prereq_title: "Prérequis manquant"
+      err_prereq_msg: "Tu dois d'abord posséder la carte :"
+      err_upgraded_title: "Déjà amélioré"
+      err_upgraded_msg: "Tu possèdes déjà une version supérieure :"
 
     gameplay:
       harvest_bonus: "Bonus récolte"
