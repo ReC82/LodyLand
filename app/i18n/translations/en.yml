@@ -527,8 +527,8 @@ village:
       rotation_weekly: "Weekly rotation"
       limited_qty: "Some cards are limited in quantity"
       prices_hint_prefix: "Prices can be in"
-      coins: "coins"
-      diams: "diams"
+      coins: "shards"
+      diams: "essence"
       or: "or"
 
     search_placeholder: "Search a card..."

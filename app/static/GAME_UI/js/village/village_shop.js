@@ -191,13 +191,10 @@ function populateModal(item) {
   // Image
   const imgWrap = document.getElementById("mdl-img-wrap");
   const img     = document.getElementById("mdl-img");
-  if (item.icon) {
-    img.src = item.icon;
-    img.alt = item.title || "";
-    imgWrap.style.display = "";
-  } else {
-    imgWrap.style.display = "none";
-  }
+  img.src = item.icon || "/static/assets/img/cards/card_no_pic.png";
+  img.alt = item.title || "";
+  img.onerror = function() { this.onerror = null; this.src = "/static/assets/img/cards/card_no_pic.png"; };
+  imgWrap.style.display = "";
 
   // Rareté
   const rarity   = (item.rarity || "").toLowerCase();

@@ -519,8 +519,8 @@ village:
       rotation_weekly: "Rotation hebdomadaire"
       limited_qty: "Certaines cartes sont en quantité limitée"
       prices_hint_prefix: "Les prix peuvent être en"
-      coins: "coins"
-      diams: "diams"
+      coins: "shards"
+      diams: "essence"
       or: "ou"
 
     search_placeholder: "Rechercher une carte..."

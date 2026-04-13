@@ -17,7 +17,8 @@
   background-image: url("/static/assets/img/ui/coins.png");
 }
 
-.ui-icon-diam {
+.ui-icon-diam,
+.ui-icon-diams {
   width: 16px;
   height: 16px;
   background-image: url("/static/assets/img/ui/diams.png");

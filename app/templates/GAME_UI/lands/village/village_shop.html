@@ -136,6 +136,7 @@
         {% set stock_disabled   = offer.stock is not none and offer.stock <= 0 %}
         {% set req_card_label   = offer.requires_card_label or "" %}
         {% set req_card_key     = offer.requires_card_key or "" %}
+        {% set button_text      = offer.button_text or "" %}
 
         <article
           class="vs-offer-card"
@@ -147,23 +148,22 @@
           <div class="vs-offer-header">
             <div class="vs-offer-icon-wrap">
               {% if icon %}
-                <img src="{{ icon }}" alt="{{ title }}" class="vs-offer-icon">
+                <img src="{{ icon }}" alt="{{ title }}" class="vs-offer-icon"
+                     onerror="this.onerror=null;this.src='/static/assets/img/cards/card_no_pic.png';">
               {% else %}
-                <div class="vs-offer-icon-fallback">🃏</div>
-              {% endif %}
-              {% if rarity %}
-                <div class="vs-offer-rarity vs-offer-rarity-{{ rarity|lower }}">{{ rarity }}</div>
+                <img src="/static/assets/img/cards/card_no_pic.png" alt="{{ title }}" class="vs-offer-icon">
               {% endif %}
             </div>
             <div class="vs-offer-title-block">
               <div class="vs-offer-title">{{ title }}</div>
               <div class="vs-offer-subtitle text-muted">{{ t("village.shop_page.offer.subtitle_card") }}</div>
+              {% if rarity %}
+                <div class="vs-offer-rarity vs-offer-rarity-{{ rarity|lower }}">{{ rarity }}</div>
+              {% endif %}
             </div>
           </div>
 
-          {% if desc %}
-            <p class="vs-offer-desc text-muted mb-2">{{ desc }}</p>
-          {% endif %}
+          <p class="vs-offer-desc text-muted mb-0">{{ desc or "" }}</p>
 
           <div class="vs-offer-footer">
             <div class="vs-offer-price">
@@ -176,16 +176,7 @@
               {% if price_coins == 0 and price_diams == 0 %}
                 <span class="vs-price-pill vs-price-pill-free">{{ t("village.shop_page.offer.free") }}</span>
               {% endif %}
-              {% if req_card_label %}
-                <span class="vs-prereq-badge">{{ t("village.shop_page.offer.requires_card") }} {{ req_card_label }}</span>
-              {% endif %}
             </div>
-
-            {% if owned_qty > 0 %}
-              <div class="vs-offer-meta text-muted small">
-                {{ t("village.shop_page.offer.owned_qty") }} : {{ owned_qty }}
-              </div>
-            {% endif %}
 
             <div class="vs-offer-actions">
               <button
@@ -197,7 +188,7 @@
                 {% if stock_disabled %}
                   {{ t("village.shop_page.offer.unavailable") }}
                 {% elif not can_buy %}
-                  {{ t("village.shop_page.offer.already_owned") }}
+                  {% if button_text %}{{ button_text }}{% else %}{{ t("village.shop_page.offer.already_owned") }}{% endif %}
                 {% else %}
                   {{ t("village.shop_page.offer.buy") }}
                 {% endif %}

@@ -378,22 +378,22 @@
 
 .vs-offer-icon-wrap {
   position: relative;
-  width: 56px;
+  width: 84px;
   flex-shrink: 0;
 }
 
 .vs-offer-icon {
-  width: 100%;
-  height: auto;
+  width: 84px;
+  height: 84px;
   border-radius: 8px;
   display: block;
-  object-fit: contain;
-  image-rendering: pixelated;
+  object-fit: cover;
+  object-position: center top;
 }
 
 .vs-offer-icon-fallback {
-  width: 56px;
-  height: 56px;
+  width: 84px;
+  height: 84px;
   border-radius: 12px;
   background: radial-gradient(circle at 30% 20%, #facc15, #7c2d12);
   display: flex;
@@ -402,15 +402,14 @@
   font-size: 1.6rem;
 }
 
-/* Badge de rareté (coin en haut à gauche) */
+/* Badge de rareté (inline sous le sous-titre, ne couvre plus l'image) */
 .vs-offer-rarity {
-  position: absolute;
-  left: -4px;
-  top: -6px;
-  padding: 0.1rem 0.5rem;
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.05rem 0.4rem;
   border-radius: 999px;
-  font-size: 0.7rem;
-  letter-spacing: 0.03em;
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   background: rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(148, 163, 184, 0.8);
@@ -452,16 +451,24 @@
   font-size: 0.85rem;
 }
 
-/* Description */
+/* Description — hauteur fixe + ascenseur si texte long */
 .vs-offer-desc {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  flex: 1;
+  min-height: 2.8rem;
+  max-height: 3.5rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }
 
-/* Footer : prix + méta + bouton */
+/* Footer : prix + bouton — toujours au bas de la carte */
 .vs-offer-footer {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  margin-top: auto;
 }
 
 /* Prix */
