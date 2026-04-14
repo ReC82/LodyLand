@@ -183,7 +183,7 @@ cave:
         min: 1
         max: 3
 desert:
-  card_key: land_desert
+  key: land_desert
   label: Desert
   short_description: The great desert
   full_description: land_desert_description
@@ -254,9 +254,8 @@ desert:
         chance: 0.1
         min: 1
         max: 1
-  key: desert
 forest:
-  card_key: land_forest
+  key: land_forest
   label: Forest
   short_description: A simple forest
   full_description: land_forest_description
@@ -395,9 +394,8 @@ forest:
         chance: 0.05
         min: 1
         max: 1
-  key: forest
 frozen:
-  card_key: land_frozen
+  key: land_frozen
   label: Terres Gelées
   short_description: Un vaste territoire recouvert de glace et de neige
   full_description: land_frozen_description
@@ -464,9 +462,8 @@ frozen:
         chance: 0.06
         min: 1
         max: 1
-  key: frozen
 haunted_forest:
-  card_key: land_haunted_forest
+  key: land_haunted_forest
   label: Forêt Hantée
   short_description: Une forêt sombre envahie de créatures spectrales
   full_description: land_haunted_forest_description
@@ -533,9 +530,8 @@ haunted_forest:
         chance: 0.04
         min: 1
         max: 1
-  key: haunted_forest
 jurassic:
-  card_key: land_jurassic
+  key: land_jurassic
   label: Jurassic
   short_description: Une terre primitive
   full_description: land_jurassic_description
@@ -602,9 +598,8 @@ jurassic:
         chance: 0.05
         min: 1
         max: 1
-  key: jurassic
 ruins:
-  card_key: land_ruins
+  key: land_ruins
   label: Ruines
   short_description: Les vestiges d'une civilisation oubliée
   full_description: land_ruins_description
@@ -671,4 +666,3 @@ ruins:
         chance: 0.04
         min: 1
         max: 1
-  key: ruins

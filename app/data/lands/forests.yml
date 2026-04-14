@@ -1,5 +1,5 @@
 forest:
-  card_key: land_forest
+  key: land_forest
   label: "Forest"
   short_description: "A simple forest"
   full_description: land_forest_description

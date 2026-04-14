@@ -1,5 +1,5 @@
 ruins:
-  card_key: land_ruins
+  key: land_ruins
   label: "Ruines"
   short_description: "Les vestiges d'une civilisation oubliée"
   full_description: land_ruins_description

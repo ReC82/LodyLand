@@ -1,5 +1,5 @@
 jurassic:
-  card_key: land_jurassic
+  key: land_jurassic
   label: "Jurassic"
   short_description: "Une terre primitive"
   full_description: land_jurassic_description

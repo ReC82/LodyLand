@@ -1,5 +1,5 @@
 frozen:
-  card_key: land_frozen
+  key: land_frozen
   label: "Terres Gelées"
   short_description: "Un vaste territoire recouvert de glace et de neige"
   full_description: land_frozen_description

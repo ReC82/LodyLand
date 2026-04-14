@@ -1,5 +1,5 @@
 haunted_forest:
-  card_key: land_haunted_forest
+  key: land_haunted_forest
   label: "Forêt Hantée"
   short_description: "Une forêt sombre envahie de créatures spectrales"
   full_description: land_haunted_forest_description
