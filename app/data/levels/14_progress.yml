@@ -1,0 +1,18 @@
+levels:
+- level: 14
+  xp_required: 4800
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 1800
+  story_events:
+  - id: level_14_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: "Je sens un froid inhabituel venant du nord de l'île. Quelque chose d'immense et de silencieux m'attend là-bas."
+        en: "I feel an unusual cold coming from the north of the island. Something vast and silent awaits me there."

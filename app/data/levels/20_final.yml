@@ -1,0 +1,31 @@
+levels:
+- level: 20
+  xp_required: 45000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 5000
+  - type: currency
+    currency: premium
+    amount: 10
+  story_events:
+  - id: level_20_final
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: full
+    pages:
+    - speaker: self
+      mood: determined
+      text:
+        fr: "J'ai parcouru chaque recoin de cette île. La forêt, la plage, les grottes, le désert, le temple, les terres jurassiques, les terres gelées, les ruines, la forêt hantée…"
+        en: "I've explored every corner of this island. The forest, the beach, the caves, the desert, the temple, the jurassic lands, the frozen lands, the ruins, the haunted forest…"
+    - speaker: self
+      mood: surprised
+      text:
+        fr: "Et pourtant… j'ai l'impression que ce n'est pas la fin. Cette île respire, comme si elle attendait quelque chose. Ou quelqu'un."
+        en: "And yet… I feel like this isn't the end. This island breathes, as if it's waiting for something. Or someone."
+    - speaker: self
+      mood: thinking
+      text:
+        fr: "Ce que j'ai appris ici changera tout. Ma prochaine aventure commence maintenant."
+        en: "What I've learned here will change everything. My next adventure begins now."

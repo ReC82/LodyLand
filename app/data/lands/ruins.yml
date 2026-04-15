@@ -1,0 +1,74 @@
+ruins:
+  key: land_ruins
+  label: "Ruines"
+  short_description: "Les vestiges d'une civilisation oubliée"
+  full_description: land_ruins_description
+
+  starting_land: false
+  slots: 3
+  slot_icon: static/assets/img/lands/nopic_slot.png
+  logo: static/assets/img/lands/no_logo.png
+
+  additional_slot_base_cost_diams: 40
+  additional_slot_cost_multiplier: 1.7
+
+  xp_per_collect: 7
+
+  tools:
+    any:
+      extra_loot:
+        - resource: rune_fragment
+          chance: 0.04
+          min: 1
+          max: 1
+    hands:
+      label: "Mains nues"
+      emoji: "🤲"
+      cooldown_seconds: 40
+      xp_multiplier: 1.0
+      base_loot:
+        - resource: ancient_stone
+          chance: 1.0
+          min: 1
+          max: 2
+      extra_loot:
+        - resource: dust
+          chance: 0.3
+          min: 1
+          max: 2
+
+    tool_wooden_pickaxe:
+      label: "Pioche en bois"
+      emoji: "⛏️"
+      cooldown_seconds: 70
+      xp_multiplier: 1.3
+      base_loot:
+        - resource: carved_stone
+          chance: 1.0
+          min: 1
+          max: 2
+      extra_loot:
+        - resource: rune_fragment
+          chance: 0.1
+          min: 1
+          max: 1
+
+    tool_iron_pickaxe:
+      label: "Pioche en fer"
+      emoji: "⛏️"
+      cooldown_seconds: 150
+      xp_multiplier: 1.6
+      base_loot:
+        - resource: carved_stone
+          chance: 1.0
+          min: 2
+          max: 4
+      extra_loot:
+        - resource: rune_fragment
+          chance: 0.18
+          min: 1
+          max: 2
+        - resource: lost_relic
+          chance: 0.04
+          min: 1
+          max: 1

@@ -1,5 +1,5 @@
 desert:
-  card_key: land_desert
+  key: land_desert
   label: "Desert"
   short_description: "The great desert"
   full_description: land_desert_description

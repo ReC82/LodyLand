@@ -85,3 +85,111 @@
   card_quantity: 0
   card_purchase_limit_quantity: null
   card_max_owned: 1
+
+- key: jurassic_free_slot
+  enabled: true
+  card_type: land_slot
+  card_category: land
+  card_tags:
+  - jurassic
+  card_label: Slot Jurassique
+  card_description: Débloque un emplacement supplémentaire dans les Terres Jurassiques.
+  card_image: /static/assets/img/lands/nopic_slot.png
+  card_rarity: rare
+  card_gameplay:
+    land: jurassic
+    slots: 1
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 3
+
+- key: frozen_free_slot
+  enabled: true
+  card_type: land_slot
+  card_category: land
+  card_tags:
+  - frozen
+  card_label: Slot Terres Gelées
+  card_description: Débloque un emplacement supplémentaire dans les Terres Gelées.
+  card_image: /static/assets/img/lands/nopic_slot.png
+  card_rarity: rare
+  card_gameplay:
+    land: frozen
+    slots: 1
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 3
+
+- key: ruins_free_slot
+  enabled: true
+  card_type: land_slot
+  card_category: land
+  card_tags:
+  - ruins
+  card_label: Slot Ruines
+  card_description: Débloque un emplacement supplémentaire dans les Ruines.
+  card_image: /static/assets/img/lands/nopic_slot.png
+  card_rarity: epic
+  card_gameplay:
+    land: ruins
+    slots: 1
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 3
+
+- key: haunted_forest_free_slot
+  enabled: true
+  card_type: land_slot
+  card_category: land
+  card_tags:
+  - haunted_forest
+  card_label: Slot Forêt Hantée
+  card_description: Débloque un emplacement supplémentaire dans la Forêt Hantée.
+  card_image: /static/assets/img/lands/nopic_slot.png
+  card_rarity: epic
+  card_gameplay:
+    land: haunted_forest
+    slots: 1
+  shop:
+    prices:
+    - coins: 0
+      diams: 0
+      resources: {}
+    show_in_main_shop: false
+    show_in_village_shop: false
+    buy_rules: null
+  tradable: false
+  giftable: true
+  card_quantity: 0
+  card_purchase_limit_quantity: null
+  card_max_owned: 3

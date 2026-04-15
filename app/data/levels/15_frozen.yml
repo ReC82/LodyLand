@@ -1,0 +1,34 @@
+levels:
+- level: 15
+  xp_required: 7000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 2000
+  - type: card
+    card_key: land_frozen
+  - type: currency
+    currency: premium
+    amount: 3
+  story_events:
+  - id: unlock_frozen_card
+    trigger: on_level_reached
+    land_key: land_frozen
+    show_once: true
+    modal_variant: centered
+    pages:
+    - speaker: self
+      mood: surprised
+      text:
+        fr: "C'est… magnifique. Et glacial. Le sol est recouvert d'une glace ancienne qui réfléchit la lumière comme du verre."
+        en: "It's… beautiful. And freezing. The ground is covered in ancient ice that reflects light like glass."
+    - speaker: self
+      mood: curious
+      text:
+        fr: "Sous cette surface, je vois des formes… des cristaux, des silhouettes figées dans le temps. Cette terre recèle des trésors que personne n'a touchés depuis des siècles."
+        en: "Under the surface, I can see shapes… crystals, figures frozen in time. This land holds treasures no one has touched in centuries."
+    - speaker: self
+      mood: determined
+      text:
+        fr: "Il fait froid, mais j'avance. Les Terres Gelées ne vont pas s'explorer toutes seules."
+        en: "It's cold, but I push on. The Frozen Lands won't explore themselves."

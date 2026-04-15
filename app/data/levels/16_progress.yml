@@ -1,0 +1,18 @@
+levels:
+- level: 16
+  xp_required: 10000
+  rewards:
+  - type: currency
+    currency: primary
+    amount: 2500
+  story_events:
+  - id: level_16_short_thought
+    trigger: on_level_reached
+    show_once: true
+    modal_variant: toast
+    pages:
+    - speaker: self
+      mood: thinking
+      text:
+        fr: "Des vieilles cartes trouvées dans le temple mentionnaient un lieu oublié de tous… des ruines d'une civilisation disparue. Je crois que j'approche."
+        en: "Old maps found in the temple mentioned a place forgotten by all… ruins of a vanished civilization. I think I'm getting close."
