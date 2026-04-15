@@ -1,84 +1,104 @@
 {% extends "ADMIN_UI/layout.html" %}
 
-{% block title %}Admin LodyLand - Dashboard{% endblock %}
+{% block title %}Admin Dashboard - LodyLand{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- UPDATE players SET is_admin = 1 WHERE id = 1; -->
-  <h1 class="h3 mb-4">Admin LodyLand</h1>
-
-  <div class="row g-3">
-
-    <div class="col-md-6 col-lg-4">
-    <div class="card admin-card">
-        <div class="card-body">
-        <h2 class="h5 card-title">Joueurs</h2>
-        <p class="card-text">
-            Liste de tous les joueurs, niveaux et infos de base.
-        </p>
-        <a href="{{ url_for('admin.players_list') }}" class="btn btn-sm btn-primary">
-            Voir les joueurs
-        </a>
+<div class="admin-stats">
+    <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.players }}</div>
+            <div class="stat-label">Total Players</div>
         </div>
     </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">🔐</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.admins }}</div>
+            <div class="stat-label">Admin Users</div>
+        </div>
     </div>
 
-
-    <div class="col-md-6 col-lg-4">
-      <div class="card admin-card">
-        <div class="card-body">
-          <h2 class="h5 card-title">Cartes (YAML)</h2>
-          <p class="card-text">
-            Visualiser et éditer les cartes du jeu.
-          </p>
-          <a href="{{ url_for('admin.cards_list') }}" class="btn btn-sm btn-primary">
-            Voir les cartes
-          </a>
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.resources }}</div>
+            <div class="stat-label">Resources</div>
         </div>
-      </div>
     </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card admin-card">
-        <div class="card-body">
-          <h2 class="h5 card-title">Ressources (YAML)</h2>
-          <p class="card-text">
-            Gestion des ressources et de leurs paramètres.
-          </p>
-          <a href="{{ url_for('admin.resources_list') }}" class="btn btn-sm btn-primary">
-            Voir les ressources
-          </a>
+    <div class="stat-card">
+        <div class="stat-icon">🎴</div>
+        <div class="stat-info">
+            <div class="stat-value">{{ stats.cards }}</div>
+            <div class="stat-label">Cards</div>
         </div>
-      </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card admin-card">
+            <div class="card-body">
+                <h5 class="card-title">👥 Players</h5>
+                <p class="card-text">Manage players, view details, and assign admin roles.</p>
+                <a href="{{ url_for('admin.users_list') }}" class="btn btn-sm btn-primary">View Players</a>
+            </div>
+        </div>
     </div>
 
     <div class="col-md-6 col-lg-4">
-      <div class="card admin-card">
-        <div class="card-body">
-          <h2 class="h5 card-title">Lands (YAML)</h2>
-          <p class="card-text">
-            Configuration des lands, slots, coûts, etc.
-          </p>
-          <a href="{{ url_for('admin.lands_list') }}" class="btn btn-sm btn-primary">
-            Voir les lands
-          </a>
+        <div class="card admin-card">
+            <div class="card-body">
+                <h5 class="card-title">🎴 Cards</h5>
+                <p class="card-text">Edit card definitions, properties, and images.</p>
+                <a href="{{ url_for('admin.cards_list') }}" class="btn btn-sm btn-primary">View Cards</a>
+            </div>
         </div>
-      </div>
     </div>
 
-        <!-- 🌟 NOUVELLE CARTE LEVELS -->
     <div class="col-md-6 col-lg-4">
-      <div class="card admin-card">
-        <div class="card-body">
-          <h2 class="h5 card-title">Levels (YAML)</h2>
-          <p class="card-text">
-            Courbe d’XP et récompenses de niveau.
-          </p>
-          <a href="{{ url_for('admin.levels_list') }}" class="btn btn-sm btn-primary">
-            Voir les levels
-          </a>
+        <div class="card admin-card">
+            <div class="card-body">
+                <h5 class="card-title">📦 Resources</h5>
+                <p class="card-text">Manage in-game resources and their properties.</p>
+                <a href="{{ url_for('admin.resources_list') }}" class="btn btn-sm btn-primary">View Resources</a>
+            </div>
         </div>
-      </div>
     </div>
 
-  </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card admin-card">
+            <div class="card-body">
+                <h5 class="card-title">🗺️ Lands</h5>
+                <p class="card-text">Configure lands, slots, and progression settings.</p>
+                <a href="{{ url_for('admin.lands_list') }}" class="btn btn-sm btn-primary">View Lands</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card admin-card">
+            <div class="card-body">
+                <h5 class="card-title">⚙️ Crafts</h5>
+                <p class="card-text">Edit craft recipes and crafting mechanics.</p>
+                <a href="{{ url_for('admin.crafts_list') }}" class="btn btn-sm btn-primary">View Crafts</a>
+            </div>
+        </div>
+    </div>
+
+    {% if current_player and current_player.admin_role == 'super_admin' %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card admin-card">
+            <div class="card-body">
+                <h5 class="card-title">🔐 Roles</h5>
+                <p class="card-text">Manage admin roles and permissions.</p>
+                <a href="{{ url_for('admin.manage_roles') }}" class="btn btn-sm btn-primary">Manage Roles</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

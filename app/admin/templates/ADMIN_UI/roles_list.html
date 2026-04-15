@@ -1,0 +1,102 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Manage Roles - Admin Panel{% endblock %}
+{% block page_title %}Manage Admin Roles (Super Admin Only){% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Role Definitions -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Role Definitions</h5>
+            </div>
+            <div class="card-body">
+                {% for role_key, role_info in roles.items() %}
+                <div class="mb-4">
+                    <h6 class="text-uppercase">{{ role_info.label }}</h6>
+                    <p class="text-muted small">Key: <code>{{ role_key }}</code></p>
+                    <div class="permissions-list">
+                        {% for perm in role_info.permissions %}
+                        <span class="badge bg-secondary">{{ perm }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Users -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Admin Users ({{ admins | length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if admins %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for admin in admins %}
+                            <tr>
+                                <td><strong>{{ admin.name }}</strong></td>
+                                <td>
+                                    <span class="badge bg-info">{{ admin.admin_role or 'admin' }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {% if admin.admin_role != 'super_admin' %}
+                                        <button class="btn btn-outline-secondary" onclick="changeRole({{ admin.id }}, 'super_admin')">Super</button>
+                                        {% endif %}
+                                        {% if admin.admin_role != 'admin' %}
+                                        <button class="btn btn-outline-secondary" onclick="changeRole({{ admin.id }}, 'admin')">Admin</button>
+                                        {% endif %}
+                                        {% if admin.admin_role != 'artist' %}
+                                        <button class="btn btn-outline-secondary" onclick="changeRole({{ admin.id }}, 'artist')">Artist</button>
+                                        {% endif %}
+                                        <button class="btn btn-outline-danger" onclick="changeRole({{ admin.id }}, '')">Remove</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No admin users assigned yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+function changeRole(playerId, newRole) {
+    if (!confirm('Change role to "' + (newRole || 'user') + '"?')) return;
+
+    fetch('{{ url_for("admin.set_user_role", player_id=0) }}'.replace('/0', '/' + playerId), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({role: newRole})
+    }).then(r => r.json()).then(data => {
+        if (data.ok) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    }).catch(err => {
+        alert('Network error: ' + err);
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

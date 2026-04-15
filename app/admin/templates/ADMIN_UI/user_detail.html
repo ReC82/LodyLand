@@ -1,0 +1,159 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}User: {{ player.name }} - Admin Panel{% endblock %}
+{% block page_title %}User Details - {{ player.name }}{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.users_list') }}" class="btn btn-sm btn-outline-secondary mb-3">← Back to Users</a>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">General Info</h5>
+            </div>
+            <div class="card-body">
+                <dl class="mb-0">
+                    <dt>ID</dt>
+                    <dd>{{ player.id }}</dd>
+                    <dt>Name</dt>
+                    <dd>{{ player.name }}</dd>
+                    <dt>Level</dt>
+                    <dd>{{ player.level }}</dd>
+                    <dt>XP</dt>
+                    <dd>{{ player.xp | round(2) }}</dd>
+                    <dt>Shards (coins)</dt>
+                    <dd>{{ player.shards }}</dd>
+                    <dt>Essence (diams)</dt>
+                    <dd>{{ player.essence }}</dd>
+                    <dt>Daily Streak</dt>
+                    <dd>{{ player.daily_streak }} / Best: {{ player.best_streak }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Account & Admin</h5>
+            </div>
+            <div class="card-body">
+                {% if account %}
+                <dl class="mb-0">
+                    <dt>Email</dt>
+                    <dd>{{ account.email }}</dd>
+                    <dt>Email Verified</dt>
+                    <dd>
+                        {% if account.email_verified %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-warning">No</span>
+                        {% endif %}
+                    </dd>
+                    <dt>Wallet</dt>
+                    <dd>{{ account.wallet_address or '—' }}</dd>
+                </dl>
+                {% else %}
+                <p class="text-muted">No account linked.</p>
+                {% endif %}
+
+                <hr />
+
+                <dl>
+                    <dt>Admin Status</dt>
+                    <dd>
+                        {% if player.is_admin %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </dd>
+                    <dt>Admin Role</dt>
+                    <dd>
+                        {% if player.is_admin %}
+                            <span class="badge bg-info">{{ player.admin_role or 'admin' }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Cards Owned ({{ cards | length }})</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if cards %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Key</th>
+                        <th>Label</th>
+                        <th>Type</th>
+                        <th>Rarity</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pc, cd in cards %}
+                    <tr>
+                        <td><code>{{ pc.card_key }}</code></td>
+                        <td>{{ cd.card_label if cd else '?' }}</td>
+                        <td>{{ cd.card_type if cd else '?' }}</td>
+                        <td>
+                            {% if cd %}
+                                <span class="badge bg-secondary">{{ cd.card_rarity or '-' }}</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ pc.qty }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-muted p-3">No cards owned.</div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Resources ({{ resources | length }})</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if resources %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Key</th>
+                        <th>Label</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rs, rd in resources %}
+                    <tr>
+                        <td><code>{{ rs.resource }}</code></td>
+                        <td>{{ rd.label if rd else '—' }}</td>
+                        <td>{{ rs.qty | round(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-muted p-3">No resources.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

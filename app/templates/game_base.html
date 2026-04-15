@@ -237,6 +237,11 @@
           <button class="game-menu-item" data-action="inventory">
             {{ t("base.menu.inventory") }}
           </button>
+          {% if current_player and current_player.is_admin %}
+          <a href="{{ url_for('admin.admin_dashboard') }}" class="game-menu-item" style="text-decoration: none;">
+            🔐 Admin Panel
+          </a>
+          {% endif %}
         </div>
 
         <div class="game-menu-section">

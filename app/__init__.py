@@ -60,6 +60,25 @@ def create_app() -> Flask:
             theme = "light"
         return {"current_theme": theme}
 
+    @app.context_processor
+    def inject_current_player():
+        """Inject current_player into all templates."""
+        from flask import g
+        from .db import SessionLocal
+        from .auth import get_current_player as get_player_from_session
+
+        player = getattr(g, "player", None)
+        if player is None:
+            session = SessionLocal()
+            try:
+                player = get_player_from_session(session)
+                if player:
+                    g.player = player
+            finally:
+                session.close()
+
+        return {"current_player": player}
+
     @app.get("/")
     def index():
         # UI joueur
