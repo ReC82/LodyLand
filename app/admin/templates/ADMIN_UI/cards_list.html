@@ -1,102 +1,124 @@
 {% extends "ADMIN_UI/layout.html" %}
 
-{% block title %}Admin - Cartes (YAML){% endblock %}
+{% block title %}Cards - Admin Panel{% endblock %}
+{% block page_title %}Cards{% endblock %}
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="h3 mb-1">Cartes (cards.yml)</h1>
-      <p class="text-muted mb-0">
-        Source YAML : <code>{{ yaml_path }}</code>
-      </p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Manage Cards</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">+ New Card</button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Key</th>
+                <th>Label</th>
+                <th>Type</th>
+                <th>Rarity</th>
+                <th>Enabled</th>
+                <th>In DB</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in cards %}
+            <tr>
+                <td><code>{{ c.key }}</code></td>
+                <td>{{ c.label }}</td>
+                <td>{{ c.type }}</td>
+                <td>
+                    <span class="badge bg-secondary">{{ c.rarity }}</span>
+                </td>
+                <td>
+                    {% if c.enabled %}
+                        <span class="badge bg-success">Yes</span>
+                    {% else %}
+                        <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if c.in_db %}
+                        <span class="badge bg-success">Yes</span>
+                    {% else %}
+                        <span class="badge bg-warning">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.cards_list') }}" class="btn btn-sm btn-primary">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if not cards %}
+    <div class="alert alert-info">No cards found.</div>
+{% endif %}
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Card</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="key" class="form-label">Key</label>
+                        <input type="text" class="form-control" id="key" name="key" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="label" class="form-label">Label</label>
+                        <input type="text" class="form-control" id="label" name="label" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type</label>
+                        <input type="text" class="form-control" id="type" name="type" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rarity" class="form-label">Rarity</label>
+                        <select class="form-control" id="rarity" name="rarity">
+                            <option value="common">Common</option>
+                            <option value="uncommon">Uncommon</option>
+                            <option value="rare">Rare</option>
+                            <option value="epic">Epic</option>
+                            <option value="legendary">Legendary</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-    <!-- Bouton pour plus tard (création/édition) -->
-      <div>
-        <a
-          href="{{ url_for('admin.card_create') }}"
-          class="btn btn-secondary btn-sm"
-        >
-          + Nouvelle carte
-        </a>
-      </div>
-
-  </div>
-
-  <div class="card admin-card mb-4">
-    <div class="card-body py-2">
-      <p class="mb-1 text-muted">
-        Cette liste lit directement <code>cards.yml</code>.
-        La colonne <strong>DB</strong> indique si la carte existe aussi dans
-        <code>card_defs</code>.
-      </p>
-    </div>
-  </div>
-
-  <table class="table table-sm table-dark table-striped align-middle">
-    <thead>
-      <tr>
-        <th style="width: 20%;">Key</th>
-        <th style="width: 30%;">Label</th>
-        <th style="width: 15%;">Type</th>
-        <th style="width: 10%;">Rareté</th>
-        <th style="width: 10%;">Activée</th>
-        <th style="width: 10%;">DB</th>
-        <th style="width: 5%;">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for c in cards %}
-        <tr>
-          <td><code>{{ c.key }}</code></td>
-          <td>{{ c.label }}</td>
-          <td>{{ c.type }}</td>
-          <td>{{ c.rarity }}</td>
-          <td>
-            {% if c.enabled %}
-              <span class="badge bg-success">Oui</span>
-            {% else %}
-              <span class="badge bg-secondary">Non</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if c.in_db %}
-              <span class="badge bg-success">OK</span>
-            {% else %}
-              <span class="badge bg-warning text-dark">YAML only</span>
-            {% endif %}
-          </td>
-            <td class="text-end">
-            <a
-                href="{{ url_for('admin.card_edit', card_key=c.key) }}"
-                class="btn btn-outline-light btn-sm"
-            >
-                Edit
-            </a>
-            </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  {% if not cards %}
-    <p class="text-muted">Aucune carte dans le fichier YAML.</p>
-  {% endif %}
-
-  {% if db_only_cards %}
-    <hr class="border-secondary" />
-    <h2 class="h5 mt-3">Cartes en DB mais absentes du YAML</h2>
-    <p class="text-muted">
-      Ces cartes existent dans <code>card_defs</code> mais pas dans
-      <code>cards.yml</code>.
-    </p>
-
-    <ul class="mb-0">
-      {% for c in db_only_cards %}
-        <li>
-          <code>{{ c.key }}</code> – {{ c.label or "?" }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+{% block extra_scripts %}
+<script>
+document.getElementById('createForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = {
+        key: document.getElementById('key').value,
+        label: document.getElementById('label').value,
+        type: document.getElementById('type').value,
+        rarity: document.getElementById('rarity').value
+    };
+    fetch('{{ url_for("admin.create_card") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(r => r.json()).then(data => {
+        if (data.ok) location.reload();
+        else alert('Error: ' + data.error);
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

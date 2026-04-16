@@ -1,0 +1,49 @@
+{% extends "ADMIN_UI/layout.html" %}
+
+{% block title %}Edit Land - Admin Panel{% endblock %}
+{% block page_title %}Edit Land: {{ key }}{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.lands_list') }}" class="btn btn-sm btn-outline-secondary mb-3">← Back</a>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Land: {{ key }}</h5>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="label" class="form-label">Label</label>
+                    <input type="text" class="form-control" id="label" name="label" value="{{ land.get('label', '') }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="description" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="description" name="description" value="{{ land.get('description', '') }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {% if land.get('enabled', True) %}checked{% endif %}>
+                    Enabled
+                </label>
+            </div>
+
+            <div class="mb-3">
+                <label for="json_data" class="form-label">Additional JSON Data</label>
+                <textarea class="form-control" id="json_data" name="json_data" rows="8" style="font-family: monospace;">{{ json_data }}</textarea>
+                <small class="form-text text-muted">Enter valid JSON for additional properties (slots, costs, etc.)</small>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ url_for('admin.lands_list') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
