@@ -24,7 +24,14 @@
             {% for r in resources %}
             <tr>
                 <td><code>{{ r.key }}</code></td>
-                <td>{{ r.label }}</td>
+                <td>
+                  {% if r.label and '.' in r.label and not r.label.startswith('/') %}
+                    <span class="text-muted fst-italic small">{{ r.label }}</span>
+                    <span class="badge bg-warning ms-1" title="Clé i18n non résolue">i18n</span>
+                  {% else %}
+                    {{ r.label }}
+                  {% endif %}
+                </td>
                 <td>{{ r.kind }}</td>
                 <td>
                     {% if r.in_db %}

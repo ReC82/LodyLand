@@ -358,6 +358,9 @@ base:
     title: "Menu"
     close_aria: "Fermer le menu"
     profile_wip: "Profil (En cours)"
+    lands: "Mes terres"
+    inventory: "Inventaire"
+    logout: "Se déconnecter"
 
   travel:
     title: "Voyager vers un land"
