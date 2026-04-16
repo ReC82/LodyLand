@@ -1,35 +1,151 @@
 {% extends "ADMIN_UI/layout.html" %}
 
 {% block title %}Edit Resource - Admin Panel{% endblock %}
-{% block page_title %}Edit Resource: {{ key }}{% endblock %}
+{% block page_title %}Edit Resource: <code>{{ key }}</code>{% endblock %}
 
 {% block content %}
-<a href="{{ url_for('admin.resources_list') }}" class="btn btn-sm btn-outline-secondary mb-3">← Back</a>
+<a href="{{ url_for('admin.resources_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Back to Resources</a>
 
-<div class="card" style="max-width: 600px;">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Resource: {{ key }}</h5>
-    </div>
-    <form method="POST">
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{# Detect if label is an i18n key (has dots, not a path) #}
+{% set label_is_i18n = resource.label and '.' in resource.label and not resource.label.startswith('/') %}
+{% set trans_fr = translations.get('fr', {}) %}
+{% set trans_en = translations.get('en', {}) %}
+
+<form method="POST">
+  <div class="row g-4">
+
+    <!-- Left column: DB fields -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header">
+          <h6 class="mb-0">📦 Données principales <span class="text-muted">(DB)</span></h6>
+        </div>
         <div class="card-body">
-            {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
+
+          <div class="mb-3">
+            <label class="form-label">Key <span class="text-muted">(readonly)</span></label>
+            <input type="text" class="form-control" value="{{ key }}" readonly disabled>
+          </div>
+
+          <div class="mb-3">
+            <label for="kind" class="form-label">Kind</label>
+            <select class="form-control" id="kind" name="kind">
+              {% for opt in ['resource', 'treasure', 'material', 'currency', 'special'] %}
+              <option value="{{ opt }}" {% if resource.kind == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="label" class="form-label">
+              Label direct
+              {% if label_is_i18n %}
+              <span class="badge bg-info ms-1" title="Clé i18n active">i18n: {{ resource.label }}</span>
+              {% endif %}
+            </label>
+            <input type="text" class="form-control" id="label" name="label"
+                   value="{{ resource.label if not label_is_i18n else '' }}"
+                   placeholder="{% if label_is_i18n %}Géré via traductions ci-contre{% else %}Label affiché en jeu{% endif %}">
+            <div class="form-text">Laisse vide si tu utilises les traductions FR/EN.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3"
+                      placeholder="Description affichée en jeu">{{ resource.description or '' }}</textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="icon" class="form-label">Icon path</label>
+            <input type="text" class="form-control" id="icon" name="icon"
+                   value="{{ resource.icon or '' }}"
+                   placeholder="/static/assets/img/items/resources/example.png">
+            {% if resource.icon %}
+            <div class="mt-2">
+              <img src="{{ resource.icon }}" alt="icon" style="height:48px;width:48px;object-fit:contain;background:rgba(255,255,255,0.05);border-radius:6px;padding:4px;">
+            </div>
             {% endif %}
+          </div>
 
-            <div class="mb-3">
-                <label for="label" class="form-label">Label</label>
-                <input type="text" class="form-control" id="label" name="label" value="{{ resource.get('label', '') }}" required>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label for="base_sell_price" class="form-label">Prix de vente</label>
+              <input type="number" class="form-control" id="base_sell_price" name="base_sell_price"
+                     value="{{ resource.base_sell_price or 1 }}" min="0">
             </div>
+            <div class="col-6 mb-3 d-flex align-items-end">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="enabled" name="enabled"
+                       {% if resource.enabled %}checked{% endif %}>
+                <label class="form-check-label" for="enabled">Activé</label>
+              </div>
+            </div>
+          </div>
 
-            <div class="mb-3">
-                <label for="kind" class="form-label">Kind</label>
-                <input type="text" class="form-control" id="kind" name="kind" value="{{ resource.get('kind', 'resource') }}">
-            </div>
         </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{{ url_for('admin.resources_list') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </div>
+
+    <!-- Right column: i18n translations -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header">
+          <h6 class="mb-0">🌐 Traductions i18n</h6>
         </div>
-    </form>
-</div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            Remplis ces champs pour enregistrer des traductions dans <code>fr.yml</code> / <code>en.yml</code>
+            sous la clé <code>items.{{ key }}.*</code>.<br>
+            Le label DB sera automatiquement remplacé par la clé i18n <code>items.{{ key }}.label</code>.
+          </p>
+
+          <!-- FR -->
+          <h6 class="text-warning mb-2">🇫🇷 Français</h6>
+          <div class="mb-3">
+            <label for="label_fr" class="form-label">Label FR</label>
+            <input type="text" class="form-control" id="label_fr" name="label_fr"
+                   value="{{ trans_fr.get('label', '') }}"
+                   placeholder="ex: Branche">
+          </div>
+          <div class="mb-4">
+            <label for="desc_fr" class="form-label">Description FR</label>
+            <textarea class="form-control" id="desc_fr" name="desc_fr" rows="2"
+                      placeholder="ex: Une branche solide...">{{ trans_fr.get('description', '') }}</textarea>
+          </div>
+
+          <!-- EN -->
+          <h6 class="text-info mb-2">🇬🇧 English</h6>
+          <div class="mb-3">
+            <label for="label_en" class="form-label">Label EN</label>
+            <input type="text" class="form-control" id="label_en" name="label_en"
+                   value="{{ trans_en.get('label', '') }}"
+                   placeholder="ex: Branch">
+          </div>
+          <div class="mb-3">
+            <label for="desc_en" class="form-label">Description EN</label>
+            <textarea class="form-control" id="desc_en" name="desc_en" rows="2"
+                      placeholder="ex: A sturdy branch...">{{ trans_en.get('description', '') }}</textarea>
+          </div>
+
+          {% if label_is_i18n %}
+          <div class="alert alert-info py-2 small">
+            ✅ Ce item utilise déjà la clé i18n <code>{{ resource.label }}</code>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+
+  <div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.resources_list') }}" class="btn btn-secondary">Annuler</a>
+  </div>
+</form>
 {% endblock %}

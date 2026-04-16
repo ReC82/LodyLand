@@ -505,11 +505,13 @@ textarea.form-control {
 }
 
 code {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(251, 191, 36, 0.15);
     color: #fbbf24;
-    padding: 0.2rem 0.4rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 0.25rem;
     font-size: 0.85rem;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    font-weight: 600;
 }
 
 .text-muted {

@@ -1,49 +1,415 @@
 {% extends "ADMIN_UI/layout.html" %}
-
 {% block title %}Edit Land - Admin Panel{% endblock %}
-{% block page_title %}Edit Land: {{ key }}{% endblock %}
+{% block page_title %}Edit Land: <code>{{ key }}</code>{% endblock %}
+
+{% block extra_css %}
+<style>
+.section-card { margin-bottom: 1.5rem; }
+.tool-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.tool-card .tool-header {
+  display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem;
+  cursor: pointer; user-select: none;
+}
+.tool-card .tool-header .tool-toggle { font-size: 1.1rem; transition: transform .2s; }
+.tool-card.collapsed .tool-body { display: none; }
+.tool-card.collapsed .tool-toggle { transform: rotate(-90deg); }
+.loot-table { width: 100%; border-collapse: collapse; }
+.loot-table th { font-size: .75rem; color: var(--admin-text-muted); padding: .25rem .5rem; text-align:left; }
+.loot-table td { padding: .25rem .4rem; }
+.loot-table input, .loot-table select { width: 100%; }
+.loot-row td:last-child { width: 36px; text-align:center; }
+.add-loot-btn { font-size: .8rem; padding: .2rem .6rem; }
+.remove-btn { background: none; border: none; color: #ef4444; font-size: 1rem; cursor: pointer; padding: 0; }
+.remove-btn:hover { color: #fca5a5; }
+.tool-key-badge { font-size: .75rem; background: rgba(59,130,246,.2); color: #60a5fa;
+  padding: .15rem .5rem; border-radius: 999px; border: 1px solid rgba(59,130,246,.3); }
+.any-tool-badge { background: rgba(251,191,36,.2); color: #fbbf24; border-color: rgba(251,191,36,.3); }
+.chance-hint { font-size: .7rem; color: var(--admin-text-muted); }
+</style>
+{% endblock %}
 
 {% block content %}
-<a href="{{ url_for('admin.lands_list') }}" class="btn btn-sm btn-outline-secondary mb-3">← Back</a>
+<a href="{{ url_for('admin.lands_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Retour</a>
 
-<div class="card" style="max-width: 800px;">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Land: {{ key }}</h5>
-    </div>
-    <form method="POST">
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<form method="POST" id="land-form">
+  <input type="hidden" name="tools_json" id="tools_json">
+
+  <div class="row g-4">
+
+    <!-- ── Section 1 : Infos générales ── -->
+    <div class="col-12">
+      <div class="card section-card">
+        <div class="card-header"><h6 class="mb-0">🌍 Informations générales</h6></div>
         <div class="card-body">
-            {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Key <span class="text-muted">(readonly)</span></label>
+              <input type="text" class="form-control" value="{{ key }}" readonly disabled>
+            </div>
+            <div class="col-md-3">
+              <label for="label_fr" class="form-label">🇫🇷 Nom (FR)</label>
+              <input type="text" class="form-control" id="label_fr" name="label_fr"
+                     value="{{ land.get('label_fr', '') }}" placeholder="ex: Plage">
+            </div>
+            <div class="col-md-3">
+              <label for="label_en" class="form-label">🇬🇧 Name (EN)</label>
+              <input type="text" class="form-control" id="label_en" name="label_en"
+                     value="{{ land.get('label_en', '') }}" placeholder="ex: Beach">
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-3 pb-1">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="enabled" name="enabled"
+                       {% if land.get('enabled', True) %}checked{% endif %}>
+                <label class="form-check-label" for="enabled">Activé</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="starting_land" name="starting_land"
+                       {% if land.get('starting_land') %}checked{% endif %}>
+                <label class="form-check-label" for="starting_land">Départ</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 2 : Visuel ── -->
+    <div class="col-lg-6">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">🖼️ Visuels</h6></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="slot_icon" class="form-label">Icône slot</label>
+            <input type="text" class="form-control" id="slot_icon" name="slot_icon"
+                   value="{{ land.get('slot_icon', '') }}"
+                   placeholder="static/assets/img/lands/beach_slot.png">
+            {% if land.get('slot_icon') %}
+            <img src="/{{ land.slot_icon }}" alt="slot icon"
+                 style="height:40px;margin-top:.5rem;border-radius:4px;background:rgba(255,255,255,.05);padding:3px;">
             {% endif %}
-
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                    <label for="label" class="form-label">Label</label>
-                    <input type="text" class="form-control" id="label" name="label" value="{{ land.get('label', '') }}" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="description" class="form-label">Description</label>
-                    <input type="text" class="form-control" id="description" name="description" value="{{ land.get('description', '') }}">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" id="enabled" name="enabled" {% if land.get('enabled', True) %}checked{% endif %}>
-                    Enabled
-                </label>
-            </div>
-
-            <div class="mb-3">
-                <label for="json_data" class="form-label">Additional JSON Data</label>
-                <textarea class="form-control" id="json_data" name="json_data" rows="8" style="font-family: monospace;">{{ json_data }}</textarea>
-                <small class="form-text text-muted">Enter valid JSON for additional properties (slots, costs, etc.)</small>
-            </div>
+          </div>
+          <div class="mb-3">
+            <label for="logo" class="form-label">Logo land</label>
+            <input type="text" class="form-control" id="logo" name="logo"
+                   value="{{ land.get('logo', '') }}"
+                   placeholder="static/assets/img/lands/beach_logo.png">
+            {% if land.get('logo') %}
+            <img src="/{{ land.logo }}" alt="logo"
+                 style="height:40px;margin-top:.5rem;border-radius:4px;background:rgba(255,255,255,.05);padding:3px;">
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="html_description" class="form-label">Template description HTML</label>
+            <input type="text" class="form-control" id="html_description" name="html_description"
+                   value="{{ land.get('html_description', '') }}"
+                   placeholder="templates/GAME_UI/lands/land_beach_description.html">
+          </div>
         </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{{ url_for('admin.lands_list') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </div>
+
+    <!-- ── Section 3 : Paramètres ── -->
+    <div class="col-lg-6">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">⚙️ Paramètres</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-6">
+              <label for="slots" class="form-label">Nb emplacements</label>
+              <input type="number" class="form-control" id="slots" name="slots"
+                     value="{{ land.get('slots', 4) }}" min="1" max="20">
+            </div>
+            <div class="col-6">
+              <label for="xp_per_collect" class="form-label">XP par collecte</label>
+              <input type="number" class="form-control" id="xp_per_collect" name="xp_per_collect"
+                     value="{{ land.get('xp_per_collect', 1) }}" min="0">
+            </div>
+            <div class="col-6">
+              <label for="additional_slot_base_cost_diams" class="form-label">Coût slot (💎 base)</label>
+              <input type="number" class="form-control" id="additional_slot_base_cost_diams"
+                     name="additional_slot_base_cost_diams"
+                     value="{{ land.get('additional_slot_base_cost_diams', 10) }}" min="0">
+            </div>
+            <div class="col-6">
+              <label for="additional_slot_cost_multiplier" class="form-label">Multiplicateur coût</label>
+              <input type="number" class="form-control" id="additional_slot_cost_multiplier"
+                     name="additional_slot_cost_multiplier" step="0.1"
+                     value="{{ land.get('additional_slot_cost_multiplier', 1.5) }}" min="1">
+            </div>
+          </div>
         </div>
-    </form>
-</div>
+      </div>
+    </div>
+
+    <!-- ── Section 4 : Outils ── -->
+    <div class="col-12">
+      <div class="card section-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">🛠️ Outils & Loot</h6>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-warning" id="add-any-tool">+ Loot global (any)</button>
+            <button type="button" class="btn btn-sm btn-success" id="add-tool-btn">+ Ajouter un outil</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            <strong>Loot global (any)</strong> : s'applique à tous les outils.<br>
+            <strong>Outil spécifique</strong> : définit le label, emoji, cooldown, XP et les loots propres à cet outil.<br>
+            <span class="chance-hint">Chance : 0.0 = 0% → 1.0 = 100%</span>
+          </p>
+          <div id="tools-container"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+
+  <div class="mt-2 mb-5 d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-lg">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.lands_list') }}" class="btn btn-secondary btn-lg">Annuler</a>
+  </div>
+</form>
+
+<!-- Resource list for JS -->
+<script>
+const RESOURCES = {{ resource_list | tojson }};
+const INITIAL_TOOLS = {{ land.get('tools', {}) | tojson }};
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ─────────────────────────────────────────────────────────
+// Land Tools Editor
+// ─────────────────────────────────────────────────────────
+
+let tools = {};   // { toolKey: toolData }
+
+function resourceOptions(selected) {
+  return RESOURCES.map(r => {
+    const label = r.label.startsWith('items.') ? r.key : r.label;
+    return `<option value="${r.key}" ${r.key === selected ? 'selected' : ''}>${label} (${r.key})</option>`;
+  }).join('');
+}
+
+function lootRow(lootItem, lootType, toolKey, idx) {
+  const r = lootItem.resource || '';
+  const min = lootItem.min ?? 1;
+  const max = lootItem.max ?? 1;
+  const chance = lootItem.chance ?? 1.0;
+  return `
+  <tr class="loot-row" data-loot-type="${lootType}" data-tool="${toolKey}" data-idx="${idx}">
+    <td>
+      <select class="form-select form-select-sm loot-resource"
+              onchange="updateLoot('${toolKey}','${lootType}',${idx},'resource',this.value)">
+        ${resourceOptions(r)}
+      </select>
+    </td>
+    <td><input type="number" class="form-control form-control-sm" value="${min}" min="1"
+               onchange="updateLoot('${toolKey}','${lootType}',${idx},'min',+this.value)"></td>
+    <td><input type="number" class="form-control form-control-sm" value="${max}" min="1"
+               onchange="updateLoot('${toolKey}','${lootType}',${idx},'max',+this.value)"></td>
+    <td><input type="number" class="form-control form-control-sm" value="${chance}" min="0" max="1" step="0.01"
+               onchange="updateLoot('${toolKey}','${lootType}',${idx},'chance',+this.value)"></td>
+    <td><button type="button" class="remove-btn" onclick="removeLoot('${toolKey}','${lootType}',${idx})">✕</button></td>
+  </tr>`;
+}
+
+function lootTable(toolKey, lootType, items) {
+  const label = lootType === 'base_loot' ? '📦 Loot de base' : '✨ Loot bonus';
+  const rows = (items || []).map((it, i) => lootRow(it, lootType, toolKey, i)).join('');
+  return `
+  <div class="mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <small class="text-muted fw-bold">${label}</small>
+      <button type="button" class="btn btn-outline-secondary add-loot-btn"
+              onclick="addLoot('${toolKey}','${lootType}')">+ Ajouter</button>
+    </div>
+    <table class="loot-table">
+      <thead><tr>
+        <th style="width:45%">Ressource</th><th>Min</th><th>Max</th><th>Chance</th><th></th>
+      </tr></thead>
+      <tbody id="loot-${toolKey}-${lootType}">${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderTool(toolKey, toolData) {
+  const isAny = toolKey === 'any';
+  const badgeClass = isAny ? 'any-tool-badge' : '';
+  const label = toolData.label || '';
+  const emoji = toolData.emoji || '';
+  const cooldown = toolData.cooldown_seconds ?? 20;
+  const xpMult = toolData.xp_multiplier ?? 1.0;
+
+  const headerFields = isAny ? '' : `
+  <div class="row g-2 mb-2">
+    <div class="col-md-4">
+      <label class="form-label small mb-1">Clé outil</label>
+      <input type="text" class="form-control form-control-sm"
+             value="${toolKey}" readonly
+             title="La clé ne peut pas être changée ici">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small mb-1">Label</label>
+      <input type="text" class="form-control form-control-sm" value="${label}"
+             placeholder="ex: Pelle de plage"
+             onchange="updateToolField('${toolKey}','label',this.value)">
+    </div>
+    <div class="col-md-1">
+      <label class="form-label small mb-1">Emoji</label>
+      <input type="text" class="form-control form-control-sm" value="${emoji}"
+             placeholder="🛶"
+             onchange="updateToolField('${toolKey}','emoji',this.value)">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small mb-1">Cooldown (s)</label>
+      <input type="number" class="form-control form-control-sm" value="${cooldown}" min="1"
+             onchange="updateToolField('${toolKey}','cooldown_seconds',+this.value)">
+    </div>
+    <div class="col-md-1">
+      <label class="form-label small mb-1">XP mult.</label>
+      <input type="number" class="form-control form-control-sm" value="${xpMult}" min="0" step="0.1"
+             onchange="updateToolField('${toolKey}','xp_multiplier',+this.value)">
+    </div>
+  </div>`;
+
+  const baseLootSection = isAny ? '' : lootTable(toolKey, 'base_loot', toolData.base_loot);
+  const extraLootSection = lootTable(toolKey, 'extra_loot', toolData.extra_loot);
+
+  return `
+  <div class="tool-card" id="tool-card-${toolKey}">
+    <div class="tool-header" onclick="toggleTool('${toolKey}')">
+      <span class="tool-toggle">▼</span>
+      <span class="tool-key-badge ${badgeClass}">${toolKey}</span>
+      ${isAny ? '<span class="text-muted small">Loot global (tous outils)</span>' : `<span class="text-muted small">${emoji} ${label}</span>`}
+      <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+              onclick="event.stopPropagation(); removeTool('${toolKey}')">Supprimer</button>
+    </div>
+    <div class="tool-body">
+      ${headerFields}
+      ${baseLootSection}
+      ${extraLootSection}
+    </div>
+  </div>`;
+}
+
+function renderAllTools() {
+  const container = document.getElementById('tools-container');
+  if (Object.keys(tools).length === 0) {
+    container.innerHTML = '<p class="text-muted small">Aucun outil configuré. Clique sur "+ Ajouter un outil".</p>';
+    return;
+  }
+  // "any" first
+  const ordered = ['any', ...Object.keys(tools).filter(k => k !== 'any')];
+  container.innerHTML = ordered.filter(k => k in tools).map(k => renderTool(k, tools[k])).join('');
+}
+
+function syncToolsJson() {
+  document.getElementById('tools_json').value = JSON.stringify(tools);
+}
+
+// ── Actions ──
+
+function toggleTool(toolKey) {
+  document.getElementById(`tool-card-${toolKey}`).classList.toggle('collapsed');
+}
+
+function removeTool(toolKey) {
+  if (!confirm(`Supprimer l'outil "${toolKey}" ?`)) return;
+  delete tools[toolKey];
+  renderAllTools();
+  syncToolsJson();
+}
+
+function updateToolField(toolKey, field, value) {
+  if (!tools[toolKey]) return;
+  tools[toolKey][field] = value;
+  syncToolsJson();
+  // Update header label/emoji display
+  const header = document.querySelector(`#tool-card-${toolKey} .tool-header .text-muted.small`);
+  if (header) {
+    const t = tools[toolKey];
+    header.textContent = `${t.emoji || ''} ${t.label || ''}`;
+  }
+}
+
+function addLoot(toolKey, lootType) {
+  if (!tools[toolKey]) return;
+  if (!tools[toolKey][lootType]) tools[toolKey][lootType] = [];
+  const firstResource = RESOURCES[0]?.key || '';
+  tools[toolKey][lootType].push({ resource: firstResource, min: 1, max: 1, chance: 1.0 });
+  const tbody = document.getElementById(`loot-${toolKey}-${lootType}`);
+  const idx = tools[toolKey][lootType].length - 1;
+  tbody.insertAdjacentHTML('beforeend', lootRow(tools[toolKey][lootType][idx], lootType, toolKey, idx));
+  syncToolsJson();
+}
+
+function removeLoot(toolKey, lootType, idx) {
+  if (!tools[toolKey]?.[lootType]) return;
+  tools[toolKey][lootType].splice(idx, 1);
+  // Re-render just this tool
+  const card = document.getElementById(`tool-card-${toolKey}`);
+  const wasCollapsed = card.classList.contains('collapsed');
+  card.outerHTML = renderTool(toolKey, tools[toolKey]);
+  if (wasCollapsed) document.getElementById(`tool-card-${toolKey}`)?.classList.add('collapsed');
+  syncToolsJson();
+}
+
+function updateLoot(toolKey, lootType, idx, field, value) {
+  if (!tools[toolKey]?.[lootType]?.[idx]) return;
+  tools[toolKey][lootType][idx][field] = value;
+  syncToolsJson();
+}
+
+// ── Add buttons ──
+
+document.getElementById('add-any-tool').addEventListener('click', () => {
+  if (tools['any']) { alert('Le loot global "any" existe déjà.'); return; }
+  tools['any'] = { extra_loot: [] };
+  renderAllTools();
+  syncToolsJson();
+});
+
+document.getElementById('add-tool-btn').addEventListener('click', () => {
+  const toolKey = prompt('Clé de l\'outil (ex: tool_wooden_shovel, hands, tool_pickaxe…) :');
+  if (!toolKey) return;
+  const k = toolKey.trim();
+  if (!k) return;
+  if (tools[k]) { alert(`L'outil "${k}" existe déjà.`); return; }
+  tools[k] = {
+    label: '',
+    emoji: '',
+    cooldown_seconds: 20,
+    xp_multiplier: 1.0,
+    base_loot: [],
+    extra_loot: [],
+  };
+  renderAllTools();
+  syncToolsJson();
+  // Open the new tool
+  document.getElementById(`tool-card-${k}`)?.classList.remove('collapsed');
+});
+
+// ── Form submit: ensure tools_json is up to date ──
+document.getElementById('land-form').addEventListener('submit', () => {
+  syncToolsJson();
+});
+
+// ── Init from server data ──
+tools = JSON.parse(JSON.stringify(INITIAL_TOOLS));
+renderAllTools();
+syncToolsJson();
+</script>
 {% endblock %}

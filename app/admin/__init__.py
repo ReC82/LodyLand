@@ -388,50 +388,129 @@ def resources_list():
     session = SessionLocal()
     try:
         db_resources = session.query(ResourceDef).all()
-        db_by_key = {r.key: r for r in db_resources}
     finally:
         session.close()
 
+    # Merge: DB is source of truth; YAML provides extra metadata when present
+    db_by_key = {r.key: r for r in db_resources}
+    all_keys = sorted(set(list(yaml_data.keys()) + list(db_by_key.keys())))
+
     resources_view = []
-    for key, cfg in sorted(yaml_data.items()):
+    for key in all_keys:
+        cfg = yaml_data.get(key) or {}
         if not isinstance(cfg, dict):
             cfg = {}
+        db_r = db_by_key.get(key)
 
         resources_view.append({
             "key": key,
-            "label": cfg.get("label", key),
-            "kind": cfg.get("kind", "resource"),
+            "label": cfg.get("label") or (db_r.label if db_r else key),
+            "kind": cfg.get("kind") or (db_r.kind if db_r else "resource"),
             "in_db": key in db_by_key,
         })
 
     return render_template("ADMIN_UI/resources_list.html", resources=resources_view)
 
 
+def _load_item_translations(key: str) -> dict:
+    """Load fr/en translations for a specific item key from YAML files."""
+    result = {}
+    for lang in ("fr", "en"):
+        path = Path(__file__).resolve().parent.parent / "i18n" / "translations" / f"{lang}.yml"
+        if not path.exists():
+            result[lang] = {}
+            continue
+        with path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        item_data = data.get("items", {}).get(key, {})
+        result[lang] = item_data
+    return result
+
+
+def _save_item_translations(key: str, translations: dict) -> None:
+    """Save fr/en translations for a specific item key into YAML files.
+
+    translations = {"fr": {"label": "...", "description": "..."}, "en": {...}}
+    """
+    for lang, values in translations.items():
+        if not values:
+            continue
+        path = Path(__file__).resolve().parent.parent / "i18n" / "translations" / f"{lang}.yml"
+        if not path.exists():
+            continue
+        with path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+
+        items_section = data.setdefault("items", {})
+        item_entry = items_section.setdefault(key, {})
+        for field, value in values.items():
+            if value is not None:
+                item_entry[field] = value
+
+        with path.open("w", encoding="utf-8") as f:
+            yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False,
+                           default_flow_style=False, indent=2)
+
+
 @admin_bp.get("/resources/<key>/edit")
 @admin_bp.post("/resources/<key>/edit")
 @admin_required(permission="edit_resources")
 def edit_resource(key: str):
-    """Edit a resource (GET form, POST save)."""
-    yaml_data = load_resources_yaml()
-    resource_config = yaml_data.get(key, {})
+    """Edit a resource — reads/writes DB; translations go to fr.yml/en.yml."""
+    session = SessionLocal()
+    try:
+        resource = session.query(ResourceDef).filter(ResourceDef.key == key).first()
+        if not resource:
+            abort(404)
 
-    if request.method == "POST":
-        # Update resource config
-        label = request.form.get("label", "").strip()
-        kind = request.form.get("kind", "resource").strip()
+        translations = _load_item_translations(key)
 
-        if not label:
-            return render_template("ADMIN_UI/resource_form.html",
-                                 key=key, resource=resource_config, error="Label required")
+        if request.method == "POST":
+            label = request.form.get("label", "").strip()
+            kind = request.form.get("kind", "resource").strip()
+            description = request.form.get("description", "").strip() or None
+            icon = request.form.get("icon", "").strip() or None
+            base_sell_price_raw = request.form.get("base_sell_price", "").strip()
+            enabled = request.form.get("enabled") == "on"
 
-        resource_config["label"] = label
-        resource_config["kind"] = kind
-        yaml_data[key] = resource_config
-        save_resources_yaml(yaml_data)
+            label_fr = request.form.get("label_fr", "").strip()
+            label_en = request.form.get("label_en", "").strip()
+            desc_fr = request.form.get("desc_fr", "").strip()
+            desc_en = request.form.get("desc_en", "").strip()
 
-        return redirect(url_for("admin.resources_list"))
+            if not label and not label_fr:
+                return render_template("ADMIN_UI/resource_form.html",
+                                       key=key, resource=resource,
+                                       translations=translations,
+                                       error="Label requis")
 
-    return render_template("ADMIN_UI/resource_form.html", key=key, resource=resource_config)
+            # If translations provided, store the i18n key in DB label
+            has_translations = label_fr or label_en
+            if has_translations:
+                i18n_key = f"items.{key}.label"
+                resource.label = i18n_key
+                _save_item_translations(key, {
+                    "fr": {"label": label_fr or None, "description": desc_fr or None},
+                    "en": {"label": label_en or None, "description": desc_en or None},
+                })
+            elif label:
+                resource.label = label
+
+            resource.kind = kind or resource.kind
+            resource.description = description
+            if icon:
+                resource.icon = icon
+            if base_sell_price_raw.isdigit():
+                resource.base_sell_price = int(base_sell_price_raw)
+            resource.enabled = enabled
+
+            session.commit()
+            return redirect(url_for("admin.resources_list"))
+
+        return render_template("ADMIN_UI/resource_form.html",
+                               key=key, resource=resource, translations=translations)
+    finally:
+        session.close()
 
 
 @admin_bp.post("/resources/")
@@ -488,40 +567,71 @@ def lands_list():
 @admin_bp.post("/lands/<key>/edit")
 @admin_required(permission="edit_lands")
 def edit_land(key: str):
-    """Edit a land (GET form, POST save with JSON support)."""
+    """Edit a land — structured form (no raw JSON for the admin)."""
     lands_data = load_lands_yaml()
     land_config = lands_data.get(key, {})
 
+    # Load available resources for dropdowns
+    session = SessionLocal()
+    try:
+        db_resources = session.query(ResourceDef).filter(
+            ResourceDef.enabled == True
+        ).order_by(ResourceDef.key).all()
+        resource_list = [{"key": r.key, "label": r.label} for r in db_resources]
+    finally:
+        session.close()
+
     if request.method == "POST":
-        label = request.form.get("label", "").strip()
-        description = request.form.get("description", "").strip()
-        enabled = request.form.get("enabled") == "on"
+        # Basic fields
+        land_config["label_fr"] = request.form.get("label_fr", "").strip()
+        land_config["label_en"] = request.form.get("label_en", "").strip()
+        land_config["enabled"] = request.form.get("enabled") == "on"
+        land_config["starting_land"] = request.form.get("starting_land") == "on"
 
-        # Try to parse JSON data if provided
-        json_data_str = request.form.get("json_data", "").strip()
-        if json_data_str:
+        # Visual
+        slot_icon = request.form.get("slot_icon", "").strip()
+        logo = request.form.get("logo", "").strip()
+        html_desc = request.form.get("html_description", "").strip()
+        if slot_icon:
+            land_config["slot_icon"] = slot_icon
+        if logo:
+            land_config["logo"] = logo
+        if html_desc:
+            land_config["html_description"] = html_desc
+
+        # Settings
+        for field, cast in [
+            ("slots", int),
+            ("additional_slot_base_cost_diams", int),
+            ("xp_per_collect", int),
+            ("additional_slot_cost_multiplier", float),
+        ]:
+            raw = request.form.get(field, "").strip()
+            if raw:
+                try:
+                    land_config[field] = cast(raw)
+                except ValueError:
+                    pass
+
+        # Tools (submitted as JSON blob from the JS editor)
+        tools_json = request.form.get("tools_json", "").strip()
+        if tools_json:
             try:
-                extra_data = json.loads(json_data_str)
-                land_config.update(extra_data)
+                land_config["tools"] = json.loads(tools_json)
             except json.JSONDecodeError:
-                return render_template("ADMIN_UI/land_form.html",
-                                     key=key, land=land_config,
-                                     error="Invalid JSON data")
-
-        land_config["label"] = label
-        land_config["description"] = description
-        land_config["enabled"] = enabled
+                return render_template(
+                    "ADMIN_UI/land_form.html",
+                    key=key, land=land_config,
+                    resource_list=resource_list,
+                    error="Données outils invalides (JSON malformé)")
 
         lands_data[key] = land_config
         save_lands_yaml(lands_data)
-
         return redirect(url_for("admin.lands_list"))
 
-    json_data = json.dumps({k: v for k, v in land_config.items()
-                           if k not in ["label", "description", "enabled"]}, indent=2)
-
     return render_template("ADMIN_UI/land_form.html",
-                         key=key, land=land_config, json_data=json_data)
+                           key=key, land=land_config,
+                           resource_list=resource_list)
 
 
 # =============================================================================
