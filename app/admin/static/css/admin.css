@@ -9,6 +9,13 @@
     --admin-text-muted: #9ca3af;
     --admin-accent: #3b82f6;
     --admin-accent-light: #60a5fa;
+
+    /* Override Bootstrap disabled/readonly background */
+    --bs-secondary-bg: #1a1f35;
+    --bs-tertiary-bg: #161b2e;
+    --bs-body-bg: #0b1120;
+    --bs-body-color: #e5e7eb;
+    --bs-border-color: #2d3a52;
 }
 
 /* Body & Container */
@@ -292,6 +299,17 @@
 
 .form-control::placeholder {
     color: var(--admin-text-muted);
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.form-select:disabled,
+.form-select[readonly] {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    color: var(--admin-text-muted) !important;
+    border-color: var(--admin-border) !important;
+    opacity: 1;
+    cursor: default;
 }
 
 .form-label {

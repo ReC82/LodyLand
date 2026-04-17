@@ -1,0 +1,560 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Edit Craft - Admin Panel{% endblock %}
+{% block page_title %}Edit Craft: <code>{{ key }}</code>{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Grid Editor ── */
+.grid-editor { display: inline-block; }
+.grid-row { display: flex; gap: 4px; margin-bottom: 4px; }
+.grid-cell {
+  width: 52px; height: 52px;
+  border: 2px solid var(--admin-border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700; cursor: pointer;
+  background: rgba(255,255,255,.04);
+  transition: border-color .15s, background .15s;
+  position: relative; user-select: none;
+}
+.grid-cell:hover { border-color: var(--admin-accent); background: rgba(59,130,246,.12); }
+.grid-cell.empty { color: var(--admin-text-muted); }
+.grid-cell.filled { border-color: #34d399; background: rgba(52,211,153,.1); }
+.grid-cell .cell-letter { font-size: 1.2rem; line-height:1; }
+.grid-cell .cell-qty { position:absolute; bottom:2px; right:4px; font-size:.6rem; color:#34d399; }
+
+/* ── Grid controls ── */
+.grid-controls { display: flex; gap: .5rem; align-items: center; margin-bottom: .75rem; flex-wrap: wrap; }
+.grid-size-btn {
+  padding: .25rem .6rem; border-radius: 4px; border: 1px solid var(--admin-border);
+  background: rgba(255,255,255,.05); color: var(--admin-text); cursor: pointer; font-size: .8rem;
+}
+.grid-size-btn.active { border-color: var(--admin-accent); background: rgba(59,130,246,.2); color: #fff; }
+
+/* ── Legend ── */
+.legend-row {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .5rem; border-radius: 6px;
+  background: rgba(255,255,255,.03); border: 1px solid var(--admin-border);
+  margin-bottom: .5rem;
+}
+.legend-letter-box {
+  width: 36px; height: 36px; border-radius: 6px;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:1.1rem; flex-shrink:0;
+}
+.letter-palette { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.palette-letter {
+  width:32px; height:32px; border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; cursor:pointer; border:2px solid transparent;
+  font-size:.95rem;
+}
+.palette-letter:hover { opacity:.8; }
+.palette-letter.selected { border-color: #fff; }
+.palette-letter.in-legend { box-shadow: inset 0 0 0 2px rgba(255,255,255,.3); }
+
+.section-card { margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.crafts_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Retour</a>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<form method="POST" id="craft-form">
+  <input type="hidden" name="craft_json" id="craft_json">
+
+  <div class="row g-4">
+
+    <!-- ── Section 1 : Infos générales ── -->
+    <div class="col-12">
+      <div class="card section-card">
+        <div class="card-header"><h6 class="mb-0">⚙️ Informations générales</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Key <span class="text-muted">(readonly)</span></label>
+              <input type="text" class="form-control" value="{{ key }}" readonly disabled>
+            </div>
+            <div class="col-md-3">
+              <label for="station_key" class="form-label">Station</label>
+              <select class="form-select" id="station_key">
+                {% for sk, sv in stations.items() %}
+                <option value="{{ sk }}"
+                  {% if craft.get('station_key') == sk %}selected{% endif %}>
+                  {{ sv.get('label', sk) }}
+                </option>
+                {% endfor %}
+                {# Also include the values currently used in crafts but not in stations.yml #}
+                {% for extra in ['craft_table', 'craft_table_base', 'craft_table_medium', 'craft_table_advanced'] %}
+                  {% if extra not in stations %}
+                  <option value="{{ extra }}"
+                    {% if craft.get('station_key') == extra %}selected{% endif %}>
+                    {{ extra }}
+                  </option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="required_table_level" class="form-label">Niveau table requis</label>
+              <select class="form-select" id="required_table_level">
+                <option value="1" {% if craft.get('recipe',{}).get('required_table_level',1)==1 %}selected{% endif %}>Tier 1 — Basique</option>
+                <option value="2" {% if craft.get('recipe',{}).get('required_table_level')==2 %}selected{% endif %}>Tier 2 — Moyen</option>
+                <option value="3" {% if craft.get('recipe',{}).get('required_table_level')==3 %}selected{% endif %}>Tier 3 — Avancé</option>
+                <option value="4" {% if craft.get('recipe',{}).get('required_table_level')==4 %}selected{% endif %}>Tier 4 — Forge</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="craft_time" class="form-label">Durée (secondes)</label>
+              <input type="number" class="form-control" id="craft_time"
+                     value="{{ craft.get('craft_time_seconds', 30) }}" min="1">
+            </div>
+            <div class="col-md-1">
+              <label for="xp_reward" class="form-label">XP</label>
+              <input type="number" class="form-control" id="xp_reward"
+                     value="{{ craft.get('xp_reward', 5) }}" min="0">
+            </div>
+            <div class="col-md-1 d-flex align-items-end pb-2">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="enabled"
+                       {% if craft.get('enabled', True) %}checked{% endif %}>
+                <label class="form-check-label" for="enabled">Actif</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 2 : Output ── -->
+    <div class="col-lg-4">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">📦 Résultat (output)</h6></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="output_kind" class="form-label">Type</label>
+            <select class="form-select" id="output_kind">
+              <option value="resource" {% if craft.get('output',{}).get('kind')=='resource' %}selected{% endif %}>Resource</option>
+              <option value="item" {% if craft.get('output',{}).get('kind')=='item' %}selected{% endif %}>Item</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="output_key" class="form-label">Clé de l'output</label>
+            <select class="form-select" id="output_key">
+              {% for r in resource_list %}
+              <option value="{{ r.key }}"
+                {% if craft.get('output',{}).get('key') == r.key %}selected{% endif %}>
+                {% if r.label.startswith('items.') %}{{ r.key }}{% else %}{{ r.label }}{% endif %}
+                ({{ r.key }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="output_qty" class="form-label">Quantité produite</label>
+            <input type="number" class="form-control" id="output_qty"
+                   value="{{ craft.get('output',{}).get('quantity', 1) }}" min="1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 3 : Unlock ── -->
+    <div class="col-lg-4">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">🔓 Déverrouillage</h6></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="recipe_card_key" class="form-label">Carte recette (recipe_card_key)</label>
+            <input type="text" class="form-control" id="recipe_card_key"
+                   value="{{ craft.get('unlock',{}).get('recipe_card_key', '') }}"
+                   placeholder="ex: recipe_branch_plank">
+            <div class="form-text">Clé de la carte qui débloque ce craft.</div>
+          </div>
+          <div class="mb-3">
+            <label for="min_level" class="form-label">Niveau minimum requis</label>
+            <input type="number" class="form-control" id="min_level"
+                   value="{{ craft.get('unlock',{}).get('min_level', 1) }}" min="1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 4 placeholder for spacing ── -->
+    <div class="col-lg-4">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">ℹ️ Résumé</h6></div>
+        <div class="card-body">
+          <div id="craft-summary" class="text-muted small"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 5 : Recette / Grille ── -->
+    <div class="col-12">
+      <div class="card section-card">
+        <div class="card-header"><h6 class="mb-0">🧩 Recette (grille d'ingrédients)</h6></div>
+        <div class="card-body">
+          <div class="row g-4">
+
+            <!-- Grille -->
+            <div class="col-lg-5">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Taille de la grille</label>
+                <div class="grid-controls">
+                  <button type="button" class="grid-size-btn" data-rows="1" data-cols="3">1×3</button>
+                  <button type="button" class="grid-size-btn" data-rows="2" data-cols="3">2×3</button>
+                  <button type="button" class="grid-size-btn active" data-rows="3" data-cols="3">3×3</button>
+                  <button type="button" class="grid-size-btn" data-rows="4" data-cols="4">4×4</button>
+                </div>
+              </div>
+              <div class="mb-2 d-flex align-items-center gap-3">
+                <label class="form-label mb-0 fw-bold">Ingrédient actif :</label>
+                <div class="letter-palette" id="letter-palette"></div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="select-empty">
+                  ⬜ Vide
+                </button>
+              </div>
+              <div class="grid-editor" id="grid-editor"></div>
+              <div class="form-text mt-2">Clique sur une cellule pour y placer l'ingrédient sélectionné.</div>
+            </div>
+
+            <!-- Légende -->
+            <div class="col-lg-7">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label fw-bold mb-0">Légende des ingrédients</label>
+                <button type="button" class="btn btn-sm btn-outline-success" id="add-ingredient-btn">
+                  + Ajouter ingrédient
+                </button>
+              </div>
+              <div id="legend-container"></div>
+              <div class="form-text">
+                Chaque lettre (A-Z) correspond à un ingrédient dans la grille.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+
+  <div class="mt-2 mb-5 d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-lg">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.crafts_list') }}" class="btn btn-secondary btn-lg">Annuler</a>
+  </div>
+</form>
+
+<!-- Data for JS -->
+<script>
+const RESOURCES = {{ resource_list | tojson }};
+const INITIAL_CRAFT = {{ craft | tojson }};
+const CRAFT_KEY = {{ key | tojson }};
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ─────────────────────────────────────────────────────────
+// Craft Editor State
+// ─────────────────────────────────────────────────────────
+
+// Grid: rows x cols of letters ('.' = empty)
+let gridRows = 3, gridCols = 3;
+let gridData = [];   // [row][col] = letter or '.'
+let legend = {};     // { letter: {kind, key, quantity} }
+let selectedLetter = null;  // null = place empty
+
+const LETTER_COLORS = {
+  A:'#f87171',B:'#fb923c',C:'#fbbf24',D:'#a3e635',
+  E:'#34d399',F:'#22d3ee',G:'#60a5fa',H:'#a78bfa',
+  I:'#f472b6',J:'#94a3b8',K:'#f97316',L:'#84cc16',
+  M:'#06b6d4',N:'#8b5cf6',O:'#ec4899',P:'#10b981',
+  Q:'#3b82f6',R:'#eab308',S:'#ef4444',T:'#14b8a6',
+  U:'#6366f1',V:'#d946ef',W:'#f43f5e',X:'#0ea5e9',
+  Y:'#65a30d',Z:'#dc2626',
+};
+
+function getLetterColor(l) {
+  return LETTER_COLORS[l.toUpperCase()] || '#9ca3af';
+}
+
+// ── Grid helpers ──
+
+function initGrid(rows, cols, pattern) {
+  gridRows = rows; gridCols = cols;
+  gridData = Array.from({length: rows}, (_, r) =>
+    Array.from({length: cols}, (_, c) => {
+      if (pattern && pattern[r]) {
+        return pattern[r][c] || '.';
+      }
+      return '.';
+    })
+  );
+}
+
+function renderGrid() {
+  const el = document.getElementById('grid-editor');
+  el.innerHTML = '';
+  for (let r = 0; r < gridRows; r++) {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'grid-row';
+    for (let c = 0; c < gridCols; c++) {
+      const letter = gridData[r][c];
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell ' + (letter === '.' ? 'empty' : 'filled');
+      cell.dataset.r = r; cell.dataset.c = c;
+      if (letter !== '.') {
+        cell.innerHTML = `<span class="cell-letter" style="color:${getLetterColor(letter)}">${letter}</span>`;
+        const ing = legend[letter];
+        if (ing) {
+          cell.innerHTML += `<span class="cell-qty">×${ing.quantity||1}</span>`;
+        }
+      } else {
+        cell.innerHTML = '<span style="color:rgba(255,255,255,.15)">·</span>';
+      }
+      cell.addEventListener('click', () => onCellClick(r, c));
+      rowEl.appendChild(cell);
+    }
+    el.appendChild(rowEl);
+  }
+  syncCraftJson();
+}
+
+function onCellClick(r, c) {
+  if (selectedLetter === null) {
+    gridData[r][c] = '.';
+  } else {
+    gridData[r][c] = selectedLetter;
+    // Auto-add to legend if not present
+    if (!legend[selectedLetter]) {
+      legend[selectedLetter] = { kind: 'resource', key: RESOURCES[0]?.key || '', quantity: 1 };
+      renderLegend();
+      renderPalette();
+    }
+  }
+  renderGrid();
+}
+
+// ── Grid size buttons ──
+document.querySelectorAll('.grid-size-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.grid-size-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const rows = +btn.dataset.rows, cols = +btn.dataset.cols;
+    // Keep existing data, truncate or extend
+    const old = gridData;
+    gridData = Array.from({length: rows}, (_, r) =>
+      Array.from({length: cols}, (_, c) => (old[r]?.[c]) || '.')
+    );
+    gridRows = rows; gridCols = cols;
+    renderGrid();
+  });
+});
+
+// ── Empty selector ──
+document.getElementById('select-empty').addEventListener('click', () => {
+  selectedLetter = null;
+  document.querySelectorAll('.palette-letter').forEach(p => p.classList.remove('selected'));
+  document.getElementById('select-empty').style.borderColor = 'var(--admin-accent)';
+});
+
+// ── Letter palette ──
+function renderPalette() {
+  const usedLetters = new Set(Object.keys(legend));
+  const el = document.getElementById('letter-palette');
+  el.innerHTML = '';
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  LETTERS.forEach(l => {
+    const btn = document.createElement('div');
+    btn.className = 'palette-letter' + (usedLetters.has(l) ? ' in-legend' : '');
+    if (selectedLetter === l) btn.classList.add('selected');
+    btn.style.background = getLetterColor(l) + '33';
+    btn.style.color = getLetterColor(l);
+    btn.style.border = `1px solid ${getLetterColor(l)}66`;
+    btn.textContent = l;
+    btn.title = l;
+    btn.addEventListener('click', () => {
+      selectedLetter = l;
+      document.getElementById('select-empty').style.borderColor = '';
+      document.querySelectorAll('.palette-letter').forEach(p => p.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    el.appendChild(btn);
+  });
+}
+
+// ── Legend ──
+function resourceOptions(selected) {
+  return RESOURCES.map(r => {
+    const label = r.label.startsWith('items.') ? r.key : `${r.label} (${r.key})`;
+    return `<option value="${r.key}" ${r.key === selected ? 'selected' : ''}>${label}</option>`;
+  }).join('');
+}
+
+function renderLegend() {
+  const container = document.getElementById('legend-container');
+  if (Object.keys(legend).length === 0) {
+    container.innerHTML = '<p class="text-muted small">Aucun ingrédient. Clique sur une lettre dans la palette puis place-la dans la grille.</p>';
+    return;
+  }
+  container.innerHTML = Object.keys(legend).sort().map(letter => {
+    const ing = legend[letter];
+    return `
+    <div class="legend-row" id="legend-row-${letter}">
+      <div class="legend-letter-box" style="background:${getLetterColor(letter)}22;color:${getLetterColor(letter)};border:1px solid ${getLetterColor(letter)}44">
+        ${letter}
+      </div>
+      <select class="form-select form-select-sm" style="width:auto;flex:1"
+              onchange="updateLegend('${letter}','key',this.value)">
+        ${resourceOptions(ing.key)}
+      </select>
+      <select class="form-select form-select-sm" style="width:100px"
+              onchange="updateLegend('${letter}','kind',this.value)">
+        <option value="resource" ${ing.kind==='resource'?'selected':''}>resource</option>
+        <option value="item" ${ing.kind==='item'?'selected':''}>item</option>
+      </select>
+      <div class="input-group input-group-sm" style="width:100px">
+        <span class="input-group-text">×</span>
+        <input type="number" class="form-control form-control-sm" value="${ing.quantity||1}" min="1"
+               onchange="updateLegend('${letter}','quantity',+this.value)">
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger"
+              onclick="removeIngredient('${letter}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function updateLegend(letter, field, value) {
+  if (!legend[letter]) return;
+  legend[letter][field] = value;
+  syncCraftJson();
+  renderGrid(); // refresh qty in cells
+}
+
+function removeIngredient(letter) {
+  delete legend[letter];
+  // Clear cells using this letter
+  for (let r = 0; r < gridRows; r++)
+    for (let c = 0; c < gridCols; c++)
+      if (gridData[r][c] === letter) gridData[r][c] = '.';
+  renderLegend();
+  renderGrid();
+  renderPalette();
+}
+
+document.getElementById('add-ingredient-btn').addEventListener('click', () => {
+  const usedLetters = new Set(Object.keys(legend));
+  const next = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find(l => !usedLetters.has(l));
+  if (!next) { alert('Maximum 26 ingrédients différents.'); return; }
+  legend[next] = { kind: 'resource', key: RESOURCES[0]?.key || '', quantity: 1 };
+  selectedLetter = next;
+  renderLegend();
+  renderPalette();
+  syncCraftJson();
+});
+
+// ── Sync to hidden input ──
+function syncCraftJson() {
+  // Build pattern from grid
+  const pattern = gridData.map(row => row.join(''));
+  // Build legend object for YAML
+  const legendObj = {};
+  for (const [letter, ing] of Object.entries(legend)) {
+    legendObj[letter] = { kind: ing.kind, key: ing.key, quantity: ing.quantity };
+  }
+
+  const craftData = {
+    key: CRAFT_KEY,
+    station_key: document.getElementById('station_key').value,
+    output: {
+      kind: document.getElementById('output_kind').value,
+      key: document.getElementById('output_key').value,
+      quantity: parseInt(document.getElementById('output_qty').value) || 1,
+    },
+    recipe: {
+      pattern: pattern,
+      legend: legendObj,
+      required_table_level: parseInt(document.getElementById('required_table_level').value) || 1,
+    },
+    craft_time_seconds: parseInt(document.getElementById('craft_time').value) || 30,
+    xp_reward: parseInt(document.getElementById('xp_reward').value) || 0,
+    unlock: {
+      recipe_card_key: document.getElementById('recipe_card_key').value.trim(),
+      min_level: parseInt(document.getElementById('min_level').value) || 1,
+    },
+    enabled: document.getElementById('enabled').checked,
+  };
+
+  document.getElementById('craft_json').value = JSON.stringify(craftData);
+  updateSummary(craftData);
+}
+
+function updateSummary(c) {
+  const usedCells = gridData.flat().filter(l => l !== '.').length;
+  const totalCells = gridRows * gridCols;
+  const ingredients = Object.entries(legend).map(([l, ing]) => {
+    const count = gridData.flat().filter(x => x === l).length;
+    const label = RESOURCES.find(r=>r.key===ing.key)?.label || ing.key;
+    const displayLabel = label.startsWith('items.') ? ing.key : label;
+    return `${l} → ${displayLabel} ×${(ing.quantity||1) * count}`;
+  }).join('<br>');
+
+  document.getElementById('craft-summary').innerHTML = `
+    <div class="mb-2"><strong>Grille :</strong> ${gridRows}×${gridCols} (${usedCells}/${totalCells} cases)</div>
+    <div class="mb-2"><strong>Output :</strong> ${c.output.key} ×${c.output.quantity}</div>
+    <div class="mb-2"><strong>Durée :</strong> ${c.craft_time_seconds}s | <strong>XP :</strong> ${c.xp_reward}</div>
+    ${ingredients ? `<div><strong>Ingrédients :</strong><br>${ingredients}</div>` : ''}
+  `;
+}
+
+// ── Live sync on field change ──
+['station_key','output_kind','output_key','output_qty','craft_time',
+ 'xp_reward','required_table_level','recipe_card_key','min_level','enabled'
+].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', syncCraftJson);
+});
+
+// ── Form submit ──
+document.getElementById('craft-form').addEventListener('submit', syncCraftJson);
+
+// ── Init from server data ──
+(function init() {
+  const recipe = INITIAL_CRAFT.recipe || {};
+  const pattern = recipe.pattern || ['...'];
+  const rows = pattern.length;
+  const cols = pattern[0]?.length || 3;
+
+  // Set active grid size button
+  document.querySelectorAll('.grid-size-btn').forEach(btn => {
+    btn.classList.toggle('active', +btn.dataset.rows === rows && +btn.dataset.cols === cols);
+  });
+
+  initGrid(rows, cols, pattern);
+
+  // Build legend from YAML
+  const yamlLegend = recipe.legend || {};
+  for (const [letter, ing] of Object.entries(yamlLegend)) {
+    if (ing && typeof ing === 'object') {
+      legend[letter] = {
+        kind: ing.kind || 'resource',
+        key: ing.key || '',
+        quantity: ing.quantity || 1,
+      };
+    }
+  }
+
+  renderGrid();
+  renderLegend();
+  renderPalette();
+  syncCraftJson();
+})();
+</script>
+{% endblock %}
