@@ -638,53 +638,145 @@ def edit_land(key: str):
 # ROUTES: CRAFTS
 # =============================================================================
 
+def _load_craft_stations() -> dict:
+    """Load craft_stations.yml → {station_key: {label, grids}}"""
+    path = Path(current_app.root_path) / "data" / "craft_stations.yml"
+    if not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    return data.get("stations", {})
+
+
+def _get_crafts_dict() -> dict:
+    """Return crafts as {key: cfg_dict}."""
+    data = load_crafts_yaml()
+    crafts = data.get("crafts", {})
+    if isinstance(crafts, dict):
+        return crafts
+    # Legacy list format
+    return {c["key"]: c for c in crafts if isinstance(c, dict) and "key" in c}
+
+
+def _save_crafts_dict(crafts_dict: dict) -> None:
+    """Persist a crafts dict back to crafts.yml."""
+    path = Path(current_app.root_path) / "data" / "crafts.yml"
+    header = (
+        "# NOTE:\n"
+        "#   This file is managed by the admin panel.\n"
+        "#   Edit via /admin/crafts/\n\n"
+    )
+    payload = {"crafts": crafts_dict}
+    body = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False,
+                          default_flow_style=False, indent=2)
+    with path.open("w", encoding="utf-8") as f:
+        f.write(header + body)
+
+
 @admin_bp.get("/crafts/")
 @admin_required(permission="edit_crafts")
 def crafts_list():
     """List all crafts."""
-    crafts_data = load_crafts_yaml()
+    crafts_dict = _get_crafts_dict()
+    stations = _load_craft_stations()
 
-    # Handle both list and mapping formats
-    crafts_list_view = []
-    if isinstance(crafts_data, dict):
-        if isinstance(crafts_data.get("crafts"), list):
-            crafts_list_view = crafts_data.get("crafts", [])
-        else:
-            crafts_list_view = [{"key": k, **v} if isinstance(v, dict) else {"key": k}
-                               for k, v in crafts_data.items()]
+    crafts_view = []
+    for key, cfg in sorted(crafts_dict.items()):
+        if not isinstance(cfg, dict):
+            cfg = {}
+        out = cfg.get("output", {})
+        crafts_view.append({
+            "key": key,
+            "station_key": cfg.get("station_key", "?"),
+            "output_key": out.get("key", "?"),
+            "output_qty": out.get("quantity", 1),
+            "craft_time": cfg.get("craft_time_seconds", "?"),
+            "xp_reward": cfg.get("xp_reward", 0),
+            "enabled": cfg.get("enabled", True),
+        })
 
-    return render_template("ADMIN_UI/crafts_list.html", crafts=crafts_list_view)
+    return render_template("ADMIN_UI/crafts_list.html",
+                           crafts=crafts_view, stations=stations)
 
 
-@admin_bp.post("/crafts/")
+@admin_bp.get("/crafts/<key>/edit")
+@admin_bp.post("/crafts/<key>/edit")
+@admin_required(permission="edit_crafts")
+def edit_craft(key: str):
+    """Edit a craft — structured form."""
+    crafts_dict = _get_crafts_dict()
+    craft = crafts_dict.get(key)
+    if craft is None:
+        abort(404)
+
+    stations = _load_craft_stations()
+
+    # All resources + items for ingredient dropdowns
+    session = SessionLocal()
+    try:
+        db_resources = session.query(ResourceDef).filter(
+            ResourceDef.enabled == True
+        ).order_by(ResourceDef.key).all()
+        resource_list = [{"key": r.key, "label": r.label} for r in db_resources]
+    finally:
+        session.close()
+
+    if request.method == "POST":
+        craft_json = request.form.get("craft_json", "").strip()
+        if not craft_json:
+            return render_template("ADMIN_UI/craft_form.html",
+                                   key=key, craft=craft,
+                                   stations=stations, resource_list=resource_list,
+                                   error="Données manquantes")
+        try:
+            updated = json.loads(craft_json)
+        except json.JSONDecodeError as e:
+            return render_template("ADMIN_UI/craft_form.html",
+                                   key=key, craft=craft,
+                                   stations=stations, resource_list=resource_list,
+                                   error=f"JSON invalide : {e}")
+
+        updated["key"] = key  # enforce key
+        crafts_dict[key] = updated
+        _save_crafts_dict(crafts_dict)
+        return redirect(url_for("admin.crafts_list"))
+
+    return render_template("ADMIN_UI/craft_form.html",
+                           key=key, craft=craft,
+                           stations=stations, resource_list=resource_list)
+
+
+@admin_bp.post("/crafts/new")
 @admin_required(permission="edit_crafts")
 def create_craft():
-    """Create or update a craft."""
+    """Create a new empty craft and redirect to its edit page."""
     data = request.get_json() or {}
-    key = (data.get("key") or "").strip()
+    key = (data.get("key") or "").strip().lower().replace(" ", "_")
 
     if not key:
         return jsonify({"ok": False, "error": "Key required"}), 400
 
-    crafts_data = load_crafts_yaml()
+    crafts_dict = _get_crafts_dict()
+    if key in crafts_dict:
+        return jsonify({"ok": False, "error": "Key already exists"}), 400
 
-    # Ensure we have a list format
-    if not isinstance(crafts_data, dict) or "crafts" not in crafts_data:
-        crafts_data = {"crafts": []}
-
-    craft_list = crafts_data.get("crafts", [])
-
-    # Find or create craft entry
-    existing = next((c for c in craft_list if c.get("key") == key), None)
-    if existing:
-        existing.update({k: v for k, v in data.items() if k != "key"})
-    else:
-        craft_entry = {"key": key}
-        craft_entry.update({k: v for k, v in data.items() if k != "key"})
-        craft_list.append(craft_entry)
-
-    save_crafts_yaml(crafts_data)
-    return jsonify({"ok": True, "key": key})
+    crafts_dict[key] = {
+        "key": key,
+        "station_key": "craft_table_base",
+        "output": {"kind": "resource", "key": "", "quantity": 1},
+        "recipe": {
+            "pattern": ["..."],
+            "legend": {},
+            "required_table_level": 1,
+        },
+        "craft_time_seconds": 30,
+        "xp_reward": 5,
+        "unlock": {"recipe_card_key": f"recipe_{key}", "min_level": 1},
+        "enabled": True,
+    }
+    _save_crafts_dict(crafts_dict)
+    return jsonify({"ok": True, "key": key,
+                    "redirect": url_for("admin.edit_craft", key=key)})
 
 
 # =============================================================================
