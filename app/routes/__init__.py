@@ -23,6 +23,7 @@ from .api_village_pedro import bp as village_pedro_bp
 from .api_temple import bp as temple_bp
 from .api_temple_reconstruction import bp as temple_reconstruction_bp
 from .api_notebook import bp as notebook_bp
+from .api_minigame import bp as minigame_bp
 
 from .api_i18n import bp as i18n_bp
 
@@ -49,4 +50,5 @@ def register_routes(app: Flask) -> None:
     app.register_blueprint(temple_bp, url_prefix="/temple")
     app.register_blueprint(temple_reconstruction_bp, url_prefix="/temple")
     app.register_blueprint(notebook_bp, url_prefix="/api")
+    app.register_blueprint(minigame_bp, url_prefix="/api")
     

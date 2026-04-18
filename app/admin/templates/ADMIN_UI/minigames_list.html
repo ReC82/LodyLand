@@ -1,0 +1,81 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Mini-jeux - Admin Panel{% endblock %}
+{% block page_title %}Mini-jeux{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3>Mini-jeux <span class="text-muted small">({{ minigames|length }})</span></h3>
+  <button class="btn btn-success" id="new-mg-btn">+ Nouveau mini-jeu</button>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table-sm">
+    <thead class="table-dark">
+      <tr>
+        <th>Key</th>
+        <th>Nom (FR)</th>
+        <th>Niveau min.</th>
+        <th>Carte en jeu</th>
+        <th>Stock</th>
+        <th>Tentatives/j</th>
+        <th>Actif</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mg in minigames %}
+      <tr>
+        <td><code>{{ mg.key }}</code></td>
+        <td>{{ mg.name_fr }}</td>
+        <td>Niv. {{ mg.min_level }}</td>
+        <td>
+          {% if mg.card_key %}
+            <code>{{ mg.card_key }}</code>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if mg.card_stock_remaining == 0 %}
+            <span class="badge bg-danger">Épuisé</span>
+          {% else %}
+            <span class="badge bg-success">{{ mg.card_stock_remaining }} / {{ mg.card_stock_total }}</span>
+          {% endif %}
+        </td>
+        <td>{{ mg.free_attempts_per_day }} gratuite(s)</td>
+        <td>
+          {% if mg.enabled %}
+            <span class="badge bg-success">✓</span>
+          {% else %}
+            <span class="badge bg-secondary">✗</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('admin.edit_minigame', key=mg.key) }}"
+             class="btn btn-sm btn-primary">Edit</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-muted text-center">Aucun mini-jeu configuré.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% block extra_scripts %}
+<script>
+document.getElementById('new-mg-btn').addEventListener('click', () => {
+  const key = prompt('Clé du mini-jeu (ex: doors_level5, mystery_chest…) :');
+  if (!key) return;
+  fetch('{{ url_for("admin.create_minigame") }}', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({key: key.trim()})
+  }).then(r => r.json()).then(d => {
+    if (d.ok) window.location = d.redirect;
+    else alert('Erreur : ' + d.error);
+  });
+});
+</script>
+{% endblock %}
+{% endblock %}

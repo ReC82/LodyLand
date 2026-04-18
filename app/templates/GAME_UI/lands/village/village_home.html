@@ -106,6 +106,29 @@
       </div>
     </section>
 
+    <!-- NPC Mini-jeux -->
+    {% if current_player and current_player.level >= 5 %}
+    <section class="npc-card">
+      <div class="npc-card-inner" style="position:relative;">
+        <span style="position:absolute;top:8px;right:8px;background:#7c3aed;color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;">
+          Mini-jeu
+        </span>
+        <img
+          src="/static/assets/img/ui/npc/village/villager_trades.png"
+          alt="Salle des portes"
+          class="npc-img"
+        />
+        <h2 class="h5 npc-title">La Salle des Portes</h2>
+        <p class="npc-text">
+          Dix niveaux, trois portes chacun. Une cachette, une récompense, ou la porte de la gloire. Oses-tu entrer ?
+        </p>
+        <a href="/minigame/doors_level5" class="btn btn-sm btn-outline-primary">
+          Entrer dans la salle
+        </a>
+      </div>
+    </section>
+    {% endif %}
+
     <!-- PNJ Pedro — Maître constructeur -->
     <section class="npc-card">
       <div class="npc-card-inner" style="position:relative;">

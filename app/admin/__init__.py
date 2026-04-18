@@ -852,6 +852,136 @@ def manage_roles():
     return render_template("ADMIN_UI/roles_list.html", admins=admins, roles=ADMIN_ROLES)
 
 
+# =============================================================================
+# ROUTES: MINI-GAMES
+# =============================================================================
+
+from app.models import MiniGameDef, PlayerMiniGameState
+
+
+def _default_mg_rewards() -> list:
+    rewards = []
+    for lvl in range(1, 11):
+        entry = {
+            "win_stop":     {"shards": lvl * 8},
+            "win_continue": {"shards": lvl * 4},
+        }
+        if lvl == 10:
+            entry["win_grand"] = {"shards": 50}
+        rewards.append(entry)
+    return rewards
+
+
+@admin_bp.get("/minigames/")
+@admin_required(permission="view_dashboard")
+def minigames_list():
+    session = SessionLocal()
+    try:
+        mgs = session.query(MiniGameDef).order_by(MiniGameDef.min_level).all()
+        return render_template("ADMIN_UI/minigames_list.html", minigames=mgs)
+    finally:
+        session.close()
+
+
+@admin_bp.post("/minigames/new")
+@admin_required(permission="view_dashboard")
+def create_minigame():
+    data = request.get_json() or {}
+    key = (data.get("key") or "").strip().lower().replace(" ", "_")
+    if not key:
+        return jsonify({"ok": False, "error": "Key required"}), 400
+
+    session = SessionLocal()
+    try:
+        if session.query(MiniGameDef).filter_by(key=key).first():
+            return jsonify({"ok": False, "error": "Key already exists"}), 400
+        mg = MiniGameDef(
+            key=key,
+            name_fr=key,
+            name_en=key,
+            rewards_json=_default_mg_rewards(),
+        )
+        session.add(mg)
+        session.commit()
+        return jsonify({"ok": True, "key": key,
+                        "redirect": url_for("admin.edit_minigame", key=key)})
+    finally:
+        session.close()
+
+
+@admin_bp.get("/minigames/<key>/edit")
+@admin_bp.post("/minigames/<key>/edit")
+@admin_required(permission="view_dashboard")
+def edit_minigame(key: str):
+    session = SessionLocal()
+    try:
+        mg = session.query(MiniGameDef).filter_by(key=key).first()
+        if not mg:
+            abort(404)
+
+        # Cards for the dropdown
+        cards = session.query(CardDef).order_by(CardDef.key).all()
+
+        # Player stats for this minigame
+        total_players = session.query(PlayerMiniGameState)\
+            .filter_by(minigame_key=key).count()
+        winners = session.query(PlayerMiniGameState)\
+            .filter_by(minigame_key=key, has_won_card=True).count()
+
+        if request.method == "POST":
+            mg.name_fr = request.form.get("name_fr", "").strip() or mg.name_fr
+            mg.name_en = request.form.get("name_en", "").strip() or mg.name_en
+            mg.description_fr = request.form.get("description_fr", "").strip() or None
+            mg.description_en = request.form.get("description_en", "").strip() or None
+            mg.min_level = int(request.form.get("min_level", 5))
+            mg.card_key = request.form.get("card_key", "").strip() or None
+            mg.card_stock_total = int(request.form.get("card_stock_total", 100))
+            mg.card_stock_remaining = int(request.form.get("card_stock_remaining",
+                                                           mg.card_stock_remaining))
+            mg.free_attempts_per_day = int(request.form.get("free_attempts_per_day", 1))
+            mg.extra_attempt_cost_diams = int(request.form.get("extra_attempt_cost_diams", 5))
+            mg.enabled = request.form.get("enabled") == "on"
+
+            # Rewards: submitted as JSON
+            rewards_raw = request.form.get("rewards_json", "").strip()
+            if rewards_raw:
+                try:
+                    mg.rewards_json = json.loads(rewards_raw)
+                except json.JSONDecodeError:
+                    return render_template(
+                        "ADMIN_UI/minigame_form.html",
+                        mg=mg, cards=cards,
+                        total_players=total_players, winners=winners,
+                        error="Récompenses JSON invalides")
+
+            session.commit()
+            return redirect(url_for("admin.minigames_list"))
+
+        return render_template(
+            "ADMIN_UI/minigame_form.html",
+            mg=mg, cards=cards,
+            total_players=total_players, winners=winners,
+        )
+    finally:
+        session.close()
+
+
+@admin_bp.post("/minigames/<key>/reset-stock")
+@admin_required(permission="view_dashboard")
+def reset_minigame_stock(key: str):
+    """Reset remaining stock to match total."""
+    session = SessionLocal()
+    try:
+        mg = session.query(MiniGameDef).filter_by(key=key).first()
+        if not mg:
+            abort(404)
+        mg.card_stock_remaining = mg.card_stock_total
+        session.commit()
+        return jsonify({"ok": True, "remaining": mg.card_stock_remaining})
+    finally:
+        session.close()
+
+
 # Keep old routes for backward compatibility
 @admin_bp.get("/players")
 @admin_required(permission="view_users")

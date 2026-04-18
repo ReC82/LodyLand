@@ -490,3 +490,92 @@ class TempleReconstructionBrick(Base):
     placed_at: Mapped[dt.datetime] = mapped_column(
         DateTime, nullable=False, default=dt.datetime.utcnow
     )
+
+
+# =============================================================================
+# Mini-Games
+# =============================================================================
+
+class MiniGameDef(Base):
+    """
+    Admin-configurable definition of a mini-game.
+
+    path_type = "doors" (10 levels, 3 doors each).
+    rewards_json: list of 10 dicts, one per level:
+      { "win_stop": {"shards": N}, "win_continue": {"shards": N} }
+    The level-10 entry also has "win_grand": {"shards": N, "card_key": <from card_key>}.
+    """
+
+    __tablename__ = "minigame_defs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(60), unique=True, nullable=False, index=True)
+    name_fr: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    name_en: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    description_fr: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description_en: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Access gate
+    min_level: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
+
+    # Grand prize card
+    card_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    card_stock_total: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
+    card_stock_remaining: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
+
+    # Attempts
+    free_attempts_per_day: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    extra_attempt_cost_diams: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
+
+    # Rewards per level (JSON list of 10 items)
+    rewards_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
+
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime, nullable=False, default=dt.datetime.utcnow
+    )
+
+
+class PlayerMiniGameState(Base):
+    """
+    Per-player state for a given mini-game.
+
+    - path_json: deterministic door arrangement (generated once, fixed).
+    - current_level: 0 = no attempt in progress, 1-10 = inside an attempt.
+    - in_progress: True while the player is mid-run.
+    - daily_attempts_used: resets each calendar day (UTC).
+    - last_attempt_date: UTC date of last reset check.
+    - has_won_card: True once the player claimed the grand prize.
+    """
+
+    __tablename__ = "player_minigame_states"
+
+    __table_args__ = (
+        UniqueConstraint("player_id", "minigame_key",
+                         name="uq_player_minigame"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("players.id"), index=True, nullable=False
+    )
+    minigame_key: Mapped[str] = mapped_column(String(60), nullable=False, index=True)
+
+    # Deterministic path: list of 10 {"doors": ["lose","win_stop","win_continue"]}
+    path_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
+
+    # Current run state
+    in_progress: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    current_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    # Daily attempt tracking
+    daily_attempts_used: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_attempt_date: Mapped[dt.date | None] = mapped_column(Date, nullable=True)
+
+    # History
+    has_won_card: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    total_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    best_level_reached: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    won_card_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+    player = relationship("Player", backref="minigame_states")
