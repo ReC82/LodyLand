@@ -1,0 +1,283 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Edit Mini-jeu - Admin Panel{% endblock %}
+{% block page_title %}Mini-jeu : <code>{{ mg.key }}</code>{% endblock %}
+
+{% block extra_css %}
+<style>
+.reward-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; flex-wrap:wrap; }
+.reward-level-badge {
+  min-width:72px; text-align:center; padding:.2rem .5rem;
+  border-radius:6px; font-weight:700; font-size:.8rem;
+  background:rgba(59,130,246,.2); color:#60a5fa;
+  border:1px solid rgba(59,130,246,.3);
+}
+.reward-level-badge.final { background:rgba(251,191,36,.2); color:#fbbf24; border-color:rgba(251,191,36,.3); }
+.reward-input { width:90px; }
+.section-card { margin-bottom:1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.minigames_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Retour</a>
+
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+<form method="POST" id="mg-form">
+  <input type="hidden" name="rewards_json" id="rewards_json">
+
+  <div class="row g-4">
+
+    <!-- ── Infos générales ── -->
+    <div class="col-12">
+      <div class="card section-card">
+        <div class="card-header"><h6 class="mb-0">🎮 Informations générales</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Key <span class="text-muted">(readonly)</span></label>
+              <input type="text" class="form-control" value="{{ mg.key }}" readonly disabled>
+            </div>
+            <div class="col-md-3">
+              <label for="name_fr" class="form-label">🇫🇷 Nom (FR)</label>
+              <input type="text" class="form-control" id="name_fr" name="name_fr"
+                     value="{{ mg.name_fr }}" required>
+            </div>
+            <div class="col-md-3">
+              <label for="name_en" class="form-label">🇬🇧 Name (EN)</label>
+              <input type="text" class="form-control" id="name_en" name="name_en"
+                     value="{{ mg.name_en }}">
+            </div>
+            <div class="col-md-2">
+              <label for="min_level" class="form-label">Niveau minimum</label>
+              <input type="number" class="form-control" id="min_level" name="min_level"
+                     value="{{ mg.min_level }}" min="1">
+            </div>
+            <div class="col-md-2 d-flex align-items-end pb-2">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="enabled" name="enabled"
+                       {% if mg.enabled %}checked{% endif %}>
+                <label class="form-check-label" for="enabled">Actif</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="description_fr" class="form-label">Description FR</label>
+              <textarea class="form-control" id="description_fr" name="description_fr" rows="2"
+                >{{ mg.description_fr or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="description_en" class="form-label">Description EN</label>
+              <textarea class="form-control" id="description_en" name="description_en" rows="2"
+                >{{ mg.description_en or '' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Carte & Stock ── -->
+    <div class="col-lg-6">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">🏆 Carte exclusive (Grand Prix)</h6></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="card_key" class="form-label">Carte à gagner</label>
+            <select class="form-select" id="card_key" name="card_key">
+              <option value="">— Aucune —</option>
+              {% for card in cards %}
+              <option value="{{ card.key }}"
+                {% if mg.card_key == card.key %}selected{% endif %}>
+                {{ card.card_label }} ({{ card.key }})
+              </option>
+              {% endfor %}
+            </select>
+            <div class="form-text">La carte remportée au niveau 10, porte gagnante ultime.</div>
+          </div>
+          <div class="row g-3">
+            <div class="col-6">
+              <label for="card_stock_total" class="form-label">Stock total</label>
+              <input type="number" class="form-control" id="card_stock_total"
+                     name="card_stock_total" value="{{ mg.card_stock_total }}" min="1">
+            </div>
+            <div class="col-6">
+              <label for="card_stock_remaining" class="form-label">
+                Stock restant
+                <button type="button" class="btn btn-xs btn-outline-warning ms-1"
+                        id="btn-reset-stock" style="font-size:.7rem;padding:.1rem .4rem;">
+                  Reset
+                </button>
+              </label>
+              <input type="number" class="form-control" id="card_stock_remaining"
+                     name="card_stock_remaining" value="{{ mg.card_stock_remaining }}" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tentatives & Statistiques ── -->
+    <div class="col-lg-6">
+      <div class="card section-card h-100">
+        <div class="card-header"><h6 class="mb-0">🎟️ Tentatives & Stats</h6></div>
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label for="free_attempts_per_day" class="form-label">
+                Tentatives gratuites / jour
+              </label>
+              <input type="number" class="form-control" id="free_attempts_per_day"
+                     name="free_attempts_per_day"
+                     value="{{ mg.free_attempts_per_day }}" min="1">
+            </div>
+            <div class="col-6">
+              <label for="extra_attempt_cost_diams" class="form-label">
+                Coût tentative sup. (💎)
+              </label>
+              <input type="number" class="form-control" id="extra_attempt_cost_diams"
+                     name="extra_attempt_cost_diams"
+                     value="{{ mg.extra_attempt_cost_diams }}" min="1">
+            </div>
+          </div>
+          <hr>
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="text-muted small">Joueurs ayant essayé</div>
+              <div class="fs-4 fw-bold">{{ total_players }}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Gagnants</div>
+              <div class="fs-4 fw-bold text-warning">{{ winners }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Récompenses par niveau ── -->
+    <div class="col-12">
+      <div class="card section-card">
+        <div class="card-header">
+          <h6 class="mb-0">🎁 Récompenses par niveau</h6>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            <strong>Win Stop</strong> : récompense quand le joueur choisit la porte "récompense" (fin de tentative).<br>
+            <strong>Win Continue</strong> : récompense quand la porte permet de continuer.<br>
+            <strong>Win Grand</strong> (niveau 10 uniquement) : shards supplémentaires avec la carte.
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm" style="font-size:.85rem;">
+              <thead class="table-dark">
+                <tr>
+                  <th style="width:80px">Niveau</th>
+                  <th>🏅 Win Stop (shards)</th>
+                  <th>⬆️ Win Continue (shards)</th>
+                  <th>🏆 Win Grand (shards)</th>
+                </tr>
+              </thead>
+              <tbody id="rewards-tbody">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+
+  <div class="mt-2 mb-5 d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-lg">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.minigames_list') }}" class="btn btn-secondary btn-lg">Annuler</a>
+  </div>
+</form>
+
+<script>
+const MG_KEY = {{ mg.key | tojson }};
+const INITIAL_REWARDS = {{ (mg.rewards_json or []) | tojson }};
+
+// ── Rewards table ──
+const LEVELS = 10;
+
+function defaultRewards() {
+  const r = [];
+  for (let i = 1; i <= LEVELS; i++) {
+    const entry = {
+      win_stop:     { shards: i * 8 },
+      win_continue: { shards: i * 4 },
+    };
+    if (i === LEVELS) entry.win_grand = { shards: 50 };
+    r.push(entry);
+  }
+  return r;
+}
+
+let rewards = INITIAL_REWARDS.length === LEVELS ? INITIAL_REWARDS : defaultRewards();
+
+function renderRewards() {
+  const tbody = document.getElementById('rewards-tbody');
+  tbody.innerHTML = '';
+  rewards.forEach((r, i) => {
+    const lvl = i + 1;
+    const isFinal = lvl === LEVELS;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <span class="reward-level-badge ${isFinal ? 'final' : ''}">
+          ${isFinal ? '🏆 10' : `Niv. ${lvl}`}
+        </span>
+      </td>
+      <td>
+        <input type="number" class="form-control form-control-sm reward-input"
+               value="${(r.win_stop?.shards || 0)}" min="0"
+               onchange="updateReward(${i},'win_stop','shards',+this.value)">
+      </td>
+      <td>
+        ${!isFinal ? `
+        <input type="number" class="form-control form-control-sm reward-input"
+               value="${(r.win_continue?.shards || 0)}" min="0"
+               onchange="updateReward(${i},'win_continue','shards',+this.value)">
+        ` : '<span class="text-muted">—</span>'}
+      </td>
+      <td>
+        ${isFinal ? `
+        <input type="number" class="form-control form-control-sm reward-input"
+               value="${(r.win_grand?.shards || 0)}" min="0"
+               onchange="updateReward(${i},'win_grand','shards',+this.value)">
+        ` : '<span class="text-muted">—</span>'}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  syncRewards();
+}
+
+function updateReward(idx, type, field, value) {
+  if (!rewards[idx][type]) rewards[idx][type] = {};
+  rewards[idx][type][field] = value;
+  syncRewards();
+}
+
+function syncRewards() {
+  document.getElementById('rewards_json').value = JSON.stringify(rewards);
+}
+
+document.getElementById('mg-form').addEventListener('submit', syncRewards);
+
+// ── Reset stock button ──
+document.getElementById('btn-reset-stock').addEventListener('click', () => {
+  const total = parseInt(document.getElementById('card_stock_total').value) || 0;
+  if (!confirm(`Remettre le stock restant à ${total} ?`)) return;
+  fetch(`/admin/minigames/${MG_KEY}/reset-stock`, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        document.getElementById('card_stock_remaining').value = d.remaining;
+        alert(`Stock remis à ${d.remaining}.`);
+      }
+    });
+});
+
+// ── Init ──
+renderRewards();
+</script>
+{% endblock %}

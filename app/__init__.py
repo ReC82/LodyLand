@@ -17,6 +17,57 @@ from app.admin import admin_bp
 
 from .extensions import limiter
 
+
+def _seed_minigames() -> None:
+    """Ensure the default doors mini-game exists in DB."""
+    from .db import SessionLocal
+    from .models import MiniGameDef
+
+    session = SessionLocal()
+    try:
+        if session.query(MiniGameDef).filter_by(key="doors_level5").first():
+            return
+        rewards = []
+        for lvl in range(1, 11):
+            entry = {
+                "win_stop":     {"shards": lvl * 8},
+                "win_continue": {"shards": lvl * 4},
+            }
+            if lvl == 10:
+                entry["win_grand"] = {"shards": 50}
+            rewards.append(entry)
+
+        mg = MiniGameDef(
+            key="doors_level5",
+            name_fr="La Salle des Portes",
+            name_en="The Door Room",
+            description_fr=(
+                "Dix niveaux, trois portes. L'une cache la défaite, "
+                "une autre une récompense, la troisième… la gloire."
+            ),
+            description_en=(
+                "Ten levels, three doors. One hides defeat, "
+                "one a reward, the third… glory."
+            ),
+            min_level=5,
+            card_key=None,          # admin sets this via the panel
+            card_stock_total=100,
+            card_stock_remaining=100,
+            free_attempts_per_day=1,
+            extra_attempt_cost_diams=5,
+            rewards_json=rewards,
+            enabled=True,
+        )
+        session.add(mg)
+        session.commit()
+        print("[minigame] Seeded default mini-game: doors_level5")
+    except Exception as e:
+        print(f"[minigame] Seed error: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
         
@@ -40,6 +91,7 @@ def create_app() -> Flask:
     reseed_resources()
     load_craft_defs()
     load_quest_templates()
+    _seed_minigames()
     register_routes(app)
 
     

@@ -830,6 +830,33 @@ def village_trades():
 
 
 # ---------------------------------------------------------------------------
+# Mini-games
+# ---------------------------------------------------------------------------
+
+@frontend_bp.get("/minigame/<key>")
+@login_required
+def minigame_page(key: str):
+    """Mini-game doors page."""
+    from app.db import SessionLocal
+    from app.models import MiniGameDef
+
+    player = g.player
+    session = SessionLocal()
+    try:
+        mg = session.query(MiniGameDef).filter_by(key=key, enabled=True).first()
+        if not mg:
+            return redirect(url_for("frontend.village_home"))
+        return render_template(
+            "GAME_UI/minigame/minigame_doors.html",
+            mg=mg,
+            mg_key=key,
+            player=player,
+        )
+    finally:
+        session.close()
+
+
+# ---------------------------------------------------------------------------
 # Auth: register / login / logout
 # ---------------------------------------------------------------------------
 

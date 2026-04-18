@@ -1,0 +1,148 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/minigame/minigame_doors.css') }}">
+{% endblock %}
+
+{% block title %}{{ mg.name_fr if mg else "Mini-jeu" }}{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village mg-wrapper">
+
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.village_home') }}" class="btn btn-sm btn-outline-light">
+      ← Retour au village
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="mg-header">
+    <div class="mg-header-icon">🚪</div>
+    <div>
+      <h1 class="h3 mb-1" id="mg-title">{{ mg.name_fr if mg else "?" }}</h1>
+      <p class="text-muted mb-0" id="mg-desc">{{ mg.description_fr if mg else "" }}</p>
+    </div>
+  </header>
+
+  <!-- State bar -->
+  <div class="mg-statbar">
+    <div class="mg-statbar-item">
+      <span class="mg-stat-label">Carte en jeu</span>
+      <span class="mg-stat-value" id="mg-card-label">…</span>
+    </div>
+    <div class="mg-statbar-item">
+      <span class="mg-stat-label">Stock restant</span>
+      <span class="mg-stat-value" id="mg-stock">…</span>
+    </div>
+    <div class="mg-statbar-item">
+      <span class="mg-stat-label">Meilleur niveau</span>
+      <span class="mg-stat-value" id="mg-best">…</span>
+    </div>
+    <div class="mg-statbar-item">
+      <span class="mg-stat-label">Tentatives aujourd'hui</span>
+      <span class="mg-stat-value" id="mg-attempts">…</span>
+    </div>
+  </div>
+
+  <!-- Main game area -->
+  <div class="mg-main" id="mg-main">
+
+    <!-- SCREEN: Loading -->
+    <div class="mg-screen" id="screen-loading">
+      <div class="mg-loading-spinner">⌛</div>
+      <p class="text-muted">Chargement…</p>
+    </div>
+
+    <!-- SCREEN: Lobby (not in run) -->
+    <div class="mg-screen hidden" id="screen-lobby">
+      <div class="mg-lobby-content">
+        <div class="mg-rules">
+          <h3>Comment jouer ?</h3>
+          <ul>
+            <li>🚪 Choisis une porte parmi 3 à chaque niveau</li>
+            <li>❌ Une porte cache une <strong>défaite</strong> — la tentative s'arrête</li>
+            <li>🎁 Une porte donne une <strong>récompense</strong> et met fin à la tentative</li>
+            <li>⬆️ Une porte donne une <strong>récompense</strong> et te permet de continuer</li>
+            <li>🏆 Au niveau 10, une porte offre la <strong>carte exclusive</strong></li>
+          </ul>
+          <p class="text-muted small">Ton chemin est unique et reste identique tant que tu n'as pas remporté la carte.</p>
+        </div>
+
+        <div id="lobby-won-notice" class="mg-won-notice hidden">
+          🏆 Tu as déjà remporté la carte de ce mini-jeu !
+        </div>
+
+        <div id="lobby-stock-empty" class="mg-stock-empty hidden">
+          😔 Le stock de cartes est épuisé. Ce mini-jeu est terminé.
+        </div>
+
+        <div id="lobby-actions" class="mg-lobby-actions">
+          <button class="btn btn-primary btn-lg" id="btn-start-free">
+            🎮 Jouer (gratuit)
+          </button>
+          <div id="paid-section" class="hidden">
+            <p class="text-muted small mb-2">Tu as utilisé ta tentative gratuite.</p>
+            <button class="btn btn-warning" id="btn-start-paid">
+              💎 <span id="btn-paid-cost">?</span> Diams — Tentative supplémentaire
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Game (in run) -->
+    <div class="mg-screen hidden" id="screen-game">
+      <!-- Progress bar -->
+      <div class="mg-progress-bar">
+        <div class="mg-progress-labels">
+          <span>Niveau 1</span>
+          <span class="text-warning fw-bold">Niveau <span id="current-level-label">1</span> / 10</span>
+          <span>Niveau 10 🏆</span>
+        </div>
+        <div class="mg-progress-track">
+          <div class="mg-progress-fill" id="progress-fill" style="width:10%"></div>
+        </div>
+      </div>
+
+      <p class="mg-choose-text">Quelle porte choisis-tu ?</p>
+
+      <!-- Doors -->
+      <div class="mg-doors" id="mg-doors">
+        <!-- injected by JS -->
+      </div>
+
+      <!-- Outcome overlay -->
+      <div class="mg-outcome hidden" id="mg-outcome">
+        <div class="mg-outcome-icon" id="outcome-icon"></div>
+        <div class="mg-outcome-title" id="outcome-title"></div>
+        <div class="mg-outcome-subtitle" id="outcome-subtitle"></div>
+        <div class="mg-outcome-rewards" id="outcome-rewards"></div>
+        <button class="btn btn-lg mt-3" id="btn-outcome-next">Continuer</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: Victory -->
+    <div class="mg-screen hidden" id="screen-victory">
+      <div class="mg-victory">
+        <div class="mg-victory-stars">⭐⭐⭐</div>
+        <h2>Félicitations !</h2>
+        <p id="victory-text">Tu as remporté la carte exclusive !</p>
+        <div class="mg-victory-card" id="victory-card"></div>
+        <button class="btn btn-primary btn-lg mt-3" id="btn-victory-close">
+          Retour au village
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /mg-main -->
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const MG_KEY = {{ mg_key | tojson }};
+</script>
+<script src="{{ url_for('static', filename='GAME_UI/js/minigame/minigame_doors.js') }}"></script>
+{% endblock %}

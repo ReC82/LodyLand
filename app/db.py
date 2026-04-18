@@ -48,3 +48,13 @@ def init_db():
             # Migrate existing players who still have the old default
             conn.execute(text("UPDATE players SET theme = 'light' WHERE theme = 'default'"))
             conn.commit()
+
+        # Mini-game tables (created by create_all above, but ensure columns exist)
+        tables = inspector.get_table_names()
+        if "minigame_defs" in tables:
+            mg_cols = [c["name"] for c in inspector.get_columns("minigame_defs")]
+            if "free_attempts_per_day" not in mg_cols:
+                conn.execute(text(
+                    "ALTER TABLE minigame_defs ADD COLUMN free_attempts_per_day INTEGER NOT NULL DEFAULT 1"
+                ))
+                conn.commit()
