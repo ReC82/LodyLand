@@ -798,11 +798,12 @@ def beta_reset():
         s.query(PlayerQuest).filter_by(player_id=player_id).delete()
 
         # LandSlotState et TempleRun ne sont pas importés, on les ajoute
-        from app.models import LandSlotState, PlayerQuestObjective, TempleRun, PlayerLandSlots
+        from app.models import LandSlotState, PlayerQuestObjective, TempleRun, PlayerLandSlots, PlayerMiniGameState
 
         s.query(LandSlotState).filter_by(player_id=player_id).delete()
         s.query(TempleRun).filter_by(player_id=player_id).delete()
         s.query(PlayerLandSlots).filter_by(player_id=player_id).delete()
+        s.query(PlayerMiniGameState).filter_by(player_id=player_id).delete()
 
         # Re-give starting land card
         _ensure_starting_land_card(s, me)
