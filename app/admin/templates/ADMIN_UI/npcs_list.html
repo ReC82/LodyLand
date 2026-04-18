@@ -1,0 +1,117 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}PNJ — Admin Panel{% endblock %}
+{% block page_title %}🧑 Personnages PNJ{% endblock %}
+
+{% block extra_css %}
+<style>
+.npc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
+.npc-card {
+  background:var(--admin-card-bg); border:1px solid var(--admin-border);
+  border-radius:12px; overflow:hidden; text-align:center;
+  transition:transform .15s, box-shadow .15s;
+}
+.npc-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,.3); }
+.npc-portrait {
+  width:100%; height:160px; object-fit:cover;
+  background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center;
+  font-size:3rem; color:rgba(255,255,255,.2);
+}
+.npc-portrait img { width:100%; height:160px; object-fit:cover; }
+.npc-info { padding:.75rem; }
+.npc-key { font-size:.7rem; opacity:.45; font-family:monospace; }
+.npc-name { font-weight:700; font-size:.95rem; margin:.2rem 0 .6rem; }
+.npc-actions { display:flex; gap:.4rem; justify-content:center; }
+.badge-disabled { background:rgba(239,68,68,.15); color:#f87171;
+  font-size:.65rem; border-radius:99px; padding:.1rem .5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="text-muted mb-0">{{ npcs|length }} personnage(s) enregistré(s).</p>
+  <button class="btn btn-primary" id="btn-new-npc">+ Nouveau PNJ</button>
+</div>
+
+<!-- New NPC modal -->
+<div id="modal-new-npc" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);">
+  <div style="background:#1a1f35;border:1px solid var(--admin-border);border-radius:14px;width:380px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <h5 class="mb-3">Nouveau PNJ</h5>
+    <div class="mb-3">
+      <label class="form-label">Identifiant unique <span class="text-muted small">(snake_case, sans "npc_")</span></label>
+      <input type="text" id="new-npc-key" class="form-control" placeholder="villager_guide">
+    </div>
+    <div id="new-npc-error" class="text-danger small mb-2" style="display:none;"></div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-secondary" id="btn-npc-cancel">Annuler</button>
+      <button class="btn btn-primary" id="btn-npc-create">Créer</button>
+    </div>
+  </div>
+</div>
+
+{% if npcs %}
+<div class="npc-grid">
+  {% for npc in npcs %}
+  <div class="npc-card">
+    <div class="npc-portrait">
+      {% if npc.portrait %}
+      <img src="/static/assets/img/pnj/villagers/{{ npc.portrait }}" alt="{{ npc.name_fr }}">
+      {% else %}
+      🧑
+      {% endif %}
+    </div>
+    <div class="npc-info">
+      <div class="npc-key">{{ npc.key }}</div>
+      <div class="npc-name">{{ npc.name_fr }}</div>
+      {% if not npc.enabled %}<span class="badge-disabled">Désactivé</span>{% endif %}
+      <div class="npc-actions mt-2">
+        <a href="{{ url_for('admin.edit_npc', key=npc.key) }}" class="btn btn-sm btn-outline-secondary">✏️ Éditer</a>
+        <button class="btn btn-sm btn-outline-danger btn-delete-npc" data-key="{{ npc.key }}">🗑️</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <div style="font-size:3rem;">🧑</div>
+  <p class="mt-2">Aucun PNJ pour l'instant. Créez-en un !</p>
+</div>
+{% endif %}
+
+<script>
+const modal = document.getElementById('modal-new-npc');
+document.getElementById('btn-new-npc').onclick = () => {
+  document.getElementById('new-npc-key').value = '';
+  document.getElementById('new-npc-error').style.display = 'none';
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('new-npc-key').focus(), 50);
+};
+document.getElementById('btn-npc-cancel').onclick = () => modal.style.display = 'none';
+modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+document.getElementById('btn-npc-create').onclick = async () => {
+  const key = document.getElementById('new-npc-key').value.trim();
+  const errEl = document.getElementById('new-npc-error');
+  if (!key) { errEl.textContent = 'Identifiant requis.'; errEl.style.display='block'; return; }
+  const r = await fetch('{{ url_for("admin.create_npc") }}', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({key})
+  });
+  const d = await r.json();
+  if (d.ok) { window.location.href = d.redirect; }
+  else { errEl.textContent = d.error; errEl.style.display='block'; }
+};
+
+document.querySelectorAll('.btn-delete-npc').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Supprimer ce PNJ ?')) return;
+    const key = btn.dataset.key;
+    const r = await fetch(`/admin/npcs/${key}/delete`, { method:'POST' });
+    const d = await r.json();
+    if (d.ok) location.reload();
+  });
+});
+</script>
+{% endblock %}

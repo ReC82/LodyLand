@@ -68,6 +68,81 @@ def _seed_minigames() -> None:
         session.close()
 
 
+def _seed_story_events() -> None:
+    """
+    Import story events from levels.yml into the StoryEventDef table (one-time).
+    Also seeds the NpcDef for the villager guide if it doesn't exist.
+    Safe to call on every boot — skips if table already has rows.
+    """
+    from .db import SessionLocal
+    from .models import StoryEventDef, NpcDef
+    from .progression import LEVELS
+
+    session = SessionLocal()
+    try:
+        if session.query(StoryEventDef).count() > 0:
+            return  # Already seeded
+
+        # Seed the default NPC
+        if not session.query(NpcDef).filter_by(key="npc_villager_guide").first():
+            session.add(NpcDef(
+                key="npc_villager_guide",
+                name_fr="Le Guide du Village",
+                name_en="The Village Guide",
+                portrait="Anna.png",
+            ))
+
+        # Import all story events from levels.yml
+        count = 0
+        for lvl_num, cfg in LEVELS.items():
+            events = cfg.get("story_events") or []
+            for sort_idx, ev in enumerate(events):
+                ev_id = ev.get("id")
+                if not ev_id:
+                    continue
+
+                # Convert pages: normalize speaker from old format
+                raw_pages = ev.get("pages") or []
+                pages = []
+                for page in raw_pages:
+                    speaker_raw = page.get("speaker", "self")
+                    # Old format uses "npc_villager_guide" as speaker key
+                    if speaker_raw == "self":
+                        speaker = "self"
+                    else:
+                        speaker = f"npc:{speaker_raw}"
+
+                    pages.append({
+                        "speaker": speaker,
+                        "mood": page.get("mood", ""),
+                        "text": page.get("text", {"fr": "", "en": ""}),
+                    })
+
+                session.add(StoryEventDef(
+                    id=ev_id,
+                    level=lvl_num,
+                    trigger=ev.get("trigger", "on_level_reached"),
+                    land_key=ev.get("land_key"),
+                    show_once=ev.get("show_once", True),
+                    modal_variant=ev.get("modal_variant", "centered"),
+                    pages=pages,
+                    quest_start=ev.get("quest_start"),
+                    sort_order=sort_idx,
+                    enabled=True,
+                ))
+                count += 1
+
+        session.commit()
+        print(f"[story] Seeded {count} story events from levels.yml")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"[story] Seed error: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
         
@@ -92,6 +167,7 @@ def create_app() -> Flask:
     load_craft_defs()
     load_quest_templates()
     _seed_minigames()
+    _seed_story_events()
     register_routes(app)
 
     

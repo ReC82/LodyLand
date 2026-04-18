@@ -1,0 +1,409 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Éditer Événement — Admin Panel{% endblock %}
+{% block page_title %}💬 Événement : <code>{{ ev.id }}</code>{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page card ── */
+.page-card {
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+  border-radius:12px; padding:1rem 1.25rem; margin-bottom:.75rem;
+  position:relative;
+}
+.page-card-header {
+  display:flex; align-items:center; gap:.75rem; margin-bottom:.9rem;
+  flex-wrap:wrap;
+}
+.page-number {
+  min-width:28px; height:28px; border-radius:50%;
+  background:rgba(99,102,241,.25); color:#818cf8;
+  font-weight:700; font-size:.8rem;
+  display:flex; align-items:center; justify-content:center;
+}
+.page-card-actions { margin-left:auto; display:flex; gap:.4rem; }
+
+/* ── Speaker preview ── */
+.speaker-preview {
+  display:flex; align-items:center; gap:.6rem;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  border-radius:8px; padding:.4rem .75rem; font-size:.82rem; cursor:pointer;
+}
+.speaker-avatar {
+  width:36px; height:36px; border-radius:50%; object-fit:cover;
+  background:rgba(255,255,255,.1); display:flex; align-items:center;
+  justify-content:center; font-size:1.2rem; flex-shrink:0; overflow:hidden;
+}
+.speaker-avatar img { width:100%; height:100%; object-fit:cover; }
+
+/* ── Portrait picker modal ── */
+.pp-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:.5rem;
+  max-height:360px; overflow-y:auto;
+}
+.pp-item {
+  border:2px solid transparent; border-radius:8px; overflow:hidden;
+  cursor:pointer; text-align:center; transition:border-color .12s;
+}
+.pp-item:hover { border-color:rgba(99,102,241,.5); }
+.pp-item.selected { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.25); }
+.pp-item img { width:100%; height:90px; object-fit:cover; display:block; }
+.pp-item span { font-size:.6rem; display:block; padding:.2rem; opacity:.6;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ── Mood chips ── */
+.mood-chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.4rem; }
+.mood-chip {
+  padding:.2rem .6rem; border-radius:99px; font-size:.75rem; cursor:pointer;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+  transition:background .12s, border-color .12s;
+}
+.mood-chip.active { background:rgba(99,102,241,.3); border-color:#6366f1; color:#c7d2fe; }
+.mood-chip img { width:24px; height:24px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:.3rem; }
+
+/* ── Floating modal ── */
+.floating-modal {
+  display:none; position:fixed; inset:0; z-index:9999;
+  align-items:center; justify-content:center;
+  background:rgba(0,0,0,.65); backdrop-filter:blur(4px);
+}
+.floating-modal.open { display:flex; }
+.floating-dialog {
+  background:#1a1f35; border:1px solid rgba(255,255,255,.12);
+  border-radius:16px; padding:1.5rem; max-width:560px; width:95%;
+  box-shadow:0 24px 64px rgba(0,0,0,.6); max-height:90vh; overflow-y:auto;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.story_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Retour</a>
+
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+<form method="POST" id="story-form">
+  <input type="hidden" name="pages_json" id="pages_json">
+
+  <div class="row g-4">
+
+    <!-- ── Paramètres généraux ── -->
+    <div class="col-lg-5">
+      <div class="card mb-4">
+        <div class="card-header"><h6 class="mb-0">⚙️ Paramètres</h6></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">ID <span class="text-muted">(readonly)</span></label>
+            <input type="text" class="form-control" value="{{ ev.id }}" readonly disabled>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label for="level" class="form-label">Niveau</label>
+              <input type="number" class="form-control" id="level" name="level" value="{{ ev.level }}" min="0">
+            </div>
+            <div class="col-6">
+              <label for="sort_order" class="form-label">Ordre</label>
+              <input type="number" class="form-control" id="sort_order" name="sort_order" value="{{ ev.sort_order }}" min="0">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="trigger" class="form-label">Déclencheur</label>
+            <select class="form-select" id="trigger" name="trigger">
+              {% for val, label in triggers %}
+              <option value="{{ val }}" {% if ev.trigger == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3" id="land-key-group">
+            <label for="land_key" class="form-label">Clé de terre <span class="text-muted small">(si trigger lié à une terre)</span></label>
+            <input type="text" class="form-control" id="land_key" name="land_key" value="{{ ev.land_key or '' }}" placeholder="land_beach">
+          </div>
+          <div class="mb-3">
+            <label for="modal_variant" class="form-label">Variante modale</label>
+            <select class="form-select" id="modal_variant" name="modal_variant">
+              {% for val, label in modal_variants %}
+              <option value="{{ val }}" {% if ev.modal_variant == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="quest_key" class="form-label">Quête démarrée après <span class="text-muted small">(optionnel)</span></label>
+            <input type="text" class="form-control" id="quest_key" name="quest_key"
+                   value="{{ ev.quest_start.quest_key if ev.quest_start else '' }}" placeholder="q_first_gather">
+          </div>
+          <div class="d-flex gap-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="show_once" name="show_once"
+                     {% if ev.show_once %}checked{% endif %}>
+              <label class="form-check-label" for="show_once">Montrer une seule fois</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="enabled" name="enabled"
+                     {% if ev.enabled %}checked{% endif %}>
+              <label class="form-check-label" for="enabled">Actif</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Éditeur de pages ── -->
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">📖 Pages du dialogue</h6>
+          <button type="button" class="btn btn-sm btn-primary" id="btn-add-page">+ Ajouter une page</button>
+        </div>
+        <div class="card-body">
+          <div id="pages-container"></div>
+          <div id="pages-empty" class="text-center text-muted py-3" style="display:none;">
+            <p>Aucune page. Cliquez sur "Ajouter une page".</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+
+  <div class="mt-3 mb-5 d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-lg">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.story_list') }}" class="btn btn-secondary btn-lg">Annuler</a>
+  </div>
+</form>
+
+<!-- Portrait picker modal -->
+<div class="floating-modal" id="portrait-picker-modal">
+  <div class="floating-dialog">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="mb-0">Choisir un portrait PNJ</h6>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="pp-close">✕</button>
+    </div>
+    <div class="pp-grid" id="pp-grid">
+      {% for fname in portraits %}
+      <div class="pp-item" data-file="{{ fname }}">
+        <img src="/static/assets/img/pnj/villagers/{{ fname }}" alt="{{ fname }}">
+        <span>{{ fname }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+const NPCS = {{ npcs | map(attribute='key') | list | tojson }};
+const NPC_NAMES_FR = { {% for npc in npcs %}"{{ npc.key }}": "{{ npc.name_fr }}"{% if not loop.last %},{% endif %}{% endfor %} };
+const NPC_PORTRAITS = { {% for npc in npcs %}"{{ npc.key }}": {{ (npc.portrait or '') | tojson }}{% if not loop.last %},{% endif %}{% endfor %} };
+const PLAYER_MOODS = {{ player_moods | tojson }};
+const PORTRAITS = {{ portraits | tojson }};
+
+let pages = {{ (ev.pages or []) | tojson }};
+let ppCallback = null; // callback when a portrait is picked
+
+// ── Render all pages ──
+function renderPages() {
+  const container = document.getElementById('pages-container');
+  const empty = document.getElementById('pages-empty');
+  container.innerHTML = '';
+
+  if (!pages.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  pages.forEach((page, idx) => renderPage(page, idx, container));
+  syncHidden();
+}
+
+function renderPage(page, idx, container) {
+  const card = document.createElement('div');
+  card.className = 'page-card';
+  card.dataset.idx = idx;
+
+  const speaker = page.speaker || 'self';
+  const isNpc = speaker.startsWith('npc:');
+  const npcKey = isNpc ? speaker.slice(4) : null;
+  const mood = page.mood || '';
+  const textFr = (page.text || {}).fr || '';
+  const textEn = (page.text || {}).en || '';
+
+  card.innerHTML = `
+    <div class="page-card-header">
+      <div class="page-number">${idx + 1}</div>
+      <div class="speaker-preview" data-idx="${idx}" id="speaker-preview-${idx}">
+        ${buildSpeakerPreview(speaker, mood)}
+      </div>
+      <div class="page-card-actions">
+        ${idx > 0 ? `<button type="button" class="btn btn-sm btn-outline-secondary" onclick="movePage(${idx},-1)">↑</button>` : ''}
+        ${idx < pages.length-1 ? `<button type="button" class="btn btn-sm btn-outline-secondary" onclick="movePage(${idx},1)">↓</button>` : ''}
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePage(${idx})">🗑️</button>
+      </div>
+    </div>
+
+    <!-- Speaker selector -->
+    <div class="mb-3">
+      <label class="form-label small text-muted">Personnage</label>
+      <select class="form-select form-select-sm" onchange="setSpeaker(${idx}, this.value)" id="speaker-sel-${idx}">
+        <option value="self" ${!isNpc ? 'selected' : ''}>🧑 Joueur (self)</option>
+        ${NPCS.map(k => `<option value="npc:${k}" ${speaker === 'npc:' + k ? 'selected' : ''}>${NPC_NAMES_FR[k] || k}</option>`).join('')}
+      </select>
+    </div>
+
+    <!-- Mood / portrait (shown depending on speaker) -->
+    <div id="mood-section-${idx}" class="${isNpc ? 'd-none' : ''}">
+      <label class="form-label small text-muted">Mood (joueur)</label>
+      <div class="mood-chips" id="mood-chips-${idx}">
+        ${buildMoodChips(idx, mood)}
+      </div>
+      <input type="hidden" id="mood-val-${idx}" value="${escHtml(mood)}">
+    </div>
+
+    <div id="portrait-section-${idx}" class="${!isNpc ? 'd-none' : ''}">
+      <label class="form-label small text-muted">Portrait PNJ</label>
+      <button type="button" class="btn btn-sm btn-outline-secondary"
+              onclick="openPortraitPicker(${idx})">
+        🖼️ Choisir un portrait (optionnel, overrride NPC)
+      </button>
+      <span id="portrait-val-${idx}-display" class="ms-2 small text-muted">${page.portrait_override || ''}</span>
+      <input type="hidden" id="portrait-val-${idx}" value="${escHtml(page.portrait_override || '')}">
+    </div>
+
+    <!-- Texts -->
+    <div class="row g-2 mt-2">
+      <div class="col-6">
+        <label class="form-label small">🇫🇷 Texte (FR)</label>
+        <textarea class="form-control form-control-sm" rows="4"
+                  oninput="setTextFr(${idx}, this.value)">${escHtml(textFr)}</textarea>
+      </div>
+      <div class="col-6">
+        <label class="form-label small">🇬🇧 Text (EN)</label>
+        <textarea class="form-control form-control-sm" rows="4"
+                  oninput="setTextEn(${idx}, this.value)">${escHtml(textEn)}</textarea>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(card);
+}
+
+function buildSpeakerPreview(speaker, mood) {
+  if (speaker === 'self') {
+    const imgFile = moodToImg(mood);
+    const img = imgFile
+      ? `<div class="speaker-avatar"><img src="/static/assets/img/ui/players/defaults/${imgFile}.png"></div>`
+      : `<div class="speaker-avatar">🧑</div>`;
+    return img + `<span>Joueur <span class="text-muted small">(${mood || '—'})</span></span>`;
+  }
+  const npcKey = speaker.slice(4);
+  const portrait = NPC_PORTRAITS[npcKey];
+  const img = portrait
+    ? `<div class="speaker-avatar"><img src="/static/assets/img/pnj/villagers/${portrait}"></div>`
+    : `<div class="speaker-avatar">🧑</div>`;
+  return img + `<span>${NPC_NAMES_FR[npcKey] || npcKey}</span>`;
+}
+
+function buildMoodChips(idx, selected) {
+  return PLAYER_MOODS.map(m => {
+    const active = m === selected ? 'active' : '';
+    return `<span class="mood-chip ${active}" onclick="selectMood(${idx}, '${m}')">`
+      + `<img src="/static/assets/img/ui/players/defaults/${m}.png" onerror="this.style.display='none'">`
+      + `${m}</span>`;
+  }).join('');
+}
+
+function moodToImg(mood) {
+  return PLAYER_MOODS.includes(mood) ? mood : null;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Mutations ──
+function setSpeaker(idx, val) {
+  pages[idx].speaker = val;
+  const isNpc = val.startsWith('npc:');
+  document.getElementById(`mood-section-${idx}`).className = isNpc ? 'd-none' : '';
+  document.getElementById(`portrait-section-${idx}`).className = isNpc ? '' : 'd-none';
+  document.getElementById(`speaker-preview-${idx}`).innerHTML =
+    buildSpeakerPreview(val, pages[idx].mood || '');
+  syncHidden();
+}
+
+function selectMood(idx, mood) {
+  pages[idx].mood = mood;
+  document.getElementById(`mood-val-${idx}`).value = mood;
+  document.getElementById(`mood-chips-${idx}`).innerHTML = buildMoodChips(idx, mood);
+  document.getElementById(`speaker-preview-${idx}`).innerHTML =
+    buildSpeakerPreview(pages[idx].speaker || 'self', mood);
+  syncHidden();
+}
+
+function setTextFr(idx, v) { if (!pages[idx].text) pages[idx].text={}; pages[idx].text.fr = v; syncHidden(); }
+function setTextEn(idx, v) { if (!pages[idx].text) pages[idx].text={}; pages[idx].text.en = v; syncHidden(); }
+
+function movePage(idx, dir) {
+  const target = idx + dir;
+  if (target < 0 || target >= pages.length) return;
+  [pages[idx], pages[target]] = [pages[target], pages[idx]];
+  renderPages();
+}
+
+function deletePage(idx) {
+  if (!confirm('Supprimer cette page ?')) return;
+  pages.splice(idx, 1);
+  renderPages();
+}
+
+document.getElementById('btn-add-page').addEventListener('click', () => {
+  pages.push({ speaker: 'self', mood: '', text: { fr: '', en: '' } });
+  renderPages();
+  // Scroll to last card
+  const cards = document.querySelectorAll('.page-card');
+  if (cards.length) cards[cards.length-1].scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+function syncHidden() {
+  // Sync portrait_override from hidden inputs
+  pages.forEach((p, i) => {
+    const v = document.getElementById(`portrait-val-${i}`);
+    if (v) p.portrait_override = v.value || undefined;
+    const m = document.getElementById(`mood-val-${i}`);
+    if (m) p.mood = m.value;
+  });
+  document.getElementById('pages_json').value = JSON.stringify(pages);
+}
+
+// ── Portrait picker ──
+let _ppIdx = null;
+function openPortraitPicker(idx) {
+  _ppIdx = idx;
+  const current = pages[idx].portrait_override || '';
+  document.querySelectorAll('.pp-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.file === current);
+  });
+  document.getElementById('portrait-picker-modal').classList.add('open');
+}
+document.getElementById('pp-close').onclick = () =>
+  document.getElementById('portrait-picker-modal').classList.remove('open');
+
+document.querySelectorAll('.pp-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.pp-item').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    if (_ppIdx !== null) {
+      pages[_ppIdx].portrait_override = el.dataset.file;
+      const disp = document.getElementById(`portrait-val-${_ppIdx}-display`);
+      const hidden = document.getElementById(`portrait-val-${_ppIdx}`);
+      if (disp) disp.textContent = el.dataset.file;
+      if (hidden) hidden.value = el.dataset.file;
+    }
+    document.getElementById('portrait-picker-modal').classList.remove('open');
+    syncHidden();
+  });
+});
+
+// ── Form submit ──
+document.getElementById('story-form').addEventListener('submit', syncHidden);
+
+// ── Init ──
+renderPages();
+syncHidden();
+</script>
+{% endblock %}
