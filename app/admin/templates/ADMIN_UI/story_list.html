@@ -1,0 +1,140 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Dialogues — Admin Panel{% endblock %}
+{% block page_title %}💬 Dialogues & Story Events{% endblock %}
+
+{% block extra_css %}
+<style>
+.level-group { margin-bottom:2rem; }
+.level-header {
+  display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem;
+  padding-bottom:.5rem; border-bottom:1px solid var(--admin-border);
+}
+.level-badge {
+  min-width:64px; text-align:center; padding:.25rem .7rem;
+  border-radius:8px; font-weight:700; font-size:.85rem;
+  background:rgba(99,102,241,.2); color:#818cf8;
+  border:1px solid rgba(99,102,241,.3);
+}
+.story-row {
+  display:flex; align-items:center; gap:.75rem;
+  background:var(--admin-card-bg); border:1px solid var(--admin-border);
+  border-radius:10px; padding:.6rem 1rem; margin-bottom:.4rem;
+}
+.story-id { font-family:monospace; font-size:.82rem; flex:1; }
+.trigger-badge {
+  font-size:.7rem; padding:.15rem .5rem; border-radius:99px;
+  background:rgba(255,255,255,.06); color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.1);
+}
+.page-count { font-size:.8rem; opacity:.5; min-width:60px; text-align:right; }
+.badge-disabled { background:rgba(239,68,68,.1); color:#f87171;
+  font-size:.7rem; border-radius:99px; padding:.1rem .45rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="text-muted mb-0">
+    Gérez les dialogues, monologues et événements narratifs du jeu.
+  </p>
+  <div class="d-flex gap-2">
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="export-btn" data-bs-toggle="dropdown" aria-expanded="false">
+        ⬇️ Exporter
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" style="background:#1a1f35;border-color:var(--admin-border);">
+        <li><a class="dropdown-item" href="{{ url_for('admin.export_story', fmt='json') }}" style="color:var(--admin-text);">📄 JSON</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.export_story', fmt='yaml') }}" style="color:var(--admin-text);">📝 YAML</a></li>
+      </ul>
+    </div>
+    <button class="btn btn-primary" id="btn-new-event">+ Nouvel événement</button>
+  </div>
+</div>
+
+<!-- New event modal -->
+<div id="modal-new-event" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);">
+  <div style="background:#1a1f35;border:1px solid var(--admin-border);border-radius:14px;width:400px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <h5 class="mb-3">Nouvel événement</h5>
+    <div class="row g-3 mb-3">
+      <div class="col-8">
+        <label class="form-label">Identifiant unique <span class="text-muted small">(snake_case)</span></label>
+        <input type="text" id="new-ev-id" class="form-control" placeholder="level_3_intro">
+      </div>
+      <div class="col-4">
+        <label class="form-label">Niveau</label>
+        <input type="number" id="new-ev-level" class="form-control" value="0" min="0">
+      </div>
+    </div>
+    <div id="new-ev-error" class="text-danger small mb-2" style="display:none;"></div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-secondary" id="btn-ev-cancel">Annuler</button>
+      <button class="btn btn-primary" id="btn-ev-create">Créer</button>
+    </div>
+  </div>
+</div>
+
+{% if sorted_levels %}
+  {% for lvl in sorted_levels %}
+  <div class="level-group">
+    <div class="level-header">
+      <span class="level-badge">Niveau {{ lvl }}</span>
+      <span class="text-muted small">{{ by_level[lvl]|length }} événement(s)</span>
+    </div>
+    {% for ev in by_level[lvl] %}
+    <div class="story-row">
+      <div class="story-id">{{ ev.id }}</div>
+      <span class="trigger-badge">{{ ev.trigger }}</span>
+      {% if ev.modal_variant %}<span class="trigger-badge">{{ ev.modal_variant }}</span>{% endif %}
+      {% if not ev.enabled %}<span class="badge-disabled">Désactivé</span>{% endif %}
+      <span class="page-count">{{ (ev.pages or [])|length }} page(s)</span>
+      <div class="d-flex gap-1">
+        <a href="{{ url_for('admin.edit_story_event', ev_id=ev.id) }}" class="btn btn-sm btn-outline-secondary">✏️</a>
+        <button class="btn btn-sm btn-outline-danger btn-delete-ev" data-id="{{ ev.id }}">🗑️</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+{% else %}
+<div class="text-center text-muted py-5">
+  <div style="font-size:3rem;">💬</div>
+  <p class="mt-2">Aucun événement story. Créez-en un !</p>
+</div>
+{% endif %}
+
+<script>
+const modal = document.getElementById('modal-new-event');
+document.getElementById('btn-new-event').onclick = () => {
+  document.getElementById('new-ev-id').value = '';
+  document.getElementById('new-ev-error').style.display = 'none';
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('new-ev-id').focus(), 50);
+};
+document.getElementById('btn-ev-cancel').onclick = () => modal.style.display = 'none';
+modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+document.getElementById('btn-ev-create').onclick = async () => {
+  const id = document.getElementById('new-ev-id').value.trim();
+  const level = parseInt(document.getElementById('new-ev-level').value) || 0;
+  const errEl = document.getElementById('new-ev-error');
+  if (!id) { errEl.textContent = 'ID requis.'; errEl.style.display='block'; return; }
+  const r = await fetch('{{ url_for("admin.create_story_event") }}', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({id, level})
+  });
+  const d = await r.json();
+  if (d.ok) { window.location.href = d.redirect; }
+  else { errEl.textContent = d.error; errEl.style.display='block'; }
+};
+
+document.querySelectorAll('.btn-delete-ev').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm(`Supprimer l'événement "${btn.dataset.id}" ?`)) return;
+    const r = await fetch(`/admin/story/${btn.dataset.id}/delete`, { method:'POST' });
+    const d = await r.json();
+    if (d.ok) location.reload();
+  });
+});
+</script>
+{% endblock %}

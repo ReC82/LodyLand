@@ -52,6 +52,16 @@
                     <span class="nav-icon">🚪</span>
                     <span class="nav-text">Mini-jeux</span>
                 </a>
+                <a class="nav-item {% if '/npcs' in request.path %}active{% endif %}"
+                   href="{{ url_for('admin.npcs_list') }}">
+                    <span class="nav-icon">🧑</span>
+                    <span class="nav-text">PNJ</span>
+                </a>
+                <a class="nav-item {% if '/story' in request.path %}active{% endif %}"
+                   href="{{ url_for('admin.story_list') }}">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">Dialogues</span>
+                </a>
                 {% if current_player and current_player.admin_role == 'super_admin' %}
                 <a class="nav-item {% if '/roles' in request.path %}active{% endif %}"
                    href="{{ url_for('admin.manage_roles') }}">
