@@ -280,12 +280,13 @@ profile:
     description: "Remet ta progression à zéro (niveau, ressources, cartes, quêtes). Ton compte reste intact."
     button: "Réinitialiser ma progression"
     modal_title: "Confirmer le reset"
-    modal_warning: "Cette action est irréversible. Toute ta progression sera effacée."
-    modal_kept: "Ton email et ton mot de passe sont conservés."
+    modal_warning: "⚠️ Cette action est irréversible. Les éléments suivants seront effacés :"
+    modal_list: "Niveau & XP · Shards & Essences · Cartes (reçues et achetées) · Ressources · Quêtes · Mini-jeux · Terres & slots"
+    modal_kept: "✅ Ton email, ton pseudo et ton mot de passe sont conservés."
     modal_confirm_label: "Tape ton pseudo pour confirmer :"
     modal_error: "Pseudo incorrect. Réessaie."
     modal_cancel: "Annuler"
-    modal_confirm_btn: "Réinitialiser"
+    modal_confirm_btn: "Réinitialiser définitivement"
 
 settings:
   language: "Langue"

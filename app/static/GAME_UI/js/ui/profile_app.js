@@ -165,18 +165,38 @@ function initThemeSelector() {
  */
 function initBetaReset() {
   const btn = document.getElementById('btn-beta-reset');
-  if (!btn) return;
+  const modal = document.getElementById('modal-beta-reset');
+  if (!btn || !modal) return;
 
-  btn.addEventListener('click', () => {
+  function openModal() {
     document.getElementById('beta-reset-confirm-input').value = '';
     document.getElementById('beta-reset-error').style.display = 'none';
-    const modal = new bootstrap.Modal(document.getElementById('modal-beta-reset'));
-    modal.show();
+    modal.style.display = 'flex';
+    document.getElementById('beta-reset-confirm-input').focus();
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  btn.addEventListener('click', openModal);
+  document.getElementById('modal-beta-close').addEventListener('click', closeModal);
+  document.getElementById('modal-beta-cancel').addEventListener('click', closeModal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
   });
 
   document.getElementById('btn-beta-reset-confirm').addEventListener('click', async () => {
     const input = document.getElementById('beta-reset-confirm-input').value.trim();
     const errorEl = document.getElementById('beta-reset-error');
+    errorEl.style.display = 'none';
 
     try {
       const response = await fetch('/api/player/beta-reset', {
@@ -186,8 +206,7 @@ function initBetaReset() {
       });
 
       if (response.ok) {
-        // Fermer la modale et recharger la page
-        bootstrap.Modal.getInstance(document.getElementById('modal-beta-reset')).hide();
+        closeModal();
         showToast('Reset effectué !', 'success');
         setTimeout(() => window.location.reload(), 1500);
       } else {

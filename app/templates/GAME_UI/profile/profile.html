@@ -297,42 +297,45 @@
         </div>
       </section>
 
-<!-- Modal Beta Reset -->
-<div class="modal fade" id="modal-beta-reset" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark text-white border-danger">
-      <div class="modal-header border-danger">
-        <h5 class="modal-title text-danger">⚠️ {{ t("profile.beta.modal_title") }}</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p>{{ t("profile.beta.modal_warning") }}</p>
-        <p class="text-muted small">{{ t("profile.beta.modal_kept") }}</p>
-        <label class="form-label mt-2">
-          {{ t("profile.beta.modal_confirm_label") }} 
-          <strong>{{ pseudo }}</strong>
-        </label>
-        <input 
-          type="text" 
-          id="beta-reset-confirm-input" 
-          class="form-control bg-dark text-white border-secondary mt-1" 
-          placeholder="{{ pseudo }}"
-        />
-        <div id="beta-reset-error" class="text-danger small mt-2" style="display:none;">
-          {{ t("profile.beta.modal_error") }}
-        </div>
-      </div>
-      <div class="modal-footer border-danger">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          {{ t("profile.beta.modal_cancel") }}
-        </button>
-        <button type="button" class="btn btn-danger" id="btn-beta-reset-confirm">
-          {{ t("profile.beta.modal_confirm_btn") }}
-        </button>
+<!-- Modal Beta Reset (no Bootstrap JS required) -->
+<div id="modal-beta-reset" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,.7); backdrop-filter:blur(4px);">
+  <div style="background:#1a1f35; border:1px solid rgba(239,68,68,.5); border-radius:16px; max-width:480px; width:90%; padding:0; box-shadow:0 24px 64px rgba(0,0,0,.6);">
+    <!-- Header -->
+    <div style="padding:1.25rem 1.5rem; border-bottom:1px solid rgba(239,68,68,.3); display:flex; align-items:center; justify-content:space-between;">
+      <h5 style="margin:0; color:#f87171; font-weight:700;">⚠️ {{ t("profile.beta.modal_title") }}</h5>
+      <button id="modal-beta-close" style="background:none; border:none; color:#9ca3af; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+    </div>
+    <!-- Body -->
+    <div style="padding:1.5rem;">
+      <p style="margin-bottom:.75rem; color:#f1f5f9;">{{ t("profile.beta.modal_warning") }}</p>
+      <ul style="color:#fca5a5; font-size:.88rem; line-height:1.9; margin-bottom:1rem; padding-left:1.25rem;">
+        {% for item in t("profile.beta.modal_list").split(" · ") %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+      <p style="color:#4ade80; font-size:.88rem; margin-bottom:1.25rem;">{{ t("profile.beta.modal_kept") }}</p>
+      <label style="font-size:.9rem; color:#e2e8f0; display:block; margin-bottom:.4rem;">
+        {{ t("profile.beta.modal_confirm_label") }}
+        <strong style="color:#fbbf24;">{{ pseudo }}</strong>
+      </label>
+      <input
+        type="text"
+        id="beta-reset-confirm-input"
+        style="width:100%; background:#0f172a; border:1px solid #374151; border-radius:8px; padding:.55rem .9rem; color:#f1f5f9; font-size:.95rem;"
+        placeholder="{{ pseudo }}"
+        autocomplete="off"
+      />
+      <div id="beta-reset-error" style="display:none; color:#f87171; font-size:.85rem; margin-top:.5rem;">
+        {{ t("profile.beta.modal_error") }}
       </div>
     </div>
+    <!-- Footer -->
+    <div style="padding:1rem 1.5rem; border-top:1px solid rgba(239,68,68,.2); display:flex; gap:.75rem; justify-content:flex-end;">
+      <button id="modal-beta-cancel" class="btn btn-secondary">{{ t("profile.beta.modal_cancel") }}</button>
+      <button id="btn-beta-reset-confirm" class="btn btn-danger fw-bold">🗑️ {{ t("profile.beta.modal_confirm_btn") }}</button>
+    </div>
   </div>
-</div>      
+</div>
 
 {% endblock %}
 

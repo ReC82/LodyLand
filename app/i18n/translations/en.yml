@@ -279,12 +279,13 @@ profile:
     description: "Resets your progression (level, resources, cards, quests). Your account is kept."
     button: "Reset my progression"
     modal_title: "Confirm reset"
-    modal_warning: "This action is irreversible. All your progress will be erased."
-    modal_kept: "Your email and password are kept."
+    modal_warning: "⚠️ This action is irreversible. The following will be erased:"
+    modal_list: "Level & XP · Shards & Essence · Cards (received and purchased) · Resources · Quests · Mini-games · Lands & slots"
+    modal_kept: "✅ Your email, username and password are kept."
     modal_confirm_label: "Type your username to confirm:"
     modal_error: "Wrong username. Try again."
     modal_cancel: "Cancel"
-    modal_confirm_btn: "Reset"
+    modal_confirm_btn: "Reset permanently"
 
 settings:
   language: "Language"
