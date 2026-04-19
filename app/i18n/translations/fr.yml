@@ -1,672 +1,597 @@
-# app/i18n/translations/fr.yml
-# Traductions françaises pour LodyLand (nettoyé : chaînes UI génériques centralisées)
-
 ui:
   brand:
-    welcome: "Bienvenue sur LodyLand"
-
+    welcome: Bienvenue sur LodyLand
   states:
-    loading: "Chargement..."
-    wip: "En cours"
-    error: "Une erreur est survenue"
-    success: "Succès !"
-
+    loading: Chargement...
+    wip: En cours
+    error: Une erreur est survenue
+    success: Succès !
   actions:
-    ok: "OK"
-    confirm: "Confirmer"
-    cancel: "Annuler"
-    close: "Fermer"
-    save: "Enregistrer"
-    delete: "Supprimer"
-    buy: "Acheter"
-    sell: "Vendre"
-    craft: "Craft"
-    unlock: "Débloquer"
-    claim: "Réclamer"
-
+    ok: OK
+    confirm: Confirmer
+    cancel: Annuler
+    close: Fermer
+    save: Enregistrer
+    delete: Supprimer
+    buy: Acheter
+    sell: Vendre
+    craft: Craft
+    unlock: Débloquer
+    claim: Réclamer
   nav:
-    back: "Retour"
-    next: "Suivant"
-    home: "Accueil"
-
+    back: Retour
+    next: Suivant
+    home: Accueil
   sections:
-    inventory: "Inventaire"
-    shop: "Boutique"
-    quests: "Quêtes"
-    profile: "Profil"
-    menu: "Menu"
-
+    inventory: Inventaire
+    shop: Boutique
+    quests: Quêtes
+    profile: Profil
+    menu: Menu
   auth:
-    login: "Se connecter"
-    register: "S'inscrire"
-    logout: "Se déconnecter"
-    username: "Nom d'utilisateur"
-    password: "Mot de passe"
-    email: "Email"
-
+    login: Se connecter
+    register: S'inscrire
+    logout: Se déconnecter
+    username: Nom d'utilisateur
+    password: Mot de passe
+    email: Email
   fields:
-    search: "Rechercher"
-    quantity: "Quantité"
-    type: "Type"
-    total: "Total"
-
+    search: Rechercher
+    quantity: Quantité
+    type: Type
+    total: Total
 hud:
-  level: "Niveau"
-  xp: "XP"
-  xp_short: "XP"
-  next_level: "Niveau suivant"
-  daily_chest: "Coffre quotidien"
-  travel: "Voyager"
-  menu: "Menu"
-
+  level: Niveau
+  xp: XP
+  xp_short: XP
+  next_level: Niveau suivant
+  daily_chest: Coffre quotidien
+  travel: Voyager
+  menu: Menu
   tooltip:
-    level: "Niveau {level} • {xp}/{next_xp} XP"
-    daily_available: "Coffre disponible !"
-    daily_claimed: "Reviens demain"
-    daily_streak: "Série : {streak} jours"
-
+    level: Niveau {level} • {xp}/{next_xp} XP
+    daily_available: Coffre disponible !
+    daily_claimed: Reviens demain
+    daily_streak: 'Série : {streak} jours'
 game:
   collect:
-    success: "Tu as trouvé"
-    nothing: "Rien trouvé..."
-    cooldown: "Disponible dans {seconds}s"
-    locked: "Tuile verrouillée"
-
+    success: Tu as trouvé
+    nothing: Rien trouvé...
+    cooldown: Disponible dans {seconds}s
+    locked: Tuile verrouillée
   craft:
-    title: "Craft"
-    available: "Recettes disponibles"
-    locked: "Recette verrouillée"
-    craft_success: "Objet crafté !"
-    not_enough_resources: "Ressources insuffisantes"
-    requirements: "Pré-requis"
-
+    title: Craft
+    available: Recettes disponibles
+    locked: Recette verrouillée
+    craft_success: Objet crafté !
+    not_enough_resources: Ressources insuffisantes
+    requirements: Pré-requis
   level_up:
-    title: "Niveau supérieur !"
-    new_level: "Niveau {level}"
-    rewards: "Récompenses"
-
+    title: Niveau supérieur !
+    new_level: Niveau {level}
+    rewards: Récompenses
   quests:
-    title: "Quêtes"
-    active: "En cours"
-    completed: "Terminées"
-    available: "Disponibles"
-    claim_reward: "Réclamer la récompense"
-    objectives: "Objectifs"
-    rewards: "Récompenses"
-    progress: "{current}/{target}"
-    expired: "Expirée"
-
+    title: Quêtes
+    active: En cours
+    completed: Terminées
+    available: Disponibles
+    claim_reward: Réclamer la récompense
+    objectives: Objectifs
+    rewards: Récompenses
+    progress: '{current}/{target}'
+    expired: Expirée
     types:
-      daily: "Quête quotidienne"
-      weekly: "Quête hebdomadaire"
-      storyline: "Quête principale"
-
+      daily: Quête quotidienne
+      weekly: Quête hebdomadaire
+      storyline: Quête principale
   lands:
-    title: "Voyage"
-    select: "Choisir une destination"
-    locked: "Verrouillé"
-    unlock_with: "Débloquer avec"
-    slots: "Emplacements"
-    buy_slot: "Acheter un emplacement"
-
+    title: Voyage
+    select: Choisir une destination
+    locked: Verrouillé
+    unlock_with: Débloquer avec
+    slots: Emplacements
+    buy_slot: Acheter un emplacement
   market:
-    title: "Marché"
-    sell_price: "Prix de vente"
-    transaction_success: "Vente réussie !"
-
+    title: Marché
+    sell_price: Prix de vente
+    transaction_success: Vente réussie !
   shop:
-    title: "Boutique"
-    owned: "Possédé"
-    purchase_limit: "Limite d'achat"
-    purchase_success: "Achat réussi !"
-    not_enough_currency: "Pas assez de {currency}"
-
+    title: Boutique
+    owned: Possédé
+    purchase_limit: Limite d'achat
+    purchase_success: Achat réussi !
+    not_enough_currency: Pas assez de {currency}
 errors:
-  not_found: "Introuvable"
-  not_authenticated: "Non authentifié"
-  not_authorized: "Non autorisé"
-  invalid_input: "Entrée invalide"
-  server_error: "Erreur serveur"
-  network_error: "Erreur réseau"
-
-  cooldown_active: "Action en cooldown"
-  insufficient_resources: "Ressources insuffisantes"
-  insufficient_currency: "Pas assez de {currency}"
-  level_required: "Niveau {level} requis"
-  item_locked: "Objet verrouillé"
-  quest_not_ready: "Quête pas encore disponible"
-  already_owned: "Déjà possédé"
-  language_change_failed: "Impossible de changer la langue. Réessaie."
-
+  not_found: Introuvable
+  not_authenticated: Non authentifié
+  not_authorized: Non autorisé
+  invalid_input: Entrée invalide
+  server_error: Erreur serveur
+  network_error: Erreur réseau
+  cooldown_active: Action en cooldown
+  insufficient_resources: Ressources insuffisantes
+  insufficient_currency: Pas assez de {currency}
+  level_required: Niveau {level} requis
+  item_locked: Objet verrouillé
+  quest_not_ready: Quête pas encore disponible
+  already_owned: Déjà possédé
+  language_change_failed: Impossible de changer la langue. Réessaie.
 story:
-  skip: "Passer"
-
+  skip: Passer
   speakers:
-    self: "Moi"
-    mysterious_voice: "Voix mystérieuse"
-    npc_villager_guide: "Guide du village"
-
+    self: Moi
+    mysterious_voice: Voix mystérieuse
+    npc_villager_guide: Guide du village
   moods:
-    confused: "Confus"
-    lost: "Perdu"
-    thinking: "En réflexion"
-    surprised: "Surpris"
-    determined: "Déterminé"
-    worried: "Inquiet"
-    curious: "Curieux"
-    friendly: "Amical"
-    explaining: "Explique"
-
+    confused: Confus
+    lost: Perdu
+    thinking: En réflexion
+    surprised: Surpris
+    determined: Déterminé
+    worried: Inquiet
+    curious: Curieux
+    friendly: Amical
+    explaining: Explique
 resources:
   categories:
-    basic: "Basique"
-    rare: "Rare"
-    treasure: "Trésor"
-
-  collected: "Récolté"
-  crafted: "Crafté"
-  received: "Reçu"
-
+    basic: Basique
+    rare: Rare
+    treasure: Trésor
+  collected: Récolté
+  crafted: Crafté
+  received: Reçu
 cards:
   types:
-    resource_boost: "Boost de ressource"
-    xp_boost: "Boost d'XP"
-    cooldown_boost: "Réduction de cooldown"
-    land_loot_boost: "Boost de loot"
-    unlock_land: "Déblocage de land"
-
+    resource_boost: Boost de ressource
+    xp_boost: Boost d'XP
+    cooldown_boost: Réduction de cooldown
+    land_loot_boost: Boost de loot
+    unlock_land: Déblocage de land
   rarity:
-    common: "Commun"
-    uncommon: "Peu commun"
-    rare: "Rare"
-    epic: "Épique"
-    legendary: "Légendaire"
-
+    common: Commun
+    uncommon: Peu commun
+    rare: Rare
+    epic: Épique
+    legendary: Légendaire
 time:
   units:
-    seconds: "secondes"
-    minutes: "minutes"
-    hours: "heures"
-    days: "jours"
-
-  ago: "il y a {time}"
-  in: "dans {time}"
-
-  just_now: "À l'instant"
-  today: "Aujourd'hui"
-  yesterday: "Hier"
-  tomorrow: "Demain"
-
+    seconds: secondes
+    minutes: minutes
+    hours: heures
+    days: jours
+  ago: il y a {time}
+  in: dans {time}
+  just_now: À l'instant
+  today: Aujourd'hui
+  yesterday: Hier
+  tomorrow: Demain
 numbers:
-  none: "Aucun"
-  unlimited: "Illimité"
-  max: "Max"
-
+  none: Aucun
+  unlimited: Illimité
+  max: Max
   items:
-    one: "{count} objet"
-    other: "{count} objets"
-
+    one: '{count} objet'
+    other: '{count} objets'
   resources:
-    one: "{count} ressource"
-    other: "{count} ressources"
-
+    one: '{count} ressource'
+    other: '{count} ressources'
   cards:
-    one: "{count} carte"
-    other: "{count} cartes"
-
+    one: '{count} carte'
+    other: '{count} cartes'
 notifications:
-  quest_completed: "Quête terminée !"
-  quest_available: "Nouvelle quête disponible"
-  level_up: "Niveau supérieur !"
-  daily_chest_available: "Coffre quotidien disponible"
-  achievement_unlocked: "Succès débloqué"
-  item_crafted: "Objet crafté"
-  purchase_complete: "Achat terminé"
-
+  quest_completed: Quête terminée !
+  quest_available: Nouvelle quête disponible
+  level_up: Niveau supérieur !
+  daily_chest_available: Coffre quotidien disponible
+  achievement_unlocked: Succès débloqué
+  item_crafted: Objet crafté
+  purchase_complete: Achat terminé
 profile:
-  title: "Mon profil"
-  subtitle: "Consulte et gère les informations de ton compte LodyLand."
-
+  title: Mon profil
+  subtitle: Consulte et gère les informations de ton compte LodyLand.
   sections:
-    player: "Joueur"
-    account: "Compte"
-    statistics: "Statistiques"
-    history: "Historique"
-
+    player: Joueur
+    account: Compte
+    statistics: Statistiques
+    history: Historique
   labels:
-    pseudo: "Nom d'utilisateur"
-    level: "Niveau"
-    title: "Titre"
-    email: "Email"
-    password: "Mot de passe"
-    registration_date: "Date d'inscription"
-    email_verification: "Vérification email"
-
+    pseudo: Nom d'utilisateur
+    level: Niveau
+    title: Titre
+    email: Email
+    password: Mot de passe
+    registration_date: Date d'inscription
+    email_verification: Vérification email
   values:
-    undefined: "Non défini"
-    unknown: "Inconnu"
-    in_progress: "En cours"
-    wip: "(En cours)"
-
+    undefined: Non défini
+    unknown: Inconnu
+    in_progress: En cours
+    wip: (En cours)
   buttons:
-    change_avatar: "Changer d'avatar"
-    change_avatar_coming: "Changer d'avatar (bientôt)"
-    modify_password: "Modifier"
-    modify_password_coming: "Modifier (bientôt)"
-
+    change_avatar: Changer d'avatar
+    change_avatar_coming: Changer d'avatar (bientôt)
+    modify_password: Modifier
+    modify_password_coming: Modifier (bientôt)
   stats:
-    lands_unlocked: "Lands débloqués"
-    slots: "Emplacements"
-    quests_completed: "Quêtes terminées"
-    level: "Niveau"
-    playtime: "Temps de jeu"
-    total_xp: "XP totale"
-    to_implement: "À implémenter"
-    coming_soon: "bientôt"
-    quest_types: "Histoire / quotidien / hebdo"
-
+    lands_unlocked: Lands débloqués
+    slots: Emplacements
+    quests_completed: Quêtes terminées
+    level: Niveau
+    playtime: Temps de jeu
+    total_xp: XP totale
+    to_implement: À implémenter
+    coming_soon: bientôt
+    quest_types: Histoire / quotidien / hebdo
   titles:
-    beginner_explorer: "Explorateur débutant"
-
+    beginner_explorer: Explorateur débutant
   history:
-    description: "Accède à l'historique de tes achats et ventes dans le jeu."
-    resources_sold: "Ressources vendues (bientôt)"
-    cards_bought: "Cartes achetées (bientôt)"
-    slots_bought: "Emplacements achetés (bientôt)"
-    other_transactions: "Autres transactions (bientôt)"
-
+    description: Accède à l'historique de tes achats et ventes dans le jeu.
+    resources_sold: Ressources vendues (bientôt)
+    cards_bought: Cartes achetées (bientôt)
+    slots_bought: Emplacements achetés (bientôt)
+    other_transactions: Autres transactions (bientôt)
   beta:
-    title: "Zone Beta — Reset"
-    description: "Remet ta progression à zéro (niveau, ressources, cartes, quêtes). Ton compte reste intact."
-    button: "Réinitialiser ma progression"
-    modal_title: "Confirmer le reset"
-    modal_warning: "⚠️ Cette action est irréversible. Les éléments suivants seront effacés :"
-    modal_list: "Niveau & XP · Shards & Essences · Cartes (reçues et achetées) · Ressources · Quêtes · Mini-jeux · Terres & slots"
-    modal_kept: "✅ Ton email, ton pseudo et ton mot de passe sont conservés."
-    modal_confirm_label: "Tape ton pseudo pour confirmer :"
-    modal_error: "Pseudo incorrect. Réessaie."
-    modal_cancel: "Annuler"
-    modal_confirm_btn: "Réinitialiser définitivement"
-
+    title: Zone Beta — Reset
+    description: Remet ta progression à zéro (niveau, ressources, cartes, quêtes).
+      Ton compte reste intact.
+    button: Réinitialiser ma progression
+    modal_title: Confirmer le reset
+    modal_warning: '⚠️ Cette action est irréversible. Les éléments suivants seront
+      effacés :'
+    modal_list: Niveau & XP · Shards & Essences · Cartes (reçues et achetées) · Ressources
+      · Quêtes · Mini-jeux · Terres & slots
+    modal_kept: ✅ Ton email, ton pseudo et ton mot de passe sont conservés.
+    modal_confirm_label: 'Tape ton pseudo pour confirmer :'
+    modal_error: Pseudo incorrect. Réessaie.
+    modal_cancel: Annuler
+    modal_confirm_btn: Réinitialiser définitivement
 settings:
-  language: "Langue"
-  language_description: "Choisis ta langue préférée pour l’interface du jeu."
-  language_saved: "Langue enregistrée"
-
+  language: Langue
+  language_description: Choisis ta langue préférée pour l’interface du jeu.
+  language_saved: Langue enregistrée
 lands:
   generic:
-    tab_title: "Land – {land}"
-    back_to_select_aria: "Retour à la sélection des lands"
-
+    tab_title: Land – {land}
+    back_to_select_aria: Retour à la sélection des lands
     tools:
-      hands_label: "Mains nues"
-      hands_alt: "Mains nues"
-
+      hands_label: Mains nues
+      hands_alt: Mains nues
     slot:
-      click_to_search: "Clique pour fouiller"
-      add_one: "+1 emplacement"
-      free_card_available: "1 carte gratuite disponible 🎟️"
-      current_cost: "Coût actuel : {cost} 💎"
-      click_to_unlock: "Clique pour débloquer"
-
+      click_to_search: Clique pour fouiller
+      add_one: +1 emplacement
+      free_card_available: 1 carte gratuite disponible 🎟️
+      current_cost: 'Coût actuel : {cost} 💎'
+      click_to_unlock: Clique pour débloquer
     modal:
       confirm:
-        title: "Confirmer l'achat"
-        message: "Es-tu sûr de vouloir acheter un emplacement ?"
+        title: Confirmer l'achat
+        message: Es-tu sûr de vouloir acheter un emplacement ?
       result:
-        title_success: "Emplacement débloqué"
-        message_success: "Nouvel emplacement débloqué."
-
+        title_success: Emplacement débloqué
+        message_success: Nouvel emplacement débloqué.
   select:
-    tab_title: "LodyLand – Sélection des lands"
-    title: "Choisir un land"
-    subtitle: "Tu peux voyager vers l’un de tes lands débloqués."
-    search_placeholder: "Rechercher un land…"
+    tab_title: LodyLand – Sélection des lands
+    title: Choisir un land
+    subtitle: Tu peux voyager vers l’un de tes lands débloqués.
+    search_placeholder: Rechercher un land…
     sections:
-      special: "Lieux spéciaux"
-      normal: "Lands"
-    empty_normal: "Tu n’as encore débloqué aucun land classique."
-
+      special: Lieux spéciaux
+      normal: Lands
+    empty_normal: Tu n’as encore débloqué aucun land classique.
 base:
-  beta_banner: "Version bêta – progression et données susceptibles de changer"
-  ok: "OK"
-
+  beta_banner: Version bêta – progression et données susceptibles de changer
+  ok: OK
   level_zone:
-    title: "Voir la progression des niveaux"
-    level: "Niveau"
-
+    title: Voir la progression des niveaux
+    level: Niveau
   daily_chest:
-    alt: "Coffre quotidien"
-
+    alt: Coffre quotidien
   daily_modal:
-    title: "Coffre ouvert !"
-    streak_current: "Série"
-    streak_best: "Meilleure"
-
+    title: Coffre ouvert !
+    streak_current: Série
+    streak_best: Meilleure
   levelup_modal:
-    title_prefix: "Niveau"
-    title_suffix: "atteint !"
-
+    title_prefix: Niveau
+    title_suffix: atteint !
   levels_modal:
-    title: "Progression des niveaux"
-    subtitle: "Consulte chaque niveau et ses récompenses. Le niveau actuel est surligné."
-
+    title: Progression des niveaux
+    subtitle: Consulte chaque niveau et ses récompenses. Le niveau actuel est surligné.
   quests:
-    title: "Quêtes"
-    subtitle: "Suis ta progression quotidienne, hebdomadaire et l’histoire principale."
-
+    title: Quêtes
+    subtitle: Suis ta progression quotidienne, hebdomadaire et l’histoire principale.
   menu:
-    title: "Menu"
-    close_aria: "Fermer le menu"
-    profile_wip: "Profil (En cours)"
-    lands: "Mes terres"
-    inventory: "Inventaire"
-    logout: "Se déconnecter"
-
+    title: Menu
+    close_aria: Fermer le menu
+    profile_wip: Profil (En cours)
+    lands: Mes terres
+    inventory: Inventaire
+    logout: Se déconnecter
   travel:
-    title: "Voyager vers un land"
-    alt: "Voyage"
-    modal_title: "Voyager"
-    search_placeholder: "Rechercher un land..."
-    confirm: "Aller vers le land sélectionné"
-
+    title: Voyager vers un land
+    alt: Voyage
+    modal_title: Voyager
+    search_placeholder: Rechercher un land...
+    confirm: Aller vers le land sélectionné
   craft:
-    title: "Table de craft"
-    alt: "Craft"
-    view_recipes: "Voir les recettes"
-    no_job: "Aucun craft en cours."
-    ingredients: "Ingrédients disponibles"
-    filter_ingredients: "Filtrer les ingrédients..."
-    recipes: "Recettes"
-    filter_recipes: "Filtrer les recettes..."
-    table: "Table"
-    level: "niveau"
-    perform: "Craft"
-
+    title: Table de craft
+    alt: Craft
+    view_recipes: Voir les recettes
+    no_job: Aucun craft en cours.
+    ingredients: Ingrédients disponibles
+    filter_ingredients: Filtrer les ingrédients...
+    recipes: Recettes
+    filter_recipes: Filtrer les recettes...
+    table: Table
+    level: niveau
+    perform: Craft
   image_viewer:
-    preview_alt: "Aperçu"
-
+    preview_alt: Aperçu
   story:
-    title: "Histoire"
-    avatar_alt: "avatar"
-    done: "J’ai compris"
-
+    title: Histoire
+    avatar_alt: avatar
+    done: J’ai compris
   notebook:
-    title: "Notebook"
-    subtitle: "Guides, lands, récoltes, crafts…"
+    title: Notebook
+    subtitle: Guides, lands, récoltes, crafts…
     tabs:
-      lands: "Lands"
-      crafts: "Crafts"
-      tips: "Conseils"
+      lands: Lands
+      crafts: Crafts
+      tips: Conseils
     sections:
-      lands: "Lands"
-      crafts: "Crafts"
-      tips: "Conseils"
-    lands_desc: "Ici tu verras ce qu’on peut récolter par land (et ce qui reste à débloquer)."
-    wip_crafts: "En cours (prochaine étape : connecter les defs de craft + progression)"
-    wip_tips: "En cours (mini-guides contextuels, objectifs, etc.)"
-
+      lands: Lands
+      crafts: Crafts
+      tips: Conseils
+    lands_desc: Ici tu verras ce qu’on peut récolter par land (et ce qui reste à débloquer).
+    wip_crafts: 'En cours (prochaine étape : connecter les defs de craft + progression)'
+    wip_tips: En cours (mini-guides contextuels, objectifs, etc.)
 inventory:
-  tab_title: "Inventaire — LodyLand"
-  title: "Inventaire"
-  subtitle: "Toutes tes ressources et tes cartes au même endroit."
-
+  tab_title: Inventaire — LodyLand
+  title: Inventaire
+  subtitle: Toutes tes ressources et tes cartes au même endroit.
   placeholders:
-    resource: "Nom ou clé de ressource…"
-    treasure: "Nom ou clé de trésor…"
-    item: "Nom ou clé…"
-    card: "Nom, type ou description…"
-
+    resource: Nom ou clé de ressource…
+    treasure: Nom ou clé de trésor…
+    item: Nom ou clé…
+    card: Nom, type ou description…
   actions:
-    sell_resources: "Vendre des ressources"
-    shop_cards: "Voir les cartes en boutique"
-
+    sell_resources: Vendre des ressources
+    shop_cards: Voir les cartes en boutique
   empty:
-    resources: "Tu n'as pas encore de ressources."
-    treasure: "Tu n'as pas encore de trésors."
-    items: "Tu n'as pas encore d'items."
-    cards: "Tu n'as pas encore de cartes."
-
+    resources: Tu n'as pas encore de ressources.
+    treasure: Tu n'as pas encore de trésors.
+    items: Tu n'as pas encore d'items.
+    cards: Tu n'as pas encore de cartes.
   card_types:
-    all: "Tous les types"
-    land_access: "Lands"
-    boost: "Boosts"
-    recipe: "Recettes"
-    building: "Bâtiments"
-
+    all: Tous les types
+    land_access: Lands
+    boost: Boosts
+    recipe: Recettes
+    building: Bâtiments
 village:
   home:
-    tab_title: "Le Village — LodyLand"
-    title: "Le Village"
-    logo_alt: "Logo du village"
-    subtitle: "Ici, pas de récolte. Juste des villageois, des quêtes, un marché pour vendre tes ressources et des boutiques d’objets spéciaux."
-
+    tab_title: Le Village — LodyLand
+    title: Le Village
+    logo_alt: Logo du village
+    subtitle: Ici, pas de récolte. Juste des villageois, des quêtes, un marché pour
+      vendre tes ressources et des boutiques d’objets spéciaux.
     npcs:
       quests:
-        alt: "Donneur de quêtes"
-        title: "Donneur de quêtes"
-        text: "Reçois ta quête quotidienne, tes missions spéciales et avance dans l’histoire du village. Attention : tu ne peux avoir qu’un nombre limité de quêtes actives."
-        button: "Voir les quêtes"
-
+        alt: Donneur de quêtes
+        title: Donneur de quêtes
+        text: 'Reçois ta quête quotidienne, tes missions spéciales et avance dans
+          l’histoire du village. Attention : tu ne peux avoir qu’un nombre limité
+          de quêtes actives.'
+        button: Voir les quêtes
       market:
-        alt: "Marchand du village"
-        title: "Marché du village"
-        text: "Vends tes ressources aux villageois pour obtenir des coins. Les prix peuvent changer avec le temps, surveille bien le marché."
-        button: "Aller au marché"
-
+        alt: Marchand du village
+        title: Marché du village
+        text: Vends tes ressources aux villageois pour obtenir des coins. Les prix
+          peuvent changer avec le temps, surveille bien le marché.
+        button: Aller au marché
       shop_card:
-        alt: "Boutiquier"
-        title: "Boutique des raretés"
-        text: "Achète des cartes spéciales, des boosts et des recettes rares. Certaines offres sont limitées dans le temps ou en quantité."
-        button: "Voir la boutique"
-
+        alt: Boutiquier
+        title: Boutique des raretés
+        text: Achète des cartes spéciales, des boosts et des recettes rares. Certaines
+          offres sont limitées dans le temps ou en quantité.
+        button: Voir la boutique
       trades:
-        alt: "Marchand d’échanges"
-        title: "Marchand d’échanges"
-        text: "Échange certaines ressources contre des items rares ou des cartes uniques. Certains échanges sont limités par jour ou par rotation."
-        button: "Voir les échanges"
-
+        alt: Marchand d’échanges
+        title: Marchand d’échanges
+        text: Échange certaines ressources contre des items rares ou des cartes uniques.
+          Certains échanges sont limités par jour ou par rotation.
+        button: Voir les échanges
       pedro:
-        alt: "Pedro — Maître constructeur"
-        title: "Pedro — Maître constructeur"
-        text: "Construis des bâtiments permanents en réunissant les matériaux nécessaires. Une fois construits, ils produisent en continu !"
-        button: "Voir les bâtiments"
-        badge_new: "Nouveau !"
-
+        alt: Pedro — Maître constructeur
+        title: Pedro — Maître constructeur
+        text: Construis des bâtiments permanents en réunissant les matériaux nécessaires.
+          Une fois construits, ils produisent en continu !
+        button: Voir les bâtiments
+        badge_new: Nouveau !
   market:
-    tab_title: "Marché du village — LodyLand"
-    title: "Marché du village"
-    logo_alt: "Logo du marché"
-    subtitle: "Ici, tu peux vendre tes ressources aux villageois contre des coins. Garde de quoi crafter et pour les quêtes, le reste peut partir !"
-    back_to_village: "Retour au village"
-
-    prices_hint: "Les prix affichés sont en coins par unité."
-
+    tab_title: Marché du village — LodyLand
+    title: Marché du village
+    logo_alt: Logo du marché
+    subtitle: Ici, tu peux vendre tes ressources aux villageois contre des coins.
+      Garde de quoi crafter et pour les quêtes, le reste peut partir !
+    back_to_village: Retour au village
+    prices_hint: Les prix affichés sont en coins par unité.
     table:
-      resource: "Ressource"
-      stock: "En stock"
-      price_per_unit: "Prix / unité"
-      qty_to_sell: "Qté à vendre"
-      action: "Action"
-
-    loading_row: "Chargement de ton inventaire et des prix du marché..."
-    tip: "Astuce : certaines ressources peuvent valoir plus cher plus tard, ne vends pas tout d'un coup."
-
+      resource: Ressource
+      stock: En stock
+      price_per_unit: Prix / unité
+      qty_to_sell: Qté à vendre
+      action: Action
+    loading_row: Chargement de ton inventaire et des prix du marché...
+    tip: 'Astuce : certaines ressources peuvent valoir plus cher plus tard, ne vends
+      pas tout d''un coup.'
   quests_page:
-    tab_title: "Quêtes du village — LodyLand"
-    title: "Quêtes du village"
-    logo_alt: "Quêtes du village"
-    back_to_village: "Retour au village"
-    subtitle: "Les villageois ont toujours besoin d’aide : accomplis des quêtes quotidiennes, hebdomadaires et de storyline pour gagner des récompenses."
-
+    tab_title: Quêtes du village — LodyLand
+    title: Quêtes du village
+    logo_alt: Quêtes du village
+    back_to_village: Retour au village
+    subtitle: 'Les villageois ont toujours besoin d’aide : accomplis des quêtes quotidiennes,
+      hebdomadaires et de storyline pour gagner des récompenses.'
     panel:
-      title: "Quêtes en cours & terminées"
-      subtitle: "Les quêtes quotidiennes se réinitialisent chaque jour, les quêtes hebdomadaires chaque semaine. L’histoire principale avance une étape à la fois."
-
-    loading: "Chargement des quêtes en cours..."
-
+      title: Quêtes en cours & terminées
+      subtitle: Les quêtes quotidiennes se réinitialisent chaque jour, les quêtes
+        hebdomadaires chaque semaine. L’histoire principale avance une étape à la
+        fois.
+    loading: Chargement des quêtes en cours...
   trades_page:
-    tab_title: "Échanges du village — LodyLand"
-    title: "Échanges du village"
-    back_to_village: "Retour au village"
-    subtitle: "Échange tes ressources rares contre des cartes de boost uniques. Chaque land possède ses propres trésors très difficiles à trouver."
-    loading: "Chargement des offres d'échanges..."
-
+    tab_title: Échanges du village — LodyLand
+    title: Échanges du village
+    back_to_village: Retour au village
+    subtitle: Échange tes ressources rares contre des cartes de boost uniques. Chaque
+      land possède ses propres trésors très difficiles à trouver.
+    loading: Chargement des offres d'échanges...
   shop_page:
-    tab_title: "Card Shop du village — LodyLand"
-    title: "Card Shop du village"
-    logo_alt: "Card Shop du village"
-    back_to_village: "Retour au village"
-    subtitle: "Cartes spéciales, offres limitées dans le temps, stocks rares. Les offres changent régulièrement, garde un œil sur ce Card Shop !"
-
+    tab_title: Card Shop du village — LodyLand
+    title: Card Shop du village
+    logo_alt: Card Shop du village
+    back_to_village: Retour au village
+    subtitle: Cartes spéciales, offres limitées dans le temps, stocks rares. Les offres
+      changent régulièrement, garde un œil sur ce Card Shop !
     info:
-      rotation_weekly: "Rotation hebdomadaire"
-      limited_qty: "Certaines cartes sont en quantité limitée"
-      prices_hint_prefix: "Les prix peuvent être en"
-      coins: "shards"
-      diams: "essence"
-      or: "ou"
-
-    search_placeholder: "Rechercher une carte..."
-
+      rotation_weekly: Rotation hebdomadaire
+      limited_qty: Certaines cartes sont en quantité limitée
+      prices_hint_prefix: Les prix peuvent être en
+      coins: shards
+      diams: essence
+      or: ou
+    search_placeholder: Rechercher une carte...
     empty:
-      title: "Aucune offre disponible pour le moment."
-      subtitle: "Repasse plus tard, les villageois préparent de nouvelles merveilles à vendre."
-
+      title: Aucune offre disponible pour le moment.
+      subtitle: Repasse plus tard, les villageois préparent de nouvelles merveilles
+        à vendre.
     offer:
-      subtitle_card: "Carte spéciale du village"
-      subtitle_item: "Objet spécial ({item_type})"
-      free: "Gratuit"
-      owned_qty: "Tu en possèdes"
-      unavailable: "Indisponible"
-      buy: "Acheter la carte"
-      already_owned: "Déjà possédé"
-      requires_card: "Nécessite :"
-
+      subtitle_card: Carte spéciale du village
+      subtitle_item: Objet spécial ({item_type})
+      free: Gratuit
+      owned_qty: Tu en possèdes
+      unavailable: Indisponible
+      buy: Acheter la carte
+      already_owned: Déjà possédé
+      requires_card: 'Nécessite :'
     filters:
-      all: "Tous"
-      access: "Accès"
-      recipes: "Recettes"
-      lands: "Terres"
-      boosts: "Boosts"
-      other: "Autres"
-
+      all: Tous
+      access: Accès
+      recipes: Recettes
+      lands: Terres
+      boosts: Boosts
+      other: Autres
     modal:
-      close: "Fermer"
-      buy: "Acheter"
-      unavailable: "Non disponible"
-      effect_label: "✦ Effet"
-      price_label: "Prix"
-      owned_label: "Possédé"
-      limit_label: "Limite"
-      free: "Gratuit"
-      buying: "Achat…"
-      bought: "Acheté ✔"
-      buy_error: "Achat impossible"
-      network_error: "Erreur réseau pendant l'achat."
-      requires_card_label: "Nécessite la carte"
-      err_prereq_title: "Prérequis manquant"
-      err_prereq_msg: "Tu dois d'abord posséder la carte :"
-      err_upgraded_title: "Déjà amélioré"
-      err_upgraded_msg: "Tu possèdes déjà une version supérieure :"
-
+      close: Fermer
+      buy: Acheter
+      unavailable: Non disponible
+      effect_label: ✦ Effet
+      price_label: Prix
+      owned_label: Possédé
+      limit_label: Limite
+      free: Gratuit
+      buying: Achat…
+      bought: Acheté ✔
+      buy_error: Achat impossible
+      network_error: Erreur réseau pendant l'achat.
+      requires_card_label: Nécessite la carte
+      err_prereq_title: Prérequis manquant
+      err_prereq_msg: 'Tu dois d''abord posséder la carte :'
+      err_upgraded_title: Déjà amélioré
+      err_upgraded_msg: 'Tu possèdes déjà une version supérieure :'
     gameplay:
-      harvest_bonus: "Bonus récolte"
-      xp_multiplier: "XP ×"
-      xp_suffix: "en permanence"
-      coin_multiplier: "Pièces ×"
-      target_resource: "Ressource cible"
-      unlocks: "Débloque"
-
+      harvest_bonus: Bonus récolte
+      xp_multiplier: XP ×
+      xp_suffix: en permanence
+      coin_multiplier: Pièces ×
+      target_resource: Ressource cible
+      unlocks: Débloque
   pedro:
-    tab_title: "Pedro — Maître constructeur — LodyLand"
-    title: "Pedro — Maître constructeur"
-    back_to_village: "Retour au village"
-    subtitle: "Construisez des bâtiments permanents en réunissant les matériaux nécessaires."
-    locked: "Pedro n'apparaîtra qu'à partir du niveau 11."
-    no_cards: "Tu n'as encore aucune carte de construction. Achète-en une au Card Shop du village !"
-
+    tab_title: Pedro — Maître constructeur — LodyLand
+    title: Pedro — Maître constructeur
+    back_to_village: Retour au village
+    subtitle: Construisez des bâtiments permanents en réunissant les matériaux nécessaires.
+    locked: Pedro n'apparaîtra qu'à partir du niveau 11.
+    no_cards: Tu n'as encore aucune carte de construction. Achète-en une au Card Shop
+      du village !
     grid:
-      title: "Tes bâtiments"
-      empty: "Aucun bâtiment disponible."
-
+      title: Tes bâtiments
+      empty: Aucun bâtiment disponible.
     status:
-      pending_resources: "En attente des ressources"
-      pending_construction: "Prêt à construire"
-      under_construction: "En construction…"
-      operational: "En fonctionnement"
-
+      pending_resources: En attente des ressources
+      pending_construction: Prêt à construire
+      under_construction: En construction…
+      operational: En fonctionnement
     materials:
-      title: "Matériaux nécessaires"
-      progress_label: "Apportés"
-      in_stock: "En stock"
-      deposit_btn: "Déposer"
-      warning_irrecoverable: "⚠ Les ressources déposées sont irrécupérables."
-
+      title: Matériaux nécessaires
+      progress_label: Apportés
+      in_stock: En stock
+      deposit_btn: Déposer
+      warning_irrecoverable: ⚠ Les ressources déposées sont irrécupérables.
     construction:
-      start_btn: "Lancer la construction"
-      time_remaining: "Temps restant"
-      started: "Construction lancée !"
-
+      start_btn: Lancer la construction
+      time_remaining: Temps restant
+      started: Construction lancée !
     production:
-      fuel_label: "Carburant"
-      fuel_add_btn: "Ajouter du carburant"
-      tank_label: "Réservoir"
-      queue_label: "File de production"
-      start_btn: "Lancer"
-      recipe_label: "Recette"
-      duration_label: "Durée"
-
+      fuel_label: Carburant
+      fuel_add_btn: Ajouter du carburant
+      tank_label: Réservoir
+      queue_label: File de production
+      start_btn: Lancer
+      recipe_label: Recette
+      duration_label: Durée
 items:
   branch:
-    label: "Branches"
-    description: "Une branche tombée d'un arbre. Ca peut toujours être utile."
-    unlock_description: "Toujours accessible (niveau 0)."
+    label: Branches
+    description: Une branche tombée d'un arbre. Ca peut toujours être utile.
+    unlock_description: Toujours accessible (niveau 0).
   palm_wood_log:
-    label: "Bûche de palmier"
-    description: "Un bois de palmier solide, idéal pour la construction."
-    unlock_description: "Récoltée dans la Forêt avec une hache en bois."
+    label: Bûche de palmier
+    description: Un bois de palmier solide, idéal pour la construction.
+    unlock_description: Récoltée dans la Forêt avec une hache en bois.
   vine:
-    label: "Liane"
-    description: "Une liane souple et résistante."
-    unlock_description: "Récoltée dans la Forêt à mains nues (rare)."
+    label: Liane
+    description: Une liane souple et résistante.
+    unlock_description: Récoltée dans la Forêt à mains nues (rare).
   stone:
-    label: "Pierre"
-    description: "Un bloc de pierre solide."
-    unlock_description: "Récoltée dans la Caverne ou le Désert."
+    label: Pierre
+    description: Un bloc de pierre solide.
+    unlock_description: Récoltée dans la Caverne ou le Désert.
   sand:
-    label: "Sable"
-    description: "Du sable fin de plage."
-    unlock_description: "Récoltée sur la Plage à mains nues."
+    label: Sable
+    description: Du sable fin de plage.
+    unlock_description: Récoltée sur la Plage à mains nues.
   iron_ore:
-    label: "Minerai de fer"
-    description: "Un minerai de fer brut."
-    unlock_description: "Récoltée dans la Caverne avec une pioche."
+    label: Minerai de fer
+    description: Un minerai de fer brut.
+    unlock_description: Récoltée dans la Caverne avec une pioche.
   seashell:
-    label: "Coquillage"
-    description: "Un joli coquillage de plage."
-    unlock_description: "Trouvé sur la Plage à mains nues (rare)."
+    label: Coquillage
+    description: Un joli coquillage de plage.
+    unlock_description: Trouvé sur la Plage à mains nues (rare).
   gold_leaf:
-    label: "Feuille d'or"
-    description: "Une fine feuille d'or scintillante."
-    unlock_description: "Trouvée dans la Caverne (rare)."
+    label: Feuille d'or
+    description: Une fine feuille d'or scintillante.
+    unlock_description: Trouvée dans la Caverne (rare).
   bark:
-    label: "Écorce"
-    description: "De l'écorce d'arbre séchée."
-    unlock_description: "Récoltée dans la Forêt avec un couteau en bois."
+    label: Écorce
+    description: De l'écorce d'arbre séchée.
+    unlock_description: Récoltée dans la Forêt avec un couteau en bois.
   resin:
-    label: "Résine"
-    description: "De la résine d'arbre collante."
-    unlock_description: "Récoltée dans la Forêt avec un couteau en bois (rare)."
+    label: Résine
+    description: De la résine d'arbre collante.
+    unlock_description: Récoltée dans la Forêt avec un couteau en bois (rare).
   pearl:
-    label: "Perle"
-    description: "Une perle rare et précieuse."
-    unlock_description: "Trouvée sur la Plage à mains nues (rare)."
+    label: Perle
+    description: Une perle rare et précieuse.
+    unlock_description: Trouvée sur la Plage à mains nues (rare).
   small_stone:
-    label: "Petite pierre"
-    description: "Une petite pierre ramassée au sol."
-    unlock_description: "Trouvée dans la Forêt (rare)."
+    label: Petite pierre
+    description: Une petite pierre ramassée au sol.
+    unlock_description: Trouvée dans la Forêt (rare).
   oak_wood:
-    label: "Bois de chêne"
-    description: "Un bois de chêne dur et résistant."
-    unlock_description: "Récolté dans la Forêt."
+    label: Bois de chêne
+    description: Un bois de chêne dur et résistant.
+    unlock_description: Récolté dans la Forêt.
+  stone_chunk:
+    label: Pierre
+  item:
+    label: Planche de bois

@@ -1,629 +1,548 @@
-# app/i18n/translations/en.yml
-# English translations for LodyLand (cleaned: generic UI strings centralized; page keys keep only page-specific text)
-
 ui:
   brand:
-    welcome: "Welcome to LodyLand"
-
+    welcome: Welcome to LodyLand
   states:
-    loading: "Loading..."
-    wip: "WIP"
-    error: "An error occurred"
-    success: "Success!"
-
+    loading: Loading...
+    wip: WIP
+    error: An error occurred
+    success: Success!
   actions:
-    ok: "OK"
-    confirm: "Confirm"
-    cancel: "Cancel"
-    close: "Close"
-    save: "Save"
-    delete: "Delete"
-    buy: "Buy"
-    sell: "Sell"
-    craft: "Craft"
-    unlock: "Unlock"
-    claim: "Claim"
-
+    ok: OK
+    confirm: Confirm
+    cancel: Cancel
+    close: Close
+    save: Save
+    delete: Delete
+    buy: Buy
+    sell: Sell
+    craft: Craft
+    unlock: Unlock
+    claim: Claim
   nav:
-    back: "Back"
-    next: "Next"
-    home: "Home"
-
+    back: Back
+    next: Next
+    home: Home
   sections:
-    inventory: "Inventory"
-    shop: "Shop"
-    quests: "Quests"
-    profile: "Profile"
-    menu: "Menu"
-
+    inventory: Inventory
+    shop: Shop
+    quests: Quests
+    profile: Profile
+    menu: Menu
   auth:
-    login: "Log in"
-    register: "Sign up"
-    logout: "Log out"
-    username: "Username"
-    password: "Password"
-    email: "Email"
-
+    login: Log in
+    register: Sign up
+    logout: Log out
+    username: Username
+    password: Password
+    email: Email
   fields:
-    search: "Search"
-    quantity: "Quantity"
-    type: "Type"
-    total: "Total"
-
+    search: Search
+    quantity: Quantity
+    type: Type
+    total: Total
 hud:
-  level: "Level"
-  xp: "XP"
-  xp_short: "XP"
-  next_level: "Next level"
-  daily_chest: "Daily chest"
-  travel: "Travel"
-  menu: "Menu"
-
+  level: Level
+  xp: XP
+  xp_short: XP
+  next_level: Next level
+  daily_chest: Daily chest
+  travel: Travel
+  menu: Menu
   tooltip:
-    level: "Level {level} • {xp}/{next_xp} XP"
-    daily_available: "Chest available!"
-    daily_claimed: "Come back tomorrow"
-    daily_streak: "Streak: {streak} days"
-
+    level: Level {level} • {xp}/{next_xp} XP
+    daily_available: Chest available!
+    daily_claimed: Come back tomorrow
+    daily_streak: 'Streak: {streak} days'
 game:
   collect:
-    success: "You found"
-    nothing: "Found nothing..."
-    cooldown: "Available in {seconds}s"
-    locked: "Tile locked"
-
+    success: You found
+    nothing: Found nothing...
+    cooldown: Available in {seconds}s
+    locked: Tile locked
   craft:
-    title: "Crafting"
-    available: "Available recipes"
-    locked: "Recipe locked"
-    craft_success: "Item crafted!"
-    not_enough_resources: "Insufficient resources"
-    requirements: "Requirements"
-
+    title: Crafting
+    available: Available recipes
+    locked: Recipe locked
+    craft_success: Item crafted!
+    not_enough_resources: Insufficient resources
+    requirements: Requirements
   level_up:
-    title: "Level Up!"
-    new_level: "Level {level}"
-    rewards: "Rewards"
-
+    title: Level Up!
+    new_level: Level {level}
+    rewards: Rewards
   quests:
-    title: "Quests"
-    active: "Active"
-    completed: "Completed"
-    available: "Available"
-    claim_reward: "Claim reward"
-    objectives: "Objectives"
-    rewards: "Rewards"
-    progress: "{current}/{target}"
-    expired: "Expired"
-
+    title: Quests
+    active: Active
+    completed: Completed
+    available: Available
+    claim_reward: Claim reward
+    objectives: Objectives
+    rewards: Rewards
+    progress: '{current}/{target}'
+    expired: Expired
     types:
-      daily: "Daily quest"
-      weekly: "Weekly quest"
-      storyline: "Main quest"
-
+      daily: Daily quest
+      weekly: Weekly quest
+      storyline: Main quest
   lands:
-    title: "Travel"
-    select: "Select a destination"
-    locked: "Locked"
-    unlock_with: "Unlock with"
-    slots: "Slots"
-    buy_slot: "Buy slot"
-
+    title: Travel
+    select: Select a destination
+    locked: Locked
+    unlock_with: Unlock with
+    slots: Slots
+    buy_slot: Buy slot
   market:
-    title: "Market"
-    sell_price: "Sell price"
-    transaction_success: "Sale successful!"
-
+    title: Market
+    sell_price: Sell price
+    transaction_success: Sale successful!
   shop:
-    title: "Shop"
-    owned: "Owned"
-    purchase_limit: "Purchase limit"
-    purchase_success: "Purchase successful!"
-    not_enough_currency: "Not enough {currency}"
-
+    title: Shop
+    owned: Owned
+    purchase_limit: Purchase limit
+    purchase_success: Purchase successful!
+    not_enough_currency: Not enough {currency}
 errors:
-  not_found: "Not found"
-  not_authenticated: "Not authenticated"
-  not_authorized: "Not authorized"
-  invalid_input: "Invalid input"
-  server_error: "Server error"
-  network_error: "Network error"
-
-  cooldown_active: "Action on cooldown"
-  insufficient_resources: "Insufficient resources"
-  insufficient_currency: "Not enough {currency}"
-  level_required: "Level {level} required"
-  item_locked: "Item locked"
-  quest_not_ready: "Quest not ready yet"
-  already_owned: "Already owned"
-  language_change_failed: "Failed to change language. Please try again."
-
+  not_found: Not found
+  not_authenticated: Not authenticated
+  not_authorized: Not authorized
+  invalid_input: Invalid input
+  server_error: Server error
+  network_error: Network error
+  cooldown_active: Action on cooldown
+  insufficient_resources: Insufficient resources
+  insufficient_currency: Not enough {currency}
+  level_required: Level {level} required
+  item_locked: Item locked
+  quest_not_ready: Quest not ready yet
+  already_owned: Already owned
+  language_change_failed: Failed to change language. Please try again.
 story:
-  skip: "Skip"
+  skip: Skip
   speakers:
-    self: "Me"
-    mysterious_voice: "Mysterious voice"
-    npc_villager_guide: "Village guide"
-
+    self: Me
+    mysterious_voice: Mysterious voice
+    npc_villager_guide: Village guide
   moods:
-    confused: "Confused"
-    lost: "Lost"
-    thinking: "Thinking"
-    surprised: "Surprised"
-    determined: "Determined"
-    worried: "Worried"
-    curious: "Curious"
-    friendly: "Friendly"
-    explaining: "Explaining"
-
+    confused: Confused
+    lost: Lost
+    thinking: Thinking
+    surprised: Surprised
+    determined: Determined
+    worried: Worried
+    curious: Curious
+    friendly: Friendly
+    explaining: Explaining
 resources:
   categories:
-    basic: "Basic"
-    rare: "Rare"
-    treasure: "Treasure"
-
-  collected: "Collected"
-  crafted: "Crafted"
-  received: "Received"
-
+    basic: Basic
+    rare: Rare
+    treasure: Treasure
+  collected: Collected
+  crafted: Crafted
+  received: Received
 cards:
   types:
-    resource_boost: "Resource boost"
-    xp_boost: "XP boost"
-    cooldown_boost: "Cooldown reduction"
-    land_loot_boost: "Loot boost"
-    unlock_land: "Land unlock"
-
+    resource_boost: Resource boost
+    xp_boost: XP boost
+    cooldown_boost: Cooldown reduction
+    land_loot_boost: Loot boost
+    unlock_land: Land unlock
   rarity:
-    common: "Common"
-    uncommon: "Uncommon"
-    rare: "Rare"
-    epic: "Epic"
-    legendary: "Legendary"
-
+    common: Common
+    uncommon: Uncommon
+    rare: Rare
+    epic: Epic
+    legendary: Legendary
 time:
   units:
-    seconds: "seconds"
-    minutes: "minutes"
-    hours: "hours"
-    days: "days"
-
-  ago: "{time} ago"
-  in: "in {time}"
-
-  just_now: "Just now"
-  today: "Today"
-  yesterday: "Yesterday"
-  tomorrow: "Tomorrow"
-
+    seconds: seconds
+    minutes: minutes
+    hours: hours
+    days: days
+  ago: '{time} ago'
+  in: in {time}
+  just_now: Just now
+  today: Today
+  yesterday: Yesterday
+  tomorrow: Tomorrow
 numbers:
-  none: "None"
-  unlimited: "Unlimited"
-  max: "Max"
-
+  none: None
+  unlimited: Unlimited
+  max: Max
   items:
-    one: "{count} item"
-    other: "{count} items"
-
+    one: '{count} item'
+    other: '{count} items'
   resources:
-    one: "{count} resource"
-    other: "{count} resources"
-
+    one: '{count} resource'
+    other: '{count} resources'
   cards:
-    one: "{count} card"
-    other: "{count} cards"
-
+    one: '{count} card'
+    other: '{count} cards'
 notifications:
-  quest_completed: "Quest completed!"
-  quest_available: "New quest available"
-  level_up: "Level up!"
-  daily_chest_available: "Daily chest available"
-  achievement_unlocked: "Achievement unlocked"
-  item_crafted: "Item crafted"
-  purchase_complete: "Purchase complete"
-
+  quest_completed: Quest completed!
+  quest_available: New quest available
+  level_up: Level up!
+  daily_chest_available: Daily chest available
+  achievement_unlocked: Achievement unlocked
+  item_crafted: Item crafted
+  purchase_complete: Purchase complete
 profile:
-  title: "My Profile"
-  subtitle: "View and manage your LodyLand account information."
-
+  title: My Profile
+  subtitle: View and manage your LodyLand account information.
   sections:
-    player: "Player"
-    account: "Account"
-    statistics: "Statistics"
-    history: "History"
-
+    player: Player
+    account: Account
+    statistics: Statistics
+    history: History
   labels:
-    pseudo: "Username"
-    level: "Level"
-    title: "Title"
-    email: "Email"
-    password: "Password"
-    registration_date: "Registration date"
-    email_verification: "Email verification"
-
+    pseudo: Username
+    level: Level
+    title: Title
+    email: Email
+    password: Password
+    registration_date: Registration date
+    email_verification: Email verification
   values:
-    undefined: "Not defined"
-    unknown: "Unknown"
-    in_progress: "In progress"
-    wip: "(WIP)"
-
+    undefined: Not defined
+    unknown: Unknown
+    in_progress: In progress
+    wip: (WIP)
   buttons:
-    change_avatar: "Change avatar"
-    change_avatar_coming: "Change avatar (coming soon)"
-    modify_password: "Modify"
-    modify_password_coming: "Modify (coming soon)"
-
+    change_avatar: Change avatar
+    change_avatar_coming: Change avatar (coming soon)
+    modify_password: Modify
+    modify_password_coming: Modify (coming soon)
   stats:
-    lands_unlocked: "Lands unlocked"
-    slots: "Slots"
-    quests_completed: "Quests completed"
-    level: "Level"
-    playtime: "Playtime"
-    total_xp: "Total XP"
-    to_implement: "To implement"
-    coming_soon: "coming soon"
-    quest_types: "Story / daily / weekly"
-
+    lands_unlocked: Lands unlocked
+    slots: Slots
+    quests_completed: Quests completed
+    level: Level
+    playtime: Playtime
+    total_xp: Total XP
+    to_implement: To implement
+    coming_soon: coming soon
+    quest_types: Story / daily / weekly
   titles:
-    beginner_explorer: "Beginner Explorer"
-
+    beginner_explorer: Beginner Explorer
   history:
-    description: "Access the history of your purchases and sales in the game."
-    resources_sold: "Resources sold (coming soon)"
-    cards_bought: "Cards bought (coming soon)"
-    slots_bought: "Slots bought (coming soon)"
-    other_transactions: "Other transactions (coming soon)"
-  
+    description: Access the history of your purchases and sales in the game.
+    resources_sold: Resources sold (coming soon)
+    cards_bought: Cards bought (coming soon)
+    slots_bought: Slots bought (coming soon)
+    other_transactions: Other transactions (coming soon)
   beta:
-    title: "Beta Zone — Reset"
-    description: "Resets your progression (level, resources, cards, quests). Your account is kept."
-    button: "Reset my progression"
-    modal_title: "Confirm reset"
-    modal_warning: "⚠️ This action is irreversible. The following will be erased:"
-    modal_list: "Level & XP · Shards & Essence · Cards (received and purchased) · Resources · Quests · Mini-games · Lands & slots"
-    modal_kept: "✅ Your email, username and password are kept."
-    modal_confirm_label: "Type your username to confirm:"
-    modal_error: "Wrong username. Try again."
-    modal_cancel: "Cancel"
-    modal_confirm_btn: "Reset permanently"
-
+    title: Beta Zone — Reset
+    description: Resets your progression (level, resources, cards, quests). Your account
+      is kept.
+    button: Reset my progression
+    modal_title: Confirm reset
+    modal_warning: '⚠️ This action is irreversible. The following will be erased:'
+    modal_list: Level & XP · Shards & Essence · Cards (received and purchased) · Resources
+      · Quests · Mini-games · Lands & slots
+    modal_kept: ✅ Your email, username and password are kept.
+    modal_confirm_label: 'Type your username to confirm:'
+    modal_error: Wrong username. Try again.
+    modal_cancel: Cancel
+    modal_confirm_btn: Reset permanently
 settings:
-  language: "Language"
-  language_description: "Choose your preferred language for the game interface."
-  language_saved: "Language saved"
-
+  language: Language
+  language_description: Choose your preferred language for the game interface.
+  language_saved: Language saved
 lands:
   generic:
-    tab_title: "Land – {land}"
-    back_to_select_aria: "Back to land selection"
-
+    tab_title: Land – {land}
+    back_to_select_aria: Back to land selection
     tools:
-      hands_label: "Bare hands"
-      hands_alt: "Bare hands"
-
+      hands_label: Bare hands
+      hands_alt: Bare hands
     slot:
-      click_to_search: "Tap to search"
-      add_one: "+1 slot"
-      free_card_available: "1 free card available 🎟️"
-      current_cost: "Current cost: {cost} 💎"
-      click_to_unlock: "Tap to unlock"
-
+      click_to_search: Tap to search
+      add_one: +1 slot
+      free_card_available: 1 free card available 🎟️
+      current_cost: 'Current cost: {cost} 💎'
+      click_to_unlock: Tap to unlock
     modal:
       confirm:
-        title: "Confirm purchase"
-        message: "Are you sure you want to buy a slot?"
+        title: Confirm purchase
+        message: Are you sure you want to buy a slot?
       result:
-        title_success: "Slot unlocked"
-        message_success: "New slot unlocked."
-
+        title_success: Slot unlocked
+        message_success: New slot unlocked.
   select:
-    tab_title: "LodyLand – Land selection"
-    title: "Choose a land"
-    subtitle: "You can travel to one of your unlocked lands."
-    search_placeholder: "Search a land…"
+    tab_title: LodyLand – Land selection
+    title: Choose a land
+    subtitle: You can travel to one of your unlocked lands.
+    search_placeholder: Search a land…
     sections:
-      special: "Special places"
-      normal: "Lands"
-    empty_normal: "You haven't unlocked any normal land yet."
-
+      special: Special places
+      normal: Lands
+    empty_normal: You haven't unlocked any normal land yet.
 base:
-  beta_banner: "Beta version – progression and data may change"
-  ok: "OK"
+  beta_banner: Beta version – progression and data may change
+  ok: OK
   level_zone:
-    title: "View level progression"
-    level: "Level"
-
+    title: View level progression
+    level: Level
   daily_chest:
-    alt: "Daily chest"
-
+    alt: Daily chest
   daily_modal:
-    title: "Chest opened!"
-    streak_current: "Streak"
-    streak_best: "Best"
-
+    title: Chest opened!
+    streak_current: Streak
+    streak_best: Best
   levelup_modal:
-    title_prefix: "Level"
-    title_suffix: "reached!"
-
+    title_prefix: Level
+    title_suffix: reached!
   levels_modal:
-    title: "Level progression"
-    subtitle: "Check each level and its rewards. The current level is highlighted."
-
+    title: Level progression
+    subtitle: Check each level and its rewards. The current level is highlighted.
   quests:
-    title: "Quests"
-    subtitle: "Track your daily, weekly, and main story progression."
-
+    title: Quests
+    subtitle: Track your daily, weekly, and main story progression.
   menu:
-    title: "Menu"
-    close_aria: "Close menu"
-    profile_wip: "Profile (WIP)"
-    lands: "Lands"
-    inventory: "Inventory"
-    logout: "Log out"
-
+    title: Menu
+    close_aria: Close menu
+    profile_wip: Profile (WIP)
+    lands: Lands
+    inventory: Inventory
+    logout: Log out
   travel:
-    title: "Travel to a land"
-    alt: "Travel"
-    modal_title: "Travel"
-    search_placeholder: "Search a land..."
-    confirm: "Go to selected land"
-
+    title: Travel to a land
+    alt: Travel
+    modal_title: Travel
+    search_placeholder: Search a land...
+    confirm: Go to selected land
   craft:
-    title: "Crafting table"
-    alt: "Craft"
-    view_recipes: "View recipes"
-    no_job: "No craft in progress."
-    ingredients: "Available ingredients"
-    filter_ingredients: "Filter ingredients..."
-    recipes: "Recipes"
-    filter_recipes: "Filter recipes..."
-    table: "Table"
-    level: "level"
-    perform: "Craft"
-
+    title: Crafting table
+    alt: Craft
+    view_recipes: View recipes
+    no_job: No craft in progress.
+    ingredients: Available ingredients
+    filter_ingredients: Filter ingredients...
+    recipes: Recipes
+    filter_recipes: Filter recipes...
+    table: Table
+    level: level
+    perform: Craft
   image_viewer:
-    preview_alt: "Preview"
-
+    preview_alt: Preview
   story:
-    title: "Story"
-    avatar_alt: "avatar"
-    done: "Got it"
-    next: "Next"
-
+    title: Story
+    avatar_alt: avatar
+    done: Got it
+    next: Next
   notebook:
-    title: "Notebook"
-    subtitle: "Guides, lands, gathering, crafts…"
+    title: Notebook
+    subtitle: Guides, lands, gathering, crafts…
     tabs:
-      lands: "Lands"
-      crafts: "Crafts"
-      tips: "Tips"
+      lands: Lands
+      crafts: Crafts
+      tips: Tips
     sections:
-      lands: "Lands"
-      crafts: "Crafts"
-      tips: "Tips"
-    lands_desc: "Here you’ll see what you can gather per land (and what’s still locked)."
-    wip_crafts: "WIP (Next step: connect your craft defs + progression gating)"
-    wip_tips: "WIP (Next step: contextual mini-guides, objectives, etc.)"
-
+      lands: Lands
+      crafts: Crafts
+      tips: Tips
+    lands_desc: Here you’ll see what you can gather per land (and what’s still locked).
+    wip_crafts: 'WIP (Next step: connect your craft defs + progression gating)'
+    wip_tips: 'WIP (Next step: contextual mini-guides, objectives, etc.)'
 inventory:
-  tab_title: "Inventory — LodyLand"
-  title: "Inventory"
-  subtitle: "All your resources and cards in one place."
-
+  tab_title: Inventory — LodyLand
+  title: Inventory
+  subtitle: All your resources and cards in one place.
   placeholders:
-    resource: "Resource name or key…"
-    treasure: "Treasure name or key…"
-    item: "Name or key…"
-    card: "Name, type, or description…"
-
+    resource: Resource name or key…
+    treasure: Treasure name or key…
+    item: Name or key…
+    card: Name, type, or description…
   actions:
-    sell_resources: "Sell resources"
-    shop_cards: "View cards in the shop"
-
+    sell_resources: Sell resources
+    shop_cards: View cards in the shop
   empty:
-    resources: "You don't have any resources yet."
-    treasure: "You don't have any treasures yet."
-    items: "You don't have any items yet."
-    cards: "You don't have any cards yet."
-
+    resources: You don't have any resources yet.
+    treasure: You don't have any treasures yet.
+    items: You don't have any items yet.
+    cards: You don't have any cards yet.
   card_types:
-    all: "All types"
-    land_access: "Lands"
-    boost: "Boosts"
-    recipe: "Recipes"
-    building: "Buildings"
-
+    all: All types
+    land_access: Lands
+    boost: Boosts
+    recipe: Recipes
+    building: Buildings
   tabs:
-    resources: "Resources"
-    treasure: "Treasures"
-    items: "Items"
-    cards: "Cards"
-
+    resources: Resources
+    treasure: Treasures
+    items: Items
+    cards: Cards
 village:
   home:
-    tab_title: "The Village — LodyLand"
-    title: "The Village"
-    logo_alt: "Village logo"
-    subtitle: "No gathering here. Just villagers, quests, a market to sell your resources, and shops with special items."
-
+    tab_title: The Village — LodyLand
+    title: The Village
+    logo_alt: Village logo
+    subtitle: No gathering here. Just villagers, quests, a market to sell your resources,
+      and shops with special items.
     npcs:
       quests:
-        alt: "Quest giver"
-        title: "Quest giver"
-        text: "Get your daily quest, special missions, and progress through the village story. Note: you can only have a limited number of active quests."
-        button: "View quests"
-
+        alt: Quest giver
+        title: Quest giver
+        text: 'Get your daily quest, special missions, and progress through the village
+          story. Note: you can only have a limited number of active quests.'
+        button: View quests
       market:
-        alt: "Village merchant"
-        title: "Village market"
-        text: "Sell your resources to villagers to earn coins. Prices may change over time, so keep an eye on the market."
-        button: "Go to market"
-
+        alt: Village merchant
+        title: Village market
+        text: Sell your resources to villagers to earn coins. Prices may change over
+          time, so keep an eye on the market.
+        button: Go to market
       shop_card:
-        alt: "Shopkeeper"
-        title: "Rarities shop"
-        text: "Buy special cards, boosts, and rare recipes. Some offers are limited in time or quantity."
-        button: "View shop"
-
+        alt: Shopkeeper
+        title: Rarities shop
+        text: Buy special cards, boosts, and rare recipes. Some offers are limited
+          in time or quantity.
+        button: View shop
       trades:
-        alt: "Trade merchant"
-        title: "Trade merchant"
-        text: "Trade certain resources for rare items or unique cards. Some trades are limited per day or per rotation."
-        button: "View trades"
-
+        alt: Trade merchant
+        title: Trade merchant
+        text: Trade certain resources for rare items or unique cards. Some trades
+          are limited per day or per rotation.
+        button: View trades
       pedro:
-        alt: "Pedro — Master Builder"
-        title: "Pedro — Master Builder"
-        text: "Build permanent structures by gathering required materials. Once built, they produce continuously!"
-        button: "View buildings"
-        badge_new: "New!"
-
+        alt: Pedro — Master Builder
+        title: Pedro — Master Builder
+        text: Build permanent structures by gathering required materials. Once built,
+          they produce continuously!
+        button: View buildings
+        badge_new: New!
   market:
-    tab_title: "Village market — LodyLand"
-    title: "Village market"
-    logo_alt: "Market logo"
-    subtitle: "Here you can sell your resources to villagers for coins. Keep what you need for crafting and quests — the rest can go!"
-    back_to_village: "Back to village"
-
-    prices_hint: "Displayed prices are coins per unit."
-
+    tab_title: Village market — LodyLand
+    title: Village market
+    logo_alt: Market logo
+    subtitle: Here you can sell your resources to villagers for coins. Keep what you
+      need for crafting and quests — the rest can go!
+    back_to_village: Back to village
+    prices_hint: Displayed prices are coins per unit.
     table:
-      resource: "Resource"
-      stock: "In stock"
-      price_per_unit: "Price / unit"
-      qty_to_sell: "Qty to sell"
-      action: "Action"
-
-    loading_row: "Loading your inventory and current market prices..."
-    tip: "Tip: some resources may be worth more later — don’t sell everything at once."
-
+      resource: Resource
+      stock: In stock
+      price_per_unit: Price / unit
+      qty_to_sell: Qty to sell
+      action: Action
+    loading_row: Loading your inventory and current market prices...
+    tip: 'Tip: some resources may be worth more later — don’t sell everything at once.'
   quests_page:
-    tab_title: "Village quests — LodyLand"
-    title: "Village quests"
-    logo_alt: "Village quests"
-    back_to_village: "Back to village"
-    subtitle: "Villagers always need help: complete daily, weekly, and storyline quests to earn rewards."
-
+    tab_title: Village quests — LodyLand
+    title: Village quests
+    logo_alt: Village quests
+    back_to_village: Back to village
+    subtitle: 'Villagers always need help: complete daily, weekly, and storyline quests
+      to earn rewards.'
     panel:
-      title: "Running & completed quests"
-      subtitle: "Daily quests reset every day, weekly quests every week. The main story progresses one step at a time."
-
-    loading: "Loading active quests..."
-
+      title: Running & completed quests
+      subtitle: Daily quests reset every day, weekly quests every week. The main story
+        progresses one step at a time.
+    loading: Loading active quests...
   trades_page:
-    tab_title: "Village trades — LodyLand"
-    title: "Village trades"
-    back_to_village: "Back to village"
-    subtitle: "Trade your rare resources for unique boost cards. Each land has its own treasures that are very hard to find."
-    loading: "Loading trade offers..."
-
+    tab_title: Village trades — LodyLand
+    title: Village trades
+    back_to_village: Back to village
+    subtitle: Trade your rare resources for unique boost cards. Each land has its
+      own treasures that are very hard to find.
+    loading: Loading trade offers...
   shop_page:
-    tab_title: "Village card shop — LodyLand"
-    title: "Village card shop"
-    logo_alt: "Village card shop"
-    back_to_village: "Back to village"
-    subtitle: "Special cards, limited-time offers, rare stock. Offers change regularly—keep an eye on the shop!"
-
+    tab_title: Village card shop — LodyLand
+    title: Village card shop
+    logo_alt: Village card shop
+    back_to_village: Back to village
+    subtitle: Special cards, limited-time offers, rare stock. Offers change regularly—keep
+      an eye on the shop!
     info:
-      rotation_weekly: "Weekly rotation"
-      limited_qty: "Some cards are limited in quantity"
-      prices_hint_prefix: "Prices can be in"
-      coins: "shards"
-      diams: "essence"
-      or: "or"
-
-    search_placeholder: "Search a card..."
-
+      rotation_weekly: Weekly rotation
+      limited_qty: Some cards are limited in quantity
+      prices_hint_prefix: Prices can be in
+      coins: shards
+      diams: essence
+      or: or
+    search_placeholder: Search a card...
     empty:
-      title: "No offers available right now."
-      subtitle: "Come back later—villagers are preparing new wonders to sell."
-
+      title: No offers available right now.
+      subtitle: Come back later—villagers are preparing new wonders to sell.
     offer:
-      subtitle_card: "Special village card"
-      subtitle_item: "Special item ({item_type})"
-      free: "Free"
-      owned_qty: "You own"
-      unavailable: "Unavailable"
-      buy: "Buy Card"
-      already_owned: "Already owned"
-      requires_card: "Requires:"
-
+      subtitle_card: Special village card
+      subtitle_item: Special item ({item_type})
+      free: Free
+      owned_qty: You own
+      unavailable: Unavailable
+      buy: Buy Card
+      already_owned: Already owned
+      requires_card: 'Requires:'
     filters:
-      all: "All"
-      access: "Access"
-      recipes: "Recipes"
-      lands: "Lands"
-      boosts: "Boosts"
-      other: "Others"
-
+      all: All
+      access: Access
+      recipes: Recipes
+      lands: Lands
+      boosts: Boosts
+      other: Others
     modal:
-      close: "Close"
-      buy: "Buy"
-      unavailable: "Unavailable"
-      effect_label: "✦ Effect"
-      price_label: "Price"
-      owned_label: "Owned"
-      limit_label: "Limit"
-      free: "Free"
-      buying: "Buying…"
-      bought: "Bought ✔"
-      buy_error: "Purchase failed"
-      network_error: "Network error during purchase."
-      requires_card_label: "Requires card"
-      err_prereq_title: "Missing prerequisite"
-      err_prereq_msg: "You must first own the card:"
-      err_upgraded_title: "Already upgraded"
-      err_upgraded_msg: "You already own a higher-tier version:"
-
+      close: Close
+      buy: Buy
+      unavailable: Unavailable
+      effect_label: ✦ Effect
+      price_label: Price
+      owned_label: Owned
+      limit_label: Limit
+      free: Free
+      buying: Buying…
+      bought: Bought ✔
+      buy_error: Purchase failed
+      network_error: Network error during purchase.
+      requires_card_label: Requires card
+      err_prereq_title: Missing prerequisite
+      err_prereq_msg: 'You must first own the card:'
+      err_upgraded_title: Already upgraded
+      err_upgraded_msg: 'You already own a higher-tier version:'
     gameplay:
-      harvest_bonus: "Harvest bonus"
-      xp_multiplier: "XP ×"
-      xp_suffix: "permanently"
-      coin_multiplier: "Coins ×"
-      target_resource: "Target resource"
-      unlocks: "Unlocks"
-
+      harvest_bonus: Harvest bonus
+      xp_multiplier: XP ×
+      xp_suffix: permanently
+      coin_multiplier: Coins ×
+      target_resource: Target resource
+      unlocks: Unlocks
   pedro:
-    tab_title: "Pedro — Master Builder — LodyLand"
-    title: "Pedro — Master Builder"
-    back_to_village: "Back to village"
-    subtitle: "Build permanent structures by gathering the required materials."
-    locked: "Pedro will appear once you reach level 11."
-    no_cards: "You don't have any building cards yet. Buy one at the Village Card Shop!"
-
+    tab_title: Pedro — Master Builder — LodyLand
+    title: Pedro — Master Builder
+    back_to_village: Back to village
+    subtitle: Build permanent structures by gathering the required materials.
+    locked: Pedro will appear once you reach level 11.
+    no_cards: You don't have any building cards yet. Buy one at the Village Card Shop!
     grid:
-      title: "Your buildings"
-      empty: "No buildings available."
-
+      title: Your buildings
+      empty: No buildings available.
     status:
-      pending_resources: "Awaiting resources"
-      pending_construction: "Ready to build"
-      under_construction: "Under construction…"
-      operational: "Operational"
-
+      pending_resources: Awaiting resources
+      pending_construction: Ready to build
+      under_construction: Under construction…
+      operational: Operational
     materials:
-      title: "Required materials"
-      progress_label: "Deposited"
-      in_stock: "In stock"
-      deposit_btn: "Deposit"
-      warning_irrecoverable: "⚠ Deposited resources cannot be recovered."
-
+      title: Required materials
+      progress_label: Deposited
+      in_stock: In stock
+      deposit_btn: Deposit
+      warning_irrecoverable: ⚠ Deposited resources cannot be recovered.
     construction:
-      start_btn: "Start construction"
-      time_remaining: "Time remaining"
-      started: "Construction started!"
-
+      start_btn: Start construction
+      time_remaining: Time remaining
+      started: Construction started!
     production:
-      fuel_label: "Fuel"
-      fuel_add_btn: "Add fuel"
-      tank_label: "Tank"
-      queue_label: "Production queue"
-      start_btn: "Start"
-      recipe_label: "Recipe"
-      duration_label: "Duration"
-
+      fuel_label: Fuel
+      fuel_add_btn: Add fuel
+      tank_label: Tank
+      queue_label: Production queue
+      start_btn: Start
+      recipe_label: Recipe
+      duration_label: Duration
 items:
   branch:
-    label: "Branch"
-    description: "A branch fallen from a tree. Could always be useful."
-    unlock_description: "Always accessible (level 0)."
+    label: Branch
+    description: A branch fallen from a tree. Could always be useful.
+    unlock_description: Always accessible (level 0).
+  stone_chunk: {}
+  item:
+    label: Wooden plank
