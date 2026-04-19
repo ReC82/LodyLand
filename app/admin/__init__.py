@@ -1865,3 +1865,127 @@ def delete_tool(key: str):
         return jsonify({"ok": True})
     finally:
         session.close()
+
+
+# =============================================================================
+# GIVEAWAY
+# =============================================================================
+
+@admin_bp.get("/giveaway/")
+@admin_required(permission="view_dashboard")
+def giveaway_list():
+    """Giveaway page: give/remove currencies, cards, resources and items to players."""
+    import app.craft_defs as craft_defs
+
+    with SessionLocal() as session:
+        players = session.query(Player).order_by(Player.name).all()
+        players_data = [{"id": p.id, "name": p.name, "shards": p.shards, "essence": p.essence} for p in players]
+
+        cards = (
+            session.query(CardDef)
+            .filter_by(enabled=True)
+            .order_by(CardDef.card_label)
+            .all()
+        )
+        cards_data = [{"key": c.key, "label": c.card_label or c.key} for c in cards]
+
+    all_items = sorted(craft_defs.ITEM_DEFS.values(), key=lambda x: x.get("label", x.get("key", "")))
+    resources_data = [i for i in all_items if i.get("kind") == "resource"]
+    items_data = [i for i in all_items if i.get("kind") in ("tool", "item", "treasure")]
+
+    return render_template(
+        "ADMIN_UI/giveaway.html",
+        players=players_data,
+        cards=cards_data,
+        resources=resources_data,
+        items=items_data,
+    )
+
+
+@admin_bp.post("/giveaway/apply")
+@admin_required(permission="view_dashboard")
+def giveaway_apply():
+    """Apply a giveaway action to a player."""
+    data = request.get_json(silent=True) or {}
+    player_id = data.get("player_id")
+    gtype = (data.get("type") or "").strip()        # shards | essence | card | resource | item
+    key = (data.get("key") or "").strip()
+    try:
+        qty = int(data.get("qty") or 0)
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "invalid_qty"}), 400
+    action = (data.get("action") or "give").strip() # give | remove
+
+    if not player_id:
+        return jsonify({"ok": False, "error": "missing_player_id"}), 400
+    if gtype not in ("shards", "essence", "card", "resource", "item"):
+        return jsonify({"ok": False, "error": "invalid_type"}), 400
+    if qty <= 0:
+        return jsonify({"ok": False, "error": "qty_must_be_positive"}), 400
+
+    delta = qty if action == "give" else -qty
+
+    with SessionLocal() as session:
+        player = session.get(Player, int(player_id))
+        if not player:
+            return jsonify({"ok": False, "error": "player_not_found"}), 404
+
+        # ── Currencies ──────────────────────────────────────────────────────
+        if gtype == "shards":
+            player.shards = max(0, player.shards + delta)
+            session.commit()
+            return jsonify({"ok": True, "shards": player.shards, "essence": player.essence})
+
+        if gtype == "essence":
+            player.essence = max(0, player.essence + delta)
+            session.commit()
+            return jsonify({"ok": True, "shards": player.shards, "essence": player.essence})
+
+        # ── Card ────────────────────────────────────────────────────────────
+        if gtype == "card":
+            if not key:
+                return jsonify({"ok": False, "error": "missing_key"}), 400
+
+            if action == "give":
+                cd = session.query(CardDef).filter_by(key=key, enabled=True).first()
+                if not cd:
+                    return jsonify({"ok": False, "error": "card_not_found"}), 404
+                pc = session.query(PlayerCard).filter_by(player_id=player.id, card_key=key).first()
+                if pc:
+                    pc.qty = pc.qty + qty
+                else:
+                    pc = PlayerCard(player_id=player.id, card_key=key, qty=qty)
+                    session.add(pc)
+                session.commit()
+                return jsonify({"ok": True, "owned": pc.qty})
+            else:
+                pc = session.query(PlayerCard).filter_by(player_id=player.id, card_key=key).first()
+                if not pc:
+                    return jsonify({"ok": False, "error": "card_not_owned"}), 400
+                new_qty = max(0, pc.qty - qty)
+                if new_qty == 0:
+                    session.delete(pc)
+                else:
+                    pc.qty = new_qty
+                session.commit()
+                return jsonify({"ok": True, "owned": new_qty})
+
+        # ── Resource or Item (stored in ResourceStock) ───────────────────────
+        if gtype in ("resource", "item"):
+            if not key:
+                return jsonify({"ok": False, "error": "missing_key"}), 400
+            stock = session.query(ResourceStock).filter_by(player_id=player.id, resource=key).first()
+            if action == "give":
+                if stock:
+                    stock.qty = stock.qty + qty
+                else:
+                    stock = ResourceStock(player_id=player.id, resource=key, qty=qty)
+                    session.add(stock)
+                session.commit()
+                return jsonify({"ok": True, "qty": float(stock.qty)})
+            else:
+                if not stock:
+                    return jsonify({"ok": False, "error": "no_stock"}), 400
+                stock.qty = max(0.0, stock.qty - qty)
+                session.commit()
+                return jsonify({"ok": True, "qty": float(stock.qty)})

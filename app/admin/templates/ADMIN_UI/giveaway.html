@@ -1,0 +1,436 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Giveaway — Admin Panel{% endblock %}
+{% block page_title %}🎁 Giveaway{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ── */
+.gw-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ── Player list ── */
+.player-list-card {
+  position: sticky; top: 1rem;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;
+}
+.player-list-header {
+  padding: .75rem 1rem .5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.player-list-header input {
+  width: 100%; font-size: .82rem;
+  border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: .35rem .65rem; outline: none;
+}
+.player-list-header input:focus { border-color: #3b82f6; }
+.player-list-body { max-height: calc(100vh - 180px); overflow-y: auto; }
+.player-row {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .55rem 1rem; cursor: pointer; border-bottom: 1px solid #f8fafc;
+  transition: background .1s;
+}
+.player-row:hover { background: #f8fafc; }
+.player-row.active { background: #eff6ff; }
+.player-row.active .player-name { color: #1d4ed8; font-weight: 700; }
+.player-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #e0e7ff; color: #4338ca; font-size: .75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.player-name { font-size: .85rem; color: #1e293b; }
+.player-currencies { font-size: .7rem; color: #94a3b8; }
+
+/* ── Right panel ── */
+.gw-panel {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+}
+.gw-panel-header {
+  padding: 1rem 1.25rem .75rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.gw-panel-title { font-weight: 700; font-size: 1rem; color: #1e293b; }
+.gw-player-badge {
+  background: #eff6ff; color: #1d4ed8; border-radius: 99px;
+  font-size: .78rem; font-weight: 600; padding: .25rem .75rem;
+}
+.gw-empty {
+  padding: 3rem; text-align: center; color: #94a3b8;
+  font-size: .9rem;
+}
+
+/* ── Tabs ── */
+.gw-tabs { display: flex; gap: 0; border-bottom: 1px solid #e2e8f0; padding: 0 1.25rem; }
+.gw-tab {
+  padding: .65rem .9rem; font-size: .85rem; font-weight: 600;
+  color: #64748b; cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .12s; background: none; border-top: none; border-left: none; border-right: none;
+}
+.gw-tab.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+.gw-tab:hover:not(.active) { color: #1e293b; }
+.gw-tab-content { display: none; padding: 1.25rem; }
+.gw-tab-content.active { display: block; }
+
+/* ── Currency row ── */
+.currency-row {
+  display: grid; grid-template-columns: 1fr auto auto auto;
+  gap: .65rem; align-items: center; padding: .75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.currency-row:last-child { border-bottom: none; }
+.currency-label { display: flex; align-items: center; gap: .5rem; font-size: .9rem; }
+.currency-icon { font-size: 1.1rem; }
+.currency-val {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: .3rem .6rem; font-size: .85rem; font-family: monospace; min-width: 70px; text-align: right;
+}
+.qty-input {
+  width: 70px; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: .3rem .5rem; font-size: .85rem; text-align: center;
+}
+.qty-input:focus { outline: none; border-color: #3b82f6; }
+
+/* ── Search select ── */
+.item-search-wrap { position: relative; margin-bottom: .75rem; }
+.item-search-input {
+  width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: .45rem .75rem; font-size: .85rem; outline: none;
+}
+.item-search-input:focus { border-color: #3b82f6; }
+.item-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 999;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08); max-height: 220px; overflow-y: auto;
+  display: none;
+}
+.item-dropdown.open { display: block; }
+.item-option {
+  padding: .45rem .75rem; font-size: .83rem; cursor: pointer;
+  display: flex; align-items: center; gap: .5rem;
+}
+.item-option:hover { background: #f8fafc; }
+.item-option .item-key { font-family: monospace; font-size: .72rem; color: #94a3b8; }
+
+/* ── Apply row ── */
+.apply-row {
+  display: flex; gap: .65rem; align-items: center; margin-top: .75rem; flex-wrap: wrap;
+}
+.apply-row .qty-input { width: 80px; }
+
+/* ── Log ── */
+.gw-log {
+  margin-top: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: .65rem .85rem; max-height: 160px; overflow-y: auto; font-size: .78rem;
+  font-family: monospace; color: #475569;
+}
+.log-entry { padding: .15rem 0; border-bottom: 1px solid #f1f5f9; }
+.log-entry:last-child { border-bottom: none; }
+.log-ok { color: #16a34a; }
+.log-err { color: #dc2626; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Serialize data for JS -->
+<script>
+const GW_PLAYERS  = {{ players  | tojson }};
+const GW_CARDS    = {{ cards    | tojson }};
+const GW_RESOURCES = {{ resources | tojson }};
+const GW_ITEMS    = {{ items    | tojson }};
+</script>
+
+<div class="gw-layout">
+
+  <!-- ── Player list ── -->
+  <div class="player-list-card">
+    <div class="player-list-header">
+      <input type="text" id="playerSearch" placeholder="🔍 Rechercher un joueur…">
+    </div>
+    <div class="player-list-body" id="playerList">
+      {% for p in players %}
+      <div class="player-row" data-player-id="{{ p.id }}" data-player-name="{{ p.name }}"
+           data-shards="{{ p.shards }}" data-essence="{{ p.essence }}"
+           onclick="selectPlayer({{ p.id }})">
+        <div class="player-avatar">{{ p.name[0]|upper }}</div>
+        <div>
+          <div class="player-name">{{ p.name }}</div>
+          <div class="player-currencies">⚡ {{ p.shards }} &nbsp; 💎 {{ p.essence }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── Right panel ── -->
+  <div class="gw-panel" id="gwPanel">
+    <div class="gw-panel-header">
+      <span class="gw-panel-title">Giveaway</span>
+      <span class="gw-player-badge" id="selectedPlayerBadge">Aucun joueur sélectionné</span>
+    </div>
+
+    <div id="gwNoPlayer" class="gw-empty">
+      👈 Sélectionnez un joueur pour commencer.
+    </div>
+
+    <div id="gwForm" style="display:none;">
+      <!-- Tabs -->
+      <div class="gw-tabs">
+        <button class="gw-tab active" onclick="switchTab('currencies', this)">💰 Monnaies</button>
+        <button class="gw-tab" onclick="switchTab('cards', this)">🎴 Cartes</button>
+        <button class="gw-tab" onclick="switchTab('resources', this)">📦 Ressources</button>
+        <button class="gw-tab" onclick="switchTab('items', this)">🔧 Objets</button>
+      </div>
+
+      <!-- Currencies tab -->
+      <div class="gw-tab-content active" id="tab-currencies">
+        <div class="currency-row">
+          <div class="currency-label"><span class="currency-icon">⚡</span> Shards</div>
+          <div class="currency-val" id="cur-shards">—</div>
+          <input type="number" class="qty-input" id="qty-shards" value="100" min="1">
+          <div style="display:flex;gap:.4rem;">
+            <button class="btn btn-sm btn-success" onclick="applyCurrency('shards','give')">+ Give</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="applyCurrency('shards','remove')">− Remove</button>
+          </div>
+        </div>
+        <div class="currency-row">
+          <div class="currency-label"><span class="currency-icon">💎</span> Essence</div>
+          <div class="currency-val" id="cur-essence">—</div>
+          <input type="number" class="qty-input" id="qty-essence" value="10" min="1">
+          <div style="display:flex;gap:.4rem;">
+            <button class="btn btn-sm btn-success" onclick="applyCurrency('essence','give')">+ Give</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="applyCurrency('essence','remove')">− Remove</button>
+          </div>
+        </div>
+        <div class="gw-log" id="log-currencies"><div class="log-entry" style="color:#cbd5e1;">Aucune action.</div></div>
+      </div>
+
+      <!-- Cards tab -->
+      <div class="gw-tab-content" id="tab-cards">
+        <div class="item-search-wrap">
+          <input type="text" class="item-search-input" id="cardSearch" placeholder="🔍 Chercher une carte…"
+                 oninput="filterDropdown('cardSearch','cardDropdown', GW_CARDS)"
+                 onfocus="openDropdown('cardDropdown')" onblur="closeDropdownDelayed('cardDropdown')">
+          <div class="item-dropdown" id="cardDropdown"></div>
+          <input type="hidden" id="cardKey">
+        </div>
+        <div id="cardSelected" style="font-size:.82rem;color:#64748b;margin-bottom:.5rem;min-height:1.2rem;"></div>
+        <div class="apply-row">
+          <input type="number" class="qty-input" id="qty-card" value="1" min="1">
+          <button class="btn btn-sm btn-success" onclick="applyItem('card','give')">+ Give</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="applyItem('card','remove')">− Remove</button>
+        </div>
+        <div class="gw-log" id="log-cards"><div class="log-entry" style="color:#cbd5e1;">Aucune action.</div></div>
+      </div>
+
+      <!-- Resources tab -->
+      <div class="gw-tab-content" id="tab-resources">
+        <div class="item-search-wrap">
+          <input type="text" class="item-search-input" id="resourceSearch" placeholder="🔍 Chercher une ressource…"
+                 oninput="filterDropdown('resourceSearch','resourceDropdown', GW_RESOURCES)"
+                 onfocus="openDropdown('resourceDropdown')" onblur="closeDropdownDelayed('resourceDropdown')">
+          <div class="item-dropdown" id="resourceDropdown"></div>
+          <input type="hidden" id="resourceKey">
+        </div>
+        <div id="resourceSelected" style="font-size:.82rem;color:#64748b;margin-bottom:.5rem;min-height:1.2rem;"></div>
+        <div class="apply-row">
+          <input type="number" class="qty-input" id="qty-resource" value="10" min="1">
+          <button class="btn btn-sm btn-success" onclick="applyItem('resource','give')">+ Give</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="applyItem('resource','remove')">− Remove</button>
+        </div>
+        <div class="gw-log" id="log-resources"><div class="log-entry" style="color:#cbd5e1;">Aucune action.</div></div>
+      </div>
+
+      <!-- Items tab -->
+      <div class="gw-tab-content" id="tab-items">
+        <div class="item-search-wrap">
+          <input type="text" class="item-search-input" id="itemSearch" placeholder="🔍 Chercher un objet…"
+                 oninput="filterDropdown('itemSearch','itemDropdown', GW_ITEMS)"
+                 onfocus="openDropdown('itemDropdown')" onblur="closeDropdownDelayed('itemDropdown')">
+          <div class="item-dropdown" id="itemDropdown"></div>
+          <input type="hidden" id="itemKey">
+        </div>
+        <div id="itemSelected" style="font-size:.82rem;color:#64748b;margin-bottom:.5rem;min-height:1.2rem;"></div>
+        <div class="apply-row">
+          <input type="number" class="qty-input" id="qty-item" value="1" min="1">
+          <button class="btn btn-sm btn-success" onclick="applyItem('item','give')">+ Give</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="applyItem('item','remove')">− Remove</button>
+        </div>
+        <div class="gw-log" id="log-items"><div class="log-entry" style="color:#cbd5e1;">Aucune action.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let selectedPlayerId   = null;
+let selectedPlayerName = null;
+
+// ── Player selection ───────────────────────────────────────────────────────
+function selectPlayer(id) {
+  selectedPlayerId = id;
+  const row = document.querySelector(`.player-row[data-player-id="${id}"]`);
+  document.querySelectorAll('.player-row').forEach(r => r.classList.remove('active'));
+  if (row) {
+    row.classList.add('active');
+    selectedPlayerName = row.dataset.playerName;
+    document.getElementById('selectedPlayerBadge').textContent = selectedPlayerName;
+    document.getElementById('cur-shards').textContent  = row.dataset.shards;
+    document.getElementById('cur-essence').textContent = row.dataset.essence;
+  }
+  document.getElementById('gwNoPlayer').style.display = 'none';
+  document.getElementById('gwForm').style.display = 'block';
+}
+
+// Player search filter
+document.getElementById('playerSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.player-row').forEach(row => {
+    row.style.display = row.dataset.playerName.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.gw-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.gw-tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Dropdown search ────────────────────────────────────────────────────────
+function filterDropdown(inputId, dropdownId, dataset) {
+  const q = document.getElementById(inputId).value.toLowerCase().trim();
+  const dd = document.getElementById(dropdownId);
+  dd.innerHTML = '';
+  const matches = dataset.filter(d => {
+    const label = (d.label || d.card_label || d.key || '').toLowerCase();
+    const key   = (d.key || '').toLowerCase();
+    return label.includes(q) || key.includes(q);
+  }).slice(0, 40);
+
+  matches.forEach(d => {
+    const label = d.label || d.card_label || d.key;
+    const key   = d.key;
+    const div = document.createElement('div');
+    div.className = 'item-option';
+    div.innerHTML = `<span>${label}</span><span class="item-key">${key}</span>`;
+    div.onclick = () => pickItem(inputId, dropdownId, key, label);
+    dd.appendChild(div);
+  });
+
+  if (!matches.length) {
+    dd.innerHTML = '<div class="item-option" style="color:#94a3b8;">Aucun résultat</div>';
+  }
+  dd.classList.add('open');
+}
+
+function openDropdown(dropdownId) {
+  const dd = document.getElementById(dropdownId);
+  if (dd.children.length === 0) {
+    // populate with first 40 items
+    const map = { cardDropdown: GW_CARDS, resourceDropdown: GW_RESOURCES, itemDropdown: GW_ITEMS };
+    const dataset = map[dropdownId] || [];
+    dataset.slice(0, 40).forEach(d => {
+      const label = d.label || d.card_label || d.key;
+      const key   = d.key;
+      const div = document.createElement('div');
+      div.className = 'item-option';
+      const inputMap = { cardDropdown: 'cardSearch', resourceDropdown: 'resourceSearch', itemDropdown: 'itemSearch' };
+      div.innerHTML = `<span>${label}</span><span class="item-key">${key}</span>`;
+      div.onclick = () => pickItem(inputMap[dropdownId], dropdownId, key, label);
+      dd.appendChild(div);
+    });
+  }
+  dd.classList.add('open');
+}
+
+function closeDropdownDelayed(dropdownId) {
+  setTimeout(() => document.getElementById(dropdownId).classList.remove('open'), 200);
+}
+
+function pickItem(inputId, dropdownId, key, label) {
+  document.getElementById(inputId).value = label;
+  document.getElementById(dropdownId).classList.remove('open');
+
+  // set hidden key + selected label
+  const keyMap = {
+    cardSearch: 'cardKey', resourceSearch: 'resourceKey', itemSearch: 'itemKey'
+  };
+  const selMap = {
+    cardSearch: 'cardSelected', resourceSearch: 'resourceSelected', itemSearch: 'itemSelected'
+  };
+  const hiddenId = keyMap[inputId];
+  const selId    = selMap[inputId];
+  if (hiddenId) document.getElementById(hiddenId).value = key;
+  if (selId)    document.getElementById(selId).textContent = `Clé : ${key}`;
+}
+
+// ── API calls ──────────────────────────────────────────────────────────────
+async function gwPost(payload) {
+  const r = await fetch('{{ url_for("admin.giveaway_apply") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return r.json();
+}
+
+function addLog(logId, msg, ok) {
+  const log = document.getElementById(logId);
+  const first = log.querySelector('.log-entry');
+  if (first && first.style.color === 'rgb(203, 213, 225)') first.remove();
+  const div = document.createElement('div');
+  div.className = 'log-entry ' + (ok ? 'log-ok' : 'log-err');
+  div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.prepend(div);
+}
+
+async function applyCurrency(type, action) {
+  if (!selectedPlayerId) { alert('Sélectionnez un joueur.'); return; }
+  const qty = parseInt(document.getElementById(`qty-${type}`).value) || 0;
+  if (qty <= 0) { alert('Quantité invalide.'); return; }
+
+  const d = await gwPost({ player_id: selectedPlayerId, type, qty, action });
+  if (d.ok) {
+    document.getElementById('cur-shards').textContent  = d.shards;
+    document.getElementById('cur-essence').textContent = d.essence;
+    // Update sidebar badge
+    const row = document.querySelector(`.player-row[data-player-id="${selectedPlayerId}"]`);
+    if (row) {
+      row.dataset.shards  = d.shards;
+      row.dataset.essence = d.essence;
+      row.querySelector('.player-currencies').textContent = `⚡ ${d.shards}   💎 ${d.essence}`;
+    }
+    addLog('log-currencies', `${action === 'give' ? '+' : '-'}${qty} ${type} → ${selectedPlayerName}`, true);
+  } else {
+    addLog('log-currencies', `Erreur : ${d.error}`, false);
+  }
+}
+
+async function applyItem(type, action) {
+  if (!selectedPlayerId) { alert('Sélectionnez un joueur.'); return; }
+  const keyMap = { card: 'cardKey', resource: 'resourceKey', item: 'itemKey' };
+  const qtyMap = { card: 'qty-card', resource: 'qty-resource', item: 'qty-item' };
+  const logMap = { card: 'log-cards', resource: 'log-resources', item: 'log-items' };
+
+  const key = document.getElementById(keyMap[type]).value.trim();
+  const qty = parseInt(document.getElementById(qtyMap[type]).value) || 0;
+  if (!key) { alert('Sélectionnez un élément.'); return; }
+  if (qty <= 0) { alert('Quantité invalide.'); return; }
+
+  const d = await gwPost({ player_id: selectedPlayerId, type, key, qty, action });
+  if (d.ok) {
+    const detail = d.owned != null ? `(possède : ${d.owned})` : d.qty != null ? `(stock : ${d.qty})` : '';
+    addLog(logMap[type], `${action === 'give' ? '+' : '-'}${qty}× ${key} → ${selectedPlayerName} ${detail}`, true);
+  } else {
+    addLog(logMap[type], `Erreur : ${d.error}`, false);
+  }
+}
+</script>
+{% endblock %}
