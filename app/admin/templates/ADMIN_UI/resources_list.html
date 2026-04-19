@@ -6,7 +6,10 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3>Manage Resources</h3>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">+ New Resource</button>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.resources_print') }}" class="btn btn-outline-secondary" target="_blank">🎨 Vue artistes</a>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">+ New Resource</button>
+    </div>
 </div>
 
 <div class="table-responsive">
