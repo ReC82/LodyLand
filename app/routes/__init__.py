@@ -26,6 +26,7 @@ from .api_notebook import bp as notebook_bp
 from .api_minigame import bp as minigame_bp
 
 from .api_i18n import bp as i18n_bp
+from .api_skills import bp as skills_bp
 
 def register_routes(app: Flask) -> None:
     """Enregistre tous les blueprints API sur l'app Flask."""
@@ -51,4 +52,5 @@ def register_routes(app: Flask) -> None:
     app.register_blueprint(temple_reconstruction_bp, url_prefix="/temple")
     app.register_blueprint(notebook_bp, url_prefix="/api")
     app.register_blueprint(minigame_bp, url_prefix="/api")
-    
+    app.register_blueprint(skills_bp,   url_prefix="/api")
+

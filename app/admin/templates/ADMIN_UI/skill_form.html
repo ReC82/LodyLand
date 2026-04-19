@@ -1,0 +1,204 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Éditer Skill — Admin Panel{% endblock %}
+{% block page_title %}⚡ Skill : <code>{{ skill.key }}</code>{% endblock %}
+
+{% block extra_css %}
+<style>
+.level-card {
+  background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+  padding:1rem; margin-bottom:.6rem;
+}
+.level-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem; }
+.level-num {
+  min-width:28px; height:28px; border-radius:50%;
+  background:#dbeafe; color:#1d4ed8; font-weight:700; font-size:.82rem;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.bonus-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.4rem; }
+.bonus-row select, .bonus-row input { font-size:.85rem; }
+.bonus-type-select { width:220px; }
+.bonus-value-input { width:90px; }
+.add-bonus-btn {
+  border:1px dashed #cbd5e1; border-radius:8px; padding:.3rem .75rem;
+  background:none; color:#64748b; font-size:.8rem; cursor:pointer;
+  transition:all .12s;
+}
+.add-bonus-btn:hover { border-color:#3b82f6; color:#3b82f6; }
+.add-level-btn {
+  border:2px dashed #cbd5e1; border-radius:10px; padding:.75rem;
+  text-align:center; cursor:pointer; color:#64748b; font-size:.88rem;
+  transition:all .15s; background:none; width:100%; margin-top:.5rem;
+}
+.add-level-btn:hover { border-color:#3b82f6; color:#3b82f6; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+<a href="{{ url_for('admin.skills_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Retour</a>
+
+<form method="POST" id="skill-form">
+  <input type="hidden" name="levels_json" id="levels-json-input">
+
+  <div class="row g-4">
+    <!-- Left: metadata -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm" style="border-radius:14px;">
+        <div class="card-body p-3">
+          <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size:.72rem;letter-spacing:.05em;">Paramètres</h6>
+
+          <div class="mb-3">
+            <label class="form-label">Clé <span class="text-muted">(readonly)</span></label>
+            <input type="text" class="form-control form-control-sm" value="{{ skill.key }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">🇫🇷 Nom FR</label>
+            <input type="text" name="name_fr" class="form-control form-control-sm" value="{{ skill.name_fr }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">🇬🇧 Nom EN</label>
+            <input type="text" name="name_en" class="form-control form-control-sm" value="{{ skill.name_en or '' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Catégorie</label>
+            <select name="category" class="form-select form-select-sm">
+              {% for val, label in categories %}
+              <option value="{{ val }}" {% if skill.category == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Subject key <span class="text-muted small">(vide si global)</span></label>
+            <input type="text" name="subject_key" class="form-control form-control-sm"
+                   value="{{ skill.subject_key or '' }}" placeholder="branch / forest / …">
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="enabled" id="enabled"
+                   {% if skill.enabled %}checked{% endif %}>
+            <label class="form-check-label" for="enabled">Actif</label>
+          </div>
+
+          <hr class="my-3">
+          <div class="text-muted small mb-2">
+            <strong>Types de bonus disponibles :</strong>
+            <ul class="mb-0 mt-1" style="padding-left:1.2rem;">
+              {% for btype, blabel, bcap in bonus_types %}
+              <li><code>{{ btype }}</code> — {{ blabel }} (cap {{ bcap }})</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: level editor -->
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm" style="border-radius:14px;">
+        <div class="card-body p-3">
+          <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size:.72rem;letter-spacing:.05em;">Niveaux (max 5)</h6>
+          <div id="levels-container"></div>
+          <button type="button" class="add-level-btn" onclick="addLevel()" id="btn-add-level">+ Ajouter un niveau</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary" onclick="serializeLevels()">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.skills_list') }}" class="btn btn-outline-secondary">Annuler</a>
+  </div>
+</form>
+
+<script>
+const BONUS_TYPES = [
+  {% for btype, blabel, bcap in bonus_types %}
+  { value: "{{ btype }}", label: "{{ blabel }}", cap: {{ bcap }} }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+const MAX_LEVELS = 5;
+let levels = {{ (skill.levels or []) | tojson }};
+
+function bonusTypeOptions(selected) {
+  return BONUS_TYPES.map(b =>
+    `<option value="${b.value}" ${b.value === selected ? 'selected' : ''}>${b.label} (cap ${b.cap})</option>`
+  ).join('');
+}
+
+function buildLevelCard(lvlData, idx) {
+  const div = document.createElement('div');
+  div.className = 'level-card';
+  div.dataset.idx = idx;
+
+  const bonusesHtml = (lvlData.bonuses || []).map((b, bi) => buildBonusRow(b, idx, bi)).join('');
+
+  div.innerHTML = `
+    <div class="level-header">
+      <span class="level-num">${idx + 1}</span>
+      <label class="form-label mb-0 small fw-semibold">Requis</label>
+      <input type="number" class="form-control form-control-sm" style="width:110px;"
+             value="${lvlData.req || 0}" min="0" id="req-${idx}" onchange="">
+      <button type="button" class="btn btn-sm btn-outline-danger ms-auto py-0 px-2"
+              onclick="removeLevel(${idx})">✕ Supprimer</button>
+    </div>
+    <div class="bonus-list" id="bonus-list-${idx}">${bonusesHtml}</div>
+    <button type="button" class="add-bonus-btn mt-1" onclick="addBonus(${idx})">+ Bonus</button>
+  `;
+  return div;
+}
+
+function buildBonusRow(b, lvlIdx, bonusIdx) {
+  return `<div class="bonus-row" data-bonus-idx="${bonusIdx}">
+    <select class="form-select form-select-sm bonus-type-select">${bonusTypeOptions(b.type || '')}</select>
+    <input type="number" class="form-control form-control-sm bonus-value-input"
+           value="${b.value || 0}" min="0" step="0.1" placeholder="Valeur">
+    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1"
+            onclick="this.closest('.bonus-row').remove()">✕</button>
+  </div>`;
+}
+
+function renderLevels() {
+  const container = document.getElementById('levels-container');
+  container.innerHTML = '';
+  levels.forEach((lvl, i) => container.appendChild(buildLevelCard(lvl, i)));
+  document.getElementById('btn-add-level').style.display = levels.length >= MAX_LEVELS ? 'none' : '';
+}
+
+function addLevel() {
+  if (levels.length >= MAX_LEVELS) return;
+  levels.push({ level: levels.length + 1, req: 0, bonuses: [] });
+  renderLevels();
+}
+
+function removeLevel(idx) {
+  levels.splice(idx, 1);
+  renderLevels();
+}
+
+function addBonus(lvlIdx) {
+  const list = document.getElementById(`bonus-list-${lvlIdx}`);
+  const bi = list.querySelectorAll('.bonus-row').length;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = buildBonusRow({ type: '', value: 0 }, lvlIdx, bi);
+  list.appendChild(tmp.firstElementChild);
+}
+
+function serializeLevels() {
+  const container = document.getElementById('levels-container');
+  const result = [];
+  container.querySelectorAll('.level-card').forEach((card, i) => {
+    const req = parseInt(card.querySelector(`#req-${i}`)?.value || 0);
+    const bonuses = [];
+    card.querySelectorAll('.bonus-row').forEach(row => {
+      const type = row.querySelector('select')?.value;
+      const value = parseFloat(row.querySelector('input[type=number]')?.value || 0);
+      if (type) bonuses.push({ type, value });
+    });
+    result.push({ level: i + 1, req, bonuses });
+  });
+  document.getElementById('levels-json-input').value = JSON.stringify(result);
+}
+
+renderLevels();
+</script>
+{% endblock %}

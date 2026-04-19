@@ -626,3 +626,49 @@ class StoryEventDef(Base):
     quest_start: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+# =============================================================================
+# Skills System
+# =============================================================================
+
+class SkillDef(Base):
+    """
+    Definition of a passive skill (admin-editable).
+
+    category: "resource" | "land" | "craft"
+    subject_key: resource key, land key, or recipe key. None = global (craft category).
+
+    levels JSON format:
+    [
+      {"level": 1, "req": 500,  "bonuses": [{"type": "double_drop", "value": 4}]},
+      {"level": 2, "req": 1500, "bonuses": [{"type": "double_drop", "value": 6}]},
+      ...
+    ]
+
+    Bonus types: double_drop | cooldown_reduction | craft_time_reduction |
+                 instant_craft_chance | xp_bonus | shard_chance
+    """
+    __tablename__ = "skill_defs"
+
+    key: Mapped[str] = mapped_column(String(120), primary_key=True)
+    name_fr: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    name_en: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    category: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    subject_key: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
+    levels: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class PlayerSkill(Base):
+    """Tracks a player's progress on one skill."""
+    __tablename__ = "player_skills"
+    __table_args__ = (UniqueConstraint("player_id", "skill_key", name="uq_player_skill"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(Integer, ForeignKey("players.id"), nullable=False, index=True)
+    skill_key: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    player = relationship("Player", backref="skills")

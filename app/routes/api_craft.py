@@ -768,6 +768,13 @@ def perform_craft():
                 "status": job.status,
             }
 
+        # Skill: craft progress (global craft skill)
+        try:
+            from app.services.skill_engine import record_skill_progress
+            record_skill_progress(player.id, "craft", None, times, session=session)
+        except Exception:
+            pass
+
         session.commit()
 
         resp = {
