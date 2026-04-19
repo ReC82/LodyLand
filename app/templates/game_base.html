@@ -63,6 +63,10 @@
     />
     <link
       rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/modals/support_modal.css') }}"
+    />
+    <link
+      rel="stylesheet"
       href="{{ url_for('static', filename='GAME_UI/css/global/modals/travel_modals.css') }}"
     />
     <link
@@ -205,6 +209,11 @@
             <span class="gh-btn-icon">📜</span>
           </button>
         </div>
+
+        <!-- Support button -->
+        <button id="hud-support-btn" class="gh-btn gh-btn-quests" title="Signaler un problème" type="button">
+          <span class="gh-btn-icon">🎫</span>
+        </button>
 
         <button class="gh-menu-btn" id="hud-menu-btn" type="button">
           ☰
@@ -677,6 +686,99 @@
       </div>
     </div>
 
+    <!-- Support / Tickets Modal -->
+    <div id="supportModal" class="ll-modal" style="z-index: 1050;">
+      <div class="ll-modal-backdrop"></div>
+      <div class="ll-modal-dialog">
+
+        <header class="ll-modal-header">
+          <span class="ll-modal-title">🎫 Support &amp; Signalements</span>
+          <button id="supportModalClose" class="ll-modal-close-btn" type="button">✕</button>
+        </header>
+
+        <!-- Tabs -->
+        <div class="support-tabs">
+          <button class="support-tab active" data-tab="search">🔍 Rechercher</button>
+          <button class="support-tab" data-tab="mine">📋 Mes tickets</button>
+          <button class="support-tab" data-tab="create">✏️ Nouveau ticket</button>
+        </div>
+
+        <!-- Search panel -->
+        <div class="support-body support-panel" data-panel="search">
+          <div class="support-search-bar">
+            <input type="text" id="searchTicketsInput" placeholder="Rechercher un problème existant…">
+            <select id="searchTicketsCat">
+              <option value="">Toutes catégories</option>
+              <option value="bug">🐛 Bug</option>
+              <option value="suggestion">💡 Suggestion</option>
+              <option value="account">👤 Compte</option>
+              <option value="gameplay">🎮 Gameplay</option>
+              <option value="performance">⚡ Performance</option>
+              <option value="other">❓ Autre</option>
+            </select>
+            <button class="btn-search" id="searchTicketsBtn">Rechercher</button>
+          </div>
+          <div class="ticket-list" id="searchList">
+            <div class="support-empty">Entrez un terme ou cliquez sur Rechercher.</div>
+          </div>
+          <div class="support-pagination" id="searchPager"></div>
+        </div>
+
+        <!-- My tickets panel -->
+        <div class="support-body support-panel" data-panel="mine" style="display:none;">
+          <div class="ticket-list" id="mineList">
+            <div class="support-empty">Chargement…</div>
+          </div>
+          <div class="support-pagination" id="minePager"></div>
+        </div>
+
+        <!-- Create panel -->
+        <div class="support-body support-panel" data-panel="create" style="display:none;">
+          <form id="supportCreateForm" onsubmit="return false;">
+
+            <!-- Context snapshot -->
+            <div class="support-context">
+              ℹ️ Ces informations seront automatiquement incluses dans votre ticket :
+              <br>Niveau : <span id="ctxLevel">…</span> ·
+              Page : <span id="ctxPage">…</span>
+            </div>
+
+            <div class="support-form">
+              <div class="form-row">
+                <div>
+                  <label>Catégorie *</label>
+                  <select id="ticketCategory">
+                    <option value="bug">🐛 Bug</option>
+                    <option value="suggestion">💡 Suggestion</option>
+                    <option value="account">👤 Problème de compte</option>
+                    <option value="gameplay">🎮 Gameplay</option>
+                    <option value="performance">⚡ Performance</option>
+                    <option value="other">❓ Autre</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Titre *</label>
+                  <input type="text" id="ticketTitle" placeholder="Résumé court du problème" maxlength="200">
+                </div>
+              </div>
+
+              <label>Description * — Décrivez le problème en détail</label>
+              <textarea id="ticketDescription" rows="5"
+                        placeholder="Qu'est-ce qui se passe ? Qu'est-ce qui devrait se passer ?"></textarea>
+
+              <label>Étapes pour reproduire (optionnel)</label>
+              <textarea id="ticketSteps" rows="3"
+                        placeholder="1. Aller sur la page X&#10;2. Cliquer sur Y&#10;3. Le bug apparaît"></textarea>
+
+              <button type="button" id="btnSubmitTicket" class="btn-submit-ticket">Envoyer le ticket</button>
+              <div id="ticketMsg" class="support-msg"></div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Modal Travel -->
     <div id="travelModal" class="gh-modal">
       <div id="travelModalBackdrop" class="gh-modal-backdrop"></div>
@@ -823,6 +925,7 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/quests_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/story_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/notebook_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/support_app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
 
     <script>

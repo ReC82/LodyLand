@@ -672,3 +672,51 @@ class PlayerSkill(Base):
     level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     player = relationship("Player", backref="skills")
+
+
+# =============================================================================
+# Support Tickets
+# =============================================================================
+
+TICKET_CATEGORIES = ("bug", "suggestion", "account", "gameplay", "performance", "other")
+TICKET_STATUSES   = ("open", "in_progress", "resolved", "closed")
+
+
+class SupportTicket(Base):
+    """
+    Player-submitted support/bug report ticket.
+    Context (level, page, browser) is captured at creation time.
+    """
+    __tablename__ = "support_tickets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("players.id"), index=True, nullable=False
+    )
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    category: Mapped[str] = mapped_column(String(50), nullable=False, default="bug")
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    steps: Mapped[str | None] = mapped_column(Text, nullable=True)  # steps to reproduce
+
+    # Context snapshot at creation
+    player_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    page_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    browser_info: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    # Admin management
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="open")
+    admin_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    handled_by: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("players.id"), nullable=True
+    )
+
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime, nullable=False, default=dt.datetime.utcnow
+    )
+    updated_at: Mapped[dt.datetime] = mapped_column(
+        DateTime, nullable=False, default=dt.datetime.utcnow, onupdate=dt.datetime.utcnow
+    )
+
+    player   = relationship("Player", foreign_keys=[player_id], backref="support_tickets")
+    handler  = relationship("Player", foreign_keys=[handled_by])

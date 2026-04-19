@@ -1,0 +1,112 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Tickets — Admin LodyLand{% endblock %}
+{% block page_title %}🎫 Support Tickets{% endblock %}
+
+{% block content %}
+<style>
+.ticket-status { display:inline-block; padding:2px 8px; border-radius:12px; font-size:.8rem; font-weight:600; }
+.status-open        { background:#fef9c3; color:#854d0e; }
+.status-in_progress { background:#dbeafe; color:#1e40af; }
+.status-resolved    { background:#dcfce7; color:#166534; }
+.status-closed      { background:#f1f5f9; color:#64748b; }
+.ticket-cat  { display:inline-block; padding:2px 8px; border-radius:12px; font-size:.75rem; background:#e2e8f0; color:#334155; }
+</style>
+
+<!-- Status summary badges -->
+<div class="d-flex gap-2 flex-wrap mb-3">
+  {% set status_colors = {'open':'warning','in_progress':'primary','resolved':'success','closed':'secondary'} %}
+  {% for st in statuses %}
+  <a href="{{ url_for('admin.tickets_list', status=st, q=q, category=category_filter) }}"
+     class="badge bg-{{ status_colors.get(st,'secondary') }} text-decoration-none fs-6">
+    {{ st.replace('_',' ').title() }}
+    <span class="ms-1 opacity-75">({{ counts.get(st, 0) }})</span>
+  </a>
+  {% endfor %}
+  {% if status_filter or category_filter or q %}
+  <a href="{{ url_for('admin.tickets_list') }}" class="badge bg-light text-dark border text-decoration-none fs-6">✕ Reset</a>
+  {% endif %}
+</div>
+
+<!-- Filters -->
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto flex-grow-1">
+    <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Rechercher dans le titre / description…">
+  </div>
+  <div class="col-auto">
+    <select name="category" class="form-select form-select-sm">
+      <option value="">Toutes catégories</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}" {% if cat == category_filter %}selected{% endif %}>{{ cat.title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="status" class="form-select form-select-sm">
+      <option value="">Tous statuts</option>
+      {% for st in statuses %}
+      <option value="{{ st }}" {% if st == status_filter %}selected{% endif %}>{{ st.replace('_',' ').title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+  </div>
+</form>
+
+<!-- Table -->
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Titre</th>
+        <th>Catégorie</th>
+        <th>Joueur</th>
+        <th>Niveau</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tickets %}
+      <tr>
+        <td class="text-muted small">{{ t.id }}</td>
+        <td>
+          <a href="{{ url_for('admin.ticket_detail', ticket_id=t.id) }}" class="text-decoration-none fw-semibold">
+            {{ t.title }}
+          </a>
+          {% if t.admin_note %}
+          <span class="ms-1 badge bg-info-subtle text-info-emphasis" title="Note admin">💬</span>
+          {% endif %}
+        </td>
+        <td><span class="ticket-cat">{{ t.category }}</span></td>
+        <td class="small">{{ names.get(t.player_id, '—') }}</td>
+        <td class="small text-center">{{ t.player_level }}</td>
+        <td><span class="ticket-status status-{{ t.status }}">{{ t.status.replace('_',' ') }}</span></td>
+        <td class="small text-muted text-nowrap">{{ t.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <a href="{{ url_for('admin.ticket_detail', ticket_id=t.id) }}" class="btn btn-xs btn-outline-secondary btn-sm">Voir</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-center text-muted py-4">Aucun ticket trouvé.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if pages > 1 %}
+<nav>
+  <ul class="pagination pagination-sm">
+    {% for p in range(1, pages + 1) %}
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.tickets_list', page=p, q=q, category=category_filter, status=status_filter) }}">{{ p }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+<p class="text-muted small">{{ total }} ticket(s) au total</p>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Ticket #{{ ticket.id }} — Admin LodyLand{% endblock %}
+{% block page_title %}🎫 Ticket #{{ ticket.id }}{% endblock %}
+
+{% block content %}
+<style>
+.ticket-status { display:inline-block; padding:3px 10px; border-radius:12px; font-size:.85rem; font-weight:600; }
+.status-open        { background:#fef9c3; color:#854d0e; }
+.status-in_progress { background:#dbeafe; color:#1e40af; }
+.status-resolved    { background:#dcfce7; color:#166534; }
+.status-closed      { background:#f1f5f9; color:#64748b; }
+.detail-label { font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; color:#64748b; margin-bottom:2px; }
+.detail-block { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:16px; white-space:pre-wrap; word-break:break-word; }
+</style>
+
+<div class="mb-3">
+  <a href="{{ url_for('admin.tickets_list') }}" class="btn btn-sm btn-outline-secondary">← Retour à la liste</a>
+</div>
+
+<div class="row g-4">
+  <!-- Left: ticket content -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">{{ ticket.title }}</span>
+        <span class="ticket-status status-{{ ticket.status }}">{{ ticket.status.replace('_', ' ') }}</span>
+      </div>
+      <div class="card-body">
+
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="detail-label">Joueur</div>
+            <div class="fw-semibold">{{ player_name }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="detail-label">Niveau au moment du ticket</div>
+            <div>{{ ticket.player_level }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="detail-label">Catégorie</div>
+            <div><span class="badge bg-secondary">{{ ticket.category }}</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="detail-label">Créé le</div>
+            <div class="small text-muted">{{ ticket.created_at.strftime('%d/%m/%Y à %H:%M') }}</div>
+          </div>
+        </div>
+
+        {% if ticket.page_url %}
+        <div class="mb-3">
+          <div class="detail-label">Page signalée</div>
+          <code class="small">{{ ticket.page_url }}</code>
+        </div>
+        {% endif %}
+
+        {% if ticket.browser_info %}
+        <div class="mb-3">
+          <div class="detail-label">Navigateur</div>
+          <code class="small">{{ ticket.browser_info }}</code>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <div class="detail-label">Description</div>
+          <div class="detail-block">{{ ticket.description }}</div>
+        </div>
+
+        {% if ticket.steps %}
+        <div class="mb-3">
+          <div class="detail-label">Étapes pour reproduire</div>
+          <div class="detail-block">{{ ticket.steps }}</div>
+        </div>
+        {% endif %}
+
+        {% if ticket.admin_note %}
+        <div class="mb-3">
+          <div class="detail-label">Note admin actuelle</div>
+          <div class="detail-block" style="background:#eff6ff; border-color:#bfdbfe;">{{ ticket.admin_note }}</div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: admin actions -->
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header fw-bold">Actions admin</div>
+      <div class="card-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Statut</label>
+          <select id="adminStatus" class="form-select">
+            {% for st in statuses %}
+            <option value="{{ st }}" {% if st == ticket.status %}selected{% endif %}>
+              {{ st.replace('_', ' ').title() }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Note admin</label>
+          <textarea id="adminNote" class="form-control" rows="5"
+                    placeholder="Réponse ou note interne…">{{ ticket.admin_note or '' }}</textarea>
+        </div>
+
+        <button id="btnSave" class="btn btn-primary w-100">Enregistrer</button>
+        <div id="saveMsg" class="mt-2 small text-success d-none">Sauvegardé ✓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+document.getElementById("btnSave").addEventListener("click", async () => {
+  const btn = document.getElementById("btnSave");
+  btn.disabled = true;
+  const r = await fetch("{{ url_for('admin.ticket_update', ticket_id=ticket.id) }}", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      status: document.getElementById("adminStatus").value,
+      admin_note: document.getElementById("adminNote").value,
+    }),
+  });
+  btn.disabled = false;
+  const msg = document.getElementById("saveMsg");
+  if (r.ok) {
+    msg.textContent = "Sauvegardé ✓";
+    msg.className = "mt-2 small text-success";
+  } else {
+    msg.textContent = "Erreur lors de la sauvegarde.";
+    msg.className = "mt-2 small text-danger";
+  }
+  msg.classList.remove("d-none");
+  setTimeout(() => msg.classList.add("d-none"), 3000);
+});
+</script>
+{% endblock %}
+{% endblock %}
