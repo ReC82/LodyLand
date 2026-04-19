@@ -381,6 +381,58 @@ def set_user_role(player_id: int):
 # ROUTES: RESOURCES
 # =============================================================================
 
+@admin_bp.get("/resources/print")
+@admin_required(permission="edit_resources")
+def resources_print():
+    """Printable artist reference sheet for all resources."""
+    import os
+    session = SessionLocal()
+    try:
+        db_resources = session.query(ResourceDef).order_by(ResourceDef.key).all()
+    finally:
+        session.close()
+
+    # Load all translations at once
+    translations = {}
+    for lang in ("fr", "en"):
+        path = Path(__file__).resolve().parent.parent / "i18n" / "translations" / f"{lang}.yml"
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            translations[lang] = data.get("items", {})
+        else:
+            translations[lang] = {}
+
+    items_img_dir = Path(__file__).resolve().parent.parent / "static" / "assets" / "img" / "items"
+
+    def find_image(key):
+        """Find image in items subfolders."""
+        for sub in ("resources", "treasures", "tools", "misc", "weapons"):
+            p = items_img_dir / sub / f"{key}.png"
+            if p.exists():
+                return f"/static/assets/img/items/{sub}/{key}.png"
+        return None
+
+    resources_view = []
+    for r in db_resources:
+        fr_data = translations["fr"].get(r.key, {})
+        en_data = translations["en"].get(r.key, {})
+        label_fr = fr_data.get("label") if isinstance(fr_data, dict) else None
+        label_en = en_data.get("label") if isinstance(en_data, dict) else None
+        # Fallback to DB label if no i18n entry
+        if not label_fr and r.label and not r.label.startswith("items."):
+            label_fr = r.label
+        resources_view.append({
+            "key": r.key,
+            "label_fr": label_fr or r.key,
+            "label_en": label_en or "",
+            "kind": r.kind,
+            "image": find_image(r.key),
+        })
+
+    return render_template("ADMIN_UI/resources_print.html", resources=resources_view)
+
+
 @admin_bp.get("/resources/")
 @admin_required(permission="edit_resources")
 def resources_list():
