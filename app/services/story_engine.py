@@ -2,17 +2,23 @@
 """
 Story engine: find which story events should be shown to a player.
 
-Events are stored in the DB (StoryEventDef) and managed via the admin panel.
-The YAML file (levels.yml) is seeded into DB on first boot.
+Events are now stored in the DB (StoryEventDef) and managed via the admin panel.
+The YAML file (levels.yml) is no longer the source of truth for story events —
+it is only used once on first boot to seed the DB.
+
+This module does NOT handle persistence (which events were already shown).
+The caller must provide a set of already_seen_ids.
 """
 
 from __future__ import annotations
 from typing import Any, Dict, Iterable, List, Optional, Set
 
+# Type alias for clarity
 StoryEvent = Dict[str, Any]
 
 
 def _row_to_event(ev) -> StoryEvent:
+    """Convert a StoryEventDef ORM row to a plain dict."""
     return {
         "id": ev.id,
         "level": ev.level,
@@ -26,6 +32,7 @@ def _row_to_event(ev) -> StoryEvent:
 
 
 def _iter_all_story_events(session=None) -> Iterable[StoryEvent]:
+    """Yield all enabled story events from the DB."""
     from app.models import StoryEventDef
 
     def _query(s):
@@ -35,14 +42,16 @@ def _iter_all_story_events(session=None) -> Iterable[StoryEvent]:
             .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
             .all()
         )
-        return [_row_to_event(row) for row in rows]
+        for row in rows:
+            yield _row_to_event(row)
 
     if session is not None:
         yield from _query(session)
     else:
         from app.db import SessionLocal
         with SessionLocal() as s:
-            yield from _query(s)
+            # materialize to avoid session-closed issues
+            yield from list(_query(s))
 
 
 def find_story_events_for_trigger(
@@ -55,6 +64,27 @@ def find_story_events_for_trigger(
     is_first_login: bool = False,
     session=None,
 ) -> List[StoryEvent]:
+    """
+    Return all story events matching the given trigger and context.
+
+    Parameters
+    ----------
+    trigger:
+        One of "on_first_login", "on_level_reached",
+        "on_land_unlocked", "on_enter_land", ...
+    player_level:
+        Current player level (after any update).
+    already_seen_ids:
+        Set of story event ids already shown to this player.
+    land_key:
+        Required for land-related triggers.
+    just_reached_level:
+        Level just reached, for on_level_reached events.
+    is_first_login:
+        Whether this is the player's first login.
+    session:
+        Optional DB session to reuse.
+    """
     if already_seen_ids is None:
         already_seen_ids = set()
 
@@ -74,6 +104,7 @@ def find_story_events_for_trigger(
         if trigger == "on_first_login":
             if not is_first_login:
                 continue
+
         elif trigger == "on_level_reached":
             if just_reached_level is None:
                 continue

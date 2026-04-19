@@ -602,13 +602,13 @@ class NpcDef(Base):
 
 class StoryEventDef(Base):
     """
-    One story event (cutscene / dialogue) shown to the player.
+    One story event (cutscene / dialogue) that can be shown to the player.
 
     pages JSON format (list of dicts):
       [
         {
           "speaker": "self" | "npc:<npc_key>",
-          "mood": "thinking",
+          "mood": "thinking",           # for self: image variant; for NPC: ignored
           "text": {"fr": "...", "en": "..."}
         },
         ...

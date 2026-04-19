@@ -1113,20 +1113,26 @@ def player_detail(player_id: int):
 # NPC Management
 # =============================================================================
 
-def _get_pnj_portraits() -> list:
+def _get_pnj_portraits() -> list[str]:
+    """List portrait filenames from the pnj/villagers folder."""
     pnj_dir = Path(__file__).parent.parent / "static" / "assets" / "img" / "pnj" / "villagers"
     if not pnj_dir.exists():
         return []
-    return sorted(f.name for f in pnj_dir.iterdir()
-                  if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"))
+    return sorted(
+        f.name for f in pnj_dir.iterdir()
+        if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
+    )
 
 
-def _get_player_moods() -> list:
+def _get_player_moods() -> list[str]:
+    """List player mood image filenames from the players/defaults folder."""
     pl_dir = Path(__file__).parent.parent / "static" / "assets" / "img" / "ui" / "players" / "defaults"
     if not pl_dir.exists():
         return []
-    return sorted(f.stem for f in pl_dir.iterdir()
-                  if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"))
+    return sorted(
+        f.stem for f in pl_dir.iterdir()
+        if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
+    )
 
 
 @admin_bp.get("/npcs/")
@@ -1149,6 +1155,7 @@ def create_npc():
         return jsonify({"ok": False, "error": "Key required"}), 400
     if not key.startswith("npc_"):
         key = "npc_" + key
+
     session = SessionLocal()
     try:
         if session.query(NpcDef).filter_by(key=key).first():
@@ -1171,7 +1178,9 @@ def edit_npc(key: str):
         npc = session.query(NpcDef).filter_by(key=key).first()
         if not npc:
             abort(404)
+
         portraits = _get_pnj_portraits()
+
         if request.method == "POST":
             npc.name_fr = request.form.get("name_fr", "").strip() or npc.name_fr
             npc.name_en = request.form.get("name_en", "").strip() or npc.name_en
@@ -1180,6 +1189,7 @@ def edit_npc(key: str):
             npc.enabled = request.form.get("enabled") == "on"
             session.commit()
             return redirect(url_for("admin.npcs_list"))
+
         return render_template("ADMIN_UI/npc_form.html", npc=npc, portraits=portraits)
     finally:
         session.close()
@@ -1205,16 +1215,16 @@ def delete_npc(key: str):
 # =============================================================================
 
 TRIGGERS = [
-    ("on_first_login",   "Premier login"),
+    ("on_first_login", "Premier login"),
     ("on_level_reached", "Niveau atteint"),
     ("on_land_unlocked", "Terre débloquée"),
-    ("on_enter_land",    "Entrée dans une terre"),
+    ("on_enter_land", "Entrée dans une terre"),
 ]
 
 MODAL_VARIANTS = [
-    ("full",     "Plein écran (full)"),
+    ("full", "Plein écran (full)"),
     ("centered", "Centré (centered)"),
-    ("toast",    "Toast (toast)"),
+    ("toast", "Toast (toast)"),
 ]
 
 
@@ -1223,12 +1233,16 @@ MODAL_VARIANTS = [
 def story_list():
     session = SessionLocal()
     try:
-        events = (session.query(StoryEventDef)
-                  .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
-                  .all())
+        events = (
+            session.query(StoryEventDef)
+            .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
+            .all()
+        )
+        # Group by level
         by_level: dict = {}
         for ev in events:
             by_level.setdefault(ev.level, []).append(ev)
+
         return render_template("ADMIN_UI/story_list.html",
                                by_level=by_level,
                                sorted_levels=sorted(by_level.keys()))
@@ -1244,11 +1258,17 @@ def create_story_event():
     if not ev_id:
         return jsonify({"ok": False, "error": "ID required"}), 400
     level = int(data.get("level", 0))
+
     session = SessionLocal()
     try:
         if session.query(StoryEventDef).filter_by(id=ev_id).first():
             return jsonify({"ok": False, "error": "ID already exists"}), 400
-        ev = StoryEventDef(id=ev_id, level=level, trigger="on_level_reached", pages=[])
+        ev = StoryEventDef(
+            id=ev_id,
+            level=level,
+            trigger="on_level_reached",
+            pages=[],
+        )
         session.add(ev)
         session.commit()
         return jsonify({"ok": True, "id": ev_id,
@@ -1266,10 +1286,12 @@ def edit_story_event(ev_id: str):
         ev = session.query(StoryEventDef).filter_by(id=ev_id).first()
         if not ev:
             abort(404)
+
         npcs = session.query(NpcDef).filter_by(enabled=True).order_by(NpcDef.key).all()
         player_moods = _get_player_moods()
         portraits = _get_pnj_portraits()
         error = None
+
         if request.method == "POST":
             ev.level = int(request.form.get("level", 0))
             ev.trigger = request.form.get("trigger", "on_level_reached")
@@ -1278,20 +1300,30 @@ def edit_story_event(ev_id: str):
             ev.modal_variant = request.form.get("modal_variant", "centered")
             ev.sort_order = int(request.form.get("sort_order", 0))
             ev.enabled = request.form.get("enabled") == "on"
+
             quest_key = request.form.get("quest_key", "").strip()
             ev.quest_start = {"quest_key": quest_key} if quest_key else None
+
             pages_raw = request.form.get("pages_json", "[]").strip()
             try:
                 ev.pages = json.loads(pages_raw)
             except json.JSONDecodeError:
                 error = "Pages JSON invalides"
+
             if not error:
                 session.commit()
                 return redirect(url_for("admin.story_list"))
-        return render_template("ADMIN_UI/story_form.html",
-                               ev=ev, npcs=npcs, player_moods=player_moods,
-                               portraits=portraits, triggers=TRIGGERS,
-                               modal_variants=MODAL_VARIANTS, error=error)
+
+        return render_template(
+            "ADMIN_UI/story_form.html",
+            ev=ev,
+            npcs=npcs,
+            player_moods=player_moods,
+            portraits=portraits,
+            triggers=TRIGGERS,
+            modal_variants=MODAL_VARIANTS,
+            error=error,
+        )
     finally:
         session.close()
 
@@ -1299,27 +1331,40 @@ def edit_story_event(ev_id: str):
 @admin_bp.get("/story/export")
 @admin_required(permission="view_dashboard")
 def export_story():
+    """Export all story events as JSON or YAML download."""
     import io
     from flask import make_response
     fmt = request.args.get("fmt", "json").lower()
+
     session = SessionLocal()
     try:
-        events = (session.query(StoryEventDef)
-                  .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
-                  .all())
+        events = (
+            session.query(StoryEventDef)
+            .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
+            .all()
+        )
         npcs = {n.key: {"name_fr": n.name_fr, "name_en": n.name_en, "portrait": n.portrait}
                 for n in session.query(NpcDef).all()}
+
         data = {
             "npcs": npcs,
             "story_events": [
-                {"id": ev.id, "level": ev.level, "trigger": ev.trigger,
-                 "land_key": ev.land_key, "show_once": ev.show_once,
-                 "modal_variant": ev.modal_variant, "sort_order": ev.sort_order,
-                 "enabled": ev.enabled, "quest_start": ev.quest_start,
-                 "pages": ev.pages or []}
+                {
+                    "id": ev.id,
+                    "level": ev.level,
+                    "trigger": ev.trigger,
+                    "land_key": ev.land_key,
+                    "show_once": ev.show_once,
+                    "modal_variant": ev.modal_variant,
+                    "sort_order": ev.sort_order,
+                    "enabled": ev.enabled,
+                    "quest_start": ev.quest_start,
+                    "pages": ev.pages or [],
+                }
                 for ev in events
             ],
         }
+
         if fmt == "yaml":
             content = yaml.dump(data, allow_unicode=True, sort_keys=False,
                                 default_flow_style=False)
@@ -1331,6 +1376,7 @@ def export_story():
             resp = make_response(content)
             resp.headers["Content-Type"] = "application/json; charset=utf-8"
             resp.headers["Content-Disposition"] = "attachment; filename=story_events.json"
+
         return resp
     finally:
         session.close()

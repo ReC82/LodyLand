@@ -4,130 +4,114 @@
 
 {% block extra_css %}
 <style>
-.npc-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
+.npc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
 .npc-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  transition: box-shadow .15s;
+  background:var(--admin-card-bg); border:1px solid var(--admin-border);
+  border-radius:12px; overflow:hidden; text-align:center;
+  transition:transform .15s, box-shadow .15s;
 }
-.npc-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.npc-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,.3); }
 .npc-portrait {
-  width: 80px; height: 80px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #e2e8f0;
-  margin-bottom: .6rem;
+  width:100%; height:160px; object-fit:cover;
+  background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center;
+  font-size:3rem; color:rgba(255,255,255,.2);
 }
-.npc-portrait-placeholder {
-  width: 80px; height: 80px;
-  border-radius: 50%;
-  background: #f1f5f9;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem;
-  margin: 0 auto .6rem;
-  border: 2px solid #e2e8f0;
-}
-.npc-key { font-size: .72rem; color: #94a3b8; font-family: monospace; margin-bottom: .25rem; }
-.npc-name { font-weight: 600; font-size: .9rem; color: #1e293b; }
-.npc-actions { margin-top: .75rem; display: flex; gap: .4rem; justify-content: center; }
+.npc-portrait img { width:100%; height:160px; object-fit:cover; }
+.npc-info { padding:.75rem; }
+.npc-key { font-size:.7rem; opacity:.45; font-family:monospace; }
+.npc-name { font-weight:700; font-size:.95rem; margin:.2rem 0 .6rem; }
+.npc-actions { display:flex; gap:.4rem; justify-content:center; }
+.badge-disabled { background:rgba(239,68,68,.15); color:#f87171;
+  font-size:.65rem; border-radius:99px; padding:.1rem .5rem; }
 </style>
 {% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <p class="text-muted mb-0">{{ npcs|length }} personnage(s) configuré(s).</p>
-  <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Nouveau PNJ</button>
+  <p class="text-muted mb-0">{{ npcs|length }} personnage(s) enregistré(s).</p>
+  <button class="btn btn-primary" id="btn-new-npc">+ Nouveau PNJ</button>
+</div>
+
+<!-- New NPC modal -->
+<div id="modal-new-npc" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);">
+  <div style="background:#1a1f35;border:1px solid var(--admin-border);border-radius:14px;width:380px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <h5 class="mb-3">Nouveau PNJ</h5>
+    <div class="mb-3">
+      <label class="form-label">Identifiant unique <span class="text-muted small">(snake_case, sans "npc_")</span></label>
+      <input type="text" id="new-npc-key" class="form-control" placeholder="villager_guide">
+    </div>
+    <div id="new-npc-error" class="text-danger small mb-2" style="display:none;"></div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-secondary" id="btn-npc-cancel">Annuler</button>
+      <button class="btn btn-primary" id="btn-npc-create">Créer</button>
+    </div>
+  </div>
 </div>
 
 {% if npcs %}
 <div class="npc-grid">
   {% for npc in npcs %}
   <div class="npc-card">
-    {% if npc.portrait %}
-    <img src="{{ url_for('static', filename='assets/img/pnj/villagers/' + npc.portrait) }}"
-         class="npc-portrait" alt="{{ npc.name_fr }}">
-    {% else %}
-    <div class="npc-portrait-placeholder">🧑</div>
-    {% endif %}
-    <div class="npc-key">{{ npc.key }}</div>
-    <div class="npc-name">{{ npc.name_fr }}</div>
-    {% if npc.name_en and npc.name_en != npc.name_fr %}
-    <div class="text-muted" style="font-size:.78rem;">{{ npc.name_en }}</div>
-    {% endif %}
-    {% if not npc.enabled %}
-    <span class="badge bg-secondary mt-1">Désactivé</span>
-    {% endif %}
-    <div class="npc-actions">
-      <a href="{{ url_for('admin.edit_npc', key=npc.key) }}" class="btn btn-sm btn-outline-primary">✏️ Éditer</a>
-      <button class="btn btn-sm btn-outline-danger" onclick="deleteNpc('{{ npc.key }}')">🗑️</button>
+    <div class="npc-portrait">
+      {% if npc.portrait %}
+      <img src="/static/assets/img/pnj/villagers/{{ npc.portrait }}" alt="{{ npc.name_fr }}">
+      {% else %}
+      🧑
+      {% endif %}
+    </div>
+    <div class="npc-info">
+      <div class="npc-key">{{ npc.key }}</div>
+      <div class="npc-name">{{ npc.name_fr }}</div>
+      {% if not npc.enabled %}<span class="badge-disabled">Désactivé</span>{% endif %}
+      <div class="npc-actions mt-2">
+        <a href="{{ url_for('admin.edit_npc', key=npc.key) }}" class="btn btn-sm btn-outline-secondary">✏️ Éditer</a>
+        <button class="btn btn-sm btn-outline-danger btn-delete-npc" data-key="{{ npc.key }}">🗑️</button>
+      </div>
     </div>
   </div>
   {% endfor %}
 </div>
 {% else %}
-<div class="text-center py-5 text-muted">
+<div class="text-center text-muted py-5">
   <div style="font-size:3rem;">🧑</div>
-  <p class="mt-2">Aucun PNJ pour l'instant.</p>
-  <button class="btn btn-primary" onclick="openCreateModal()">Créer le premier PNJ</button>
+  <p class="mt-2">Aucun PNJ pour l'instant. Créez-en un !</p>
 </div>
 {% endif %}
 
-<!-- Create modal -->
-<div id="modal-create-npc" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
-  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;width:360px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.15);">
-    <h6 class="mb-3">Nouveau PNJ</h6>
-    <div class="mb-3">
-      <label class="form-label">Clé unique <span class="text-muted small">(auto-préfixé npc_)</span></label>
-      <input type="text" id="new-npc-key" class="form-control" placeholder="villager_smith">
-    </div>
-    <div id="create-npc-error" class="text-danger small mb-2" style="display:none;"></div>
-    <div class="d-flex gap-2 justify-content-end">
-      <button class="btn btn-secondary" onclick="closeCreateModal()">Annuler</button>
-      <button class="btn btn-primary" id="btn-create-npc">Créer</button>
-    </div>
-  </div>
-</div>
-
 <script>
-function openCreateModal() {
+const modal = document.getElementById('modal-new-npc');
+document.getElementById('btn-new-npc').onclick = () => {
   document.getElementById('new-npc-key').value = '';
-  document.getElementById('create-npc-error').style.display = 'none';
-  document.getElementById('modal-create-npc').style.display = 'flex';
+  document.getElementById('new-npc-error').style.display = 'none';
+  modal.style.display = 'flex';
   setTimeout(() => document.getElementById('new-npc-key').focus(), 50);
-}
-function closeCreateModal() {
-  document.getElementById('modal-create-npc').style.display = 'none';
-}
-document.getElementById('modal-create-npc').addEventListener('click', function(e) {
-  if (e.target === this) closeCreateModal();
-});
-document.getElementById('btn-create-npc').addEventListener('click', async () => {
+};
+document.getElementById('btn-npc-cancel').onclick = () => modal.style.display = 'none';
+modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+document.getElementById('btn-npc-create').onclick = async () => {
   const key = document.getElementById('new-npc-key').value.trim();
-  const errEl = document.getElementById('create-npc-error');
-  if (!key) { errEl.textContent = 'Clé requise.'; errEl.style.display = 'block'; return; }
+  const errEl = document.getElementById('new-npc-error');
+  if (!key) { errEl.textContent = 'Identifiant requis.'; errEl.style.display='block'; return; }
   const r = await fetch('{{ url_for("admin.create_npc") }}', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key })
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({key})
   });
   const d = await r.json();
-  if (d.ok) window.location.href = d.redirect;
-  else { errEl.textContent = d.error; errEl.style.display = 'block'; }
-});
+  if (d.ok) { window.location.href = d.redirect; }
+  else { errEl.textContent = d.error; errEl.style.display='block'; }
+};
 
-async function deleteNpc(key) {
-  if (!confirm(`Supprimer le PNJ "${key}" ?`)) return;
-  const r = await fetch(`/admin/npcs/${key}/delete`, { method: 'POST' });
-  const d = await r.json();
-  if (d.ok) location.reload();
-  else alert('Erreur : ' + d.error);
-}
+document.querySelectorAll('.btn-delete-npc').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Supprimer ce PNJ ?')) return;
+    const key = btn.dataset.key;
+    const r = await fetch(`/admin/npcs/${key}/delete`, { method:'POST' });
+    const d = await r.json();
+    if (d.ok) location.reload();
+  });
+});
 </script>
 {% endblock %}

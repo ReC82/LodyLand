@@ -92,6 +92,7 @@ def _seed_story_events() -> None:
                 portrait="Anna.png",
             ))
 
+        # Import all story events from levels.yml
         count = 0
         for lvl_num, cfg in LEVELS.items():
             events = cfg.get("story_events") or []
@@ -99,16 +100,24 @@ def _seed_story_events() -> None:
                 ev_id = ev.get("id")
                 if not ev_id:
                     continue
+
+                # Convert pages: normalize speaker from old format
                 raw_pages = ev.get("pages") or []
                 pages = []
                 for page in raw_pages:
                     speaker_raw = page.get("speaker", "self")
-                    speaker = "self" if speaker_raw == "self" else f"npc:{speaker_raw}"
+                    # Old format uses "npc_villager_guide" as speaker key
+                    if speaker_raw == "self":
+                        speaker = "self"
+                    else:
+                        speaker = f"npc:{speaker_raw}"
+
                     pages.append({
                         "speaker": speaker,
                         "mood": page.get("mood", ""),
                         "text": page.get("text", {"fr": "", "en": ""}),
                     })
+
                 session.add(StoryEventDef(
                     id=ev_id,
                     level=lvl_num,
@@ -128,6 +137,7 @@ def _seed_story_events() -> None:
     except Exception as e:
         import traceback
         traceback.print_exc()
+        print(f"[story] Seed error: {e}")
         session.rollback()
     finally:
         session.close()
