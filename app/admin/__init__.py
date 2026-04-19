@@ -23,6 +23,8 @@ from app.models import (
     ResourceStock,
     ResourceDef,
     Account,
+    NpcDef,
+    StoryEventDef,
 )
 
 import yaml
@@ -859,6 +861,116 @@ def manage_roles():
 from app.models import MiniGameDef, PlayerMiniGameState
 
 
+# =============================================================================
+# Levels Management
+# =============================================================================
+
+LEVELS_FILE = Path(__file__).parent.parent / "data" / "levels.yml"
+
+REWARD_TYPES = [
+    ("shards",   "🪙 Shards"),
+    ("essence",  "💎 Essence"),
+    ("card",     "🃏 Carte"),
+    ("resource", "📦 Ressource"),
+]
+
+
+def _load_levels_yaml() -> list:
+    """Return raw YAML list (preserving all fields)."""
+    if not LEVELS_FILE.exists():
+        return []
+    raw = yaml.safe_load(LEVELS_FILE.read_text(encoding="utf-8")) or {}
+    return raw.get("levels", []) or []
+
+
+def _save_levels_yaml(levels_list: list) -> None:
+    """Write levels list back to YAML, reload the progression module."""
+    LEVELS_FILE.write_text(
+        yaml.dump({"levels": levels_list}, allow_unicode=True,
+                  sort_keys=False, default_flow_style=False),
+        encoding="utf-8",
+    )
+    # Hot-reload progression globals
+    import app.progression as prog
+    prog.LEVELS = prog._load_levels_from_yaml()
+    prog.MAX_LEVEL = max(prog.LEVELS.keys()) if prog.LEVELS else 0
+
+
+@admin_bp.get("/levels/")
+@admin_required(permission="view_dashboard")
+def levels_list():
+    levels = _load_levels_yaml()
+    session = SessionLocal()
+    try:
+        cards = session.query(CardDef).filter_by(enabled=True).order_by(CardDef.key).all()
+        resources = session.query(ResourceDef).filter_by(enabled=True).order_by(ResourceDef.key).all()
+    finally:
+        session.close()
+    return render_template("ADMIN_UI/levels_list.html",
+                           levels=levels, cards=cards, resources=resources,
+                           reward_types=REWARD_TYPES)
+
+
+@admin_bp.post("/levels/save")
+@admin_required(permission="view_dashboard")
+def levels_save():
+    """Save full levels payload (JSON body) back to YAML."""
+    data = request.get_json(silent=True)
+    if not data or "levels" not in data:
+        return jsonify({"ok": False, "error": "Invalid payload"}), 400
+
+    # Load current YAML to preserve story_events, system_unlocks
+    current = {int(l["level"]): l for l in _load_levels_yaml()}
+
+    merged = []
+    for entry in data["levels"]:
+        lvl_num = int(entry.get("level", 0))
+        existing = current.get(lvl_num, {"level": lvl_num})
+        existing["xp_required"] = int(entry.get("xp_required", 0))
+        existing["rewards"] = entry.get("rewards", [])
+        merged.append(existing)
+
+    # Keep levels that weren't in the payload (shouldn't happen, but safe)
+    sent_nums = {int(e["level"]) for e in data["levels"]}
+    for lvl_num, existing in current.items():
+        if lvl_num not in sent_nums:
+            merged.append(existing)
+
+    merged.sort(key=lambda l: int(l["level"]))
+    _save_levels_yaml(merged)
+    return jsonify({"ok": True})
+
+
+@admin_bp.post("/levels/new")
+@admin_required(permission="view_dashboard")
+def level_new():
+    """Add a new level."""
+    data = request.get_json(silent=True) or {}
+    lvl_num = int(data.get("level", 0))
+    if lvl_num < 0:
+        return jsonify({"ok": False, "error": "Invalid level"}), 400
+
+    levels = _load_levels_yaml()
+    existing_nums = {int(l["level"]) for l in levels}
+    if lvl_num in existing_nums:
+        return jsonify({"ok": False, "error": f"Level {lvl_num} already exists"}), 400
+
+    levels.append({"level": lvl_num, "xp_required": 0, "rewards": [],
+                   "story_events": [], "system_unlocks": []})
+    levels.sort(key=lambda l: int(l["level"]))
+    _save_levels_yaml(levels)
+    return jsonify({"ok": True})
+
+
+@admin_bp.post("/levels/<int:lvl_num>/delete")
+@admin_required(permission="view_dashboard")
+def level_delete(lvl_num: int):
+    levels = _load_levels_yaml()
+    levels = [l for l in levels if int(l["level"]) != lvl_num]
+    _save_levels_yaml(levels)
+    return jsonify({"ok": True})
+
+
 def _default_mg_rewards() -> list:
     rewards = []
     for lvl in range(1, 11):
@@ -995,3 +1107,245 @@ def players_list():
 def player_detail(player_id: int):
     """Legacy route - use user_detail instead."""
     return redirect(url_for("admin.user_detail", player_id=player_id))
+
+
+# =============================================================================
+# NPC Management
+# =============================================================================
+
+def _get_pnj_portraits() -> list:
+    pnj_dir = Path(__file__).parent.parent / "static" / "assets" / "img" / "pnj" / "villagers"
+    if not pnj_dir.exists():
+        return []
+    return sorted(f.name for f in pnj_dir.iterdir()
+                  if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"))
+
+
+def _get_player_moods() -> list:
+    pl_dir = Path(__file__).parent.parent / "static" / "assets" / "img" / "ui" / "players" / "defaults"
+    if not pl_dir.exists():
+        return []
+    return sorted(f.stem for f in pl_dir.iterdir()
+                  if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"))
+
+
+@admin_bp.get("/npcs/")
+@admin_required(permission="view_dashboard")
+def npcs_list():
+    session = SessionLocal()
+    try:
+        npcs = session.query(NpcDef).order_by(NpcDef.key).all()
+        return render_template("ADMIN_UI/npcs_list.html", npcs=npcs)
+    finally:
+        session.close()
+
+
+@admin_bp.post("/npcs/new")
+@admin_required(permission="view_dashboard")
+def create_npc():
+    data = request.get_json() or {}
+    key = (data.get("key") or "").strip().lower().replace(" ", "_")
+    if not key:
+        return jsonify({"ok": False, "error": "Key required"}), 400
+    if not key.startswith("npc_"):
+        key = "npc_" + key
+    session = SessionLocal()
+    try:
+        if session.query(NpcDef).filter_by(key=key).first():
+            return jsonify({"ok": False, "error": "Key already exists"}), 400
+        npc = NpcDef(key=key, name_fr=key, name_en=key)
+        session.add(npc)
+        session.commit()
+        return jsonify({"ok": True, "key": key,
+                        "redirect": url_for("admin.edit_npc", key=key)})
+    finally:
+        session.close()
+
+
+@admin_bp.get("/npcs/<key>/edit")
+@admin_bp.post("/npcs/<key>/edit")
+@admin_required(permission="view_dashboard")
+def edit_npc(key: str):
+    session = SessionLocal()
+    try:
+        npc = session.query(NpcDef).filter_by(key=key).first()
+        if not npc:
+            abort(404)
+        portraits = _get_pnj_portraits()
+        if request.method == "POST":
+            npc.name_fr = request.form.get("name_fr", "").strip() or npc.name_fr
+            npc.name_en = request.form.get("name_en", "").strip() or npc.name_en
+            portrait = request.form.get("portrait", "").strip()
+            npc.portrait = portrait if portrait else None
+            npc.enabled = request.form.get("enabled") == "on"
+            session.commit()
+            return redirect(url_for("admin.npcs_list"))
+        return render_template("ADMIN_UI/npc_form.html", npc=npc, portraits=portraits)
+    finally:
+        session.close()
+
+
+@admin_bp.post("/npcs/<key>/delete")
+@admin_required(permission="view_dashboard")
+def delete_npc(key: str):
+    session = SessionLocal()
+    try:
+        npc = session.query(NpcDef).filter_by(key=key).first()
+        if not npc:
+            abort(404)
+        session.delete(npc)
+        session.commit()
+        return jsonify({"ok": True})
+    finally:
+        session.close()
+
+
+# =============================================================================
+# Story Event Management
+# =============================================================================
+
+TRIGGERS = [
+    ("on_first_login",   "Premier login"),
+    ("on_level_reached", "Niveau atteint"),
+    ("on_land_unlocked", "Terre débloquée"),
+    ("on_enter_land",    "Entrée dans une terre"),
+]
+
+MODAL_VARIANTS = [
+    ("full",     "Plein écran (full)"),
+    ("centered", "Centré (centered)"),
+    ("toast",    "Toast (toast)"),
+]
+
+
+@admin_bp.get("/story/")
+@admin_required(permission="view_dashboard")
+def story_list():
+    session = SessionLocal()
+    try:
+        events = (session.query(StoryEventDef)
+                  .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
+                  .all())
+        by_level: dict = {}
+        for ev in events:
+            by_level.setdefault(ev.level, []).append(ev)
+        return render_template("ADMIN_UI/story_list.html",
+                               by_level=by_level,
+                               sorted_levels=sorted(by_level.keys()))
+    finally:
+        session.close()
+
+
+@admin_bp.post("/story/new")
+@admin_required(permission="view_dashboard")
+def create_story_event():
+    data = request.get_json() or {}
+    ev_id = (data.get("id") or "").strip().lower().replace(" ", "_")
+    if not ev_id:
+        return jsonify({"ok": False, "error": "ID required"}), 400
+    level = int(data.get("level", 0))
+    session = SessionLocal()
+    try:
+        if session.query(StoryEventDef).filter_by(id=ev_id).first():
+            return jsonify({"ok": False, "error": "ID already exists"}), 400
+        ev = StoryEventDef(id=ev_id, level=level, trigger="on_level_reached", pages=[])
+        session.add(ev)
+        session.commit()
+        return jsonify({"ok": True, "id": ev_id,
+                        "redirect": url_for("admin.edit_story_event", ev_id=ev_id)})
+    finally:
+        session.close()
+
+
+@admin_bp.get("/story/<ev_id>/edit")
+@admin_bp.post("/story/<ev_id>/edit")
+@admin_required(permission="view_dashboard")
+def edit_story_event(ev_id: str):
+    session = SessionLocal()
+    try:
+        ev = session.query(StoryEventDef).filter_by(id=ev_id).first()
+        if not ev:
+            abort(404)
+        npcs = session.query(NpcDef).filter_by(enabled=True).order_by(NpcDef.key).all()
+        player_moods = _get_player_moods()
+        portraits = _get_pnj_portraits()
+        error = None
+        if request.method == "POST":
+            ev.level = int(request.form.get("level", 0))
+            ev.trigger = request.form.get("trigger", "on_level_reached")
+            ev.land_key = request.form.get("land_key", "").strip() or None
+            ev.show_once = request.form.get("show_once") == "on"
+            ev.modal_variant = request.form.get("modal_variant", "centered")
+            ev.sort_order = int(request.form.get("sort_order", 0))
+            ev.enabled = request.form.get("enabled") == "on"
+            quest_key = request.form.get("quest_key", "").strip()
+            ev.quest_start = {"quest_key": quest_key} if quest_key else None
+            pages_raw = request.form.get("pages_json", "[]").strip()
+            try:
+                ev.pages = json.loads(pages_raw)
+            except json.JSONDecodeError:
+                error = "Pages JSON invalides"
+            if not error:
+                session.commit()
+                return redirect(url_for("admin.story_list"))
+        return render_template("ADMIN_UI/story_form.html",
+                               ev=ev, npcs=npcs, player_moods=player_moods,
+                               portraits=portraits, triggers=TRIGGERS,
+                               modal_variants=MODAL_VARIANTS, error=error)
+    finally:
+        session.close()
+
+
+@admin_bp.get("/story/export")
+@admin_required(permission="view_dashboard")
+def export_story():
+    import io
+    from flask import make_response
+    fmt = request.args.get("fmt", "json").lower()
+    session = SessionLocal()
+    try:
+        events = (session.query(StoryEventDef)
+                  .order_by(StoryEventDef.level, StoryEventDef.sort_order, StoryEventDef.id)
+                  .all())
+        npcs = {n.key: {"name_fr": n.name_fr, "name_en": n.name_en, "portrait": n.portrait}
+                for n in session.query(NpcDef).all()}
+        data = {
+            "npcs": npcs,
+            "story_events": [
+                {"id": ev.id, "level": ev.level, "trigger": ev.trigger,
+                 "land_key": ev.land_key, "show_once": ev.show_once,
+                 "modal_variant": ev.modal_variant, "sort_order": ev.sort_order,
+                 "enabled": ev.enabled, "quest_start": ev.quest_start,
+                 "pages": ev.pages or []}
+                for ev in events
+            ],
+        }
+        if fmt == "yaml":
+            content = yaml.dump(data, allow_unicode=True, sort_keys=False,
+                                default_flow_style=False)
+            resp = make_response(content)
+            resp.headers["Content-Type"] = "text/yaml; charset=utf-8"
+            resp.headers["Content-Disposition"] = "attachment; filename=story_events.yaml"
+        else:
+            content = json.dumps(data, ensure_ascii=False, indent=2)
+            resp = make_response(content)
+            resp.headers["Content-Type"] = "application/json; charset=utf-8"
+            resp.headers["Content-Disposition"] = "attachment; filename=story_events.json"
+        return resp
+    finally:
+        session.close()
+
+
+@admin_bp.post("/story/<ev_id>/delete")
+@admin_required(permission="view_dashboard")
+def delete_story_event(ev_id: str):
+    session = SessionLocal()
+    try:
+        ev = session.query(StoryEventDef).filter_by(id=ev_id).first()
+        if not ev:
+            abort(404)
+        session.delete(ev)
+        session.commit()
+        return jsonify({"ok": True})
+    finally:
+        session.close()

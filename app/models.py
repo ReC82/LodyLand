@@ -579,3 +579,50 @@ class PlayerMiniGameState(Base):
     won_card_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
 
     player = relationship("Player", backref="minigame_states")
+
+
+# =============================================================================
+# NPC & Story Events (admin-editable, i18n-aware)
+# =============================================================================
+
+class NpcDef(Base):
+    """
+    Non-player character definition.
+    portrait: filename relative to static/assets/img/pnj/villagers/
+    """
+    __tablename__ = "npc_defs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, index=True)
+    name_fr: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    name_en: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    portrait: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class StoryEventDef(Base):
+    """
+    One story event (cutscene / dialogue) shown to the player.
+
+    pages JSON format (list of dicts):
+      [
+        {
+          "speaker": "self" | "npc:<npc_key>",
+          "mood": "thinking",
+          "text": {"fr": "...", "en": "..."}
+        },
+        ...
+      ]
+    """
+    __tablename__ = "story_event_defs"
+
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    level: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    trigger: Mapped[str] = mapped_column(String(60), nullable=False, default="on_level_reached")
+    land_key: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    show_once: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    modal_variant: Mapped[str] = mapped_column(String(30), nullable=False, default="centered")
+    pages: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    quest_start: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

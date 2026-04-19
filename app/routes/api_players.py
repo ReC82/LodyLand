@@ -650,6 +650,22 @@ def get_levels_definitions():
             for c in s.query(CardDef).filter_by(enabled=True).all()
         }
 
+        # Load story events from DB grouped by level
+        from app.models import StoryEventDef
+        story_events_by_level: dict = {}
+        for ev in s.query(StoryEventDef).filter_by(enabled=True).order_by(
+            StoryEventDef.level, StoryEventDef.sort_order
+        ).all():
+            story_events_by_level.setdefault(ev.level, []).append({
+                "id": ev.id,
+                "trigger": ev.trigger,
+                "land_key": ev.land_key,
+                "show_once": ev.show_once,
+                "modal_variant": ev.modal_variant,
+                "pages": ev.pages or [],
+                "quest_start": ev.quest_start,
+            })
+
         level_numbers = sorted(LEVELS.keys()) if LEVELS else []
         payload = []
 
@@ -669,8 +685,8 @@ def get_levels_definitions():
             cfg = LEVELS[lvl]
             rewards_cfg = cfg.get("rewards", []) or []
 
-            # NEW: raw story + system unlocks (directement depuis LEVELS)
-            story_events_cfg = cfg.get("story_events", []) or []
+            # Story events from DB; system_unlocks still from YAML
+            story_events_cfg = story_events_by_level.get(lvl, [])
             system_unlocks_cfg = cfg.get("system_unlocks", []) or []
 
             normalized_rewards = []
