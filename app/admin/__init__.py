@@ -25,6 +25,8 @@ from app.models import (
     Account,
     NpcDef,
     StoryEventDef,
+    SkillDef,
+    PlayerSkill,
 )
 
 import yaml
@@ -1445,5 +1447,133 @@ def delete_story_event(ev_id: str):
         session.delete(ev)
         session.commit()
         return jsonify({"ok": True})
+    finally:
+        session.close()
+
+
+# =============================================================================
+# Skills Management
+# =============================================================================
+
+SKILL_CATEGORIES = [
+    ("resource", "Ressource"),
+    ("land",     "Terre"),
+    ("craft",    "Artisanat"),
+]
+
+BONUS_TYPES = [
+    ("double_drop",          "Double drop (%)",             50),
+    ("cooldown_reduction",   "Réduction cooldown (s)",      30),
+    ("craft_time_reduction", "Réduction temps craft (%)",   50),
+    ("instant_craft_chance", "Craft instantané (%)",        30),
+    ("xp_bonus",             "Bonus XP (%)",               100),
+    ("shard_chance",         "Chance shards (%)",           30),
+]
+
+
+@admin_bp.get("/skills/")
+@admin_required(permission="view_dashboard")
+def skills_list():
+    session = SessionLocal()
+    try:
+        skills = session.query(SkillDef).order_by(SkillDef.category, SkillDef.key).all()
+        # Count players with each skill
+        skill_player_counts = {}
+        for sk in skills:
+            cnt = session.query(PlayerSkill).filter_by(skill_key=sk.key).filter(PlayerSkill.level > 0).count()
+            skill_player_counts[sk.key] = cnt
+        return render_template("ADMIN_UI/skills_list.html",
+                               skills=skills,
+                               skill_player_counts=skill_player_counts,
+                               categories=SKILL_CATEGORIES)
+    finally:
+        session.close()
+
+
+@admin_bp.get("/skills/<key>/edit")
+@admin_bp.post("/skills/<key>/edit")
+@admin_required(permission="view_dashboard")
+def edit_skill(key: str):
+    session = SessionLocal()
+    try:
+        skill = session.query(SkillDef).filter_by(key=key).first()
+        if not skill:
+            abort(404)
+        error = None
+        if request.method == "POST":
+            skill.name_fr = request.form.get("name_fr", "").strip() or skill.name_fr
+            skill.name_en = request.form.get("name_en", "").strip() or skill.name_en
+            skill.category = request.form.get("category", skill.category)
+            skill.subject_key = request.form.get("subject_key", "").strip() or None
+            skill.enabled = request.form.get("enabled") == "on"
+            levels_raw = request.form.get("levels_json", "[]")
+            try:
+                skill.levels = json.loads(levels_raw)
+            except json.JSONDecodeError:
+                error = "JSON des niveaux invalide."
+            if not error:
+                session.commit()
+                return redirect(url_for("admin.skills_list"))
+        return render_template("ADMIN_UI/skill_form.html",
+                               skill=skill,
+                               categories=SKILL_CATEGORIES,
+                               bonus_types=BONUS_TYPES,
+                               error=error)
+    finally:
+        session.close()
+
+
+@admin_bp.post("/skills/new")
+@admin_required(permission="view_dashboard")
+def create_skill():
+    data = request.get_json() or {}
+    key = (data.get("key") or "").strip().lower().replace(" ", "_")
+    if not key:
+        return jsonify({"ok": False, "error": "Clé requise"}), 400
+    if not key.startswith("skill_"):
+        key = "skill_" + key
+    session = SessionLocal()
+    try:
+        if session.query(SkillDef).filter_by(key=key).first():
+            return jsonify({"ok": False, "error": "Clé déjà utilisée"}), 400
+        sk = SkillDef(key=key, name_fr=key, name_en=key,
+                      category=data.get("category", "resource"),
+                      subject_key=data.get("subject_key") or None,
+                      levels=[])
+        session.add(sk)
+        session.commit()
+        return jsonify({"ok": True, "key": key,
+                        "redirect": url_for("admin.edit_skill", key=key)})
+    finally:
+        session.close()
+
+
+@admin_bp.post("/skills/<key>/delete")
+@admin_required(permission="view_dashboard")
+def delete_skill(key: str):
+    session = SessionLocal()
+    try:
+        sk = session.query(SkillDef).filter_by(key=key).first()
+        if not sk:
+            abort(404)
+        session.query(PlayerSkill).filter_by(skill_key=key).delete()
+        session.delete(sk)
+        session.commit()
+        return jsonify({"ok": True})
+    finally:
+        session.close()
+
+
+@admin_bp.post("/skills/<key>/toggle")
+@admin_required(permission="view_dashboard")
+def toggle_skill(key: str):
+    session = SessionLocal()
+    try:
+        sk = session.query(SkillDef).filter_by(key=key).first()
+        if not sk:
+            abort(404)
+        sk.enabled = not sk.enabled
+        session.commit()
+        return jsonify({"ok": True, "enabled": sk.enabled})
     finally:
         session.close()

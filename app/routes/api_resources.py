@@ -835,6 +835,21 @@ def collect():
                     base_amount=int(base_amount),
                 )
 
+                # Skills: resource + land progress
+                try:
+                    from app.services.skill_engine import record_skill_progress
+                    record_skill_progress(p.id, "resource", res_key,
+                                          int(base_amount), session=s)
+                except Exception:
+                    pass
+
+            # Skill: land action (once per collect, regardless of loot count)
+            try:
+                from app.services.skill_engine import record_skill_progress
+                record_skill_progress(p.id, "land", land_key, 1, session=s)
+            except Exception:
+                pass
+
             # ------------------------------------------------------------------
             # Cooldown application for this slot / tool
             # ------------------------------------------------------------------

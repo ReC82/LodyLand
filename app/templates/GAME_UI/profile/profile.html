@@ -284,6 +284,16 @@
 
 </div>
 
+<!-- ── Skills ── -->
+<section class="profile-card mt-3 mt-md-4" id="skills-section">
+  <div class="profile-card-header">
+    <h2 class="profile-card-title">⚡ Skills passifs</h2>
+  </div>
+  <div class="profile-card-body" id="skills-body">
+    <p class="text-muted small">Chargement…</p>
+  </div>
+</section>
+
 <!-- Beta Reset -->
       <section class="profile-card mt-3 mt-md-4 profile-danger-zone">
         <div class="profile-card-header">
@@ -341,4 +351,92 @@
 
 {% block extra_scripts %}
   <script src="{{ url_for('static', filename='GAME_UI/js/ui/profile_app.js') }}"></script>
+  <script>
+  // ── Skills display ────────────────────────────────────────────────────────
+  const BONUS_LABELS = {
+    double_drop:          { fr: "Double drop",         en: "Double drop",          unit: "%" },
+    cooldown_reduction:   { fr: "Réduction cooldown",  en: "Cooldown reduction",   unit: "s" },
+    craft_time_reduction: { fr: "Réduction craft",     en: "Craft time reduction", unit: "%" },
+    instant_craft_chance: { fr: "Craft instantané",    en: "Instant craft chance", unit: "%" },
+    xp_bonus:             { fr: "Bonus XP",            en: "XP bonus",             unit: "%" },
+    shard_chance:         { fr: "Chance shards",       en: "Shard chance",         unit: "%" },
+  };
+  const CAT_LABELS = { resource: "Ressources", land: "Terres", craft: "Artisanat" };
+  const CAT_ICONS  = { resource: "🌿", land: "🗺️", craft: "⚙️" };
+
+  function renderSkills(skills) {
+    const container = document.getElementById('skills-body');
+    if (!skills.length) {
+      container.innerHTML = '<p class="text-muted small">Aucun skill disponible pour l\'instant.</p>';
+      return;
+    }
+
+    // Group by category
+    const groups = {};
+    skills.forEach(sk => {
+      if (!groups[sk.category]) groups[sk.category] = [];
+      groups[sk.category].push(sk);
+    });
+
+    const lang = document.documentElement.lang || 'fr';
+
+    let html = '';
+    for (const cat of ['resource', 'land', 'craft']) {
+      if (!groups[cat]) continue;
+      html += `<div style="margin-bottom:1.25rem;">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+                    color:#94a3b8;margin-bottom:.5rem;">${CAT_ICONS[cat]} ${CAT_LABELS[cat]}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem;">`;
+
+      groups[cat].forEach(sk => {
+        const pct = sk.next_req ? Math.min(100, Math.round(sk.progress / sk.next_req * 100)) : 100;
+        const name = lang === 'fr' ? sk.name_fr : (sk.name_en || sk.name_fr);
+        const levelDots = Array.from({length: sk.max_level}, (_, i) =>
+          `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;
+                        background:${i < sk.level ? '#6366f1' : 'rgba(255,255,255,.15)'}"></span>`
+        ).join('');
+
+        const bonusHtml = sk.bonuses.length
+          ? sk.bonuses.map(b => {
+              const bl = BONUS_LABELS[b.type] || { fr: b.type, en: b.type, unit: '' };
+              const label = lang === 'fr' ? bl.fr : bl.en;
+              return `<span style="font-size:.72rem;background:rgba(99,102,241,.2);color:#a5b4fc;
+                             border-radius:4px;padding:.1rem .4rem;">${label} +${b.value}${bl.unit}</span>`;
+            }).join(' ')
+          : `<span style="font-size:.72rem;color:#64748b;">Aucun bonus actif (niv. 0)</span>`;
+
+        const progressBar = sk.next_req
+          ? `<div style="background:rgba(255,255,255,.08);border-radius:99px;height:4px;margin:.4rem 0 .2rem;">
+               <div style="background:#6366f1;height:4px;border-radius:99px;width:${pct}%;transition:width .3s;"></div>
+             </div>
+             <div style="font-size:.68rem;color:#64748b;">${sk.progress.toLocaleString()} / ${sk.next_req.toLocaleString()}</div>`
+          : `<div style="font-size:.72rem;color:#4ade80;margin-top:.3rem;">✅ Niveau maximum atteint !</div>`;
+
+        html += `
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                      border-radius:10px;padding:.7rem .85rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;">
+              <span style="font-weight:600;font-size:.88rem;">${name}</span>
+              <span style="font-size:.75rem;font-weight:700;color:#6366f1;">Niv. ${sk.level}</span>
+            </div>
+            <div style="margin-bottom:.35rem;">${levelDots}</div>
+            ${progressBar}
+            <div style="margin-top:.4rem;display:flex;gap:.3rem;flex-wrap:wrap;">${bonusHtml}</div>
+          </div>`;
+      });
+      html += '</div></div>';
+    }
+    container.innerHTML = html;
+  }
+
+  fetch('/api/skills')
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) renderSkills(d.skills.filter(sk => sk.level > 0 || sk.progress > 0));
+      else document.getElementById('skills-body').innerHTML = '<p class="text-muted small">Erreur de chargement.</p>';
+    })
+    .catch(() => {
+      document.getElementById('skills-body').innerHTML = '<p class="text-muted small">Skills non disponibles.</p>';
+    });
+  </script>
 {% endblock %}

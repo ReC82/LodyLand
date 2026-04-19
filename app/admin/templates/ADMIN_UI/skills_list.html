@@ -1,0 +1,144 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Skills — Admin Panel{% endblock %}
+{% block page_title %}⚡ Skills Passifs{% endblock %}
+
+{% block extra_css %}
+<style>
+.skill-row {
+  display:flex; align-items:center; gap:.75rem;
+  background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+  padding:.6rem 1rem; margin-bottom:.4rem;
+}
+.skill-key { font-family:monospace; font-size:.78rem; color:#64748b; min-width:160px; }
+.skill-name { font-weight:600; font-size:.9rem; flex:1; }
+.cat-badge {
+  font-size:.7rem; font-weight:700; padding:.15rem .55rem; border-radius:99px;
+  text-transform:uppercase; letter-spacing:.03em;
+}
+.cat-resource { background:#dcfce7; color:#15803d; }
+.cat-land     { background:#dbeafe; color:#1d4ed8; }
+.cat-craft    { background:#f3e8ff; color:#6d28d9; }
+.level-count { font-size:.8rem; color:#94a3b8; min-width:60px; text-align:center; }
+.player-count { font-size:.8rem; color:#64748b; min-width:80px; text-align:center; }
+.group-header {
+  font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  color:#94a3b8; padding:.5rem .25rem .3rem; border-bottom:1px solid #f1f5f9;
+  margin-bottom:.4rem; margin-top:1rem;
+}
+.group-header:first-child { margin-top:0; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="text-muted mb-0">{{ skills|length }} skill(s) défini(s).</p>
+  <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Nouveau skill</button>
+</div>
+
+{% set categories_order = [('resource','Ressources'),('land','Terres'),('craft','Artisanat')] %}
+{% for cat_key, cat_label in categories_order %}
+  {% set cat_skills = skills | selectattr('category','eq', cat_key) | list %}
+  {% if cat_skills %}
+  <div class="group-header">{{ cat_label }}</div>
+  {% for sk in cat_skills %}
+  <div class="skill-row">
+    <span class="cat-badge cat-{{ sk.category }}">{{ sk.category }}</span>
+    <div class="skill-key">{{ sk.key }}</div>
+    <div class="skill-name">
+      {{ sk.name_fr }}
+      {% if sk.name_en and sk.name_en != sk.name_fr %}<span class="text-muted small"> / {{ sk.name_en }}</span>{% endif %}
+    </div>
+    {% if sk.subject_key %}
+    <span class="badge bg-light text-secondary border" style="font-size:.7rem;">{{ sk.subject_key }}</span>
+    {% endif %}
+    <span class="level-count">{{ (sk.levels or [])|length }} niv.</span>
+    <span class="player-count" title="Joueurs niveau > 0">👤 {{ skill_player_counts.get(sk.key, 0) }}</span>
+    {% if not sk.enabled %}
+    <span class="badge bg-secondary">Désactivé</span>
+    {% endif %}
+    <div class="d-flex gap-1">
+      <a href="{{ url_for('admin.edit_skill', key=sk.key) }}" class="btn btn-sm btn-outline-primary">✏️</a>
+      <button class="btn btn-sm btn-outline-secondary"
+              onclick="toggleSkill('{{ sk.key }}', this)"
+              title="{{ 'Désactiver' if sk.enabled else 'Activer' }}">
+        {{ '🔇' if sk.enabled else '✅' }}
+      </button>
+      <button class="btn btn-sm btn-outline-danger" onclick="deleteSkill('{{ sk.key }}')">🗑️</button>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+{% endfor %}
+
+{% if not skills %}
+<div class="text-center text-muted py-5">
+  <div style="font-size:3rem;">⚡</div>
+  <p>Aucun skill défini. Lancez le serveur pour seeder les défauts.</p>
+</div>
+{% endif %}
+
+<!-- Create modal -->
+<div id="modal-create-skill" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;width:400px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.15);">
+    <h6 class="mb-3">Nouveau Skill</h6>
+    <div class="mb-3">
+      <label class="form-label">Clé <span class="text-muted small">(auto-préfixé skill_)</span></label>
+      <input type="text" id="new-sk-key" class="form-control" placeholder="branch_master">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Catégorie</label>
+      <select id="new-sk-cat" class="form-select">
+        {% for val, label in categories %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Subject key <span class="text-muted small">(resource/land key, vide si global)</span></label>
+      <input type="text" id="new-sk-subject" class="form-control" placeholder="branch">
+    </div>
+    <div id="create-sk-error" class="text-danger small mb-2" style="display:none;"></div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-secondary" onclick="closeCreateModal()">Annuler</button>
+      <button class="btn btn-primary" id="btn-create-sk">Créer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openCreateModal() {
+  document.getElementById('new-sk-key').value = '';
+  document.getElementById('create-sk-error').style.display = 'none';
+  document.getElementById('modal-create-skill').style.display = 'flex';
+  setTimeout(() => document.getElementById('new-sk-key').focus(), 50);
+}
+function closeCreateModal() { document.getElementById('modal-create-skill').style.display = 'none'; }
+document.getElementById('modal-create-skill').addEventListener('click', e => { if (e.target === document.getElementById('modal-create-skill')) closeCreateModal(); });
+
+document.getElementById('btn-create-sk').addEventListener('click', async () => {
+  const key = document.getElementById('new-sk-key').value.trim();
+  const category = document.getElementById('new-sk-cat').value;
+  const subject_key = document.getElementById('new-sk-subject').value.trim();
+  const errEl = document.getElementById('create-sk-error');
+  if (!key) { errEl.textContent = 'Clé requise.'; errEl.style.display = 'block'; return; }
+  const r = await fetch('{{ url_for("admin.create_skill") }}', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, category, subject_key })
+  });
+  const d = await r.json();
+  if (d.ok) window.location.href = d.redirect;
+  else { errEl.textContent = d.error; errEl.style.display = 'block'; }
+});
+
+async function toggleSkill(key, btn) {
+  const r = await fetch(`/admin/skills/${key}/toggle`, { method: 'POST' });
+  const d = await r.json();
+  if (d.ok) location.reload();
+}
+async function deleteSkill(key) {
+  if (!confirm(`Supprimer le skill "${key}" et toute la progression des joueurs ?`)) return;
+  const r = await fetch(`/admin/skills/${key}/delete`, { method: 'POST' });
+  const d = await r.json();
+  if (d.ok) location.reload();
+}
+</script>
+{% endblock %}

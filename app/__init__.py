@@ -143,6 +143,91 @@ def _seed_story_events() -> None:
         session.close()
 
 
+def _seed_skills() -> None:
+    """Seed default skill definitions. Skips if any SkillDef already exists."""
+    from .db import SessionLocal
+    from .models import SkillDef
+
+    session = SessionLocal()
+    try:
+        if session.query(SkillDef).count() > 0:
+            return
+
+        def _lvls(reqs, bonus_type, values):
+            return [
+                {"level": i + 1, "req": r, "bonuses": [{"type": bonus_type, "value": v}]}
+                for i, (r, v) in enumerate(zip(reqs, values))
+            ]
+
+        resource_reqs   = [500, 1500, 3000, 5000, 10000]
+        resource_bonus  = [4, 6, 10, 15, 20]
+        land_reqs       = [1000, 2500, 4500, 7500, 15000]
+        land_bonus      = [2, 4, 6, 8, 10]
+        craft_reqs      = [100, 300, 700, 1500, 3000]
+        craft_bonus_t   = [2, 4, 6, 8, 10]
+
+        skills = [
+            # ── Resource skills ──────────────────────────────────────────────
+            SkillDef(key="skill_branch",   name_fr="Branches",     name_en="Branches",
+                     category="resource", subject_key="branch",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+            SkillDef(key="skill_stone",    name_fr="Pierre",       name_en="Stone",
+                     category="resource", subject_key="stone",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+            SkillDef(key="skill_wood",     name_fr="Bois de palmier", name_en="Palm Wood",
+                     category="resource", subject_key="palm_wood_log",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+            SkillDef(key="skill_sand",     name_fr="Sable",        name_en="Sand",
+                     category="resource", subject_key="sand",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+            SkillDef(key="skill_clay",     name_fr="Argile",       name_en="Clay",
+                     category="resource", subject_key="clay",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+            SkillDef(key="skill_vine",     name_fr="Liane",        name_en="Vine",
+                     category="resource", subject_key="vine",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+            SkillDef(key="skill_coal",     name_fr="Charbon",      name_en="Coal",
+                     category="resource", subject_key="coal",
+                     levels=_lvls(resource_reqs, "shard_chance", resource_bonus)),
+            SkillDef(key="skill_fish",     name_fr="Pêche",        name_en="Fishing",
+                     category="resource", subject_key="anchovy",
+                     levels=_lvls(resource_reqs, "double_drop", resource_bonus)),
+
+            # ── Land skills ──────────────────────────────────────────────────
+            SkillDef(key="skill_land_forest", name_fr="Forêt",   name_en="Forest",
+                     category="land", subject_key="forest",
+                     levels=_lvls(land_reqs, "cooldown_reduction", land_bonus)),
+            SkillDef(key="skill_land_beach",  name_fr="Plage",   name_en="Beach",
+                     category="land", subject_key="beach",
+                     levels=_lvls(land_reqs, "cooldown_reduction", land_bonus)),
+            SkillDef(key="skill_land_lake",   name_fr="Lac",     name_en="Lake",
+                     category="land", subject_key="lake",
+                     levels=_lvls(land_reqs, "cooldown_reduction", land_bonus)),
+            SkillDef(key="skill_land_cave",   name_fr="Caverne", name_en="Cave",
+                     category="land", subject_key="cave",
+                     levels=_lvls(land_reqs, "cooldown_reduction", land_bonus)),
+            SkillDef(key="skill_land_desert", name_fr="Désert",  name_en="Desert",
+                     category="land", subject_key="desert",
+                     levels=_lvls(land_reqs, "cooldown_reduction", land_bonus)),
+
+            # ── Craft skill (global) ─────────────────────────────────────────
+            SkillDef(key="skill_craft", name_fr="Artisanat", name_en="Crafting",
+                     category="craft", subject_key=None,
+                     levels=_lvls(craft_reqs, "craft_time_reduction", craft_bonus_t)),
+        ]
+
+        for s in skills:
+            session.add(s)
+        session.commit()
+        print(f"[skills] Seeded {len(skills)} skill definitions.")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        session.rollback()
+    finally:
+        session.close()
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
         
@@ -167,6 +252,7 @@ def create_app() -> Flask:
     load_craft_defs()
     load_quest_templates()
     _seed_minigames()
+    _seed_skills()
     _seed_story_events()
     register_routes(app)
 
