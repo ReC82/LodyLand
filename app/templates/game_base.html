@@ -652,6 +652,31 @@
       </div>
     </div>
 
+    <!-- Name Input Modal (shown after intro dialogue) -->
+    <div id="nameInputModal" class="ll-modal" style="z-index: 1100;">
+      <div class="ll-modal-backdrop"></div>
+      <div class="ll-modal-dialog" style="max-width:400px;">
+        <header class="ll-modal-header">
+          <h2 class="ll-modal-title">Qui êtes-vous ?</h2>
+        </header>
+        <div class="ll-modal-body" style="padding:1.5rem;">
+          <p style="margin-bottom:1rem;">Votre personnage ne se souvient pas de son nom. Comment souhaitez-vous vous appeler ?</p>
+          <input
+            id="nameInputField"
+            type="text"
+            class="form-control"
+            placeholder="Entrez votre nom..."
+            maxlength="32"
+            autocomplete="off"
+          />
+          <div id="nameInputError" style="color:#e74c3c; font-size:0.85rem; margin-top:0.5rem; display:none;"></div>
+        </div>
+        <footer class="ll-modal-footer" style="padding:1rem 1.5rem; display:flex; justify-content:flex-end;">
+          <button id="nameInputConfirm" type="button" class="btn btn-success">Confirmer</button>
+        </footer>
+      </div>
+    </div>
+
     <!-- Modal Travel -->
     <div id="travelModal" class="gh-modal">
       <div id="travelModalBackdrop" class="gh-modal-backdrop"></div>
