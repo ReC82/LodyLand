@@ -1,0 +1,185 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Éditer Outil — Admin Panel{% endblock %}
+{% block page_title %}🔧 Outil : <code>{{ key }}</code>{% endblock %}
+
+{% block extra_css %}
+<style>
+.img-dropzone {
+  border: 2px dashed #cbd5e1; border-radius: 12px;
+  background: #f8fafc; padding: 1.5rem; text-align: center;
+  cursor: pointer; transition: all .15s; position: relative;
+}
+.img-dropzone:hover, .img-dropzone.drag-over {
+  border-color: #3b82f6; background: #eff6ff;
+}
+.img-dropzone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.img-preview {
+  width: 160px; height: 160px; object-fit: contain;
+  border-radius: 12px; border: 2px solid #e2e8f0;
+  background: #f8fafc; display: block; margin: 0 auto .75rem;
+}
+.img-preview-placeholder {
+  width: 160px; height: 160px; border-radius: 12px;
+  border: 2px dashed #e2e8f0; background: #f8fafc;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; color: #cbd5e1; margin: 0 auto .75rem;
+}
+.square-hint {
+  font-size: .75rem; color: #64748b;
+  background: #f1f5f9; border-radius: 6px; padding: .35rem .75rem;
+  display: inline-block; margin-top: .4rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.tools_list') }}" class="btn btn-sm btn-outline-secondary mb-4">← Retour aux outils</a>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+
+<div class="row g-4">
+
+  <!-- ── Image ── -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-body p-3 text-center">
+        <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size:.72rem;letter-spacing:.05em;">Image</h6>
+
+        {% if image_url %}
+          <img src="{{ image_url }}?v={{ range(1,99999)|random }}" class="img-preview" alt="{{ key }}" id="current-img">
+          <div class="text-muted small mb-3">Image actuelle</div>
+        {% else %}
+          <div class="img-preview-placeholder" id="img-placeholder">🔧</div>
+          <div class="text-muted small mb-3">Aucune image</div>
+        {% endif %}
+
+        <!-- Upload form -->
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+          <input type="hidden" name="action" value="upload_image">
+          <div class="img-dropzone" id="dropzone">
+            <input type="file" name="image" id="img-file-input"
+                   accept=".png,.jpg,.jpeg,.webp"
+                   onchange="previewImage(this)">
+            <div id="dropzone-content">
+              <div style="font-size:1.5rem;">📁</div>
+              <div style="font-size:.85rem;font-weight:600;">Glisser ou cliquer</div>
+              <div style="font-size:.75rem;color:#94a3b8;">PNG, JPG, WEBP</div>
+            </div>
+          </div>
+          <span class="square-hint">✂️ Recadrage automatique en carré 512×512</span>
+          <button type="submit" class="btn btn-primary btn-sm w-100 mt-3" id="btn-upload" disabled>
+            ⬆️ Envoyer l'image
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Metadata & i18n ── -->
+  <div class="col-lg-8">
+    <form method="POST">
+      <input type="hidden" name="action" value="save">
+
+      <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
+        <div class="card-body p-3">
+          <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size:.72rem;letter-spacing:.05em;">Informations</h6>
+
+          <div class="mb-3">
+            <label class="form-label">Clé <span class="text-muted">(readonly)</span></label>
+            <input type="text" class="form-control form-control-sm" value="{{ key }}" disabled>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">🇫🇷 Nom FR <span class="text-danger">*</span></label>
+              <input type="text" name="label_fr" class="form-control form-control-sm"
+                     value="{{ translations.get('fr', {}).get('label', '') }}"
+                     placeholder="Hache en bois" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">🇬🇧 Name EN</label>
+              <input type="text" name="label_en" class="form-control form-control-sm"
+                     value="{{ translations.get('en', {}).get('label', '') }}"
+                     placeholder="Wooden Axe">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">🇫🇷 Description FR</label>
+              <textarea name="desc_fr" class="form-control form-control-sm" rows="2"
+                        placeholder="Description en français…">{{ translations.get('fr', {}).get('description', '') }}</textarea>
+            </div>
+            <div class="col-6">
+              <label class="form-label">🇬🇧 Description EN</label>
+              <textarea name="desc_en" class="form-control form-control-sm" rows="2"
+                        placeholder="English description…">{{ translations.get('en', {}).get('description', '') }}</textarea>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">Prix de vente (shards)</label>
+              <input type="number" name="base_sell_price" class="form-control form-control-sm"
+                     value="{{ tool.base_sell_price or 0 }}" min="0">
+            </div>
+            <div class="col-6 d-flex align-items-end">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" name="enabled" id="enabled"
+                       {% if tool.enabled %}checked{% endif %}>
+                <label class="form-check-label" for="enabled">Actif en jeu</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        <a href="{{ url_for('admin.tools_list') }}" class="btn btn-outline-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('img-file-input');
+const btnUpload = document.getElementById('btn-upload');
+
+// Drag & drop visual feedback
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) {
+    fileInput.files = e.dataTransfer.files;
+    previewImage(fileInput);
+  }
+});
+
+function previewImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  btnUpload.disabled = false;
+  btnUpload.textContent = `⬆️ Envoyer "${file.name}"`;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const content = document.getElementById('dropzone-content');
+    content.innerHTML = `<img src="${e.target.result}" style="max-height:80px;max-width:120px;border-radius:8px;object-fit:contain;">
+                         <div style="font-size:.75rem;margin-top:.3rem;color:#64748b;">${file.name}</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+{% endblock %}

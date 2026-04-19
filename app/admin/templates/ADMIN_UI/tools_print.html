@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Référence Artistes — Outils</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f1f5f9; color: #1e293b; padding: 1.5rem;
+    }
+
+    .toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+    }
+    .toolbar h1 { font-size: 1.3rem; font-weight: 700; }
+    .toolbar-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+
+    .btn {
+      padding: .4rem .9rem; border-radius: 8px; border: 1px solid #e2e8f0;
+      background: #fff; color: #1e293b; font-size: .85rem; cursor: pointer;
+      text-decoration: none; display: inline-block; font-weight: 500;
+    }
+    .btn-primary { background: #1e293b; color: #fff; border-color: #1e293b; }
+    .btn-primary:hover { background: #334155; }
+
+    .filter-bar { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .filter-btn {
+      padding: .2rem .7rem; border-radius: 99px; font-size: .78rem; cursor: pointer;
+      border: 1px solid #e2e8f0; background: #fff; color: #64748b; transition: all .12s;
+    }
+    .filter-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: .65rem;
+    }
+
+    .tool-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; text-align: center;
+    }
+
+    .card-img {
+      background: #f8fafc; height: 100px;
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .card-img img { max-width: 72px; max-height: 72px; object-fit: contain; }
+    .card-img .no-img { font-size: 2rem; color: #cbd5e1; }
+    .missing-badge {
+      position: absolute; top: 3px; right: 3px;
+      background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;
+      font-size: .55rem; padding: .1rem .3rem; border-radius: 3px; font-weight: 800;
+    }
+
+    .card-body { padding: .45rem .55rem .55rem; }
+    .card-key { font-family: monospace; font-size: .6rem; color: #94a3b8; margin-bottom: .15rem; }
+    .card-name-fr { font-weight: 700; font-size: .84rem; color: #1e293b; line-height: 1.25; }
+    .card-name-en { font-size: .72rem; color: #64748b; margin-top: .1rem; font-style: italic; }
+
+    @media print {
+      body { background: #fff !important; padding: 0; }
+      .toolbar, .filter-bar { display: none !important; }
+      .tool-grid {
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: 4px !important;
+      }
+      .card-img { height: 80px; }
+      .card-img img { max-width: 56px; max-height: 56px; }
+      .tool-card { border-radius: 6px; break-inside: avoid; }
+      @page { size: A4 landscape; margin: 1cm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>🔧 Référence Artistes — Outils</h1>
+  <div class="toolbar-actions">
+    <span style="font-size:.82rem;color:#64748b;">{{ tools|length }} outil(s)</span>
+    <a href="{{ url_for('admin.tools_list') }}" class="btn">← Retour</a>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-kind="all">Tous</button>
+  <button class="filter-btn" data-kind="missing">⚠️ Image manquante</button>
+</div>
+
+<div class="tool-grid" id="grid">
+  {% for t in tools %}
+  <div class="tool-card" data-missing="{{ 'true' if not t.image_url else 'false' }}">
+    <div class="card-img">
+      {% if t.image_url %}
+        <img src="{{ t.image_url }}" alt="{{ t.label_fr }}" loading="lazy">
+      {% else %}
+        <span class="no-img">🔧</span>
+        <span class="missing-badge">MANQUANT</span>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      <div class="card-key">{{ t.key }}</div>
+      <div class="card-name-fr">{{ t.label_fr or t.key }}</div>
+      {% if t.label_en %}<div class="card-name-en">{{ t.label_en }}</div>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if not tools %}
+<div style="text-align:center;padding:3rem;color:#64748b;">
+  <div style="font-size:3rem;">🔧</div>
+  <p style="margin-top:.5rem;">Aucun outil trouvé.</p>
+</div>
+{% endif %}
+
+<script>
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const kind = btn.dataset.kind;
+    document.querySelectorAll('.tool-card').forEach(card => {
+      if (kind === 'all') card.style.display = '';
+      else if (kind === 'missing') card.style.display = card.dataset.missing === 'true' ? '' : 'none';
+    });
+  });
+});
+</script>
+</body>
+</html>
