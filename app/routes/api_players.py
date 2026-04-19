@@ -827,3 +827,31 @@ def beta_reset():
         s.commit()
 
         return jsonify({"ok": True}), 200
+
+
+@bp.patch("/player/name")
+def update_player_name():
+    """Set or update the current player's display name (used after intro dialogue)."""
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            return jsonify({"error": "not_authenticated"}), 401
+
+        data = request.get_json(silent=True) or {}
+        new_name = (data.get("name") or "").strip()
+
+        if not new_name:
+            return jsonify({"error": "name_required"}), 400
+        if len(new_name) > 32:
+            return jsonify({"error": "name_too_long"}), 400
+
+        # Check uniqueness (ignore current player)
+        conflict = (
+            s.query(Player).filter(Player.name == new_name, Player.id != me.id).first()
+        )
+        if conflict:
+            return jsonify({"error": "name_taken"}), 409
+
+        me.name = new_name
+        s.commit()
+        return jsonify({"ok": True, "name": me.name}), 200

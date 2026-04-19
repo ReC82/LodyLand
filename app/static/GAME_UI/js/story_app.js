@@ -205,11 +205,7 @@ const STORY_AVATARS = {
       });
     }
 
-    if (backdrop) {
-      backdrop.addEventListener("click", () => {
-        closeModal();
-      });
-    }
+    // Backdrop click intentionally disabled — player must use Next/Done button
   }
 
   // Expose au window pour game_app.js

@@ -18,6 +18,9 @@ let LEVEL_STORY_INDEX = {};     // { [level]: [story_events] }
 
 let storyQueue = [];            // file des story_events à afficher
 let storyIsPlaying = false;     // pour éviter de lancer 2 histoires en même temps
+let _seenStoryIds = new Set();  // story IDs déjà vus (chargés depuis /api/state)
+let pendingLevelUpModal = null; // { newLevel, rewards } — affiché après les stories
+let pendingNameModal = false;   // true si le modal de nom doit s'afficher après les stories
 
 // ============================================================
 // Feature flags (system_unlocks via /api/levels)
@@ -399,13 +402,7 @@ function initLevelUpModal() {
   const backdrop = document.getElementById("levelUpModalBackdrop");
 
   const close = () => {
-    // On ferme le modal de level-up
     modal.classList.remove("is-open");
-
-    // Et ENSUITE on démarre la file de stories, s'il y en a
-    if (typeof window.playNextStoryFromQueue === "function") {
-      window.playNextStoryFromQueue();
-    }
   };
 
   if (closeBtn) closeBtn.addEventListener("click", close);
@@ -769,8 +766,9 @@ async function startGame() {
   currentPlayer = p;
   renderPlayer(currentPlayer);
 
-  // 🔥 Charge les niveaux + stories de premier login
+  // 🔥 Charge les niveaux + flags vus + stories de premier login
   await loadLevelDefinitions();
+  await loadStoryFlags();
   enqueueInitialStoriesOnLogin();
 
   await refreshInventory();
@@ -1256,20 +1254,84 @@ function showLootToasts(lootArray) {
 // ============================================================
 function hasSeenStoryEvent(eventId) {
   if (!eventId) return false;
-  try {
-    return localStorage.getItem(`ll_story_seen_${eventId}`) === "1";
-  } catch {
-    return false;
-  }
+  return _seenStoryIds.has(eventId);
 }
 
 function markStoryEventSeen(eventId) {
   if (!eventId) return;
+  _seenStoryIds.add(eventId);
+  // Persist to DB (fire and forget)
+  http("POST", "/api/story/seen", { story_id: eventId }).catch((e) =>
+    console.warn("[story] markStoryEventSeen:", e)
+  );
+}
+
+/**
+ * Charge les story flags depuis /api/state et peuple _seenStoryIds.
+ * Appelé au démarrage, avant enqueueInitialStoriesOnLogin().
+ */
+async function loadStoryFlags() {
   try {
-    localStorage.setItem(`ll_story_seen_${eventId}`, "1");
-  } catch {
-    // ignore
+    const r = await http("GET", "/api/state");
+    if (r.ok && Array.isArray(r.data?.story_flags)) {
+      _seenStoryIds = new Set(r.data.story_flags);
+    }
+  } catch (e) {
+    console.warn("[story] loadStoryFlags failed:", e);
   }
+}
+
+/**
+ * Affiche le modal de saisie du nom du personnage.
+ * Appelé automatiquement après l'intro_forest_wakeup si pendingNameModal est true.
+ */
+function showNameInputModal() {
+  const modal   = document.getElementById("nameInputModal");
+  const input   = document.getElementById("nameInputField");
+  const confirm = document.getElementById("nameInputConfirm");
+  const errEl   = document.getElementById("nameInputError");
+  if (!modal) return;
+
+  modal.classList.add("is-open");
+  if (input) {
+    input.value = "";
+    setTimeout(() => input.focus(), 100);
+  }
+
+  const doConfirm = async () => {
+    const name = (input?.value || "").trim();
+    if (!name) {
+      if (errEl) { errEl.textContent = "Veuillez entrer un nom."; errEl.style.display = ""; }
+      return;
+    }
+    if (errEl) errEl.style.display = "none";
+
+    const r = await http("PATCH", "/api/player/name", { name });
+    if (!r.ok) {
+      const msg = r.data?.error === "name_taken"
+        ? "Ce nom est déjà pris."
+        : "Erreur lors de la sauvegarde.";
+      if (errEl) { errEl.textContent = msg; errEl.style.display = ""; }
+      return;
+    }
+
+    // Mise à jour locale
+    if (currentPlayer) {
+      currentPlayer.name = r.data.name;
+      window.currentPlayer = currentPlayer;
+      renderPlayer(currentPlayer);
+    }
+
+    modal.classList.remove("is-open");
+    confirm.removeEventListener("click", doConfirm);
+  };
+
+  confirm.addEventListener("click", doConfirm);
+
+  // Confirmer avec Entrée
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doConfirm();
+  });
 }
 
 function enqueueStoryEvent(ev) {
@@ -1301,7 +1363,23 @@ function playNextStoryFromQueue() {
   if (storyIsPlaying) return;
 
   const ev = storyQueue.shift();
-  if (!ev) return;
+  if (!ev) {
+    // File vide — afficher le modal de nom si en attente
+    if (pendingNameModal) {
+      pendingNameModal = false;
+      showNameInputModal();
+      return;
+    }
+    // Puis le modal de level-up différé si présent
+    if (pendingLevelUpModal) {
+      const { newLevel, rewards } = pendingLevelUpModal;
+      pendingLevelUpModal = null;
+      if (typeof showLevelUpModal === "function") {
+        showLevelUpModal(newLevel, rewards);
+      }
+    }
+    return;
+  }
 
   storyIsPlaying = true;
 
@@ -1310,10 +1388,8 @@ function playNextStoryFromQueue() {
     window.openStoryModalForEvent(ev, () => {
       // callback appelé quand le joueur clique sur "J'ai compris"
       storyIsPlaying = false;
-
-      if (storyQueue.length > 0) {
-        playNextStoryFromQueue();
-      }
+      // Toujours appeler playNextStoryFromQueue pour gérer les pendingXxx
+      playNextStoryFromQueue();
     });
     return;
   }
@@ -1327,10 +1403,7 @@ function playNextStoryFromQueue() {
   }
 
   storyIsPlaying = false;
-
-  if (storyQueue.length > 0) {
-    playNextStoryFromQueue();
-  }
+  playNextStoryFromQueue();
 }
 
 
@@ -1354,8 +1427,7 @@ function handleStoryAfterLevelUp(oldLevel, newLevel) {
       });
   }
 
-  // La story ne démarre PAS tout de suite ici,
-  // on laisse d’abord le LevelUp modal se fermer.
+  // Les stories seront démarrées par handleLevelUpFront après cet appel.
 }
 
 /**
@@ -1364,6 +1436,8 @@ function handleStoryAfterLevelUp(oldLevel, newLevel) {
  */
 function enqueueInitialStoriesOnLogin() {
   if (!Array.isArray(LEVEL_DEFS) || !LEVEL_DEFS.length) return;
+
+  let introWasQueued = false;
 
   LEVEL_DEFS.forEach((lvl) => {
     const events = Array.isArray(lvl.story_events) ? lvl.story_events : [];
@@ -1375,8 +1449,16 @@ function enqueueInitialStoriesOnLogin() {
           return; // déjà vu => on ne rejoue pas
         }
         enqueueStoryEvent(ev);
+        if (ev.id === "intro_forest_wakeup") {
+          introWasQueued = true;
+        }
       });
   });
+
+  // Si l'intro a joué pour la première fois, demander le nom après
+  if (introWasQueued) {
+    pendingNameModal = true;
+  }
 
   // S'il y a au moins une story dans la file, on démarre
   if (storyQueue.length > 0 && typeof window.playNextStoryFromQueue === "function") {
@@ -1470,18 +1552,24 @@ function handleStoryOnEnterLand(landKey) {
 function handleLevelUpFront(oldLevel, newLevel, levelRewards) {
   const rewards = levelRewards || [];
 
-  // 1) Modal de Level Up (visuel + récompenses)
-  if (typeof showLevelUpModal === "function") {
-    showLevelUpModal(newLevel, rewards);
-  }
-
-  // 2) Stories de type "on_level_reached"
+  // 1) Stories de type "on_level_reached" (mises en file d'abord)
   if (typeof handleStoryAfterLevelUp === "function") {
     handleStoryAfterLevelUp(oldLevel, newLevel);
   }
 
-  // 3) Stories de type "on_land_unlocked"
+  // 2) Stories de type "on_land_unlocked"
   handleLandStoryOnUnlock(oldLevel, newLevel, rewards);
+
+  // 3) Modal de Level Up — différé après les stories
+  if (storyQueue.length > 0) {
+    pendingLevelUpModal = { newLevel, rewards };
+    playNextStoryFromQueue();
+  } else {
+    // Pas de stories → afficher directement
+    if (typeof showLevelUpModal === "function") {
+      showLevelUpModal(newLevel, rewards);
+    }
+  }
 }
 
 // On expose au window pour les autres scripts (land_common.js)
@@ -1565,8 +1653,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentPlayer = me;
     renderPlayer(currentPlayer);
 
-    // On charge les niveaux AVANT d'essayer de jouer les stories
+    // On charge les niveaux + flags vus AVANT d'essayer de jouer les stories
     await loadLevelDefinitions();
+    await loadStoryFlags();
     // 🔥 Stories "on_first_login" possibles (si jamais pas encore vues)
     enqueueInitialStoriesOnLogin();
 
