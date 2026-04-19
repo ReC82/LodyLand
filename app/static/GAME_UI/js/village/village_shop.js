@@ -120,6 +120,14 @@ async function handleBuy(btn) {
 
     btn.textContent = i18n.bought || "✔";
     btn.classList.replace("btn-success", "btn-secondary");
+
+    // Immediately refresh craft data so recipes appear without waiting for the reload
+    if (typeof refreshCraftData === "function") {
+      refreshCraftData().catch((e) => console.warn("[village_shop] refreshCraftData:", e));
+    }
+
+    // Reload the shop so unlock conditions (requires_card, etc.) are re-evaluated
+    setTimeout(() => location.reload(), 800);
   } catch (e) {
     console.error("[village_shop] network error", e);
     showShopInfoModal({

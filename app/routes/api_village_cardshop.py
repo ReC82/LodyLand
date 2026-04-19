@@ -12,7 +12,8 @@ from flask import Blueprint, jsonify, request
 from app.db import SessionLocal
 from app.auth import get_current_player
 from app.services.cards import grant_card_to_player
-from app.models import CardDef, PlayerCard  # 👈 important
+from app.models import CardDef, PlayerCard
+from app.progression import next_threshold
 
 bp = Blueprint("village_cardshop", __name__)
 
@@ -188,10 +189,11 @@ def api_village_cardshop_buy():
                     "name": player.name,
                     "level": player.level,
                     "xp": player.xp,
+                    "next_xp": next_threshold(player.level),
                     "shards": player.shards,
                     "essence": player.essence,
-                    "coins": player.shards,    # alias pour le HUD
-                    "diams": player.essence,   # alias pour le HUD
+                    "coins": player.shards,
+                    "diams": player.essence,
                 },
                 "item": {
                     "item_type": item_type,

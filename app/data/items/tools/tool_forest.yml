@@ -7,6 +7,24 @@
     base_sell_price: 5
     enabled: true 
 
+  tool_rod_basic:
+    key: tool_rod_basic
+    kind: tool
+    label: Basic Rod
+    description: Une canne à pêche basique en bois et lianes.
+    icon: /static/assets/img/items/tools/rod_basic.png
+    base_sell_price: 5
+    enabled: true
+
+  tool_rod_basic_with_worm:
+    key: tool_rod_basic_with_worm
+    kind: tool
+    label: Basic Rod with Worm
+    description: Une canne à pêche basique avec un ver comme appât.
+    icon: /static/assets/img/items/tools/basic_rod_with_worm.png
+    base_sell_price: 8
+    enabled: true
+
   tool_wooden_knife:
     key: tool_wooden_knife
     kind: tool
