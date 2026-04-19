@@ -11,7 +11,6 @@ The caller must provide a set of already_seen_ids.
 """
 
 from __future__ import annotations
-
 from typing import Any, Dict, Iterable, List, Optional, Set
 
 # Type alias for clarity
@@ -93,7 +92,6 @@ def find_story_events_for_trigger(
 
     for ev in _iter_all_story_events(session):
         ev_trigger = ev.get("trigger")
-
         if ev_trigger != trigger:
             continue
 
@@ -112,7 +110,6 @@ def find_story_events_for_trigger(
                 continue
             if ev_level != just_reached_level:
                 continue
-
         elif trigger in ("on_land_unlocked", "on_enter_land"):
             ev_land_key = ev.get("land_key")
             if not land_key or not ev_land_key:

@@ -861,6 +861,116 @@ def manage_roles():
 from app.models import MiniGameDef, PlayerMiniGameState
 
 
+# =============================================================================
+# Levels Management
+# =============================================================================
+
+LEVELS_FILE = Path(__file__).parent.parent / "data" / "levels.yml"
+
+REWARD_TYPES = [
+    ("shards",   "🪙 Shards"),
+    ("essence",  "💎 Essence"),
+    ("card",     "🃏 Carte"),
+    ("resource", "📦 Ressource"),
+]
+
+
+def _load_levels_yaml() -> list:
+    """Return raw YAML list (preserving all fields)."""
+    if not LEVELS_FILE.exists():
+        return []
+    raw = yaml.safe_load(LEVELS_FILE.read_text(encoding="utf-8")) or {}
+    return raw.get("levels", []) or []
+
+
+def _save_levels_yaml(levels_list: list) -> None:
+    """Write levels list back to YAML, reload the progression module."""
+    LEVELS_FILE.write_text(
+        yaml.dump({"levels": levels_list}, allow_unicode=True,
+                  sort_keys=False, default_flow_style=False),
+        encoding="utf-8",
+    )
+    # Hot-reload progression globals
+    import app.progression as prog
+    prog.LEVELS = prog._load_levels_from_yaml()
+    prog.MAX_LEVEL = max(prog.LEVELS.keys()) if prog.LEVELS else 0
+
+
+@admin_bp.get("/levels/")
+@admin_required(permission="view_dashboard")
+def levels_list():
+    levels = _load_levels_yaml()
+    session = SessionLocal()
+    try:
+        cards = session.query(CardDef).filter_by(enabled=True).order_by(CardDef.key).all()
+        resources = session.query(ResourceDef).filter_by(enabled=True).order_by(ResourceDef.key).all()
+    finally:
+        session.close()
+    return render_template("ADMIN_UI/levels_list.html",
+                           levels=levels, cards=cards, resources=resources,
+                           reward_types=REWARD_TYPES)
+
+
+@admin_bp.post("/levels/save")
+@admin_required(permission="view_dashboard")
+def levels_save():
+    """Save full levels payload (JSON body) back to YAML."""
+    data = request.get_json(silent=True)
+    if not data or "levels" not in data:
+        return jsonify({"ok": False, "error": "Invalid payload"}), 400
+
+    # Load current YAML to preserve story_events, system_unlocks
+    current = {int(l["level"]): l for l in _load_levels_yaml()}
+
+    merged = []
+    for entry in data["levels"]:
+        lvl_num = int(entry.get("level", 0))
+        existing = current.get(lvl_num, {"level": lvl_num})
+        existing["xp_required"] = int(entry.get("xp_required", 0))
+        existing["rewards"] = entry.get("rewards", [])
+        merged.append(existing)
+
+    # Keep levels that weren't in the payload (shouldn't happen, but safe)
+    sent_nums = {int(e["level"]) for e in data["levels"]}
+    for lvl_num, existing in current.items():
+        if lvl_num not in sent_nums:
+            merged.append(existing)
+
+    merged.sort(key=lambda l: int(l["level"]))
+    _save_levels_yaml(merged)
+    return jsonify({"ok": True})
+
+
+@admin_bp.post("/levels/new")
+@admin_required(permission="view_dashboard")
+def level_new():
+    """Add a new level."""
+    data = request.get_json(silent=True) or {}
+    lvl_num = int(data.get("level", 0))
+    if lvl_num < 0:
+        return jsonify({"ok": False, "error": "Invalid level"}), 400
+
+    levels = _load_levels_yaml()
+    existing_nums = {int(l["level"]) for l in levels}
+    if lvl_num in existing_nums:
+        return jsonify({"ok": False, "error": f"Level {lvl_num} already exists"}), 400
+
+    levels.append({"level": lvl_num, "xp_required": 0, "rewards": [],
+                   "story_events": [], "system_unlocks": []})
+    levels.sort(key=lambda l: int(l["level"]))
+    _save_levels_yaml(levels)
+    return jsonify({"ok": True})
+
+
+@admin_bp.post("/levels/<int:lvl_num>/delete")
+@admin_required(permission="view_dashboard")
+def level_delete(lvl_num: int):
+    levels = _load_levels_yaml()
+    levels = [l for l in levels if int(l["level"]) != lvl_num]
+    _save_levels_yaml(levels)
+    return jsonify({"ok": True})
+
+
 def _default_mg_rewards() -> list:
     rewards = []
     for lvl in range(1, 11):

@@ -1,0 +1,377 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Niveaux — Admin Panel{% endblock %}
+{% block page_title %}📈 Niveaux & Récompenses{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Level rows ── */
+.level-row {
+  background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+  margin-bottom:.6rem;
+}
+.level-row-header {
+  display:flex; align-items:center; gap:.75rem;
+  padding:.6rem 1rem; cursor:pointer;
+  background:#f8fafc; border-bottom:1px solid #e2e8f0;
+  user-select:none;
+}
+.level-row-header:hover { background:#eff6ff; }
+.level-badge {
+  min-width:60px; text-align:center; padding:.2rem .6rem;
+  border-radius:8px; font-weight:700; font-size:.82rem;
+  background:#dbeafe; color:#1d4ed8;
+}
+.level-xp-badge {
+  font-size:.82rem; color:#64748b; font-family:monospace;
+}
+.level-rewards-summary { flex:1; font-size:.8rem; color:#64748b; }
+.level-row-body { padding:1rem; display:none; }
+.level-row-body.open { display:block; }
+
+/* ── Reward cards ── */
+.reward-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.75rem; }
+.reward-item {
+  display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+  background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;
+  padding:.5rem .75rem;
+}
+.reward-type-badge {
+  font-size:.72rem; font-weight:700; text-transform:uppercase;
+  padding:.15rem .5rem; border-radius:6px; min-width:68px; text-align:center;
+}
+.type-shards   { background:#fef9c3; color:#a16207; }
+.type-essence  { background:#ede9fe; color:#6d28d9; }
+.type-card     { background:#dcfce7; color:#15803d; }
+.type-resource { background:#fff7ed; color:#c2410c; }
+
+.reward-field { font-size:.85rem; }
+.reward-field input, .reward-field select {
+  padding:.25rem .5rem; border:1px solid #d1d5db; border-radius:6px;
+  font-size:.85rem; background:#fff; color:#1e293b; width:auto;
+}
+.reward-field input[type=number] { width:90px; }
+
+/* ── Toolbar ── */
+.levels-toolbar {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;
+}
+.save-bar {
+  position:sticky; bottom:1rem; z-index:50;
+  background:#1e293b; color:#fff;
+  border-radius:12px; padding:.75rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 4px 24px rgba(0,0,0,.2);
+  margin-top:1.5rem;
+}
+.save-bar .msg { font-size:.88rem; opacity:.75; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="levels-toolbar">
+  <p class="text-muted mb-0">{{ levels|length }} niveau(x) configuré(s). Modifiez l'XP et les récompenses, puis cliquez sur Enregistrer.</p>
+  <button class="btn btn-outline-secondary btn-sm" id="btn-add-level">+ Niveau</button>
+</div>
+
+<div id="levels-container">
+  {% for lvl in levels %}
+  {% set lvl_num = lvl.level %}
+  {% set rewards = lvl.rewards or [] %}
+  <div class="level-row" data-level="{{ lvl_num }}" id="row-{{ lvl_num }}">
+    <div class="level-row-header" onclick="toggleRow({{ lvl_num }})">
+      <span class="level-badge">Niv. {{ lvl_num }}</span>
+      <input type="number" class="form-control form-control-sm xp-input" style="width:120px;"
+             value="{{ lvl.xp_required }}" min="0"
+             onclick="event.stopPropagation()"
+             onchange="markDirty()"
+             data-level="{{ lvl_num }}"
+             placeholder="XP requis">
+      <span class="level-xp-badge">XP</span>
+      <span class="level-rewards-summary" id="summary-{{ lvl_num }}">
+        {{ rewards|length }} récompense(s){% if rewards %} : {% for r in rewards %}{{ r.type }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+      </span>
+      <span class="text-muted small">▼</span>
+    </div>
+    <div class="level-row-body" id="body-{{ lvl_num }}">
+      <div class="reward-list" id="rewards-{{ lvl_num }}">
+        {% for r in rewards %}
+        {{ render_reward_row(lvl_num, loop.index0, r) }}
+        {% endfor %}
+      </div>
+      <div class="d-flex gap-2">
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            + Récompense
+          </button>
+          <ul class="dropdown-menu">
+            {% for type_val, type_label in reward_types %}
+            <li><a class="dropdown-item" href="#" onclick="addReward({{ lvl_num }}, '{{ type_val }}'); return false;">{{ type_label }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        <button class="btn btn-sm btn-outline-danger ms-auto" onclick="deleteLevel({{ lvl_num }})">🗑️ Supprimer ce niveau</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="save-bar" id="save-bar" style="display:none;">
+  <span class="msg">⚠️ Modifications non enregistrées</span>
+  <div class="d-flex gap-2">
+    <button class="btn btn-sm btn-outline-light" onclick="location.reload()">Annuler</button>
+    <button class="btn btn-sm btn-primary" id="btn-save">💾 Enregistrer tout</button>
+  </div>
+</div>
+
+<!-- Add level modal -->
+<div id="modal-add-level" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;width:340px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.15);">
+    <h6 class="mb-3">Ajouter un niveau</h6>
+    <div class="mb-3">
+      <label class="form-label">Numéro de niveau</label>
+      <input type="number" id="new-level-num" class="form-control" value="" min="0" placeholder="21">
+    </div>
+    <div id="new-level-error" class="text-danger small mb-2" style="display:none;"></div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-add-level').style.display='none'">Annuler</button>
+      <button class="btn btn-primary" id="btn-create-level">Créer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data from server ──
+const CARDS = [
+  {% for c in cards %}{"key":"{{ c.key }}","label":"{{ c.card_label }}"}{% if not loop.last %},{% endif %}{% endfor %}
+];
+const RESOURCES = [
+  {% for r in resources %}{"key":"{{ r.key }}","label":"{{ r.label or r.key }}"}{% if not loop.last %},{% endif %}{% endfor %}
+];
+
+// ── State ──
+let dirty = false;
+
+function markDirty() {
+  dirty = true;
+  document.getElementById('save-bar').style.display = 'flex';
+}
+
+// ── Toggle row ──
+function toggleRow(lvl) {
+  const body = document.getElementById(`body-${lvl}`);
+  body.classList.toggle('open');
+}
+
+// ── Reward row builder ──
+function rewardTypeClass(type) {
+  return { shards:'type-shards', essence:'type-essence',
+           card:'type-card', resource:'type-resource' }[type] || '';
+}
+function rewardTypeLabel(type) {
+  return { shards:'🪙 Shards', essence:'💎 Essence',
+           card:'🃏 Carte', resource:'📦 Ressource' }[type] || type;
+}
+
+function buildRewardHtml(lvl, idx, type, data) {
+  let fields = '';
+  if (type === 'shards' || type === 'essence') {
+    fields = `<span class="reward-field">Quantité : <input type="number" min="0" value="${data.amount||0}" onchange="markDirty()"></span>`;
+  } else if (type === 'card') {
+    const opts = CARDS.map(c =>
+      `<option value="${c.key}" ${c.key === data.card_key ? 'selected' : ''}>${c.label} (${c.key})</option>`
+    ).join('');
+    fields = `<span class="reward-field">Carte : <select onchange="markDirty()"><option value="">— Choisir —</option>${opts}</select></span>`;
+  } else if (type === 'resource') {
+    const opts = RESOURCES.map(r =>
+      `<option value="${r.key}" ${r.key === data.resource_key ? 'selected' : ''}>${r.label} (${r.key})</option>`
+    ).join('');
+    fields = `<span class="reward-field">Ressource : <select onchange="markDirty()"><option value="">— Choisir —</option>${opts}</select></span>
+              <span class="reward-field">Qté : <input type="number" min="0" value="${data.amount||0}" onchange="markDirty()"></span>`;
+  }
+  return `<div class="reward-item" data-type="${type}">
+    <span class="reward-type-badge ${rewardTypeClass(type)}">${rewardTypeLabel(type)}</span>
+    ${fields}
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+            onclick="this.closest('.reward-item').remove(); updateSummary(${lvl}); markDirty();">✕</button>
+  </div>`;
+}
+
+function addReward(lvl, type) {
+  const list = document.getElementById(`rewards-${lvl}`);
+  const idx = list.children.length;
+  const div = document.createElement('div');
+  div.innerHTML = buildRewardHtml(lvl, idx, type, {});
+  list.appendChild(div.firstElementChild);
+  markDirty();
+  updateSummary(lvl);
+}
+
+function updateSummary(lvl) {
+  const items = document.querySelectorAll(`#rewards-${lvl} .reward-item`);
+  const types = [...items].map(el => el.dataset.type);
+  const el = document.getElementById(`summary-${lvl}`);
+  if (el) el.textContent = `${types.length} récompense(s)${types.length ? ' : ' + types.join(', ') : ''}`;
+}
+
+// ── Collect all data ──
+function collectLevels() {
+  const rows = document.querySelectorAll('.level-row');
+  const result = [];
+  rows.forEach(row => {
+    const lvl = parseInt(row.dataset.level);
+    const xpInput = row.querySelector('.xp-input');
+    const xp = parseInt(xpInput ? xpInput.value : 0) || 0;
+    const rewards = [];
+    row.querySelectorAll('.reward-item').forEach(item => {
+      const type = item.dataset.type;
+      if (type === 'shards' || type === 'essence') {
+        const amount = parseInt(item.querySelector('input[type=number]')?.value) || 0;
+        rewards.push({ type: 'currency', currency: type === 'shards' ? 'primary' : 'premium', amount });
+      } else if (type === 'card') {
+        const card_key = item.querySelector('select')?.value || '';
+        if (card_key) rewards.push({ type: 'card', card_key });
+      } else if (type === 'resource') {
+        const selects = item.querySelectorAll('select');
+        const inputs = item.querySelectorAll('input[type=number]');
+        const resource_key = selects[0]?.value || '';
+        const amount = parseFloat(inputs[0]?.value) || 0;
+        if (resource_key) rewards.push({ type: 'resource', resource_key, amount });
+      }
+    });
+    result.push({ level: lvl, xp_required: xp, rewards });
+  });
+  return result;
+}
+
+// ── Save ──
+document.getElementById('btn-save').addEventListener('click', async () => {
+  const levels = collectLevels();
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = '⏳ Sauvegarde…';
+  try {
+    const r = await fetch('{{ url_for("admin.levels_save") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ levels })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      dirty = false;
+      document.getElementById('save-bar').style.display = 'none';
+      btn.disabled = false; btn.textContent = '💾 Enregistrer tout';
+      showToast('Niveaux sauvegardés !');
+    } else {
+      alert('Erreur : ' + d.error);
+      btn.disabled = false; btn.textContent = '💾 Enregistrer tout';
+    }
+  } catch(e) {
+    alert('Erreur réseau : ' + e.message);
+    btn.disabled = false; btn.textContent = '💾 Enregistrer tout';
+  }
+});
+
+// ── Add level ──
+document.getElementById('btn-add-level').onclick = () => {
+  document.getElementById('new-level-num').value = '';
+  document.getElementById('new-level-error').style.display = 'none';
+  document.getElementById('modal-add-level').style.display = 'flex';
+  setTimeout(() => document.getElementById('new-level-num').focus(), 50);
+};
+
+document.getElementById('btn-create-level').onclick = async () => {
+  const lvl = parseInt(document.getElementById('new-level-num').value);
+  const errEl = document.getElementById('new-level-error');
+  if (isNaN(lvl)) { errEl.textContent='Numéro invalide.'; errEl.style.display='block'; return; }
+  const r = await fetch('{{ url_for("admin.level_new") }}', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({level: lvl})
+  });
+  const d = await r.json();
+  if (d.ok) location.reload();
+  else { errEl.textContent = d.error; errEl.style.display='block'; }
+};
+
+// ── Delete level ──
+async function deleteLevel(lvl) {
+  if (!confirm(`Supprimer le niveau ${lvl} ? Les données story/unlocks seront aussi perdues.`)) return;
+  const r = await fetch(`/admin/levels/${lvl}/delete`, { method:'POST' });
+  const d = await r.json();
+  if (d.ok) location.reload();
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText='position:fixed;top:1rem;right:1.5rem;background:#10b981;color:#fff;padding:.65rem 1.25rem;border-radius:10px;font-weight:600;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,.15);';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ── Warn on leave if dirty ──
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue=''; }
+});
+</script>
+{% endblock %}
+
+{# Macro for rendering a reward row (called from Jinja loop) #}
+{% macro render_reward_row(lvl, idx, r) %}
+{% set type = r.type %}
+{% if type == 'currency' %}
+  {% set actual_type = 'shards' if r.currency in ('primary', 'coins') else 'essence' %}
+<div class="reward-item" data-type="{{ actual_type }}">
+  <span class="reward-type-badge type-{{ actual_type }}">
+    {{ '🪙 Shards' if actual_type == 'shards' else '💎 Essence' }}
+  </span>
+  <span class="reward-field">Quantité : <input type="number" min="0" value="{{ r.amount or 0 }}" onchange="markDirty()"></span>
+  <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+          onclick="this.closest('.reward-item').remove(); updateSummary({{ lvl }}); markDirty();">✕</button>
+</div>
+{% elif type == 'coins' %}
+<div class="reward-item" data-type="shards">
+  <span class="reward-type-badge type-shards">🪙 Shards</span>
+  <span class="reward-field">Quantité : <input type="number" min="0" value="{{ r.amount or 0 }}" onchange="markDirty()"></span>
+  <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+          onclick="this.closest('.reward-item').remove(); updateSummary({{ lvl }}); markDirty();">✕</button>
+</div>
+{% elif type == 'diams' %}
+<div class="reward-item" data-type="essence">
+  <span class="reward-type-badge type-essence">💎 Essence</span>
+  <span class="reward-field">Quantité : <input type="number" min="0" value="{{ r.amount or 0 }}" onchange="markDirty()"></span>
+  <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+          onclick="this.closest('.reward-item').remove(); updateSummary({{ lvl }}); markDirty();">✕</button>
+</div>
+{% elif type == 'card' %}
+<div class="reward-item" data-type="card">
+  <span class="reward-type-badge type-card">🃏 Carte</span>
+  <span class="reward-field">Carte :
+    <select onchange="markDirty()">
+      <option value="">— Choisir —</option>
+      {% for c in cards %}
+      <option value="{{ c.key }}" {% if c.key == r.card_key %}selected{% endif %}>{{ c.card_label }} ({{ c.key }})</option>
+      {% endfor %}
+    </select>
+  </span>
+  <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+          onclick="this.closest('.reward-item').remove(); updateSummary({{ lvl }}); markDirty();">✕</button>
+</div>
+{% elif type == 'resource' %}
+<div class="reward-item" data-type="resource">
+  <span class="reward-type-badge type-resource">📦 Ressource</span>
+  <span class="reward-field">Ressource :
+    <select onchange="markDirty()">
+      <option value="">— Choisir —</option>
+      {% for res in resources %}
+      <option value="{{ res.key }}" {% if res.key == r.resource_key %}selected{% endif %}>{{ res.label or res.key }} ({{ res.key }})</option>
+      {% endfor %}
+    </select>
+  </span>
+  <span class="reward-field">Qté : <input type="number" min="0" value="{{ r.amount or 0 }}" onchange="markDirty()"></span>
+  <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+          onclick="this.closest('.reward-item').remove(); updateSummary({{ lvl }}); markDirty();">✕</button>
+</div>
+{% endif %}
+{% endmacro %}
