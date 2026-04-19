@@ -1,0 +1,349 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Éditer Événement Story — Admin Panel{% endblock %}
+{% block page_title %}✏️ Événement : {{ ev.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page builder ── */
+.page-builder { display: flex; flex-direction: column; gap: .75rem; }
+.page-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 1rem; position: relative;
+}
+.page-card-header {
+  display: flex; align-items: center; gap: .6rem; margin-bottom: .75rem;
+}
+.page-index {
+  background: #dbeafe; color: #1d4ed8;
+  border-radius: 50%; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .78rem; flex-shrink: 0;
+}
+.page-card .btn-remove-page {
+  margin-left: auto;
+}
+
+/* ── Speaker selector ── */
+.speaker-selector { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .6rem; }
+.speaker-btn {
+  padding: .25rem .7rem; border-radius: 20px; border: 2px solid #e2e8f0;
+  background: #f8fafc; color: #64748b; font-size: .8rem; cursor: pointer;
+  display: flex; align-items: center; gap: .35rem;
+  transition: all .15s;
+}
+.speaker-btn:hover { border-color: #93c5fd; }
+.speaker-btn.active { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+.speaker-btn img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
+/* ── Mood chips ── */
+.mood-selector { display: flex; flex-wrap: wrap; gap: .3rem; }
+.mood-chip {
+  padding: .2rem .55rem; border-radius: 12px; border: 1px solid #e2e8f0;
+  background: #f8fafc; color: #64748b; font-size: .75rem; cursor: pointer;
+  transition: all .12s;
+}
+.mood-chip:hover { border-color: #93c5fd; }
+.mood-chip.active { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+
+/* ── Text tabs ── */
+.lang-tabs { display: flex; border-bottom: 1px solid #e2e8f0; margin-bottom: .5rem; }
+.lang-tab {
+  padding: .35rem .8rem; font-size: .82rem; cursor: pointer;
+  border: 1px solid transparent; border-bottom: none;
+  border-radius: 6px 6px 0 0; color: #64748b;
+}
+.lang-tab.active { border-color: #e2e8f0; background: #fff; color: #1e293b; font-weight: 600; }
+.lang-panel { display: none; }
+.lang-panel.active { display: block; }
+
+textarea.page-text {
+  width: 100%; min-height: 80px; resize: vertical;
+  border: 1px solid #d1d5db; border-radius: 8px;
+  padding: .5rem .75rem; font-size: .88rem;
+  color: #1e293b; background: #fff;
+}
+textarea.page-text:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+
+.add-page-btn {
+  border: 2px dashed #cbd5e1; border-radius: 10px;
+  padding: .75rem; text-align: center; cursor: pointer;
+  color: #64748b; font-size: .88rem;
+  transition: all .15s; background: transparent;
+  width: 100%;
+}
+.add-page-btn:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+
+/* ── Move buttons ── */
+.page-move-btns { display: flex; gap: .3rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="mb-3">
+  <a href="{{ url_for('admin.story_list') }}" class="btn btn-sm btn-outline-secondary">← Retour aux dialogues</a>
+</div>
+
+<form method="POST" id="story-form">
+  <input type="hidden" name="pages_json" id="pages-json-input">
+
+  <div class="row g-4">
+    <!-- Left: metadata -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm" style="border-radius:14px;">
+        <div class="card-body p-3">
+          <h6 class="mb-3 text-muted text-uppercase fw-bold" style="font-size:.72rem;letter-spacing:.05em;">Métadonnées</h6>
+
+          <div class="mb-3">
+            <label class="form-label">ID</label>
+            <input type="text" class="form-control form-control-sm" value="{{ ev.id }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Niveau</label>
+            <input type="number" name="level" class="form-control form-control-sm" value="{{ ev.level }}" min="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Déclencheur</label>
+            <select name="trigger" class="form-select form-select-sm">
+              {% for val, label in triggers %}
+              <option value="{{ val }}" {% if ev.trigger == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Land key <span class="text-muted">(optionnel)</span></label>
+            <input type="text" name="land_key" class="form-control form-control-sm"
+                   value="{{ ev.land_key or '' }}" placeholder="forest_1">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Variant modal</label>
+            <select name="modal_variant" class="form-select form-select-sm">
+              {% for val, label in modal_variants %}
+              <option value="{{ val }}" {% if ev.modal_variant == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ordre d'affichage</label>
+            <input type="number" name="sort_order" class="form-control form-control-sm"
+                   value="{{ ev.sort_order or 0 }}" min="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Quest à démarrer <span class="text-muted">(optionnel)</span></label>
+            <input type="text" name="quest_key" class="form-control form-control-sm"
+                   value="{{ (ev.quest_start or {}).get('quest_key', '') }}" placeholder="quest_gather_wood">
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" name="show_once" id="show_once"
+                   {% if ev.show_once %}checked{% endif %}>
+            <label class="form-check-label" for="show_once">Montrer une seule fois</label>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="enabled" id="enabled"
+                   {% if ev.enabled %}checked{% endif %}>
+            <label class="form-check-label" for="enabled">Actif</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: page builder -->
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm" style="border-radius:14px;">
+        <div class="card-body p-3">
+          <h6 class="mb-3 text-muted text-uppercase fw-bold" style="font-size:.72rem;letter-spacing:.05em;">Pages du dialogue</h6>
+          <div class="page-builder" id="page-builder"></div>
+          <button type="button" class="add-page-btn mt-2" onclick="addPage()">+ Ajouter une page</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary" onclick="serializePages()">💾 Enregistrer</button>
+    <a href="{{ url_for('admin.story_list') }}" class="btn btn-outline-secondary">Annuler</a>
+  </div>
+</form>
+
+<script>
+// ── Data ──
+const NPCS = [
+  {% for npc in npcs %}
+  {
+    key: "{{ npc.key }}",
+    name_fr: "{{ npc.name_fr }}",
+    portrait: "{{ npc.portrait or '' }}"
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+const PLAYER_MOODS = {{ player_moods | tojson }};
+const PORTRAITS_BASE = "/static/assets/img/pnj/villagers/";
+const PLAYER_BASE = "/static/assets/img/ui/players/defaults/";
+
+// Initial pages from server
+let pages = {{ (ev.pages or []) | tojson }};
+
+// ── Render all pages ──
+function renderAll() {
+  const builder = document.getElementById('page-builder');
+  builder.innerHTML = '';
+  pages.forEach((page, i) => {
+    builder.appendChild(buildPageCard(page, i));
+  });
+}
+
+function buildPageCard(page, idx) {
+  const card = document.createElement('div');
+  card.className = 'page-card';
+  card.dataset.idx = idx;
+
+  const speaker = page.speaker || 'self';
+  const mood = page.mood || '';
+  const textFr = (page.text && page.text.fr) ? page.text.fr : '';
+  const textEn = (page.text && page.text.en) ? page.text.en : '';
+
+  card.innerHTML = `
+    <div class="page-card-header">
+      <span class="page-index">${idx + 1}</span>
+      <span class="text-muted small">Page ${idx + 1}</span>
+      <div class="page-move-btns">
+        ${idx > 0 ? `<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="movePage(${idx}, -1)" title="Monter">↑</button>` : ''}
+        ${idx < pages.length - 1 ? `<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="movePage(${idx}, 1)" title="Descendre">↓</button>` : ''}
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btn-remove-page" onclick="removePage(${idx})">✕</button>
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label small fw-semibold mb-1">Qui parle ?</label>
+      <div class="speaker-selector" id="speakers-${idx}">
+        ${buildSpeakerBtns(speaker, idx)}
+      </div>
+    </div>
+
+    <div class="mb-2" id="mood-section-${idx}" style="${speaker === 'self' || speaker.startsWith('npc:') ? '' : 'display:none'}">
+      <label class="form-label small fw-semibold mb-1">Humeur / Expression</label>
+      <div class="mood-selector" id="moods-${idx}">
+        ${buildMoodChips(mood, idx, speaker)}
+      </div>
+    </div>
+
+    <div>
+      <label class="form-label small fw-semibold mb-1">Texte</label>
+      <div class="lang-tabs">
+        <div class="lang-tab active" onclick="switchLang(${idx}, 'fr', this)">🇫🇷 Français</div>
+        <div class="lang-tab" onclick="switchLang(${idx}, 'en', this)">🇬🇧 English</div>
+      </div>
+      <div class="lang-panel active" id="lang-fr-${idx}">
+        <textarea class="page-text" id="text-fr-${idx}" placeholder="Texte en français…">${textFr}</textarea>
+      </div>
+      <div class="lang-panel" id="lang-en-${idx}">
+        <textarea class="page-text" id="text-en-${idx}" placeholder="English text…">${textEn}</textarea>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function buildSpeakerBtns(activeSpeaker, idx) {
+  let html = '';
+  // Player (self)
+  const selfActive = activeSpeaker === 'self' ? 'active' : '';
+  html += `<button type="button" class="speaker-btn ${selfActive}" onclick="selectSpeaker(${idx}, 'self', this)">🧑 Joueur</button>`;
+  // NPCs
+  NPCS.forEach(npc => {
+    const npcKey = 'npc:' + npc.key;
+    const active = activeSpeaker === npcKey ? 'active' : '';
+    const portraitHtml = npc.portrait
+      ? `<img src="${PORTRAITS_BASE}${npc.portrait}" alt="">`
+      : `<span>🧑</span>`;
+    html += `<button type="button" class="speaker-btn ${active}" onclick="selectSpeaker(${idx}, '${npcKey}', this)">${portraitHtml} ${npc.name_fr}</button>`;
+  });
+  return html;
+}
+
+function buildMoodChips(activeMood, idx, speaker) {
+  let moods = [];
+  if (!speaker || speaker === 'self') {
+    moods = PLAYER_MOODS;
+  }
+  // For NPCs we don't have mood images — use text moods
+  const textMoods = ['neutral', 'happy', 'sad', 'angry', 'surprised', 'thinking'];
+  if (speaker && speaker.startsWith('npc:')) {
+    moods = textMoods;
+  }
+  if (!moods.length) moods = textMoods;
+
+  return moods.map(m => {
+    const active = activeMood === m ? 'active' : '';
+    return `<span class="mood-chip ${active}" onclick="selectMood(${idx}, '${m}', this)">${m}</span>`;
+  }).join('');
+}
+
+function selectSpeaker(idx, speaker, btn) {
+  // Update active button
+  btn.closest('.speaker-selector').querySelectorAll('.speaker-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Update moods
+  const moodSection = document.getElementById(`mood-section-${idx}`);
+  const moodContainer = document.getElementById(`moods-${idx}`);
+  moodSection.style.display = '';
+  const currentMood = pages[idx].mood || '';
+  moodContainer.innerHTML = buildMoodChips(currentMood, idx, speaker);
+  pages[idx].speaker = speaker;
+}
+
+function selectMood(idx, mood, chip) {
+  chip.closest('.mood-selector').querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  pages[idx].mood = mood;
+}
+
+function switchLang(idx, lang, tab) {
+  const card = document.querySelector(`.page-card[data-idx="${idx}"]`);
+  card.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+  card.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(`lang-${lang}-${idx}`).classList.add('active');
+}
+
+function addPage() {
+  pages.push({ speaker: 'self', mood: '', text: { fr: '', en: '' } });
+  renderAll();
+}
+
+function removePage(idx) {
+  pages.splice(idx, 1);
+  renderAll();
+}
+
+function movePage(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= pages.length) return;
+  [pages[idx], pages[newIdx]] = [pages[newIdx], pages[idx]];
+  renderAll();
+}
+
+function serializePages() {
+  // Collect current text values from DOM
+  pages.forEach((page, idx) => {
+    const frEl = document.getElementById(`text-fr-${idx}`);
+    const enEl = document.getElementById(`text-en-${idx}`);
+    if (frEl) page.text = { fr: frEl.value, en: enEl ? enEl.value : '' };
+    // Speaker & mood already tracked in pages[]
+    const activeSpeaker = document.querySelector(`#speakers-${idx} .speaker-btn.active`);
+    if (activeSpeaker) page.speaker = activeSpeaker.getAttribute('onclick').match(/'([^']+)'/)?.[1] || page.speaker;
+    // Actually speaker is in pages[] already; mood chip:
+    const activeMood = document.querySelector(`#moods-${idx} .mood-chip.active`);
+    if (activeMood) page.mood = activeMood.getAttribute('onclick').match(/'([^']+)'/)?.[1] || page.mood;
+  });
+  document.getElementById('pages-json-input').value = JSON.stringify(pages);
+}
+
+// Initial render
+renderAll();
+</script>
+{% endblock %}

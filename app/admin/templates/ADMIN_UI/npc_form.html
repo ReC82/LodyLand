@@ -1,0 +1,116 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Éditer PNJ — Admin Panel{% endblock %}
+{% block page_title %}✏️ Éditer PNJ : {{ npc.key }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.portrait-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: .6rem;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: .5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+.portrait-option { position: relative; cursor: pointer; }
+.portrait-option input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+.portrait-option label {
+  display: block; cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .15s, transform .15s;
+}
+.portrait-option label:hover { border-color: #93c5fd; transform: scale(1.04); }
+.portrait-option input:checked + label { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.25); }
+.portrait-option img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.portrait-option .portrait-name {
+  font-size: .65rem; text-align: center; padding: .15rem .2rem;
+  background: #fff; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.current-portrait {
+  display: flex; align-items: center; gap: 1rem;
+  background: #f0f9ff; border: 1px solid #bae6fd;
+  border-radius: 10px; padding: .75rem 1rem; margin-bottom: 1rem;
+}
+.current-portrait img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.npcs_list') }}" class="btn btn-sm btn-outline-secondary">← Retour aux PNJ</a>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius:14px;max-width:700px;">
+  <div class="card-body p-4">
+    <form method="POST">
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Nom (FR)</label>
+          <input type="text" name="name_fr" class="form-control" value="{{ npc.name_fr }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Nom (EN)</label>
+          <input type="text" name="name_en" class="form-control" value="{{ npc.name_en or '' }}">
+        </div>
+      </div>
+
+      {% if npc.portrait %}
+      <div class="current-portrait mb-3">
+        <img src="{{ url_for('static', filename='assets/img/pnj/villagers/' + npc.portrait) }}" alt="">
+        <div>
+          <div class="fw-semibold">Portrait actuel</div>
+          <div class="text-muted small">{{ npc.portrait }}</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Choisir un portrait</label>
+        {% if portraits %}
+        <div class="portrait-grid">
+          <!-- None option -->
+          <div class="portrait-option">
+            <input type="radio" name="portrait" id="portrait-none" value=""
+                   {% if not npc.portrait %}checked{% endif %}>
+            <label for="portrait-none">
+              <div style="width:100%;aspect-ratio:1;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🚫</div>
+              <div class="portrait-name">Aucun</div>
+            </label>
+          </div>
+          {% for portrait in portraits %}
+          <div class="portrait-option">
+            <input type="radio" name="portrait" id="portrait-{{ loop.index }}" value="{{ portrait }}"
+                   {% if npc.portrait == portrait %}checked{% endif %}>
+            <label for="portrait-{{ loop.index }}">
+              <img src="{{ url_for('static', filename='assets/img/pnj/villagers/' + portrait) }}" alt="{{ portrait }}">
+              <div class="portrait-name">{{ portrait }}</div>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-muted small">Aucune image trouvée dans <code>static/assets/img/pnj/villagers/</code></div>
+        {% endif %}
+      </div>
+
+      <div class="mb-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="enabled" id="enabled"
+                 {% if npc.enabled %}checked{% endif %}>
+          <label class="form-check-label" for="enabled">PNJ actif</label>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        <a href="{{ url_for('admin.npcs_list') }}" class="btn btn-outline-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
