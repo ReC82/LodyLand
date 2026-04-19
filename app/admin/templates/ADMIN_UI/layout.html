@@ -27,10 +27,15 @@
                     <span class="nav-icon">👥</span>
                     <span class="nav-text">Users</span>
                 </a>
-                <a class="nav-item {% if '/resources' in request.path %}active{% endif %}"
+                <a class="nav-item {% if '/resources' in request.path and '/tools' not in request.path %}active{% endif %}"
                    href="{{ url_for('admin.resources_list') }}">
                     <span class="nav-icon">📦</span>
                     <span class="nav-text">Resources</span>
+                </a>
+                <a class="nav-item {% if '/tools' in request.path %}active{% endif %}"
+                   href="{{ url_for('admin.tools_list') }}">
+                    <span class="nav-icon">🔧</span>
+                    <span class="nav-text">Outils</span>
                 </a>
                 <a class="nav-item {% if '/lands' in request.path %}active{% endif %}"
                    href="{{ url_for('admin.lands_list') }}">

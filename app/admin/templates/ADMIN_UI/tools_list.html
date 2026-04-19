@@ -1,0 +1,147 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Outils — Admin Panel{% endblock %}
+{% block page_title %}🔧 Outils{% endblock %}
+
+{% block extra_css %}
+<style>
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: .75rem;
+}
+.tool-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  overflow: hidden; text-align: center;
+  transition: box-shadow .15s, transform .15s;
+}
+.tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
+.tool-img-wrap {
+  background: #f8fafc; height: 110px;
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.tool-img-wrap img { max-width: 80px; max-height: 80px; object-fit: contain; }
+.tool-img-wrap .no-img { font-size: 2.5rem; color: #cbd5e1; }
+.missing-badge {
+  position: absolute; top: 4px; right: 4px;
+  background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;
+  font-size: .58rem; padding: .1rem .35rem; border-radius: 3px; font-weight: 800;
+}
+.tool-body { padding: .55rem .6rem .65rem; }
+.tool-key { font-family: monospace; font-size: .62rem; color: #94a3b8; margin-bottom: .15rem; }
+.tool-name { font-weight: 700; font-size: .85rem; color: #1e293b; line-height: 1.2; }
+.tool-name-en { font-size: .75rem; color: #64748b; font-style: italic; margin-top: .1rem; }
+.tool-actions { display: flex; gap: .35rem; justify-content: center; margin-top: .6rem; }
+.disabled-overlay { opacity: .45; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="text-muted mb-0">{{ tools|length }} outil(s) configuré(s).</p>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('admin.tools_print') }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+      🎨 Vue artistes
+    </a>
+    <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Nouvel outil</button>
+  </div>
+</div>
+
+{% if tools %}
+<div class="tool-grid">
+  {% for t in tools %}
+  <div class="tool-card {% if not t.enabled %}disabled-overlay{% endif %}">
+    <div class="tool-img-wrap">
+      {% if t.image_url %}
+        <img src="{{ t.image_url }}" alt="{{ t.label_fr }}">
+      {% else %}
+        <span class="no-img">🔧</span>
+        <span class="missing-badge">MANQUANT</span>
+      {% endif %}
+    </div>
+    <div class="tool-body">
+      <div class="tool-key">{{ t.key }}</div>
+      <div class="tool-name">{{ t.label_fr or t.key }}</div>
+      {% if t.label_en %}<div class="tool-name-en">{{ t.label_en }}</div>{% endif %}
+      {% if not t.enabled %}<span class="badge bg-secondary mt-1" style="font-size:.6rem;">Désactivé</span>{% endif %}
+      {% if not t.in_db %}<span class="badge bg-warning text-dark mt-1" style="font-size:.6rem;">YAML only</span>{% endif %}
+      <div class="tool-actions">
+        <a href="{{ url_for('admin.edit_tool', key=t.key) }}" class="btn btn-sm btn-outline-primary">✏️</a>
+        {% if t.in_db %}
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteTool('{{ t.key }}')">🗑️</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <div style="font-size:3rem;">🔧</div>
+  <p class="mt-2">Aucun outil. Créez-en un !</p>
+  <button class="btn btn-primary" onclick="openCreateModal()">Créer le premier outil</button>
+</div>
+{% endif %}
+
+<!-- Create modal -->
+<div id="modal-create-tool" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);">
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;width:400px;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.15);">
+    <h6 class="mb-3">Nouvel outil</h6>
+    <div class="mb-3">
+      <label class="form-label">Clé unique</label>
+      <input type="text" id="new-tool-key" class="form-control" placeholder="wooden_hammer">
+      <div class="form-text">snake_case, unique, ex: tool_iron_sword</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">🇫🇷 Nom français <span class="text-danger">*</span></label>
+      <input type="text" id="new-tool-name-fr" class="form-control" placeholder="Marteau en bois">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">🇬🇧 Name (English)</label>
+      <input type="text" id="new-tool-name-en" class="form-control" placeholder="Wooden Hammer">
+    </div>
+    <div id="create-tool-error" class="text-danger small mb-2" style="display:none;"></div>
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-secondary" onclick="closeCreateModal()">Annuler</button>
+      <button class="btn btn-primary" id="btn-create-tool">Créer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openCreateModal() {
+  ['new-tool-key','new-tool-name-fr','new-tool-name-en'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('create-tool-error').style.display = 'none';
+  document.getElementById('modal-create-tool').style.display = 'flex';
+  setTimeout(() => document.getElementById('new-tool-key').focus(), 50);
+}
+function closeCreateModal() { document.getElementById('modal-create-tool').style.display = 'none'; }
+document.getElementById('modal-create-tool').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-create-tool')) closeCreateModal();
+});
+
+document.getElementById('btn-create-tool').addEventListener('click', async () => {
+  const key      = document.getElementById('new-tool-key').value.trim();
+  const label_fr = document.getElementById('new-tool-name-fr').value.trim();
+  const label_en = document.getElementById('new-tool-name-en').value.trim();
+  const errEl    = document.getElementById('create-tool-error');
+  if (!key)      { errEl.textContent = 'Clé requise.';    errEl.style.display = 'block'; return; }
+  if (!label_fr) { errEl.textContent = 'Nom FR requis.';  errEl.style.display = 'block'; return; }
+  const r = await fetch('{{ url_for("admin.create_tool") }}', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, label_fr, label_en })
+  });
+  const d = await r.json();
+  if (d.ok) window.location.href = d.redirect;
+  else { errEl.textContent = d.error; errEl.style.display = 'block'; }
+});
+
+async function deleteTool(key) {
+  if (!confirm(`Supprimer l'outil "${key}" ? L'image sera aussi supprimée.`)) return;
+  const r = await fetch(`/admin/tools/${key}/delete`, { method: 'POST' });
+  const d = await r.json();
+  if (d.ok) location.reload();
+  else alert('Erreur : ' + d.error);
+}
+</script>
+{% endblock %}

@@ -1577,3 +1577,291 @@ def toggle_skill(key: str):
         return jsonify({"ok": True, "enabled": sk.enabled})
     finally:
         session.close()
+
+
+# =============================================================================
+# Tools Management
+# =============================================================================
+
+_TOOLS_IMG_DIR = Path(__file__).resolve().parent.parent / "static" / "assets" / "img" / "items" / "tools"
+_TOOLS_IMG_URL_BASE = "/static/assets/img/items/tools/"
+_ALLOWED_IMG_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+
+
+def _tool_image_path(key: str) -> Path:
+    return _TOOLS_IMG_DIR / f"{key}.png"
+
+
+def _tool_image_url(key: str) -> str | None:
+    # Try exact key first (e.g. tool_wooden_axe.png)
+    if _tool_image_path(key).exists():
+        return f"{_TOOLS_IMG_URL_BASE}{key}.png"
+    # Try without tool_ prefix (e.g. wooden_axe.png)
+    short = key[5:] if key.startswith("tool_") else key
+    short_path = _TOOLS_IMG_DIR / f"{short}.png"
+    if short_path.exists():
+        return f"{_TOOLS_IMG_URL_BASE}{short}.png"
+    return None
+
+
+def _save_tool_image(file_storage, key: str) -> str:
+    """
+    Crop & resize uploaded image to square (512×512 PNG).
+    Returns the URL path of the saved image.
+    Raises ValueError on bad file type.
+    """
+    from PIL import Image
+    import io
+
+    ext = Path(file_storage.filename).suffix.lower()
+    if ext not in _ALLOWED_IMG_EXTENSIONS:
+        raise ValueError(f"Extension non autorisée : {ext}")
+
+    raw = file_storage.read()
+    img = Image.open(io.BytesIO(raw)).convert("RGBA")
+
+    # Square crop (centre)
+    w, h = img.size
+    side = min(w, h)
+    left = (w - side) // 2
+    top  = (h - side) // 2
+    img = img.crop((left, top, left + side, top + side))
+    img = img.resize((512, 512), Image.LANCZOS)
+
+    _TOOLS_IMG_DIR.mkdir(parents=True, exist_ok=True)
+    dest = _tool_image_path(key)
+    img.save(dest, "PNG", optimize=True)
+    return f"{_TOOLS_IMG_URL_BASE}{key}.png"
+
+
+def _get_all_tools(session) -> list:
+    """
+    Return all tools by merging:
+      1. items.yml  — keys starting with tool_  (source of truth for existing tools)
+      2. ResourceDef DB — kind='tool' OR key LIKE 'tool_%' (admin-created tools)
+      3. i18n translations (fr.yml / en.yml)
+    """
+    # ── Load items.yml ────────────────────────────────────────────────────────
+    items_yml_path = Path(__file__).resolve().parent.parent / "data" / "items.yml"
+    yaml_tools: dict = {}
+    if items_yml_path.exists():
+        with items_yml_path.open("r", encoding="utf-8") as f:
+            raw = yaml.safe_load(f) or {}
+        all_items = raw.get("items", raw)
+        yaml_tools = {k: v for k, v in all_items.items()
+                      if isinstance(v, dict) and k.startswith("tool_")}
+
+    # ── Load DB rows (kind=tool OR key prefix tool_) ──────────────────────────
+    db_rows = (
+        session.query(ResourceDef)
+        .filter(
+            (ResourceDef.kind == "tool") |
+            ResourceDef.key.like("tool_%")
+        )
+        .order_by(ResourceDef.key)
+        .all()
+    )
+    db_by_key = {r.key: r for r in db_rows}
+
+    # ── Load i18n translations ────────────────────────────────────────────────
+    translations: dict = {}
+    for lang in ("fr", "en"):
+        path = Path(__file__).resolve().parent.parent / "i18n" / "translations" / f"{lang}.yml"
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            translations[lang] = data.get("items", {})
+        else:
+            translations[lang] = {}
+
+    # ── Merge: union of YAML + DB keys ───────────────────────────────────────
+    all_keys = sorted(set(list(yaml_tools.keys()) + list(db_by_key.keys())))
+
+    result = []
+    for key in all_keys:
+        yaml_cfg = yaml_tools.get(key, {})
+        db_row   = db_by_key.get(key)
+        fr_data  = translations["fr"].get(key) or {}
+        en_data  = translations["en"].get(key) or {}
+
+        # Label resolution: i18n > yaml > db
+        label_fr = (fr_data.get("label") if isinstance(fr_data, dict) else None) \
+                   or yaml_cfg.get("label") \
+                   or (db_row.label if db_row and db_row.label and "." not in db_row.label else None) \
+                   or key
+        label_en = (en_data.get("label") if isinstance(en_data, dict) else None) \
+                   or yaml_cfg.get("label", "")
+
+        # Icon: DB > yaml > auto-detect
+        icon = (db_row.icon if db_row else None) or yaml_cfg.get("icon")
+
+        # image_url: check actual file on disk (stripping tool_ prefix for filename)
+        image_url = _tool_image_url(key)
+        # Also try the yaml icon path if file exists
+        if not image_url and yaml_cfg.get("icon"):
+            image_url = yaml_cfg["icon"]
+
+        result.append({
+            "key": key,
+            "label_fr": label_fr,
+            "label_en": label_en,
+            "description_fr": (fr_data.get("description") if isinstance(fr_data, dict) else None)
+                               or yaml_cfg.get("description", ""),
+            "icon": icon,
+            "image_url": image_url,
+            "base_sell_price": (db_row.base_sell_price if db_row else None)
+                                or yaml_cfg.get("base_sell_price", 0),
+            "enabled": (db_row.enabled if db_row else yaml_cfg.get("enabled", True)),
+            "in_db": key in db_by_key,
+        })
+    return result
+
+
+@admin_bp.get("/tools/")
+@admin_required(permission="edit_resources")
+def tools_list():
+    session = SessionLocal()
+    try:
+        tools = _get_all_tools(session)
+        return render_template("ADMIN_UI/tools_list.html", tools=tools)
+    finally:
+        session.close()
+
+
+@admin_bp.get("/tools/print")
+@admin_required(permission="edit_resources")
+def tools_print():
+    session = SessionLocal()
+    try:
+        tools = _get_all_tools(session)
+        return render_template("ADMIN_UI/tools_print.html", tools=tools)
+    finally:
+        session.close()
+
+
+@admin_bp.post("/tools/new")
+@admin_required(permission="edit_resources")
+def create_tool():
+    data = request.get_json() or {}
+    key = (data.get("key") or "").strip().lower().replace(" ", "_")
+    label_fr = (data.get("label_fr") or "").strip()
+    label_en = (data.get("label_en") or "").strip()
+
+    if not key:
+        return jsonify({"ok": False, "error": "Clé requise"}), 400
+    if not label_fr:
+        return jsonify({"ok": False, "error": "Nom FR requis"}), 400
+
+    session = SessionLocal()
+    try:
+        if session.query(ResourceDef).filter_by(key=key).first():
+            return jsonify({"ok": False, "error": "Clé déjà utilisée"}), 400
+
+        # Save to DB
+        tool = ResourceDef(
+            key=key,
+            label=f"items.{key}.label",
+            kind="tool",
+            base_sell_price=0,
+            enabled=True,
+        )
+        session.add(tool)
+        session.commit()
+
+        # Save i18n
+        _save_item_translations(key, {
+            "fr": {"label": label_fr},
+            "en": {"label": label_en or label_fr},
+        })
+
+        return jsonify({"ok": True, "key": key,
+                        "redirect": url_for("admin.edit_tool", key=key)})
+    finally:
+        session.close()
+
+
+@admin_bp.get("/tools/<key>/edit")
+@admin_bp.post("/tools/<key>/edit")
+@admin_required(permission="edit_resources")
+def edit_tool(key: str):
+    session = SessionLocal()
+    try:
+        tool = session.query(ResourceDef).filter_by(key=key, kind="tool").first()
+        if not tool:
+            abort(404)
+
+        translations = _load_item_translations(key)
+        error = None
+        success = None
+
+        if request.method == "POST":
+            action = request.form.get("action", "save")
+
+            # ── Image upload ──────────────────────────────────────────────────
+            if action == "upload_image":
+                img_file = request.files.get("image")
+                if not img_file or not img_file.filename:
+                    error = "Aucun fichier sélectionné."
+                else:
+                    try:
+                        url = _save_tool_image(img_file, key)
+                        tool.icon = url
+                        session.commit()
+                        success = f"Image enregistrée ({url})"
+                    except ValueError as e:
+                        error = str(e)
+                    except Exception as e:
+                        error = f"Erreur : {e}"
+
+            # ── Save metadata ─────────────────────────────────────────────────
+            else:
+                label_fr = request.form.get("label_fr", "").strip()
+                label_en = request.form.get("label_en", "").strip()
+                desc_fr  = request.form.get("desc_fr", "").strip()
+                desc_en  = request.form.get("desc_en", "").strip()
+                base_sell_price_raw = request.form.get("base_sell_price", "").strip()
+                tool.enabled = request.form.get("enabled") == "on"
+
+                if not label_fr:
+                    error = "Nom FR requis."
+                else:
+                    tool.label = f"items.{key}.label"
+                    _save_item_translations(key, {
+                        "fr": {"label": label_fr, "description": desc_fr or None},
+                        "en": {"label": label_en or label_fr, "description": desc_en or None},
+                    })
+                    if base_sell_price_raw.isdigit():
+                        tool.base_sell_price = int(base_sell_price_raw)
+                    session.commit()
+                    if not error:
+                        return redirect(url_for("admin.tools_list"))
+
+        # Reload translations after potential save
+        translations = _load_item_translations(key)
+        image_url = _tool_image_url(key)
+        return render_template("ADMIN_UI/tool_form.html",
+                               tool=tool, key=key,
+                               translations=translations,
+                               image_url=image_url,
+                               error=error, success=success)
+    finally:
+        session.close()
+
+
+@admin_bp.post("/tools/<key>/delete")
+@admin_required(permission="edit_resources")
+def delete_tool(key: str):
+    session = SessionLocal()
+    try:
+        tool = session.query(ResourceDef).filter_by(key=key, kind="tool").first()
+        if not tool:
+            abort(404)
+        session.delete(tool)
+        session.commit()
+        # Optionally remove image
+        img = _tool_image_path(key)
+        if img.exists():
+            img.unlink()
+        return jsonify({"ok": True})
+    finally:
+        session.close()
