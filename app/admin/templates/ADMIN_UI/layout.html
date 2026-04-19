@@ -92,6 +92,11 @@
                     <span class="nav-icon">🎁</span>
                     <span class="nav-text">Giveaway</span>
                 </a>
+                <a class="nav-item {% if '/temple' in request.path %}active{% endif %}"
+                   href="{{ url_for('admin.temple_admin') }}">
+                    <span class="nav-icon">🏛️</span>
+                    <span class="nav-text">Temple</span>
+                </a>
                 {% if current_player and current_player.admin_role == 'super_admin' %}
                 <a class="nav-item {% if '/roles' in request.path %}active{% endif %}"
                    href="{{ url_for('admin.manage_roles') }}">

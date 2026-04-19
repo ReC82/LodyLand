@@ -27,6 +27,7 @@ from app.models import (
     StoryEventDef,
     SkillDef,
     PlayerSkill,
+    TempleReconstructionBrick,
 )
 
 import yaml
@@ -1989,3 +1990,268 @@ def giveaway_apply():
                 stock.qty = max(0.0, stock.qty - qty)
                 session.commit()
                 return jsonify({"ok": True, "qty": float(stock.qty)})
+
+
+# =============================================================================
+# TEMPLE ADMIN
+# =============================================================================
+
+def _load_temple_config() -> dict:
+    from pathlib import Path
+    import yaml
+    cfg_path = Path(__file__).resolve().parent.parent / "data" / "temple_reconstruction.yml"
+    with cfg_path.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+@admin_bp.get("/temple/")
+@admin_required(permission="view_dashboard")
+def temple_admin():
+    cfg = _load_temple_config()
+    layers = cfg["temple_reconstruction"]["layers"]
+
+    with SessionLocal() as session:
+        players = session.query(Player).order_by(Player.name).all()
+
+        # Count bricks per player
+        brick_rows = session.query(
+            TempleReconstructionBrick.player_id,
+            TempleReconstructionBrick.brick_key,
+        ).all()
+
+    # Build per-player brick sets
+    player_bricks: dict[int, set] = {}
+    for pid, bkey in brick_rows:
+        player_bricks.setdefault(pid, set()).add(bkey)
+
+    total_bricks = sum(len(layer["bricks"]) for layer in layers)
+
+    players_data = [
+        {
+            "id": p.id,
+            "name": p.name,
+            "placed": len(player_bricks.get(p.id, set())),
+            "total": total_bricks,
+        }
+        for p in players
+    ]
+
+    # Flatten brick index for the template
+    brick_index = {}
+    for layer in layers:
+        for brick in layer["bricks"]:
+            brick_index[brick["key"]] = {
+                "layer": layer["layer"],
+                "layer_name": layer["name_fr"],
+                "name_fr": brick.get("name_fr", brick["key"]),
+                "cost": brick["cost"],
+            }
+
+    return render_template(
+        "ADMIN_UI/temple_admin.html",
+        players=players_data,
+        layers=layers,
+        brick_index=brick_index,
+        total_bricks=total_bricks,
+    )
+
+
+@admin_bp.post("/temple/brick")
+@admin_required(permission="view_dashboard")
+def temple_admin_brick():
+    """Toggle (place or remove) a brick for a player without deducting resources."""
+    import datetime as dt
+
+    data = request.get_json(silent=True) or {}
+    player_id = data.get("player_id")
+    brick_key = (data.get("brick_key") or "").strip()
+    action = (data.get("action") or "place").strip()  # place | remove
+
+    if not player_id or not brick_key:
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    with SessionLocal() as session:
+        player = session.get(Player, int(player_id))
+        if not player:
+            return jsonify({"ok": False, "error": "player_not_found"}), 404
+
+        existing = (
+            session.query(TempleReconstructionBrick)
+            .filter_by(player_id=player.id, brick_key=brick_key)
+            .first()
+        )
+
+        if action == "place":
+            if existing:
+                return jsonify({"ok": True, "state": "already_placed"})
+            session.add(TempleReconstructionBrick(
+                player_id=player.id,
+                brick_key=brick_key,
+                placed_at=dt.datetime.utcnow(),
+            ))
+            session.commit()
+            return jsonify({"ok": True, "state": "placed"})
+        else:
+            if not existing:
+                return jsonify({"ok": True, "state": "already_removed"})
+            session.delete(existing)
+            session.commit()
+            return jsonify({"ok": True, "state": "removed"})
+
+
+@admin_bp.get("/temple/player/<int:player_id>/bricks")
+@admin_required(permission="view_dashboard")
+def temple_player_bricks(player_id: int):
+    """Return the set of placed brick keys for a player."""
+    with SessionLocal() as session:
+        rows = (
+            session.query(TempleReconstructionBrick)
+            .filter_by(player_id=player_id)
+            .all()
+        )
+        placed = [r.brick_key for r in rows]
+    return jsonify({"ok": True, "placed": placed})
+
+
+@admin_bp.get("/temple/player/<int:player_id>/stocks")
+@admin_required(permission="view_dashboard")
+def temple_player_stocks(player_id: int):
+    """Return all ResourceStock quantities for a player."""
+    with SessionLocal() as session:
+        rows = session.query(ResourceStock).filter_by(player_id=player_id).all()
+        stocks = {r.resource: float(r.qty or 0) for r in rows}
+    return jsonify({"ok": True, "stocks": stocks})
+
+
+@admin_bp.get("/temple/config")
+@admin_required(permission="view_dashboard")
+def temple_config():
+    """Editor for brick resource costs in temple_reconstruction.yml."""
+    cfg = _load_temple_config()
+    layers = cfg["temple_reconstruction"]["layers"]
+    # Collect all resource keys already used across all bricks (for autocomplete)
+    all_resources: set[str] = set()
+    for layer in layers:
+        for brick in layer["bricks"]:
+            all_resources.update(brick.get("cost", {}).keys())
+    # Also include resource keys from item_defs
+    import app.craft_defs as craft_defs
+    for key, meta in craft_defs.ITEM_DEFS.items():
+        if meta.get("kind") == "resource":
+            all_resources.add(key)
+    return render_template(
+        "ADMIN_UI/temple_config.html",
+        layers=layers,
+        all_resources=sorted(all_resources),
+    )
+
+
+@admin_bp.post("/temple/config/save-brick")
+@admin_required(permission="view_dashboard")
+def temple_config_save_brick():
+    """Update the cost of a single brick in temple_reconstruction.yml."""
+    import yaml as _yaml
+    from pathlib import Path
+
+    data = request.get_json(silent=True) or {}
+    brick_key = (data.get("brick_key") or "").strip()
+    new_cost   = data.get("cost")   # dict { resource_key: qty }
+
+    if not brick_key or not isinstance(new_cost, dict):
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    # Validate: all values must be positive numbers
+    cleaned: dict[str, int] = {}
+    for k, v in new_cost.items():
+        k = str(k).strip()
+        if not k:
+            continue
+        try:
+            qty = int(v)
+        except (TypeError, ValueError):
+            return jsonify({"ok": False, "error": f"invalid_qty_for_{k}"}), 400
+        if qty <= 0:
+            return jsonify({"ok": False, "error": f"qty_must_be_positive_for_{k}"}), 400
+        cleaned[k] = qty
+
+    if not cleaned:
+        return jsonify({"ok": False, "error": "cost_empty"}), 400
+
+    cfg_path = Path(__file__).resolve().parent.parent / "data" / "temple_reconstruction.yml"
+    with cfg_path.open("r", encoding="utf-8") as f:
+        cfg = _yaml.safe_load(f)
+
+    found = False
+    for layer in cfg["temple_reconstruction"]["layers"]:
+        for brick in layer["bricks"]:
+            if brick["key"] == brick_key:
+                brick["cost"] = cleaned
+                found = True
+                break
+        if found:
+            break
+
+    if not found:
+        return jsonify({"ok": False, "error": "brick_not_found"}), 404
+
+    with cfg_path.open("w", encoding="utf-8") as f:
+        _yaml.dump(cfg, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+    return jsonify({"ok": True, "brick_key": brick_key, "cost": cleaned})
+
+
+@admin_bp.post("/temple/give-brick-resources")
+@admin_required(permission="view_dashboard")
+def temple_give_brick_resources():
+    """Give a player the resources needed for a specific brick (or only the missing ones)."""
+    data = request.get_json(silent=True) or {}
+    player_id = data.get("player_id")
+    brick_key = (data.get("brick_key") or "").strip()
+    mode = (data.get("mode") or "missing").strip()  # "missing" | "all"
+
+    if not player_id or not brick_key:
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    # Load temple config to get brick costs
+    cfg = _load_temple_config()
+    cost: dict | None = None
+    for layer in cfg["temple_reconstruction"]["layers"]:
+        for brick in layer["bricks"]:
+            if brick["key"] == brick_key:
+                cost = brick["cost"]
+                break
+        if cost is not None:
+            break
+
+    if cost is None:
+        return jsonify({"ok": False, "error": "brick_not_found"}), 404
+
+    with SessionLocal() as session:
+        player = session.get(Player, int(player_id))
+        if not player:
+            return jsonify({"ok": False, "error": "player_not_found"}), 404
+
+        updated: dict[str, float] = {}
+        for res_key, needed in cost.items():
+            stock = session.query(ResourceStock).filter_by(
+                player_id=player.id, resource=res_key
+            ).first()
+            owned = float(stock.qty) if stock else 0.0
+
+            if mode == "missing":
+                to_give = max(0.0, needed - owned)
+            else:  # all
+                to_give = float(needed)
+
+            if to_give > 0:
+                if stock:
+                    stock.qty = owned + to_give
+                else:
+                    stock = ResourceStock(player_id=player.id, resource=res_key, qty=to_give)
+                    session.add(stock)
+                updated[res_key] = owned + to_give
+            else:
+                updated[res_key] = owned
+
+        session.commit()
+        return jsonify({"ok": True, "updated": updated})

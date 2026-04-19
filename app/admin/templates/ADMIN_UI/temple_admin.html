@@ -1,0 +1,628 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Temple — Admin Panel{% endblock %}
+{% block page_title %}🏛️ Temple — Reconstruction{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Top-level grid: player list | main area ── */
+.temple-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ── Player list ── */
+.player-list-card {
+  position: sticky; top: 1rem;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;
+}
+.player-list-header { padding: .65rem .9rem .5rem; border-bottom: 1px solid #f1f5f9; }
+.player-list-header input {
+  width: 100%; font-size: .8rem;
+  border: 1px solid #e2e8f0; border-radius: 7px; padding: .3rem .6rem; outline: none;
+}
+.player-list-header input:focus { border-color: #3b82f6; }
+.player-list-body { max-height: calc(100vh - 200px); overflow-y: auto; }
+.player-row {
+  display: flex; align-items: center; gap: .45rem;
+  padding: .45rem .9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; transition: background .1s;
+}
+.player-row:hover { background: #f8fafc; }
+.player-row.active { background: #eff6ff; }
+.player-row.active .p-name { color: #1d4ed8; font-weight: 700; }
+.p-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #e0e7ff; color: #4338ca; font-size: .68rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.p-name { font-size: .82rem; }
+.p-progress { font-size: .68rem; color: #94a3b8; }
+.progress-mini { height: 3px; background: #e2e8f0; border-radius: 99px; margin-top: 2px; overflow: hidden; }
+.progress-mini-fill { height: 100%; background: #f59e0b; border-radius: 99px; }
+
+/* ── Main panel (pyramid + detail) ── */
+.temple-main {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;
+}
+.temple-header {
+  padding: .8rem 1.1rem .7rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+}
+.temple-header-title { font-weight: 700; font-size: .95rem; color: #1e293b; }
+.temple-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+.temple-empty { padding: 3rem; text-align: center; color: #94a3b8; font-size: .9rem; }
+
+/* Stats bar */
+.temple-stats {
+  padding: .5rem 1.1rem;
+  background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; gap: 1.25rem; font-size: .8rem; flex-wrap: wrap;
+}
+.stat-val { font-weight: 700; }
+
+/* Two-column body: pyramid left, detail right */
+.temple-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  min-height: 400px;
+}
+.pyramid-col {
+  padding: 1rem 1.1rem;
+  border-right: 1px solid #f1f5f9;
+  overflow-y: auto;
+}
+.detail-col {
+  padding: 1rem;
+  background: #fafafa;
+}
+
+/* ── Pyramid ── */
+.layer-block { margin-bottom: 1rem; }
+.layer-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; }
+.layer-name { font-weight: 700; font-size: .82rem; color: #1e293b; }
+.layer-badge {
+  font-size: .64rem; font-weight: 700; padding: .1rem .45rem; border-radius: 99px;
+  background: #f1f5f9; color: #64748b;
+}
+.layer-badge.complete { background: #d1fae5; color: #065f46; }
+.layer-badge.locked   { background: #fee2e2; color: #991b1b; }
+
+.brick-row { display: flex; gap: .4rem; flex-wrap: wrap; }
+.brick {
+  width: 48px; height: 48px; border-radius: 7px;
+  border: 2px solid #e2e8f0; background: #f8fafc;
+  cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: .55rem; color: #94a3b8; text-align: center;
+  transition: all .12s; padding: 2px; line-height: 1.2; user-select: none; position: relative;
+}
+.brick:hover:not(.locked)  { border-color: #3b82f6; background: #eff6ff; }
+.brick.placed              { background: #d1fae5; border-color: #34d399; color: #065f46; }
+.brick.selected            { border-color: #f59e0b !important; box-shadow: 0 0 0 2px #fde68a; background: #fffbeb !important; }
+.brick.locked              { cursor: not-allowed; opacity: .45; }
+.brick-icon  { font-size: 1rem; margin-bottom: 1px; }
+.brick-label { font-size: .55rem; }
+
+/* Legend */
+.pyramid-legend {
+  display: flex; gap: .75rem; margin-top: .75rem; font-size: .72rem; color: #64748b; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: .3rem; }
+.legend-dot  { width: 10px; height: 10px; border-radius: 2px; border: 2px solid; }
+.legend-dot.placed   { background: #d1fae5; border-color: #34d399; }
+.legend-dot.open     { background: #f8fafc; border-color: #e2e8f0; }
+.legend-dot.locked   { background: #f8fafc; border-color: #e2e8f0; opacity: .4; }
+.legend-dot.selected { background: #fffbeb; border-color: #f59e0b; }
+
+/* ── Detail panel ── */
+.detail-empty {
+  text-align: center; color: #94a3b8; font-size: .82rem; padding: 2rem 1rem;
+}
+.detail-title { font-weight: 700; font-size: .9rem; color: #1e293b; margin-bottom: .3rem; }
+.detail-layer { font-size: .72rem; color: #64748b; margin-bottom: .85rem; }
+.detail-status {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .75rem; font-weight: 600; padding: .25rem .6rem; border-radius: 99px; margin-bottom: .85rem;
+}
+.detail-status.placed  { background: #d1fae5; color: #065f46; }
+.detail-status.open    { background: #eff6ff; color: #1d4ed8; }
+.detail-status.locked  { background: #f1f5f9; color: #64748b; }
+
+/* Resource table */
+.res-table { width: 100%; border-collapse: collapse; font-size: .78rem; margin-bottom: .85rem; }
+.res-table th {
+  text-align: left; font-size: .66rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: #94a3b8; padding: .2rem .3rem .35rem; border-bottom: 1px solid #e2e8f0;
+}
+.res-table td { padding: .35rem .3rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+.res-table tr:last-child td { border-bottom: none; }
+.res-key { font-family: monospace; color: #475569; font-size: .72rem; }
+.res-needed { font-weight: 700; }
+.res-owned  { color: #16a34a; font-weight: 600; }
+.res-owned.short { color: #dc2626; }
+.res-missing { color: #dc2626; font-size: .72rem; }
+.give-btn {
+  font-size: .68rem; padding: .15rem .45rem; border-radius: 5px;
+  border: 1px solid #3b82f6; background: #eff6ff; color: #1d4ed8;
+  cursor: pointer; white-space: nowrap; transition: all .1s;
+}
+.give-btn:hover { background: #3b82f6; color: #fff; }
+.give-btn:disabled { opacity: .4; cursor: default; }
+.give-btn.give-all-btn {
+  background: #16a34a; border-color: #16a34a; color: #fff; font-size: .72rem; padding: .25rem .65rem;
+}
+.give-btn.give-all-btn:hover { background: #15803d; }
+
+.detail-actions { display: flex; flex-direction: column; gap: .4rem; margin-top: .1rem; }
+.btn-place  { background: #16a34a; border: none; color: #fff; border-radius: 7px; padding: .35rem .75rem; font-size: .8rem; cursor: pointer; }
+.btn-place:hover  { background: #15803d; }
+.btn-remove { background: #fff; border: 1px solid #dc2626; color: #dc2626; border-radius: 7px; padding: .35rem .75rem; font-size: .8rem; cursor: pointer; }
+.btn-remove:hover { background: #fef2f2; }
+
+.give-result {
+  font-size: .72rem; color: #16a34a; margin-top: .4rem; min-height: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<script>
+const LAYERS      = {{ layers      | tojson }};
+const BRICK_INDEX = {{ brick_index | tojson }};
+const TOTAL_BRICKS = {{ total_bricks }};
+</script>
+
+<div class="temple-layout">
+
+  <!-- ── Player list ── -->
+  <div class="player-list-card">
+    <div class="player-list-header">
+      <input type="text" id="playerSearch" placeholder="🔍 Rechercher…">
+    </div>
+    <div class="player-list-body" id="playerList">
+      {% for p in players %}
+      <div class="player-row" data-player-id="{{ p.id }}" data-player-name="{{ p.name }}"
+           data-placed="{{ p.placed }}"
+           onclick="selectPlayer({{ p.id }}, '{{ p.name }}')">
+        <div class="p-avatar">{{ p.name[0]|upper }}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="p-name">{{ p.name }}</div>
+          <div class="p-progress">{{ p.placed }}/{{ p.total }} briques</div>
+          <div class="progress-mini">
+            <div class="progress-mini-fill" style="width:{{ (p.placed/p.total*100)|round(1) if p.total else 0 }}%"></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── Main panel ── -->
+  <div class="temple-main" id="templeMain">
+
+    <div class="temple-header">
+      <span class="temple-header-title" id="panelTitle">Temple</span>
+      <div class="temple-actions" style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
+        <a href="{{ url_for('admin.temple_config') }}" class="btn btn-sm btn-outline-primary">⚙️ Config des coûts</a>
+        <button class="btn btn-sm btn-outline-secondary" id="btnGiveAllMissing" style="display:none;" onclick="giveAllMissing()">🎁 Res. manquantes</button>
+        <button class="btn btn-sm btn-success"           id="btnPlaceAll"       style="display:none;" onclick="placeAll()">✅ Tout compléter</button>
+        <button class="btn btn-sm btn-outline-danger"    id="btnResetAll"       style="display:none;" onclick="resetAll()">🗑️ Reset</button>
+      </div>
+    </div>
+
+    <div id="templeEmpty" class="temple-empty">
+      👈 Sélectionnez un joueur pour voir son avancement.
+    </div>
+
+    <div id="templeContent" style="display:none;">
+      <!-- Stats -->
+      <div class="temple-stats">
+        <div>🧱 <span class="stat-val" id="statPlaced">0</span> / <span>{{ total_bricks }}</span> briques posées</div>
+        <div>📊 <span class="stat-val" id="statPct">0%</span></div>
+        <div id="statComplete" style="display:none;color:#065f46;font-weight:700;">🏆 Temple complété !</div>
+      </div>
+
+      <!-- Pyramid + Detail -->
+      <div class="temple-body">
+
+        <!-- Pyramid -->
+        <div class="pyramid-col">
+          <div id="pyramidWrap"></div>
+          <div class="pyramid-legend">
+            <div class="legend-item"><div class="legend-dot placed"></div> Posée</div>
+            <div class="legend-item"><div class="legend-dot open"></div> Disponible</div>
+            <div class="legend-item"><div class="legend-dot locked"></div> Verrouillée</div>
+            <div class="legend-item"><div class="legend-dot selected"></div> Sélectionnée</div>
+          </div>
+        </div>
+
+        <!-- Brick detail -->
+        <div class="detail-col" id="detailCol">
+          <div class="detail-empty" id="detailEmpty">
+            ← Cliquez sur une brique pour voir le détail et gérer ses ressources.
+          </div>
+          <div id="detailContent" style="display:none;">
+            <div class="detail-title" id="detailTitle"></div>
+            <div class="detail-layer" id="detailLayer"></div>
+            <div class="detail-status" id="detailStatus"></div>
+
+            <table class="res-table">
+              <thead>
+                <tr>
+                  <th>Ressource</th>
+                  <th>Requis</th>
+                  <th>Stock</th>
+                  <th>Manque</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="resTableBody"></tbody>
+            </table>
+
+            <div id="giveResult" class="give-result"></div>
+
+            <div class="detail-actions">
+              <button class="give-btn give-all-btn" id="btnGiveMissing" onclick="giveBrickResources('missing')">
+                🎁 Donner les ressources manquantes
+              </button>
+              <button class="give-btn give-all-btn" style="background:#7c3aed;border-color:#7c3aed;" id="btnGiveAll" onclick="giveBrickResources('all')">
+                💰 Donner toutes les ressources requises
+              </button>
+              <div style="height:.25rem;"></div>
+              <button class="btn-place"  id="btnPlace"  onclick="toggleSelected('place')"  style="display:none;">✅ Poser cette brique (gratuit)</button>
+              <button class="btn-remove" id="btnRemove" onclick="toggleSelected('remove')" style="display:none;">🗑️ Retirer cette brique</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentPlayerId   = null;
+let currentPlayerName = null;
+let placedBricks = new Set();
+let playerStocks = {};          // { resource_key: qty }
+let selectedBrickKey = null;
+let layerStatus = {};
+
+// ── Player list filter ─────────────────────────────────────────────────────
+document.getElementById('playerSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.player-row').forEach(row =>
+    row.style.display = row.dataset.playerName.toLowerCase().includes(q) ? '' : 'none'
+  );
+});
+
+// ── Select player ──────────────────────────────────────────────────────────
+async function selectPlayer(id, name) {
+  currentPlayerId   = id;
+  currentPlayerName = name;
+
+  document.querySelectorAll('.player-row').forEach(r => r.classList.remove('active'));
+  document.querySelector(`.player-row[data-player-id="${id}"]`).classList.add('active');
+
+  document.getElementById('panelTitle').textContent = `Temple — ${name}`;
+  ['btnGiveAllMissing','btnPlaceAll','btnResetAll'].forEach(id =>
+    document.getElementById(id).style.display = ''
+  );
+  document.getElementById('templeEmpty').style.display  = 'none';
+  document.getElementById('templeContent').style.display = '';
+
+  // Fetch bricks + stocks in parallel
+  const [bricksResp, stocksResp] = await Promise.all([
+    fetch(`/admin/temple/player/${id}/bricks`).then(r => r.json()),
+    fetch(`/admin/temple/player/${id}/stocks`).then(r => r.json()),
+  ]);
+
+  placedBricks = new Set(bricksResp.placed || []);
+  playerStocks = stocksResp.stocks || {};
+
+  selectedBrickKey = null;
+  clearDetail();
+  renderPyramid();
+  updateStats();
+}
+
+// ── Compute layer unlock status ────────────────────────────────────────────
+function computeLayerStatus() {
+  layerStatus = {};
+  for (const layer of LAYERS) {
+    layerStatus[layer.layer] = layer.bricks.every(b => placedBricks.has(b.key));
+  }
+}
+
+// ── Render pyramid ─────────────────────────────────────────────────────────
+function renderPyramid() {
+  computeLayerStatus();
+  const wrap = document.getElementById('pyramidWrap');
+  wrap.innerHTML = '';
+
+  const sorted = [...LAYERS].sort((a, b) => b.layer - a.layer);
+  for (const layer of sorted) {
+    const complete = layerStatus[layer.layer];
+    const req = layer.required_layer;
+    const unlocked = (req === null || req === undefined) || layerStatus[req];
+    const placedCount = layer.bricks.filter(b => placedBricks.has(b.key)).length;
+
+    const badgeClass = complete ? 'complete' : (!unlocked ? 'locked' : '');
+    const badgeText  = complete ? '✓ Complète' : (!unlocked ? '🔒 Verrouillée' : `${placedCount}/${layer.bricks.length}`);
+
+    const block = document.createElement('div');
+    block.className = 'layer-block';
+    block.innerHTML = `
+      <div class="layer-header">
+        <span class="layer-name">${layer.name_fr}</span>
+        <span class="layer-badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="brick-row"></div>`;
+    wrap.appendChild(block);
+
+    const row = block.querySelector('.brick-row');
+    for (const brick of layer.bricks) {
+      const isPlaced   = placedBricks.has(brick.key);
+      const isLocked   = !unlocked;
+      const isSelected = selectedBrickKey === brick.key;
+
+      const div = document.createElement('div');
+      div.className = `brick${isPlaced ? ' placed' : ''}${isLocked ? ' locked' : ''}${isSelected ? ' selected' : ''}`;
+      div.dataset.brickKey = brick.key;
+      div.innerHTML = `
+        <div class="brick-icon">${isPlaced ? '✅' : isLocked ? '🔒' : '⬜'}</div>
+        <div class="brick-label">${(brick.name_fr || brick.key).replace('N°','#')}</div>`;
+
+      if (!isLocked) {
+        div.onclick = () => selectBrick(brick, layer, isPlaced, isLocked);
+      }
+      row.appendChild(div);
+    }
+  }
+}
+
+// ── Select a brick → show detail ───────────────────────────────────────────
+function selectBrick(brick, layer, isPlaced, isLocked) {
+  selectedBrickKey = brick.key;
+
+  // Highlight selected
+  document.querySelectorAll('.brick').forEach(el => {
+    el.classList.toggle('selected', el.dataset.brickKey === brick.key);
+  });
+
+  // Show detail panel
+  document.getElementById('detailEmpty').style.display   = 'none';
+  document.getElementById('detailContent').style.display = '';
+
+  document.getElementById('detailTitle').textContent = brick.name_fr || brick.key;
+  document.getElementById('detailLayer').textContent = `Couche ${layer.layer} — ${layer.name_fr}`;
+
+  const statusEl = document.getElementById('detailStatus');
+  if (isPlaced) {
+    statusEl.className = 'detail-status placed';
+    statusEl.textContent = '✅ Posée';
+  } else if (isLocked) {
+    statusEl.className = 'detail-status locked';
+    statusEl.textContent = '🔒 Verrouillée';
+  } else {
+    statusEl.className = 'detail-status open';
+    statusEl.textContent = '⬜ Non posée';
+  }
+
+  // Resource table
+  renderResTable(brick.cost || {});
+
+  // Place/remove buttons
+  document.getElementById('btnPlace').style.display  = (!isPlaced && !isLocked) ? '' : 'none';
+  document.getElementById('btnRemove').style.display = isPlaced ? '' : 'none';
+
+  document.getElementById('btnGiveMissing').disabled = isPlaced;
+  document.getElementById('btnGiveAll').disabled     = false;
+  document.getElementById('giveResult').textContent  = '';
+}
+
+function renderResTable(cost) {
+  const tbody = document.getElementById('resTableBody');
+  tbody.innerHTML = '';
+
+  let anyMissing = false;
+  for (const [resKey, needed] of Object.entries(cost)) {
+    const owned   = playerStocks[resKey] || 0;
+    const missing = Math.max(0, needed - owned);
+    if (missing > 0) anyMissing = true;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="res-key">${resKey}</td>
+      <td class="res-needed">${needed}</td>
+      <td class="res-owned ${owned < needed ? 'short' : ''}">${Math.floor(owned)}</td>
+      <td class="res-missing">${missing > 0 ? '-' + missing : '—'}</td>
+      <td>
+        <button class="give-btn" ${missing <= 0 ? 'disabled' : ''}
+                onclick="giveOneResource('${resKey}', ${missing})">
+          +${missing}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('btnGiveMissing').disabled = !anyMissing;
+}
+
+// ── Give a single resource ─────────────────────────────────────────────────
+async function giveOneResource(resKey, qty) {
+  if (!currentPlayerId || qty <= 0) return;
+  const r = await fetch('/admin/giveaway/apply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_id: currentPlayerId, type: 'resource', key: resKey, qty, action: 'give' }),
+  });
+  const d = await r.json();
+  if (d.ok) {
+    playerStocks[resKey] = d.qty;
+    // Re-render just the table (brick not changed)
+    const brick = BRICK_INDEX[selectedBrickKey];
+    if (brick) renderResTable(brick.cost || {});
+    showResult(`+${qty} ${resKey} ✓`);
+  } else {
+    showResult(`Erreur : ${d.error}`, true);
+  }
+}
+
+// ── Give resources for selected brick ─────────────────────────────────────
+async function giveBrickResources(mode) {
+  if (!currentPlayerId || !selectedBrickKey) return;
+
+  const r = await fetch('/admin/temple/give-brick-resources', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_id: currentPlayerId, brick_key: selectedBrickKey, mode }),
+  });
+  const d = await r.json();
+  if (d.ok) {
+    Object.assign(playerStocks, d.updated);
+    const brick = BRICK_INDEX[selectedBrickKey];
+    if (brick) renderResTable(brick.cost || {});
+    const label = mode === 'missing' ? 'Ressources manquantes données ✓' : 'Toutes les ressources données ✓';
+    showResult(label);
+  } else {
+    showResult(`Erreur : ${d.error}`, true);
+  }
+}
+
+// ── Give missing resources for ALL unplaced bricks ────────────────────────
+async function giveAllMissing() {
+  if (!currentPlayerId) return;
+  const unplaced = [];
+  for (const layer of LAYERS) {
+    for (const brick of layer.bricks) {
+      if (!placedBricks.has(brick.key)) unplaced.push(brick.key);
+    }
+  }
+  if (!unplaced.length) { alert('Toutes les briques sont déjà posées !'); return; }
+  if (!confirm(`Donner les ressources manquantes pour ${unplaced.length} brique(s) non posée(s) ?`)) return;
+
+  for (const brickKey of unplaced) {
+    const r = await fetch('/admin/temple/give-brick-resources', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: currentPlayerId, brick_key: brickKey, mode: 'missing' }),
+    });
+    const d = await r.json();
+    if (d.ok) Object.assign(playerStocks, d.updated);
+  }
+  // Refresh detail if a brick was selected
+  if (selectedBrickKey) {
+    const brick = BRICK_INDEX[selectedBrickKey];
+    if (brick) renderResTable(brick.cost || {});
+  }
+  showResult(`Ressources données pour ${unplaced.length} brique(s) ✓`);
+}
+
+// ── Toggle selected brick (place/remove) ──────────────────────────────────
+async function toggleSelected(action) {
+  if (!currentPlayerId || !selectedBrickKey) return;
+
+  const r = await fetch('/admin/temple/brick', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ player_id: currentPlayerId, brick_key: selectedBrickKey, action }),
+  });
+  const d = await r.json();
+  if (!d.ok) { alert('Erreur : ' + d.error); return; }
+
+  if (action === 'place') placedBricks.add(selectedBrickKey);
+  else placedBricks.delete(selectedBrickKey);
+
+  renderPyramid();
+  updateStats();
+  updatePlayerRow();
+
+  // Refresh detail panel for the same brick
+  for (const layer of LAYERS) {
+    for (const brick of layer.bricks) {
+      if (brick.key === selectedBrickKey) {
+        selectBrick(brick, layer, placedBricks.has(brick.key), false);
+        return;
+      }
+    }
+  }
+}
+
+// ── Bulk actions ───────────────────────────────────────────────────────────
+async function placeAll() {
+  if (!currentPlayerId) return;
+  if (!confirm(`Compléter toutes les briques du temple pour ${currentPlayerName} ?`)) return;
+
+  for (const layer of LAYERS) {
+    for (const brick of layer.bricks) {
+      if (!placedBricks.has(brick.key)) {
+        await fetch('/admin/temple/brick', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ player_id: currentPlayerId, brick_key: brick.key, action: 'place' }),
+        });
+        placedBricks.add(brick.key);
+      }
+    }
+  }
+  renderPyramid();
+  updateStats();
+  updatePlayerRow();
+  clearDetail();
+}
+
+async function resetAll() {
+  if (!currentPlayerId) return;
+  if (!confirm(`Supprimer TOUTES les briques de ${currentPlayerName} ?`)) return;
+
+  for (const brickKey of [...placedBricks]) {
+    await fetch('/admin/temple/brick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: currentPlayerId, brick_key: brickKey, action: 'remove' }),
+    });
+    placedBricks.delete(brickKey);
+  }
+  renderPyramid();
+  updateStats();
+  updatePlayerRow();
+  clearDetail();
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────────
+function updateStats() {
+  const n   = placedBricks.size;
+  const pct = TOTAL_BRICKS > 0 ? Math.round(n / TOTAL_BRICKS * 100) : 0;
+  document.getElementById('statPlaced').textContent = n;
+  document.getElementById('statPct').textContent    = pct + '%';
+  document.getElementById('statComplete').style.display = n >= TOTAL_BRICKS ? '' : 'none';
+}
+
+function updatePlayerRow() {
+  const row = document.querySelector(`.player-row[data-player-id="${currentPlayerId}"]`);
+  if (!row) return;
+  const n = placedBricks.size;
+  row.querySelector('.p-progress').textContent = `${n}/${TOTAL_BRICKS} briques`;
+  row.querySelector('.progress-mini-fill').style.width =
+    (TOTAL_BRICKS > 0 ? Math.round(n / TOTAL_BRICKS * 100) : 0) + '%';
+}
+
+function clearDetail() {
+  selectedBrickKey = null;
+  document.getElementById('detailEmpty').style.display   = '';
+  document.getElementById('detailContent').style.display = 'none';
+}
+
+function showResult(msg, isErr = false) {
+  const el = document.getElementById('giveResult');
+  if (!el) return;
+  el.textContent  = msg;
+  el.style.color  = isErr ? '#dc2626' : '#16a34a';
+  setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3000);
+}
+</script>
+{% endblock %}
