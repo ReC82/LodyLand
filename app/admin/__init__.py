@@ -2255,3 +2255,119 @@ def temple_give_brick_resources():
 
         session.commit()
         return jsonify({"ok": True, "updated": updated})
+
+
+# =============================================================================
+# SUPPORT TICKETS ADMIN
+# =============================================================================
+
+@admin_bp.get("/tickets/")
+@admin_required
+def tickets_list():
+    from app.models import SupportTicket, TICKET_CATEGORIES, TICKET_STATUSES
+
+    with SessionLocal() as s:
+        q        = (request.args.get("q") or "").strip()
+        category = (request.args.get("category") or "").strip()
+        status   = (request.args.get("status") or "").strip()
+        page     = max(1, int(request.args.get("page") or 1))
+        per_page = 25
+
+        from sqlalchemy import or_
+        query = s.query(SupportTicket)
+
+        if category and category in TICKET_CATEGORIES:
+            query = query.filter(SupportTicket.category == category)
+        if status and status in TICKET_STATUSES:
+            query = query.filter(SupportTicket.status == status)
+        if q:
+            like = f"%{q}%"
+            query = query.filter(
+                or_(
+                    SupportTicket.title.ilike(like),
+                    SupportTicket.description.ilike(like),
+                )
+            )
+
+        total   = query.count()
+        tickets = (
+            query.order_by(SupportTicket.created_at.desc())
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+            .all()
+        )
+
+        player_ids = list({t.player_id for t in tickets})
+        names = {
+            p.id: p.name
+            for p in s.query(Player).filter(Player.id.in_(player_ids)).all()
+        } if player_ids else {}
+
+        # Count per status for badge summary
+        from sqlalchemy import func
+        counts = dict(
+            s.query(SupportTicket.status, func.count())
+            .group_by(SupportTicket.status)
+            .all()
+        )
+
+        pages = max(1, (total + per_page - 1) // per_page)
+
+        return render_template(
+            "ADMIN_UI/tickets.html",
+            tickets=tickets,
+            names=names,
+            total=total,
+            page=page,
+            pages=pages,
+            per_page=per_page,
+            q=q,
+            category_filter=category,
+            status_filter=status,
+            categories=TICKET_CATEGORIES,
+            statuses=TICKET_STATUSES,
+            counts=counts,
+        )
+
+
+@admin_bp.get("/tickets/<int:ticket_id>")
+@admin_required
+def ticket_detail(ticket_id: int):
+    from app.models import SupportTicket, TICKET_CATEGORIES, TICKET_STATUSES
+    with SessionLocal() as s:
+        t = s.get(SupportTicket, ticket_id)
+        if not t:
+            abort(404)
+        player_name = t.player.name if t.player else "—"
+        return render_template(
+            "ADMIN_UI/ticket_detail.html",
+            ticket=t,
+            player_name=player_name,
+            statuses=TICKET_STATUSES,
+        )
+
+
+@admin_bp.post("/tickets/<int:ticket_id>/update")
+@admin_required
+def ticket_update(ticket_id: int):
+    from app.models import SupportTicket, TICKET_STATUSES
+    with SessionLocal() as s:
+        t = s.get(SupportTicket, ticket_id)
+        if not t:
+            return jsonify({"error": "not_found"}), 404
+
+        data   = request.get_json(silent=True) or {}
+        status = (data.get("status") or "").strip()
+        note   = (data.get("admin_note") or "").strip() or None
+
+        me = get_current_player(s)
+        if status and status in TICKET_STATUSES:
+            t.status = status
+        if note is not None:
+            t.admin_note = note
+        if me:
+            t.handled_by = me.id
+        import datetime as _dt
+        t.updated_at = _dt.datetime.utcnow()
+        s.commit()
+        return jsonify({"ok": True})
