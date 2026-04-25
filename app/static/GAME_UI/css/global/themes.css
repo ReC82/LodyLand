@@ -395,9 +395,18 @@ body.theme-light .gh-xp-bar {
   border: 1px solid #000000 !important;
 }
 body.theme-light .gh-xp-fill   { background: #000000 !important; }
-body.theme-light #hud-level,
-body.theme-light #hud-xp-current,
-body.theme-light #hud-xp-next  { color: #000000 !important; }
+/* Level number only — XP spans are now inside the dark tooltip, don't force black there */
+body.theme-light #hud-level    { color: #000000 !important; }
+
+/* Tooltip XP ring : always dark background + light text regardless of theme */
+body.theme-light .xp-ring-tooltip {
+  background: #0f172a !important;
+  border-color: rgba(74, 222, 128, 0.4) !important;
+  color: #f1f5f9 !important;
+}
+body.theme-light .xp-ring-tooltip span {
+  color: #4ade80 !important;
+}
 
 /* ── HUD : shards & essence ──────────────────────────────────── */
 body.theme-light .gh-currency {
