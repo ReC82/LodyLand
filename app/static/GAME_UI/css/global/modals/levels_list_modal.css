@@ -39,6 +39,66 @@
   opacity: 0.85;
 }
 
+/* ── Résumé XP courant (haut de la modale) ──────────────── */
+.levels-xp-summary {
+  margin-bottom: 1rem;
+}
+
+.levels-xp-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.levels-xp-summary-level {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4ade80;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.levels-xp-summary-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  overflow: hidden;
+}
+
+.levels-xp-summary-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  transition: width 0.4s ease;
+}
+
+.levels-xp-summary-values {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Light theme overrides */
+body.theme-light .levels-xp-summary-bar {
+  background: #ffffff;
+  border-color: #000000;
+}
+body.theme-light .levels-xp-summary-level  { color: #16a34a; }
+body.theme-light .levels-xp-summary-values { color: #000000; }
+body.theme-light .levels-xp-summary-track  { background: #e0e0e0; border-color: #000; }
+body.theme-light .levels-xp-summary-fill   { background: #000000; }
+
+/* ─────────────────────────────────────────────────────────── */
 .ll-modal {
   position: fixed;
   inset: 0;

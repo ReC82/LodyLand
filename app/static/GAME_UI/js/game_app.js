@@ -1143,36 +1143,46 @@ async function resetCardDev(cardKey) {
 
 function updatePlayerHUD(playerData) {
   // playerData attendu: { level, xp, xp_next, shards, essence, land_name }
-  const levelEl = document.getElementById("hud-level");
+  if (!playerData) return;
+
+  const safeCur  = Math.round(Number(playerData.xp      ?? 0));
+  const safeNext = Math.round(Number(playerData.xp_next ?? 100));
+  const ratio    = safeNext > 0 ? Math.max(0, Math.min(1, safeCur / safeNext)) : 0;
+  const lvl      = playerData.level ?? 0;
+
+  // ── Desktop: barre horizontale ──────────────────────────────
+  const levelEl  = document.getElementById("hud-level");
   const xpFillEl = document.getElementById("hud-xp-fill");
-  const xpCurEl = document.getElementById("hud-xp-current");
+  const xpCurEl  = document.getElementById("hud-xp-current");
   const xpNextEl = document.getElementById("hud-xp-next");
-  const shardsEl = document.getElementById("hud-shards");
+
+  if (levelEl)  levelEl.textContent  = lvl;
+  if (xpCurEl)  xpCurEl.textContent  = safeCur;
+  if (xpNextEl) xpNextEl.textContent = safeNext;
+  if (xpFillEl) xpFillEl.style.width = `${ratio * 100}%`;
+
+  // ── Mobile/tablette: anneau circulaire ───────────────────────
+  const levelRingEl   = document.getElementById("hud-level-ring");
+  const xpCurRingEl   = document.getElementById("hud-xp-current-ring");
+  const xpNextRingEl  = document.getElementById("hud-xp-next-ring");
+  const xpRingEl      = document.getElementById("hud-xp-ring");
+
+  if (levelRingEl)  levelRingEl.textContent  = lvl;
+  if (xpCurRingEl)  xpCurRingEl.textContent  = safeCur;
+  if (xpNextRingEl) xpNextRingEl.textContent = safeNext;
+  if (xpRingEl) {
+    const circumference = 106.81; // 2π × 17
+    xpRingEl.style.strokeDashoffset = `${circumference * (1 - ratio)}`;
+  }
+
+  // ── Commun ───────────────────────────────────────────────────
+  const shardsEl  = document.getElementById("hud-shards");
   const essenceEl = document.getElementById("hud-essence");
   const landNameEl = document.getElementById("gh-land-name");
 
-  if (!playerData) return;
-
-  // Fix flottants type 424.50000000001
-  const curXp = Number(playerData.xp ?? 0);
-  const nextXp = Number(playerData.xp_next ?? 100);
-
-  const safeCur = Math.round(curXp);
-  const safeNext = Math.round(nextXp);
-
-  if (levelEl) levelEl.textContent = playerData.level ?? 0;
-  if (xpCurEl) xpCurEl.textContent = safeCur;
-  if (xpNextEl) xpNextEl.textContent = safeNext;
-  if (shardsEl) shardsEl.textContent = playerData.shards ?? 0;
-  if (essenceEl) essenceEl.textContent = playerData.essence ?? 0;
+  if (shardsEl)   shardsEl.textContent   = playerData.shards    ?? 0;
+  if (essenceEl)  essenceEl.textContent  = playerData.essence   ?? 0;
   if (landNameEl) landNameEl.textContent = playerData.land_name || "";
-
-  if (xpFillEl) {
-    const cur = playerData.xp ?? 0;
-    const next = playerData.xp_next ?? 100;
-    const ratio = next > 0 ? Math.max(0, Math.min(1, cur / next)) : 0;
-    xpFillEl.style.width = `${ratio * 100}%`;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1676,14 +1686,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ---------------------------------------------------------------------------
 
 function initLevelsUI() {
-  const trigger = $("hud-level-zone");
-  const modal = $("levelsModal");
+  const trigger     = $("hud-level-zone");
+  const triggerRing = $("hud-level-zone-ring");
+  const modal    = $("levelsModal");
   const closeBtn = $("levelsModalClose");
   const backdrop = $("levelsModalBackdrop");
 
-  if (trigger) {
-    trigger.addEventListener("click", openLevelsModal);
-  }
+  if (trigger)     trigger.addEventListener("click", openLevelsModal);
+  if (triggerRing) triggerRing.addEventListener("click", openLevelsModal);
 
   const close = () => {
     if (modal) modal.classList.remove("is-open");
@@ -1709,6 +1719,32 @@ async function openLevelsModal() {
   }
 
   const levels = r.data || [];
+
+  // Résumé XP en haut de la modale — utilise xp_max du niveau courant (données API)
+  const summaryEl = $("levelsXpSummary");
+  if (summaryEl && currentPlayer) {
+    const lvl     = currentPlayer.level ?? 0;
+    const cur     = Math.round(currentPlayer.xp ?? 0);
+
+    // Cherche le niveau courant dans les données pour récupérer xp_min / xp_max réels
+    const curLvlData = levels.find(l => Number(l.level) === Number(lvl));
+    const xpMin = curLvlData ? (curLvlData.xp_min ?? 0) : 0;
+    const xpMax = curLvlData ? (curLvlData.xp_max ?? curLvlData.x_max ?? 0) : 0;
+
+    const range = xpMax - xpMin;
+    const pct   = range > 0 ? Math.max(0, Math.min(100, ((cur - xpMin) / range) * 100)) : 0;
+
+    summaryEl.innerHTML = `
+      <div class="levels-xp-summary-bar">
+        <span class="levels-xp-summary-level">Niv. ${lvl}</span>
+        <div class="levels-xp-summary-track">
+          <div class="levels-xp-summary-fill" style="width:${pct}%"></div>
+        </div>
+        <span class="levels-xp-summary-values">${cur} / ${xpMax} XP</span>
+      </div>
+    `;
+  }
+
   renderLevelsList(levels);
   modal.classList.add("is-open");
 }

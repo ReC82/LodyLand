@@ -107,12 +107,14 @@
 
   <body class="game-body theme-{{ current_theme|default('default') }} {% block body_class %}{% endblock %}">
   {% from 'macros/currency_macros.html' import coin_icon, diam_icon %}
-    <!-- Full-width beta banner (mainly for tablet/mobile) -->
-    <div class="beta-banner">
-      <span class="beta-banner-dot"></span>
-      <span class="beta-banner-text">
-        {{ t("base.beta_banner") }}
-      </span>
+    <!-- Full-width beta banner (tablet/mobile) — scrolling marquee -->
+    <div class="beta-banner" aria-label="{{ t('base.beta_banner') }}" role="marquee">
+      <div class="beta-banner-track">
+        <span class="beta-banner-dot"></span>
+        <span class="beta-banner-text">{{ t("base.beta_banner") }}</span>
+        <span class="beta-banner-dot" aria-hidden="true"></span>
+        <span class="beta-banner-text" aria-hidden="true">{{ t("base.beta_banner") }}</span>
+      </div>
     </div>
 
     <!-- HUD joueur -->
@@ -134,10 +136,12 @@
 
       <!-- CENTRE : zone niveau / XP -->
       <div class="gh-center">
+
+        <!-- Desktop (>992px) : barre horizontale classique -->
         <button
           id="hud-level-zone"
           type="button"
-          class="gh-level-zone"
+          class="gh-level-zone gh-level-zone--bar"
           title="{{ t('base.level_zone.title') }}"
         >
           <div class="gh-xp-label">
@@ -151,6 +155,24 @@
             <span id="hud-xp-next">100</span>
           </div>
         </button>
+
+        <!-- Mobile / tablette (≤992px) : anneau circulaire -->
+        <button
+          id="hud-level-zone-ring"
+          type="button"
+          class="gh-level-zone gh-level-zone--ring"
+          title="{{ t('base.level_zone.title') }}"
+        >
+          <svg class="xp-ring" viewBox="0 0 44 44" aria-hidden="true">
+            <circle class="xp-ring-bg"   cx="22" cy="22" r="17"/>
+            <circle class="xp-ring-fill" cx="22" cy="22" r="17" id="hud-xp-ring"/>
+          </svg>
+          <span class="xp-ring-level" id="hud-level-ring">0</span>
+          <div class="xp-ring-tooltip">
+            <span id="hud-xp-current-ring">0</span> / <span id="hud-xp-next-ring">100</span> XP
+          </div>
+        </button>
+
       </div>
 
       <div class="gh-right">
@@ -338,6 +360,8 @@
           <p class="small text-muted mb-2">
             {{ t("base.levels_modal.subtitle") }}
           </p>
+          <!-- Résumé XP courant — rempli par openLevelsModal() -->
+          <div id="levelsXpSummary" class="levels-xp-summary"></div>
           <div id="levelsModalBody" class="levels-modal-body">
             <!-- rempli par game_app.js -->
           </div>
