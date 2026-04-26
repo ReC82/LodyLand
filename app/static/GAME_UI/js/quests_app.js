@@ -322,6 +322,13 @@ async function QQ_claimQuest(questId) {
   // Show completion popup
   if (quest) QQ_showCompletionPopup(quest);
 
+  // Rich notification
+  if (quest && typeof window.GameNotif !== "undefined") {
+    const lang = document.documentElement.lang || "fr";
+    const title = (quest.title && (quest.title[lang] || quest.title.fr || quest.title)) || "Quête";
+    window.GameNotif.questComplete(title);
+  }
+
   // Trigger level-up modal if applicable
   if (data.level_up && typeof showLevelUpModal === "function") {
     setTimeout(() => showLevelUpModal(data.new_level, data.level_rewards || []), 800);
