@@ -67,6 +67,14 @@
     />
     <link
       rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/notifications.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='GAME_UI/css/global/tutorial.css') }}"
+    />
+    <link
+      rel="stylesheet"
       href="{{ url_for('static', filename='GAME_UI/css/global/modals/travel_modals.css') }}"
     />
     <link
@@ -685,6 +693,9 @@
       </div>
     </div>
 
+    <!-- Rich notification container -->
+    <div id="game-notifications" aria-live="polite" aria-label="Notifications"></div>
+
     <!-- Name Input Modal (shown after intro dialogue) -->
     <div id="nameInputModal" class="ll-modal" style="z-index: 1100;">
       <div class="ll-modal-backdrop"></div>
@@ -950,6 +961,8 @@
     <script src="{{ url_for('static', filename='GAME_UI/js/story_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/notebook_app.js') }}"></script>
     <script src="{{ url_for('static', filename='GAME_UI/js/support_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/notifications_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='GAME_UI/js/tutorial_app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
 
     <script>

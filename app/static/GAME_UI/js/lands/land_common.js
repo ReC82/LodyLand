@@ -538,6 +538,23 @@
           window.showLootToasts(data.loot);
         }
 
+        // First-resource notifications
+        if (Array.isArray(data.loot) && typeof window.GameNotif !== "undefined") {
+          const known = window._knownResourceKeys;
+          const isFirstEver = known instanceof Set && known.size === 0;
+          data.loot.forEach((entry) => {
+            const key = entry.resource;
+            if (key && known instanceof Set && !known.has(key)) {
+              known.add(key);
+              window.GameNotif.firstResource(key, entry.label || key, entry.icon || null, entry.final_amount ?? entry.base_amount ?? 1);
+            }
+          });
+          // Tutorial: first ever collect
+          if (isFirstEver && data.loot.length > 0 && typeof window.TutorialApp !== "undefined") {
+            window.TutorialApp.onFirstCollect();
+          }
+        }
+
         // Quest ready toasts
         if (
           Array.isArray(data.quests_ready) &&
@@ -575,13 +592,12 @@
             }
           }
 
-          // 2) Show level up modal
-          if (window.showLevelUpModal) {
-            const rewards = data.level_rewards || [];
-            window.showLevelUpModal(newLevel, rewards);
+          // 2) Level up modal + notifications (via central orchestrator)
+          if (typeof window.handleLevelUpFront === "function") {
+            window.handleLevelUpFront(oldLevel, Number(newLevel), data.level_rewards || []);
+          } else if (window.showLevelUpModal) {
+            window.showLevelUpModal(newLevel, data.level_rewards || []);
           }
-          // Do NOT call playNextStoryFromQueue here:
-          // this is handled in game_app.js when closing the modal.
         }
 
         // -----------------------------------------------------------

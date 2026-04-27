@@ -1,0 +1,170 @@
+/* ============================================================
+   GAME NOTIFICATIONS — rich toast system (top-right)
+   ============================================================ */
+
+#game-notifications {
+  position: fixed;
+  top: 70px;          /* below the HUD header */
+  right: 16px;
+  z-index: 4000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+}
+
+/* ---- Base notification card ---- */
+.game-notif {
+  background: #1a1d2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  pointer-events: all;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  position: relative;
+}
+
+.game-notif--visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.game-notif--leaving {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+/* ---- Left accent bar (type colours) ---- */
+.game-notif::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: 14px 0 0 14px;
+}
+.game-notif--level_up::before    { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+.game-notif--unlock::before      { background: linear-gradient(180deg, #818cf8, #6366f1); }
+.game-notif--first_resource::before { background: linear-gradient(180deg, #34d399, #10b981); }
+.game-notif--daily::before       { background: linear-gradient(180deg, #a78bfa, #7c3aed); }
+.game-notif--quest::before       { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+.game-notif--info::before        { background: linear-gradient(180deg, #94a3b8, #64748b); }
+
+/* ---- Inner layout ---- */
+.game-notif-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px 12px 18px;
+}
+
+.game-notif-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+}
+
+.game-notif-icon-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+}
+
+.game-notif-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-notif-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.game-notif-body {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Reward chips inside body */
+.game-notif-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.game-notif-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  color: #cbd5e1;
+}
+.game-notif-chip img {
+  width: 14px;
+  height: 14px;
+  image-rendering: pixelated;
+}
+
+.game-notif-close {
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: color 0.15s;
+}
+.game-notif-close:hover { color: #94a3b8; }
+
+/* ---- Progress bar ---- */
+.game-notif-bar-wrap {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+}
+.game-notif-bar {
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: inherit;
+  /* transition applied via JS after first paint */
+}
+
+/* ---- Type-specific title accent colours ---- */
+.game-notif--level_up    .game-notif-title { color: #fbbf24; }
+.game-notif--unlock      .game-notif-title { color: #a5b4fc; }
+.game-notif--first_resource .game-notif-title { color: #6ee7b7; }
+.game-notif--daily       .game-notif-title { color: #c4b5fd; }
+.game-notif--quest       .game-notif-title { color: #93c5fd; }
+
+/* ---- Mobile ---- */
+@media (max-width: 640px) {
+  #game-notifications {
+    right: 8px;
+    left: 8px;
+    width: auto;
+    top: 60px;
+  }
+}

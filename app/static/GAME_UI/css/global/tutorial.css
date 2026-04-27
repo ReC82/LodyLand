@@ -1,0 +1,183 @@
+/* ============================================================
+   TUTORIAL OVERLAY — spotlight + tooltip bubble
+   ============================================================ */
+
+/* ---- Overlay container (covers full screen) ---- */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3500;
+  pointer-events: none;   /* pass-through by default */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.tutorial-overlay--visible {
+  opacity: 1;
+}
+
+/* ---- Spotlight — a box-shadow "hole" in the dark ---- */
+.tutorial-spotlight {
+  position: fixed;
+  border-radius: 12px;
+  /* Huge spread = dark everything EXCEPT this box */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.68);
+  pointer-events: none;   /* click passes through to the actual element */
+  z-index: 3501;
+  transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+
+/* When there's no specific target (centered modal) */
+.tutorial-overlay--no-target {
+  background: rgba(0, 0, 0, 0.68);
+  pointer-events: all;
+}
+
+/* ---- Pulsing ring on target element ---- */
+@keyframes tutorial-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70%  { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+.tutorial-target-pulse {
+  animation: tutorial-pulse 1.5s ease-out infinite;
+  outline: 2px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 3px;
+  border-radius: 6px;
+  position: relative;
+  z-index: 3502 !important; /* must sit above spotlight box-shadow */
+}
+
+/* ---- Tooltip bubble ---- */
+.tutorial-bubble {
+  position: fixed;
+  z-index: 3503;
+  pointer-events: all;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  border-radius: 14px;
+  padding: 16px 18px;
+  max-width: 290px;
+  min-width: 200px;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(99, 102, 241, 0.15),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.tutorial-overlay--visible .tutorial-bubble {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Arrow/caret pointing toward target */
+.tutorial-bubble::after {
+  content: "";
+  position: absolute;
+  border: 8px solid transparent;
+}
+.tutorial-bubble--right::after {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: #1e293b;
+}
+.tutorial-bubble--left::after {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: #1e293b;
+}
+.tutorial-bubble--bottom::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: #1e293b;
+}
+.tutorial-bubble--top::after {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: #1e293b;
+}
+.tutorial-bubble--centered {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  max-width: 340px;
+}
+.tutorial-overlay--visible .tutorial-bubble--centered {
+  transform: translate(-50%, -50%) !important;
+}
+
+/* ---- Bubble content ---- */
+.tutorial-bubble-step {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6366f1;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tutorial-bubble-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.tutorial-bubble-text {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.tutorial-bubble-btn {
+  display: block;
+  width: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-align: center;
+}
+.tutorial-bubble-btn:hover { opacity: 0.88; }
+
+.tutorial-bubble-hint {
+  font-size: 0.75rem;
+  color: #6366f1;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.tutorial-bubble-skip {
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+  text-align: center;
+  text-decoration: underline;
+}
+.tutorial-bubble-skip:hover { color: #64748b; }
+
+/* ---- Mobile adjustments ---- */
+@media (max-width: 600px) {
+  .tutorial-bubble {
+    max-width: calc(100vw - 32px);
+    font-size: 0.8rem;
+  }
+}

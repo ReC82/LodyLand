@@ -136,6 +136,11 @@ async function claimDaily() {
       // Show animated modal
       showDailyModal(rewards, dayInCycle, weekMult, streak);
 
+      // Rich notification for daily chest
+      if (typeof window.GameNotif !== "undefined") {
+        window.GameNotif.dailyChest(rewards, streak.current ?? 1);
+      }
+
       // Build a short tooltip summary
       const shardsReward = rewards.filter(r => r.type === "shards").reduce((a, r) => a + r.amount, 0);
       tooltip.innerHTML =

@@ -18,9 +18,11 @@ let LEVEL_STORY_INDEX = {};     // { [level]: [story_events] }
 
 let storyQueue = [];            // file des story_events à afficher
 let storyIsPlaying = false;     // pour éviter de lancer 2 histoires en même temps
-let _seenStoryIds = new Set();  // story IDs déjà vus (chargés depuis /api/state)
-let pendingLevelUpModal = null; // { newLevel, rewards } — affiché après les stories
-let pendingNameModal = false;   // true si le modal de nom doit s'afficher après les stories
+let _seenStoryIds = new Set();    // story IDs déjà vus (chargés depuis /api/state)
+let pendingLevelUpModal = null;   // { newLevel, rewards } — affiché après les stories
+let pendingNameModal = false;     // true si le modal de nom doit s'afficher après les stories
+let _knownResourceKeys = new Set(); // ressources déjà vues (pour notif première récolte)
+window._knownResourceKeys = _knownResourceKeys; // expose for land_common.js
 
 // ============================================================
 // Feature flags (system_unlocks via /api/levels)
@@ -666,7 +668,7 @@ function renderGrid(tiles) {
 // ---------------------------------------------------------------------------
 // API calls
 // ---------------------------------------------------------------------------
-async function refreshInventory() {
+async function refreshInventory(isStartup = false) {
   const r = await http("GET", "/api/inventory");
   if (!r.ok) {
     console.error("inventory error", r);
@@ -674,6 +676,13 @@ async function refreshInventory() {
     return;
   }
   renderInventory(r.data);
+
+  // Populate known resource keys on first load (no new-resource notif at startup)
+  if (isStartup && Array.isArray(r.data)) {
+    r.data.forEach((item) => {
+      if (item.resource) _knownResourceKeys.add(item.resource);
+    });
+  }
 }
 
 async function refreshGrid() {
@@ -725,6 +734,31 @@ async function collectFromTile(tileId) {
     });
   }
 
+  // --- First-resource notifications ---
+  const loot = Array.isArray(data.loot) ? data.loot : [];
+  const isFirstEverCollect = _knownResourceKeys.size === 0;
+  loot.forEach((entry) => {
+    const key = entry.resource;
+    if (key && !_knownResourceKeys.has(key)) {
+      _knownResourceKeys.add(key);
+      if (typeof window.GameNotif !== "undefined") {
+        window.GameNotif.firstResource(
+          key,
+          entry.label || key,
+          entry.icon || null,
+          entry.final_amount ?? entry.base_amount ?? 1
+        );
+      }
+    }
+  });
+
+  // --- Tutorial: first collect ever ---
+  if (isFirstEverCollect && loot.length > 0) {
+    if (typeof window.TutorialApp !== "undefined") {
+      window.TutorialApp.onFirstCollect();
+    }
+  }
+
   await refreshInventory();
   await refreshGrid();
 }
@@ -771,9 +805,9 @@ async function startGame() {
   await loadStoryFlags();
   enqueueInitialStoriesOnLogin();
 
-  await refreshInventory();
+  await refreshInventory(true);
   await refreshGrid();
-  await loadCardShop(); 
+  await loadCardShop();
 }
 
 // ---------------------------------------------------------------------------
@@ -1334,6 +1368,11 @@ function showNameInputModal() {
 
     modal.classList.remove("is-open");
     confirm.removeEventListener("click", doConfirm);
+
+    // Start interactive tutorial after name is set
+    if (typeof window.TutorialApp !== "undefined") {
+      window.TutorialApp.startIntroSequence();
+    }
   };
 
   confirm.addEventListener("click", doConfirm);
@@ -1468,6 +1507,14 @@ function enqueueInitialStoriesOnLogin() {
   // Si l'intro a joué pour la première fois, demander le nom après
   if (introWasQueued) {
     pendingNameModal = true;
+    // Tutorial starts after name modal (triggered inside showNameInputModal's doConfirm)
+  } else if (storyQueue.length === 0) {
+    // Returning player: no intro queued — still show tutorial collect step if not done
+    setTimeout(() => {
+      if (typeof window.TutorialApp !== "undefined") {
+        window.TutorialApp.startIntroSequence();
+      }
+    }, 800);
   }
 
   // S'il y a au moins une story dans la file, on démarre
@@ -1562,6 +1609,15 @@ function handleStoryOnEnterLand(landKey) {
 function handleLevelUpFront(oldLevel, newLevel, levelRewards) {
   const rewards = levelRewards || [];
 
+  // Gather system_unlocks for this level (for notification)
+  const levelDef = (LEVEL_DEFS || []).find((d) => Number(d.level) === newLevel);
+  const unlocks  = Array.isArray(levelDef?.system_unlocks) ? levelDef.system_unlocks : [];
+
+  // --- Notification: level up ---
+  if (typeof window.GameNotif !== "undefined") {
+    window.GameNotif.levelUp(newLevel, rewards, unlocks);
+  }
+
   // 1) Stories de type "on_level_reached" (mises en file d'abord)
   if (typeof handleStoryAfterLevelUp === "function") {
     handleStoryAfterLevelUp(oldLevel, newLevel);
@@ -1575,10 +1631,15 @@ function handleLevelUpFront(oldLevel, newLevel, levelRewards) {
     pendingLevelUpModal = { newLevel, rewards };
     playNextStoryFromQueue();
   } else {
-    // Pas de stories → afficher directement
     if (typeof showLevelUpModal === "function") {
       showLevelUpModal(newLevel, rewards);
     }
+  }
+
+  // --- Tutorial milestones ---
+  if (typeof window.TutorialApp !== "undefined") {
+    if (newLevel === 1) window.TutorialApp.onLevel1Reached();
+    if (newLevel === 3) window.TutorialApp.onLevel3Reached();
   }
 }
 
@@ -1669,9 +1730,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 🔥 Stories "on_first_login" possibles (si jamais pas encore vues)
     enqueueInitialStoriesOnLogin();
 
-    await refreshInventory();
+    await refreshInventory(true);
     await refreshGrid();
-    await loadCardShop();  
+    await loadCardShop();
   } else {
     renderPlayer(null);
     renderCardShop([]); 
