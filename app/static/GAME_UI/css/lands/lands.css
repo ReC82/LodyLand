@@ -226,6 +226,8 @@
 .slot-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-auto-rows: 1fr;   /* all rows same height */
+  align-items: stretch;  /* tiles fill the row height */
   gap: 16px;
   padding: 10px 0;
 }
@@ -243,6 +245,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* center content vertically within the uniform height */
 }
 
 /* Hover effect */
@@ -534,6 +537,7 @@
   /* Slots un peu plus serrés */
   .slot-grid {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-auto-rows: 1fr;
     gap: 12px;
     padding: 8px 0;
   }
@@ -576,6 +580,7 @@
   /* 3 slots par ligne, toujours */
   .slot-grid {
     grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
     gap: 8px;
     padding: 6px 0;
   }

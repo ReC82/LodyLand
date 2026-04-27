@@ -328,8 +328,7 @@
     // Submit ticket
     document.getElementById("btnSubmitTicket")?.addEventListener("click", _submitTicket);
 
-    // HUD support button
-    document.getElementById("hud-support-btn")?.addEventListener("click", openSupportModal);
+    // Support is now opened via the game menu (data-action="support")
   });
 
   // Expose globally for external use

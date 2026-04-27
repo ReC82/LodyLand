@@ -29,6 +29,15 @@
   // ---------------------------------------------------------------------------
   const STEPS = {
 
+    tutorial_tools: {
+      target: () => document.getElementById("land-tool-toggle"),
+      title:    { fr: "Les outils 🪓", en: "Tools 🪓" },
+      text:     { fr: "Ce bouton te permet de choisir l'<strong>outil</strong> avec lequel tu récoltes. Pour l'instant tu n'as que tes <em>Mains nues</em>. En craftant des outils (hache, pioche…), tu les verras apparaître ici et récolteras davantage de ressources.", en: "This button lets you choose the <strong>tool</strong> you harvest with. For now you only have your <em>Bare Hands</em>. Craft tools (axe, pickaxe…) to see them here and gather more resources." },
+      advance:  "manual",
+      position: "bottom",
+      stepLabel: { fr: "Tutoriel • Outils", en: "Tutorial • Tools" },
+    },
+
     tutorial_forest_collect: {
       // Target the first available (non-cooldown) slot tile, fallback to any slot tile
       target: () =>
@@ -114,6 +123,16 @@
       advance:  "click_target",
       position: "bottom",
       stepLabel: { fr: "Tutoriel • Quêtes", en: "Tutorial • Quests" },
+    },
+
+    tutorial_lands: {
+      // Highlight the menu button — player needs to go through the menu to travel
+      target: () => document.getElementById("hud-menu-btn"),
+      title:    { fr: "Les terres à explorer 🗺️", en: "Lands to explore 🗺️" },
+      text:     { fr: "Tu viens de débloquer un <strong>nouveau lieu</strong> ! Ouvre le <strong>menu ☰</strong> puis clique sur <em>Lands</em> (ou utilise l'icône ✈️ dans le HUD) pour voyager et explorer de nouvelles ressources.", en: "You just unlocked a <strong>new land</strong>! Open the <strong>☰ menu</strong> then click <em>Lands</em> (or use the ✈️ icon in the HUD) to travel and discover new resources." },
+      advance:  "click_target",
+      position: "bottom",
+      stepLabel: { fr: "Tutoriel • Lands", en: "Tutorial • Lands" },
     },
 
   };
@@ -303,12 +322,15 @@
 
     if (pos === "right") {
       let left = r.right + offset;
-      if (left + bw > W - 8) left = r.left - bw - offset; // flip if off-screen
+      if (left + bw > W - 8) left = r.left - bw - offset; // flip to left if off-screen
+      const midY = r.top + r.height / 2;
       bubble.style.left = `${Math.max(8, left)}px`;
-      bubble.style.top  = `${Math.max(8, r.top + r.height / 2)}px`;
+      bubble.style.top  = `${Math.min(H - 200, Math.max(8, midY))}px`;
       bubble.style.transform = "translateY(-50%)";
     } else if (pos === "left") {
-      bubble.style.left = `${Math.max(8, r.left - bw - offset)}px`;
+      let left = r.left - bw - offset;
+      if (left < 8) left = r.right + offset; // flip to right if off-screen
+      bubble.style.left = `${Math.max(8, left)}px`;
       bubble.style.top  = `${r.top + r.height / 2}px`;
       bubble.style.transform = "translateY(-50%)";
     } else if (pos === "bottom") {
@@ -404,12 +426,14 @@
 
   /**
    * Called after a successful first collect.
-   * Chain: XP bar → notifications → inventory location hint.
+   * Chain: tools → XP bar → notifications → inventory location hint.
    */
   function onFirstCollect() {
-    tryShowStep("tutorial_xp_bar", () => {
-      tryShowStep("tutorial_notifications", () => {
-        tryShowStep("tutorial_inventory");
+    tryShowStep("tutorial_tools", () => {
+      tryShowStep("tutorial_xp_bar", () => {
+        tryShowStep("tutorial_notifications", () => {
+          tryShowStep("tutorial_inventory");
+        });
       });
     });
   }
@@ -427,6 +451,14 @@
    */
   function onLevel1Reached() {
     tryShowStep("tutorial_notebook");
+  }
+
+  /**
+   * Called when level 2 is reached (first land unlock — beach).
+   * Explains the lands system and how to travel via the menu.
+   */
+  function onLevel2Reached() {
+    tryShowStep("tutorial_lands");
   }
 
   /**
@@ -450,6 +482,7 @@
     onFirstCollect,
     onInventoryVisit,
     onLevel1Reached,
+    onLevel2Reached,
     onLevel3Reached,
   };
 

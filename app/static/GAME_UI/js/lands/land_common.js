@@ -583,16 +583,7 @@
         if (data.level_up) {
           const newLevel = data.player?.level ?? oldLevel;
 
-          // 1) Prepare stories for all gained levels
-          if (typeof window.handleStoryAfterLevelUp === "function") {
-            const from = Number(oldLevel) || 0;
-            const to = Number(newLevel) || 0;
-            if (to > from) {
-              window.handleStoryAfterLevelUp(from, to);
-            }
-          }
-
-          // 2) Level up modal + notifications (via central orchestrator)
+          // Level up modal + notifications + stories (via central orchestrator)
           if (typeof window.handleLevelUpFront === "function") {
             window.handleLevelUpFront(oldLevel, Number(newLevel), data.level_rewards || []);
           } else if (window.showLevelUpModal) {

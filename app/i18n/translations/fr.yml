@@ -151,6 +151,7 @@ story:
     friendly: Amical
     explaining: Explique
     observing: Observant
+    focused: Concentré
 resources:
   categories:
     basic: Basique
@@ -324,6 +325,7 @@ base:
     profile_wip: Profil (En cours)
     lands: Mes terres
     inventory: Inventaire
+    support: Signaler un problème
     logout: Se déconnecter
   travel:
     title: Voyager vers un land

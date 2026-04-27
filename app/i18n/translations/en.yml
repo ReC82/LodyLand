@@ -151,6 +151,7 @@ story:
     friendly: Friendly
     explaining: Explaining
     observing: Observing
+    focused: Focused
 resources:
   categories:
     basic: Basic
@@ -323,6 +324,7 @@ base:
     profile_wip: Profile (WIP)
     lands: Lands
     inventory: Inventory
+    support: Report an issue
     logout: Log out
   travel:
     title: Travel to a land

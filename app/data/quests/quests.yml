@@ -910,6 +910,7 @@ quest_templates:
     quest_type: storyline
     category: storyline
     enabled: true
+    silent_complete: true
     storyline_id: main_01_forest
     storyline_step: 1
     requires_quests_completed: []

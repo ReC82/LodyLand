@@ -240,11 +240,6 @@
           </button>
         </div>
 
-        <!-- Support button -->
-        <button id="hud-support-btn" class="gh-btn gh-btn-quests" title="Signaler un problème" type="button">
-          <span class="gh-btn-icon">🎫</span>
-        </button>
-
         <button class="gh-menu-btn" id="hud-menu-btn" type="button">
           ☰
         </button>
@@ -275,6 +270,9 @@
           </button>
           <button class="game-menu-item" data-action="inventory">
             {{ t("base.menu.inventory") }}
+          </button>
+          <button class="game-menu-item" data-action="support">
+            🎫 {{ t("base.menu.support") }}
           </button>
           {% if current_player and current_player.is_admin %}
           <a href="{{ url_for('admin.admin_dashboard') }}" class="game-menu-item" style="text-decoration: none;">

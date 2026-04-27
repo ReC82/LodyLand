@@ -22,6 +22,7 @@ from app.models import (
 )
 from app.progression import XP_PER_COLLECT, next_threshold, apply_xp_and_level_up
 from app.quests.service import on_resource_collected
+from app.quests.loader import QUEST_TEMPLATES
 from app.unlock_rules import check_unlock_rules  # kept even if unused for now
 from app.i18n import get_item, get_user_language, translate_data_dict
 from flask import g
@@ -889,6 +890,7 @@ def collect():
                         "quests_ready": [
                             {"id": q.id, "title": q.title_fr}
                             for q in newly_ready_quests
+                            if not QUEST_TEMPLATES.get(q.template_key, {}).get("silent_complete", False)
                         ],
                     }
                 ),
@@ -992,6 +994,7 @@ def collect():
                 "quests_ready": [
                     {"id": q.id, "title": q.title_fr}
                     for q in tile_quests_ready
+                    if not QUEST_TEMPLATES.get(q.template_key, {}).get("silent_complete", False)
                 ],
             }
         )

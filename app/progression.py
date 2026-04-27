@@ -320,6 +320,7 @@ def apply_level_rewards(
             #   - card_image: icon / artwork path
             label = getattr(cd, "card_label", None) if cd else None
             icon = getattr(cd, "card_image", None) if cd else None
+            description = getattr(cd, "card_description", None) if cd else None
 
             applied.append(
                 {
@@ -328,6 +329,7 @@ def apply_level_rewards(
                     "amount": amount,
                     "label": label or card_key,
                     "icon": icon,
+                    "description": description,
                 }
             )
 
