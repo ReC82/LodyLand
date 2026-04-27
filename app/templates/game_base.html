@@ -930,7 +930,8 @@
 
 
 
-    <!-- Dev toolbar (hidden in production) -->
+    <!-- Dev toolbar — admins only -->
+    {% if current_player and current_player.is_admin %}
     <div id="dev-toolbar" style="display:none; position:fixed; bottom:12px; left:12px; z-index:9999; background:#1a1a2e; border:1px solid #4a4a8a; border-radius:8px; padding:8px 10px; font-size:12px; color:#ccc; box-shadow:0 4px 16px rgba(0,0,0,.5); min-width:170px;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
         <span style="font-weight:700; color:#a78bfa; letter-spacing:.5px;">⚙ DEV</span>
@@ -946,6 +947,7 @@
       <div id="dev-toolbar-msg" style="margin-top:5px; min-height:16px; font-size:11px; color:#86efac;"></div>
     </div>
     <button id="dev-toolbar-toggle" style="display:none; position:fixed; bottom:12px; left:12px; z-index:10000; background:#1a1a2e; border:1px solid #4a4a8a; border-radius:6px; padding:4px 10px; color:#a78bfa; font-size:12px; cursor:pointer; font-weight:700;" onclick="document.getElementById('dev-toolbar').style.display='block'; this.style.display='none';">⚙ DEV</button>
+    {% endif %}
 
     <!-- JS commun -->
 
@@ -966,20 +968,16 @@
     {% block extra_scripts %}{% endblock %}
 
     <script>
-    // Dev toolbar init — runs after config.js is loaded
+    // Dev toolbar init — admins only (HTML already conditionally rendered by Jinja2)
     (function() {
       function initDevToolbar() {
-        if (!window.DEV_MODE) return;
         var toggle = document.getElementById('dev-toolbar-toggle');
         var toolbar = document.getElementById('dev-toolbar');
-        if (!toggle || !toolbar) return;
-        // Show toggle button by default, toolbar hidden
+        if (!toggle || !toolbar) return; // not rendered = not admin
         toggle.style.display = 'block';
-        // Set max on level input
         var input = document.getElementById('dev-level-input');
         if (input && window.MAX_LEVEL) input.max = window.MAX_LEVEL;
       }
-      // Config script loads synchronously before this block, so MAX_LEVEL is available
       initDevToolbar();
     })();
 

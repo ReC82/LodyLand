@@ -132,6 +132,7 @@ story:
     curious: Curieux
     friendly: Amical
     explaining: Explique
+    observing: Observant
 resources:
   categories:
     basic: Basique
@@ -329,6 +330,7 @@ base:
   story:
     title: Histoire
     avatar_alt: avatar
+    next: Suivant
     done: J’ai compris
   notebook:
     title: Notebook
