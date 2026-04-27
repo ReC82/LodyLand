@@ -137,22 +137,40 @@
    * @param {Array}  rewards — level rewards array
    * @param {Array}  unlocks — system_unlocks array from LEVEL_DEFS
    */
+  // i18n helper — uses I18n.t if loaded, falls back to key
+  function _t(key, fallback) {
+    if (typeof window.I18n !== "undefined") {
+      const v = window.I18n.t(key);
+      return (v && v !== key) ? v : (fallback || key);
+    }
+    return fallback || key;
+  }
+
+  // Translate a label that may be an i18n key (e.g. "items.branch.label")
+  function _label(raw) {
+    if (!raw) return raw;
+    if (/^[\w.]+$/.test(raw) && raw.includes(".")) {
+      const v = _t(raw, null);
+      if (v && v !== raw) return v;
+    }
+    return raw;
+  }
+
   function notifyLevelUp(level, rewards, unlocks) {
     const chips = [];
 
-    // Rewards chips
     (rewards || []).forEach((r) => {
       if (r.type === "shards" || r.type === "coins") {
-        chips.push({ icon: "/static/assets/img/ui/coins.png", label: `+${r.amount} Éclats` });
+        chips.push({ icon: "/static/assets/img/ui/coins.png", label: `+${r.amount} ${_t("notif.shards", "Éclats")}` });
       } else if (r.type === "essence" || r.type === "diams") {
-        chips.push({ icon: "/static/assets/img/ui/diams.png", label: `+${r.amount} Essence` });
+        chips.push({ icon: "/static/assets/img/ui/diams.png", label: `+${r.amount} ${_t("notif.essence", "Essence")}` });
       } else if (r.type === "card") {
-        chips.push({ icon: r.icon || null, label: r.label || r.card_key || "Carte" });
+        chips.push({ icon: r.icon || null, label: _label(r.label) || r.card_key || _t("notif.card", "Carte") });
       } else if (r.type === "currency") {
         const isPrimary = r.currency === "primary";
         chips.push({
           icon: isPrimary ? "/static/assets/img/ui/coins.png" : "/static/assets/img/ui/diams.png",
-          label: `+${r.amount} ${isPrimary ? "Éclats" : "Essence"}`,
+          label: `+${r.amount} ${isPrimary ? _t("notif.shards", "Éclats") : _t("notif.essence", "Essence")}`,
         });
       }
     });
@@ -160,24 +178,20 @@
     showGameNotification({
       type: "level_up",
       icon: "⭐",
-      title: `Niveau ${level} atteint !`,
-      body: chips.length ? "Récompenses reçues :" : "Continue comme ça !",
+      title: _t("notif.level_up.title", "Niveau {level} atteint !").replace("{level}", level),
+      body: chips.length ? _t("notif.level_up.rewards", "Récompenses reçues :") : _t("notif.level_up.keep_going", "Continue comme ça !"),
       chips,
       duration: 7000,
     });
 
-    // Separate notification for feature unlocks
     if (Array.isArray(unlocks) && unlocks.length) {
-      const unlockLabels = unlocks
-        .map((u) => FEATURE_LABELS[u.key] || u.key)
-        .filter(Boolean);
-
+      const unlockLabels = unlocks.map((u) => FEATURE_LABELS[u.key] || u.key).filter(Boolean);
       if (unlockLabels.length) {
         setTimeout(() => {
           showGameNotification({
             type: "unlock",
             icon: "🔓",
-            title: "Nouveau déblocage !",
+            title: _t("notif.unlock.title", "Nouveau déblocage !"),
             body: unlockLabels.join(" · "),
             duration: 8000,
           });
@@ -186,28 +200,16 @@
     }
   }
 
-  /**
-   * First time collecting a specific resource.
-   * @param {string} resourceKey
-   * @param {string} label
-   * @param {string} icon
-   * @param {number} qty
-   */
   function notifyFirstResource(resourceKey, label, icon, qty) {
     showGameNotification({
       type: "first_resource",
       icon: icon || "/static/assets/img/ui/xp.png",
-      title: "Nouvelle ressource découverte !",
-      body: `${label || resourceKey} (×${qty})`,
+      title: _t("notif.first_resource.title", "Nouvelle ressource découverte !"),
+      body: `${_label(label) || resourceKey} (×${qty})`,
       duration: 5000,
     });
   }
 
-  /**
-   * Daily chest opened.
-   * @param {Array}  rewards — chest rewards
-   * @param {number} streak  — current streak
-   */
   function notifyDailyChest(rewards, streak) {
     const chips = [];
     (rewards || []).forEach((r) => {
@@ -218,29 +220,27 @@
       } else if (r.type === "xp") {
         chips.push({ icon: "/static/assets/img/ui/xp.png", label: `+${r.amount} XP` });
       } else if (r.type === "card") {
-        chips.push({ icon: null, label: r.label || "Carte" });
+        chips.push({ icon: null, label: _label(r.label) || _t("notif.card", "Carte") });
       }
     });
 
     showGameNotification({
       type: "daily",
       icon: "🎁",
-      title: "Coffre journalier ouvert !",
-      body: streak > 1 ? `Série : ${streak} jours consécutifs 🔥` : "À demain pour continuer !",
+      title: _t("notif.daily.title", "Coffre journalier ouvert !"),
+      body: streak > 1
+        ? _t("notif.daily.streak", "Série : {streak} jours consécutifs 🔥").replace("{streak}", streak)
+        : _t("notif.daily.first", "À demain pour continuer !"),
       chips,
       duration: 6000,
     });
   }
 
-  /**
-   * Quest completed.
-   * @param {string} questTitle
-   */
   function notifyQuestComplete(questTitle) {
     showGameNotification({
       type: "quest",
       icon: "📜",
-      title: "Quête accomplie !",
+      title: _t("notif.quest.title", "Quête accomplie !"),
       body: questTitle,
       duration: 5000,
     });

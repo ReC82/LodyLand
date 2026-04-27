@@ -116,6 +116,24 @@ errors:
   quest_not_ready: Quête pas encore disponible
   already_owned: Déjà possédé
   language_change_failed: Impossible de changer la langue. Réessaie.
+notif:
+  shards: Éclats
+  essence: Essence
+  card: Carte
+  level_up:
+    title: "Niveau {level} atteint !"
+    rewards: "Récompenses reçues :"
+    keep_going: Continue comme ça !
+  unlock:
+    title: Nouveau déblocage !
+  first_resource:
+    title: Nouvelle ressource découverte !
+  daily:
+    title: Coffre journalier ouvert !
+    streak: "Série : {streak} jours consécutifs 🔥"
+    first: À demain pour continuer !
+  quest:
+    title: Quête accomplie !
 story:
   skip: Passer
   speakers:
@@ -363,6 +381,15 @@ inventory:
     treasure: Tu n'as pas encore de trésors.
     items: Tu n'as pas encore d'items.
     cards: Tu n'as pas encore de cartes.
+  tabs:
+    resources: Ressources
+    treasure: Trésors
+    items: Items
+    cards: Cartes
+  filters:
+    filter: Filtrer
+    search: Rechercher
+    type: Type
   card_types:
     all: Tous les types
     land_access: Lands

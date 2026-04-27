@@ -116,6 +116,24 @@ errors:
   quest_not_ready: Quest not ready yet
   already_owned: Already owned
   language_change_failed: Failed to change language. Please try again.
+notif:
+  shards: Shards
+  essence: Essence
+  card: Card
+  level_up:
+    title: "Level {level} reached!"
+    rewards: "Rewards received:"
+    keep_going: Keep it up!
+  unlock:
+    title: New feature unlocked!
+  first_resource:
+    title: New resource discovered!
+  daily:
+    title: Daily chest opened!
+    streak: "Streak: {streak} consecutive days 🔥"
+    first: See you tomorrow!
+  quest:
+    title: Quest completed!
 story:
   skip: Skip
   speakers:
@@ -373,6 +391,10 @@ inventory:
     treasure: Treasures
     items: Items
     cards: Cards
+  filters:
+    filter: Filter
+    search: Search
+    type: Type
 village:
   home:
     tab_title: The Village — LodyLand
