@@ -543,7 +543,7 @@ village:
     title: Pedro — Maître constructeur
     back_to_village: Retour au village
     subtitle: Construisez des bâtiments permanents en réunissant les matériaux nécessaires.
-    locked: Pedro n'apparaîtra qu'à partir du niveau 11.
+    locked: Pedro n'apparaîtra qu'à partir du niveau 5.
     no_cards: Tu n'as encore aucune carte de construction. Achète-en une au Card Shop
       du village !
     grid:

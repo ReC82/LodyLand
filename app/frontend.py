@@ -717,8 +717,8 @@ def village_pedro():
     import yaml, os
     from flask import abort
     player = g.player
-    if player.level < 11:
-        abort(403)
+    if player.level < 5:
+        return redirect(url_for("frontend.village_home"))
 
     # Charger les définitions de buildings
     buildings_path = os.path.join(os.path.dirname(__file__), "data", "buildings.yml")

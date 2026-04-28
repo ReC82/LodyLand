@@ -8,8 +8,21 @@ import yaml
 from flask import Blueprint, jsonify, request
 
 from app.db import SessionLocal
-from app.models import Player, PlayerCard
+from app.models import Player, PlayerCard, PlayerLandSlots
 from app.auth import get_current_player
+
+# Intended game progression order for lands in the notebook
+_LAND_SORT_ORDER: dict[str, int] = {
+    "forest": 1,
+    "beach": 2,
+    "cave": 3,
+    "desert": 4,
+    "lake": 5,
+    "frozen": 6,
+    "haunted_forest": 7,
+    "jurassic": 8,
+    "ruins": 9,
+}
 
 bp = Blueprint("notebook", __name__)
 
@@ -172,7 +185,12 @@ def get_notebook():
             starting = bool(cfg.get("starting_land"))
             unlocked = starting or (f"land_{land_key}" in owned) or (land_key in owned)
 
-            land_label = cfg.get("label") or land_key
+            land_label = (
+                cfg.get("label")
+                or cfg.get("label_fr")
+                or cfg.get("label_en")
+                or land_key.replace("_", " ").capitalize()
+            )
             land_xp = cfg.get("xp_per_collect") or 0
 
             payload = {
@@ -193,7 +211,12 @@ def get_notebook():
                 base_cost = cfg.get("additional_slot_base_cost_diams") or 0
                 mult = cfg.get("additional_slot_cost_multiplier") or 1.0
 
-                extra_owned = _get_extra_slots_owned(s, me.id, land_key)
+                pls = (
+                    s.query(PlayerLandSlots)
+                    .filter_by(player_id=me.id, land_key=land_key)
+                    .first()
+                )
+                extra_owned = pls.extra_slots if pls else 0
                 next_cost = _compute_next_slot_cost(base_cost, mult, extra_owned)
 
                 payload["slots"] = {
@@ -290,6 +313,10 @@ def get_notebook():
 
             lands_payload.append(payload)
 
-        lands_payload.sort(key=lambda x: (not x["unlocked"], (x.get("label") or "").lower()))
+        lands_payload.sort(key=lambda x: (
+            not x["unlocked"],
+            _LAND_SORT_ORDER.get(x["key"], 999),
+            (x.get("label") or "").lower(),
+        ))
 
         return jsonify({"player": {"id": me.id, "level": me.level}, "lands": lands_payload}), 200
