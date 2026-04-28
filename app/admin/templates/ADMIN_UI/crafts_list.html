@@ -3,9 +3,13 @@
 {% block page_title %}Crafts{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
   <h3>Manage Crafts <span class="text-muted small">({{ crafts|length }})</span></h3>
   <button class="btn btn-success" id="new-craft-btn">+ New Craft</button>
+</div>
+<div class="mb-3">
+  <input type="search" id="table-search" class="form-control form-control-sm w-auto d-inline-block"
+         placeholder="🔍 Rechercher..." style="min-width:220px;">
 </div>
 
 <div class="table-responsive">
@@ -23,7 +27,7 @@
     </thead>
     <tbody>
       {% for c in crafts %}
-      <tr>
+      <tr data-search="{{ c.key|lower }} {{ (c.output_key or '')|lower }} {{ (c.station_key or '')|lower }}">
         <td><code>{{ c.key }}</code></td>
         <td><code>{{ c.output_key }}</code> ×{{ c.output_qty }}</td>
         <td><span class="badge bg-info text-dark">{{ c.station_key }}</span></td>
@@ -50,6 +54,16 @@
 
 {% block extra_scripts %}
 <script>
+(function(){
+  const s = document.getElementById('table-search');
+  s.addEventListener('input', () => {
+    const q = s.value.toLowerCase();
+    document.querySelectorAll('tbody tr[data-search]').forEach(r => {
+      r.style.display = !q || r.dataset.search.includes(q) ? '' : 'none';
+    });
+  });
+})();
+
 document.getElementById('new-craft-btn').addEventListener('click', () => {
   const key = prompt('Clé du nouveau craft (ex: iron_sword, rope_ladder…) :');
   if (!key) return;

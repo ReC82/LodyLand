@@ -31,18 +31,22 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
   <p class="text-muted mb-0">{{ skills|length }} skill(s) défini(s).</p>
-  <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Nouveau skill</button>
+  <div class="d-flex gap-2">
+    <input type="search" id="skill-search" class="form-control form-control-sm"
+           placeholder="🔍 Rechercher..." style="min-width:180px;">
+    <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Nouveau skill</button>
+  </div>
 </div>
 
 {% set categories_order = [('resource','Ressources'),('land','Terres'),('craft','Artisanat')] %}
 {% for cat_key, cat_label in categories_order %}
   {% set cat_skills = skills | selectattr('category','eq', cat_key) | list %}
   {% if cat_skills %}
-  <div class="group-header">{{ cat_label }}</div>
+  <div class="group-header" data-cat-header="{{ cat_key }}">{{ cat_label }}</div>
   {% for sk in cat_skills %}
-  <div class="skill-row">
+  <div class="skill-row" data-cat="{{ cat_key }}" data-search="{{ sk.key|lower }} {{ (sk.name_fr or '')|lower }} {{ (sk.name_en or '')|lower }} {{ (sk.subject_key or '')|lower }}">
     <span class="cat-badge cat-{{ sk.category }}">{{ sk.category }}</span>
     <div class="skill-key">{{ sk.key }}</div>
     <div class="skill-name">
@@ -105,6 +109,23 @@
 </div>
 
 <script>
+(function(){
+  const s = document.getElementById('skill-search');
+  s.addEventListener('input', () => {
+    const q = s.value.toLowerCase();
+    const cats = new Set();
+    document.querySelectorAll('.skill-row[data-search]').forEach(r => {
+      const visible = !q || r.dataset.search.includes(q);
+      r.style.display = visible ? '' : 'none';
+      if (visible) cats.add(r.dataset.cat);
+    });
+    // Show/hide category headers based on whether any rows are visible
+    document.querySelectorAll('[data-cat-header]').forEach(h => {
+      h.style.display = !q || cats.has(h.dataset.catHeader) ? '' : 'none';
+    });
+  });
+})();
+
 function openCreateModal() {
   document.getElementById('new-sk-key').value = '';
   document.getElementById('create-sk-error').style.display = 'none';

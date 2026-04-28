@@ -37,8 +37,10 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <p class="text-muted mb-0">{{ tools|length }} outil(s) configuré(s).</p>
+<div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+  <input type="search" id="tool-search" class="form-control form-control-sm w-auto"
+         placeholder="🔍 Rechercher..." style="min-width:220px;">
+  <p class="text-muted mb-0 ms-auto">{{ tools|length }} outil(s) configuré(s).</p>
   <div class="d-flex gap-2">
     <a href="{{ url_for('admin.tools_print') }}" class="btn btn-outline-secondary btn-sm" target="_blank">
       🎨 Vue artistes
@@ -50,7 +52,8 @@
 {% if tools %}
 <div class="tool-grid">
   {% for t in tools %}
-  <div class="tool-card {% if not t.enabled %}disabled-overlay{% endif %}">
+  <div class="tool-card {% if not t.enabled %}disabled-overlay{% endif %}"
+       data-search="{{ t.key|lower }} {{ (t.label_fr or '')|lower }} {{ (t.label_en or '')|lower }}">
     <div class="tool-img-wrap">
       {% if t.image_url %}
         <img src="{{ t.image_url }}" alt="{{ t.label_fr }}">
@@ -109,6 +112,16 @@
 </div>
 
 <script>
+(function(){
+  const s = document.getElementById('tool-search');
+  s.addEventListener('input', () => {
+    const q = s.value.toLowerCase();
+    document.querySelectorAll('.tool-card[data-search]').forEach(c => {
+      c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
+    });
+  });
+})();
+
 function openCreateModal() {
   ['new-tool-key','new-tool-name-fr','new-tool-name-en'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('create-tool-error').style.display = 'none';

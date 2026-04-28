@@ -872,6 +872,84 @@ def cards_list():
     return render_template("ADMIN_UI/cards_list.html", cards=cards_view)
 
 
+@admin_bp.get("/cards/<key>/edit")
+@admin_bp.post("/cards/<key>/edit")
+@admin_required(permission="edit_cards")
+def edit_card(key: str):
+    """Edit a card — updates YAML and DB CardDef."""
+    yaml_data = load_cards_yaml()
+    if key not in yaml_data:
+        abort(404)
+
+    card_cfg = dict(yaml_data[key] or {})
+    error = None
+
+    if request.method == "POST":
+        label_fr  = request.form.get("label_fr",  "").strip()
+        label_en  = request.form.get("label_en",  "").strip()
+        card_type = request.form.get("type",       "").strip()
+        rarity    = request.form.get("rarity",     "common").strip()
+        enabled   = request.form.get("enabled") == "on"
+        desc_fr   = request.form.get("desc_fr",    "").strip()
+        desc_en   = request.form.get("desc_en",    "").strip()
+
+        if not card_type:
+            error = "Le type est requis."
+        else:
+            # Update core fields in YAML
+            if label_fr:  card_cfg["label_fr"] = label_fr
+            if label_en:  card_cfg["label_en"] = label_en
+            # Keep generic 'label' in sync with FR
+            card_cfg["label"]   = label_fr or card_cfg.get("label", key)
+            card_cfg["type"]    = card_type
+            card_cfg["rarity"]  = rarity
+            card_cfg["enabled"] = enabled
+            if desc_fr: card_cfg["description_fr"] = desc_fr
+            if desc_en: card_cfg["description_en"] = desc_en
+
+            # Advanced JSON fields (gameplay / shop / unlock_rules / tags)
+            adv_raw = request.form.get("advanced_json", "").strip()
+            if adv_raw:
+                try:
+                    adv = json.loads(adv_raw)
+                    _CORE = {"key","label","label_fr","label_en","type","rarity","enabled",
+                             "description_fr","description_en"}
+                    for k, v in adv.items():
+                        if k not in _CORE:
+                            card_cfg[k] = v
+                except json.JSONDecodeError as e:
+                    error = f"JSON avancé invalide : {e}"
+
+        if not error:
+            yaml_data[key] = card_cfg
+            save_cards_yaml(yaml_data)
+
+            # Sync DB CardDef if it exists
+            session = SessionLocal()
+            try:
+                db_card = session.query(CardDef).filter_by(key=key).first()
+                if db_card:
+                    db_card.card_label       = label_fr or db_card.card_label
+                    db_card.card_type        = card_type
+                    db_card.card_rarity      = rarity or None
+                    db_card.enabled          = enabled
+                    db_card.card_description = desc_fr or None
+                    session.commit()
+            finally:
+                session.close()
+
+            return redirect(url_for("admin.cards_list"))
+
+    # Build advanced JSON (everything except core fields)
+    _CORE = {"key","label","label_fr","label_en","type","rarity","enabled",
+             "description_fr","description_en"}
+    adv = {k: v for k, v in card_cfg.items() if k not in _CORE}
+    adv_json = json.dumps(adv, ensure_ascii=False, indent=2)
+
+    return render_template("ADMIN_UI/card_form.html", key=key, card=card_cfg,
+                           adv_json=adv_json, error=error)
+
+
 @admin_bp.post("/cards/")
 @admin_required(permission="edit_cards")
 def create_card():
