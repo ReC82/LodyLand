@@ -94,6 +94,10 @@ function setupGameMenu() {
         window.location.href = "/shop";
         break;
 
+      case "support":
+        if (typeof window.openSupportModal === "function") window.openSupportModal();
+        break;
+
       case "logout":
         window.location.href = "/logout";
         break;

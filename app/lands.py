@@ -15,6 +15,12 @@ import yaml
 _LANDS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
 
 
+def invalidate_lands_cache() -> None:
+    """Force reload of lands.yml on next access (call after admin edits)."""
+    global _LANDS_CACHE
+    _LANDS_CACHE = None
+
+
 def _get_lands_path() -> Path:
     """Return the filesystem path to the lands.yml file."""
     # This assumes the file is located at app/data/lands.yml

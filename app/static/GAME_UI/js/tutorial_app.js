@@ -29,6 +29,15 @@
   // ---------------------------------------------------------------------------
   const STEPS = {
 
+    tutorial_tools: {
+      target: () => document.getElementById("land-tool-toggle"),
+      title:    { fr: "Les outils 🪓", en: "Tools 🪓" },
+      text:     { fr: "Ce bouton te permet de choisir l'<strong>outil</strong> avec lequel tu récoltes. Pour l'instant tu n'as que tes <em>Mains nues</em>. En craftant des outils (hache, pioche…), tu les verras apparaître ici et récolteras davantage de ressources.", en: "This button lets you choose the <strong>tool</strong> you harvest with. For now you only have your <em>Bare Hands</em>. Craft tools (axe, pickaxe…) to see them here and gather more resources." },
+      advance:  "manual",
+      position: "bottom",
+      stepLabel: { fr: "Tutoriel • Outils", en: "Tutorial • Tools" },
+    },
+
     tutorial_forest_collect: {
       // Target the first available (non-cooldown) slot tile, fallback to any slot tile
       target: () =>
@@ -42,11 +51,32 @@
     },
 
     tutorial_inventory: {
-      target: () => document.getElementById("inventoryBox"),
+      // Centered — no target. Avoids the menu opening on top of the bubble.
+      target: () => null,
       title:    { fr: "Ton inventaire 🎒", en: "Your inventory 🎒" },
-      text:     { fr: "Les ressources récoltées apparaissent ici. Plus tard, tu pourras les vendre au village ou les utiliser pour fabriquer des objets.", en: "Gathered resources appear here. Later you can sell them at the village or use them to craft items." },
+      text:     { fr: "Tes ressources récoltées et tes cartes s'accumulent dans ton <strong>Inventaire</strong>. Ouvre le menu ☰ (en haut à droite) puis clique sur <em>Inventaire</em> pour le consulter.", en: "Your gathered resources and cards build up in your <strong>Inventory</strong>. Open the ☰ menu (top right) and click <em>Inventory</em> to view it." },
       advance:  "manual",
-      position: "top",
+      position: "centered",
+      stepLabel: { fr: "Tutoriel • Inventaire", en: "Tutorial • Inventory" },
+    },
+
+    tutorial_notifications: {
+      // Always centered — the notifications container may be empty/invisible
+      target: () => null,
+      title:    { fr: "Les notifications 🔔", en: "Notifications 🔔" },
+      text:     { fr: "Des bulles apparaissent en <strong>haut à droite</strong> pour t'informer : première ressource découverte, passage de niveau, fonctionnalités débloquées, coffre journalier, quête accomplie…", en: "Bubbles appear in the <strong>top right</strong> to keep you informed: new resource found, level up, features unlocked, daily chest, quest completed…" },
+      advance:  "manual",
+      position: "centered",
+      stepLabel: { fr: "Tutoriel • Notifications", en: "Tutorial • Notifications" },
+    },
+
+    tutorial_inventory_page: {
+      // Shown when the player first lands on /inventory
+      target: () => document.querySelector(".inv-tabs"),
+      title:    { fr: "Bienvenue dans ton inventaire 🎒", en: "Welcome to your inventory 🎒" },
+      text:     { fr: "Ici tu retrouves tout ce que tu possèdes : tes <strong>ressources</strong> récoltées, tes <strong>trésors</strong>, tes <strong>items</strong> craftés et tes <strong>cartes</strong> achetées ou reçues en récompense.", en: "Here you'll find everything you own: gathered <strong>resources</strong>, <strong>treasures</strong>, crafted <strong>items</strong>, and <strong>cards</strong> bought or received as rewards." },
+      advance:  "manual",
+      position: "bottom",
       stepLabel: { fr: "Tutoriel • Inventaire", en: "Tutorial • Inventory" },
     },
 
@@ -93,6 +123,16 @@
       advance:  "click_target",
       position: "bottom",
       stepLabel: { fr: "Tutoriel • Quêtes", en: "Tutorial • Quests" },
+    },
+
+    tutorial_lands: {
+      // Highlight the menu button — player needs to go through the menu to travel
+      target: () => document.getElementById("hud-menu-btn"),
+      title:    { fr: "Les terres à explorer 🗺️", en: "Lands to explore 🗺️" },
+      text:     { fr: "Tu viens de débloquer un <strong>nouveau lieu</strong> ! Ouvre le <strong>menu ☰</strong> puis clique sur <em>Lands</em> (ou utilise l'icône ✈️ dans le HUD) pour voyager et explorer de nouvelles ressources.", en: "You just unlocked a <strong>new land</strong>! Open the <strong>☰ menu</strong> then click <em>Lands</em> (or use the ✈️ icon in the HUD) to travel and discover new resources." },
+      advance:  "click_target",
+      position: "bottom",
+      stepLabel: { fr: "Tutoriel • Lands", en: "Tutorial • Lands" },
     },
 
   };
@@ -162,6 +202,10 @@
   function _showStep(stepId, step, onDone) {
     _currentStepId = stepId;
     _onDone = onDone || null;
+
+    // Safety: remove any lingering overlay from a previous step (e.g. if the
+    // fade timer hasn't fired yet but we're already showing the next step).
+    document.querySelectorAll(".tutorial-overlay").forEach(el => el.remove());
 
     const target = step.target ? step.target() : null;
     _currentTarget = target;
@@ -278,12 +322,15 @@
 
     if (pos === "right") {
       let left = r.right + offset;
-      if (left + bw > W - 8) left = r.left - bw - offset; // flip if off-screen
+      if (left + bw > W - 8) left = r.left - bw - offset; // flip to left if off-screen
+      const midY = r.top + r.height / 2;
       bubble.style.left = `${Math.max(8, left)}px`;
-      bubble.style.top  = `${Math.max(8, r.top + r.height / 2)}px`;
+      bubble.style.top  = `${Math.min(H - 200, Math.max(8, midY))}px`;
       bubble.style.transform = "translateY(-50%)";
     } else if (pos === "left") {
-      bubble.style.left = `${Math.max(8, r.left - bw - offset)}px`;
+      let left = r.left - bw - offset;
+      if (left < 8) left = r.right + offset; // flip to right if off-screen
+      bubble.style.left = `${Math.max(8, left)}px`;
       bubble.style.top  = `${r.top + r.height / 2}px`;
       bubble.style.transform = "translateY(-50%)";
     } else if (pos === "bottom") {
@@ -299,52 +346,62 @@
   // ---------------------------------------------------------------------------
   // Completion / teardown
   // ---------------------------------------------------------------------------
+  const _FADE_MS = 340; // must be >= CSS transition duration (0.3s)
+
   function _completeStep(stepId) {
     _markDone(stepId);
-    _teardown();
     const cb = _onDone;
     _onDone = null;
     _currentStepId = null;
-    if (typeof cb === "function") cb();
+    _teardown();
+    // Wait for the fade-out to finish before showing the next step,
+    // otherwise the old overlay overlaps the new one.
+    setTimeout(() => {
+      if (typeof cb === "function") cb();
+    }, _FADE_MS);
   }
 
   function _skipAll() {
     // Mark ALL steps as done so tutorial never shows again
     Object.keys(STEPS).forEach((id) => _markDone(id));
-    _teardown();
     _onDone = null;
     _currentStepId = null;
+    _teardown();
 
-    if (typeof window.GameNotif !== "undefined") {
-      window.GameNotif.show({
-        type: "info",
-        icon: "ℹ️",
-        title: "Tutoriel ignoré",
-        body: "Tu peux retrouver les infos dans le carnet 📘.",
-        duration: 4000,
-      });
-    }
+    setTimeout(() => {
+      if (typeof window.GameNotif !== "undefined") {
+        window.GameNotif.show({
+          type: "info",
+          icon: "ℹ️",
+          title: "Tutoriel ignoré",
+          body: "Tu peux retrouver les infos dans le carnet 📘.",
+          duration: 4000,
+        });
+      }
+    }, _FADE_MS);
   }
 
   function _teardown() {
-    // Remove overlay
+    // Remove overlay — strip the ID immediately so the next step's getElementById
+    // won't find this old (still-fading) element and wire listeners to it.
     const overlay = document.getElementById("tutorialOverlay");
     if (overlay) {
+      overlay.removeAttribute("id");  // detach from ID registry NOW
       overlay.classList.remove("tutorial-overlay--visible");
-      setTimeout(() => overlay.remove(), 320);
+      setTimeout(() => overlay.remove(), 320); // let CSS fade play out
     }
 
     // Remove pulse class from target
     if (_currentTarget) {
       _currentTarget.classList.remove("tutorial-target-pulse");
-      _currentTarget = null;
     }
 
     // Remove click listener if present
     if (_clickHandler && _currentTarget) {
       _currentTarget.removeEventListener("click", _clickHandler);
-      _clickHandler = null;
     }
+    _clickHandler = null;
+    _currentTarget = null;
 
     // Stop resize observer
     if (_resizeObserver) {
@@ -369,12 +426,24 @@
 
   /**
    * Called after a successful first collect.
-   * Shows inventory tip.
+   * Chain: tools → XP bar → notifications → inventory location hint.
    */
   function onFirstCollect() {
-    tryShowStep("tutorial_inventory", () => {
-      tryShowStep("tutorial_xp_bar");
+    tryShowStep("tutorial_tools", () => {
+      tryShowStep("tutorial_xp_bar", () => {
+        tryShowStep("tutorial_notifications", () => {
+          tryShowStep("tutorial_inventory");
+        });
+      });
     });
+  }
+
+  /**
+   * Called when the player first visits /inventory.
+   * Shows an explanation of what's in the inventory.
+   */
+  function onInventoryVisit() {
+    tryShowStep("tutorial_inventory_page");
   }
 
   /**
@@ -382,6 +451,14 @@
    */
   function onLevel1Reached() {
     tryShowStep("tutorial_notebook");
+  }
+
+  /**
+   * Called when level 2 is reached (first land unlock — beach).
+   * Explains the lands system and how to travel via the menu.
+   */
+  function onLevel2Reached() {
+    tryShowStep("tutorial_lands");
   }
 
   /**
@@ -403,7 +480,9 @@
     skipCurrentStep,
     startIntroSequence,
     onFirstCollect,
+    onInventoryVisit,
     onLevel1Reached,
+    onLevel2Reached,
     onLevel3Reached,
   };
 

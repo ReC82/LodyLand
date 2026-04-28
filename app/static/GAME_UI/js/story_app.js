@@ -33,28 +33,43 @@ const STORY_AVATARS = {
     return page.text[lang] || page.text.en || "";
   }
 
-    function formatSpeakerLabel(rawSpeaker) {
+  function _i18n(key) {
+    // Use I18n.t if available, fallback to key
+    return (typeof window.I18n !== "undefined") ? window.I18n.t(key) : key;
+  }
+
+  function formatSpeakerLabel(rawSpeaker) {
     if (!rawSpeaker) return "";
 
-    if (rawSpeaker === "self") {
-      return "Moi";
+    // Try translation key first (covers self, mysterious_voice, npc_*)
+    const translated = _i18n(`story.speakers.${rawSpeaker}`);
+    if (translated && translated !== `story.speakers.${rawSpeaker}`) {
+      return translated;
     }
 
     if (rawSpeaker.startsWith("npc_")) {
-      // npc_village_chief -> "Village chief"
       const base = rawSpeaker.replace(/^npc_/, "").replace(/_/g, " ");
-      // On met simplement la première lettre en majuscule
       return base.charAt(0).toUpperCase() + base.slice(1);
     }
 
     return rawSpeaker;
   }
 
-  function computeTitle(ev, page) {
-    const speaker = (page && page.speaker) || ev.speaker || "";
-    const mood = (page && page.mood) || ev.mood || "";
+  function formatMoodLabel(rawMood) {
+    if (!rawMood) return "";
+    const translated = _i18n(`story.moods.${rawMood}`);
+    // If not found, fallback: capitalize first letter
+    if (translated && translated !== `story.moods.${rawMood}`) return translated;
+    return rawMood.charAt(0).toUpperCase() + rawMood.slice(1);
+  }
 
-    if (!speaker) return "Histoire";
+  function computeTitle(ev, page) {
+    const rawSpeaker = (page && page.speaker) || ev.speaker || "";
+    const rawMood    = (page && page.mood)    || ev.mood    || "";
+
+    if (!rawSpeaker) return _i18n("base.story.title") || "Histoire";
+    const speaker = formatSpeakerLabel(rawSpeaker);
+    const mood    = formatMoodLabel(rawMood);
     return mood ? `${speaker} – ${mood}` : speaker;
   }
 

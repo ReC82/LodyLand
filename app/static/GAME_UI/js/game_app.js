@@ -21,6 +21,7 @@ let storyIsPlaying = false;     // pour éviter de lancer 2 histoires en même t
 let _seenStoryIds = new Set();    // story IDs déjà vus (chargés depuis /api/state)
 let pendingLevelUpModal = null;   // { newLevel, rewards } — affiché après les stories
 let pendingNameModal = false;     // true si le modal de nom doit s'afficher après les stories
+let pendingTutorialMilestones = []; // callbacks tutoriel différés après stories + level-up modal
 let _knownResourceKeys = new Set(); // ressources déjà vues (pour notif première récolte)
 window._knownResourceKeys = _knownResourceKeys; // expose for land_common.js
 
@@ -252,6 +253,10 @@ function formatRewardLabel(r) {
   }
 
   if (r.type === "card") {
+    // Land access cards: show description ("Débloque le land Plage") instead of "1 x Accès Plage"
+    if (r.key?.startsWith("land_")) {
+      return r.description || r.label || r.key;
+    }
     const name = r.label || r.key || "Carte";
     return `${amount} x ${name}`;
   }
@@ -1426,6 +1431,17 @@ function playNextStoryFromQueue() {
       if (typeof showLevelUpModal === "function") {
         showLevelUpModal(newLevel, rewards);
       }
+      // Après le modal level-up, drainer les milestones tutoriel
+      if (pendingTutorialMilestones.length > 0) {
+        const cb = pendingTutorialMilestones.shift();
+        setTimeout(cb, 600); // délai après fermeture du modal
+      }
+      return;
+    }
+    // File vide, pas de modal — drainer les milestones tutoriel si besoin
+    if (pendingTutorialMilestones.length > 0) {
+      const cb = pendingTutorialMilestones.shift();
+      setTimeout(cb, 400);
     }
     return;
   }
@@ -1636,10 +1652,17 @@ function handleLevelUpFront(oldLevel, newLevel, levelRewards) {
     }
   }
 
-  // --- Tutorial milestones ---
+  // --- Tutorial milestones (différés après stories + level-up modal) ---
   if (typeof window.TutorialApp !== "undefined") {
-    if (newLevel === 1) window.TutorialApp.onLevel1Reached();
-    if (newLevel === 3) window.TutorialApp.onLevel3Reached();
+    if (newLevel === 1) pendingTutorialMilestones.push(() => window.TutorialApp.onLevel1Reached());
+    if (newLevel === 2) pendingTutorialMilestones.push(() => window.TutorialApp.onLevel2Reached());
+    if (newLevel === 3) pendingTutorialMilestones.push(() => window.TutorialApp.onLevel3Reached());
+  }
+
+  // Si aucune story ni modal en attente, drainer immédiatement
+  if (storyQueue.length === 0 && !pendingLevelUpModal && pendingTutorialMilestones.length > 0) {
+    const cb = pendingTutorialMilestones.shift();
+    setTimeout(cb, 400);
   }
 }
 

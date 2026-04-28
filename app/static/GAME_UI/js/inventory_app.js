@@ -348,4 +348,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupInventoryTabs();
   setupFilters();
   await loadInventoryData();
+
+  // First-visit tutorial for this page
+  if (typeof window.TutorialApp !== "undefined") {
+    // Small delay so the page renders fully before the spotlight measures the tabs
+    setTimeout(() => window.TutorialApp.onInventoryVisit(), 600);
+  }
 });
