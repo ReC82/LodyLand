@@ -787,6 +787,8 @@ body.theme-light .game-menu-item:focus-visible {
 body.theme-light .game-menu-section + .game-menu-section {
   border-top: 1px solid #cccccc !important;
 }
+body.theme-light .game-menu-item-special { color: #b45309 !important; }
+body.theme-light .game-menu-item-special:hover { background: rgba(180, 83, 9, 0.1) !important; color: #92400e !important; }
 body.theme-light .game-menu-logout { color: #000000 !important; }
 body.theme-light .game-menu-logout:hover,
 body.theme-light .game-menu-logout:focus-visible {

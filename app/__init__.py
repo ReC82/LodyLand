@@ -275,6 +275,39 @@ def create_app() -> Flask:
         return {"current_theme": theme}
 
     @app.context_processor
+    def inject_unlocked_specials():
+        """Inject which special places (village, temple) the player has unlocked."""
+        from flask import g
+        from .db import SessionLocal
+        from .models import PlayerCard
+
+        player = getattr(g, "player", None)
+        if not player:
+            return {"unlocked_specials": []}
+
+        session = getattr(g, "db_session", None)
+        own_session = session is None
+        if own_session:
+            session = SessionLocal()
+
+        try:
+            owned_keys = {
+                pc.card_key
+                for pc in session.query(PlayerCard).filter_by(player_id=player.id).all()
+            }
+        finally:
+            if own_session:
+                session.close()
+
+        SPECIALS = [
+            {"slug": "village", "label": "Village", "icon": "🏘️",
+             "card_key": "land_village", "url": "/village"},
+            {"slug": "temple",  "label": "Temple",  "icon": "🏛️",
+             "card_key": "land_temple",  "url": "/land/temple"},
+        ]
+        return {"unlocked_specials": [s for s in SPECIALS if s["card_key"] in owned_keys]}
+
+    @app.context_processor
     def inject_current_player():
         """Inject current_player into all templates."""
         from flask import g

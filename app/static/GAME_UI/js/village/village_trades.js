@@ -189,10 +189,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ── Confirmation modal ──────────────────────────────────────
+  const backdrop   = document.getElementById("trade-confirm-backdrop");
+  const confirmOk  = document.getElementById("trade-confirm-ok");
+  const confirmCxl = document.getElementById("trade-confirm-cancel");
+
+  function showTradeConfirm(label) {
+    document.getElementById("trade-confirm-body").textContent =
+      `Confirmer l'échange pour obtenir "${label}" ?`;
+    backdrop.classList.add("is-visible");
+    return new Promise((resolve) => {
+      function onOk()  { cleanup(); resolve(true);  }
+      function onCxl() { cleanup(); resolve(false); }
+      function cleanup() {
+        confirmOk.removeEventListener("click", onOk);
+        confirmCxl.removeEventListener("click", onCxl);
+        backdrop.classList.remove("is-visible");
+      }
+      confirmOk.addEventListener("click",  onOk);
+      confirmCxl.addEventListener("click", onCxl);
+    });
+  }
+  // ────────────────────────────────────────────────────────────
+
   async function performTrade(cardKey, buttonEl) {
-    if (!confirm("Confirmer cet échange ?")) {
-      return;
-    }
+    // Récupère le label de la card depuis le DOM
+    const cardEl = buttonEl.closest(".village-trade-card");
+    const label  = cardEl?.querySelector(".village-trade-title-row h3")?.textContent?.trim() || cardKey;
+
+    const confirmed = await showTradeConfirm(label);
+    if (!confirmed) return;
 
     buttonEl.disabled = true;
     buttonEl.textContent = "Échange...";

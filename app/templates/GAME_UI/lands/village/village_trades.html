@@ -55,6 +55,18 @@
   </section>
 
 </div>
+
+<!-- Modal de confirmation d'échange -->
+<div id="trade-confirm-backdrop" class="land-modal-backdrop" aria-modal="true" role="dialog">
+  <div class="land-modal">
+    <h2 class="land-modal-title">Confirmer l'échange</h2>
+    <p id="trade-confirm-body" class="land-modal-message">Confirmer cet échange ?</p>
+    <div class="land-modal-actions">
+      <button type="button" id="trade-confirm-cancel" class="btn btn-outline-light btn-sm">Annuler</button>
+      <button type="button" id="trade-confirm-ok"     class="btn btn-success btn-sm">Échanger</button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}

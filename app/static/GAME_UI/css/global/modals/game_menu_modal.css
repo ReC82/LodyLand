@@ -114,6 +114,22 @@
   outline: none;
 }
 
+/* Lieux spéciaux (village, temple…) */
+.game-menu-item-special {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  color: #fbbf24 !important; /* gold */
+}
+
+.game-menu-item-special:hover,
+.game-menu-item-special:focus-visible {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fde68a !important;
+  outline: none;
+}
+
 /* ============================================================
    END GAME MENU
    ============================================================ */
