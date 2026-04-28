@@ -36,7 +36,7 @@
 
     <!-- PNJ Quêtes -->
     <section class="npc-card">
-      <div class="npc-card-inner">
+      <a href="/village/quests" class="npc-card-inner">
         <img
           src="/static/assets/img/ui/npc/village/villager_quests.png"
           alt="{{ t('village.home.npcs.quests.alt') }}"
@@ -46,15 +46,15 @@
         <p class="npc-text">
           {{ t("village.home.npcs.quests.text") }}
         </p>
-        <a href="/village/quests" class="btn btn-sm btn-primary">
+        <span class="btn btn-sm btn-primary npc-card-btn">
           {{ t("village.home.npcs.quests.button") }}
-        </a>
-      </div>
+        </span>
+      </a>
     </section>
 
     <!-- PNJ Marché (vente de ressources) -->
     <section class="npc-card">
-      <div class="npc-card-inner">
+      <a href="/village/market" class="npc-card-inner">
         <img
           src="/static/assets/img/ui/npc/village/villager_market.png"
           alt="{{ t('village.home.npcs.market.alt') }}"
@@ -64,15 +64,15 @@
         <p class="npc-text">
           {{ t("village.home.npcs.market.text") }}
         </p>
-        <a href="/village/market" class="btn btn-sm btn-success">
+        <span class="btn btn-sm btn-success npc-card-btn">
           {{ t("village.home.npcs.market.button") }}
-        </a>
-      </div>
+        </span>
+      </a>
     </section>
 
     <!-- PNJ Boutique de cartes / raretés -->
     <section class="npc-card">
-      <div class="npc-card-inner">
+      <a href="/village/shop" class="npc-card-inner">
         <img
           src="/static/assets/img/ui/npc/village/villager_shop_card.png"
           alt="{{ t('village.home.npcs.shop_card.alt') }}"
@@ -82,15 +82,15 @@
         <p class="npc-text">
           {{ t("village.home.npcs.shop_card.text") }}
         </p>
-        <a href="/village/shop" class="btn btn-sm btn-warning">
+        <span class="btn btn-sm btn-warning npc-card-btn">
           {{ t("village.home.npcs.shop_card.button") }}
-        </a>
-      </div>
+        </span>
+      </a>
     </section>
 
     <!-- PNJ Trades -->
     <section class="npc-card">
-      <div class="npc-card-inner">
+      <a href="/village/trades" class="npc-card-inner">
         <img
           src="/static/assets/img/ui/npc/village/villager_trades.png"
           alt="{{ t('village.home.npcs.trades.alt') }}"
@@ -100,19 +100,17 @@
         <p class="npc-text">
           {{ t("village.home.npcs.trades.text") }}
         </p>
-        <a href="/village/trades" class="btn btn-sm btn-outline-info">
+        <span class="btn btn-sm btn-outline-info npc-card-btn">
           {{ t("village.home.npcs.trades.button") }}
-        </a>
-      </div>
+        </span>
+      </a>
     </section>
 
-    <!-- NPC Mini-jeux -->
+    <!-- NPC Mini-jeux (niveau 5+) -->
     {% if current_player and current_player.level >= 5 %}
     <section class="npc-card">
-      <div class="npc-card-inner" style="position:relative;">
-        <span style="position:absolute;top:8px;right:8px;background:#7c3aed;color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;">
-          Mini-jeu
-        </span>
+      <a href="/minigame/doors_level5" class="npc-card-inner" style="position:relative;">
+        <span class="npc-badge" style="background:#7c3aed;color:#fff;">Mini-jeu</span>
         <img
           src="/static/assets/img/ui/npc/village/villager_trades.png"
           alt="Salle des portes"
@@ -122,17 +120,16 @@
         <p class="npc-text">
           Dix niveaux, trois portes chacun. Une cachette, une récompense, ou la porte de la gloire. Oses-tu entrer ?
         </p>
-        <a href="/minigame/doors_level5" class="btn btn-sm btn-outline-primary">
-          Entrer dans la salle
-        </a>
-      </div>
+        <span class="btn btn-sm btn-outline-primary npc-card-btn">Entrer dans la salle</span>
+      </a>
     </section>
     {% endif %}
 
     <!-- PNJ Pedro — Maître constructeur -->
     <section class="npc-card">
-      <div class="npc-card-inner" style="position:relative;">
-        <span style="position:absolute; top:8px; right:8px; background:#facc15; color:#000; font-size:.65rem; font-weight:700; padding:.15rem .5rem; border-radius:999px; text-transform:uppercase; letter-spacing:.04em;">
+      {% if current_player and current_player.level >= 5 %}
+      <a href="/village/pedro" class="npc-card-inner" style="position:relative;">
+        <span class="npc-badge" style="background:#facc15;color:#000;">
           {{ t("village.home.npcs.pedro.badge_new") }}
         </span>
         <img
@@ -145,15 +142,51 @@
         <p class="npc-text">
           {{ t("village.home.npcs.pedro.text") }}
         </p>
-        <a href="/village/pedro" class="btn btn-sm btn-outline-warning">
+        <span class="btn btn-sm btn-outline-warning npc-card-btn">
           {{ t("village.home.npcs.pedro.button") }}
-        </a>
+        </span>
+      </a>
+      {% else %}
+      <div class="npc-card-inner npc-card-locked" style="position:relative;" onclick="showPedroLockedModal()">
+        <span class="npc-badge" style="background:#facc15;color:#000;">
+          {{ t("village.home.npcs.pedro.badge_new") }}
+        </span>
+        <img
+          src="/static/assets/img/ui/npc/village/villager_pedro.png"
+          alt="{{ t('village.home.npcs.pedro.alt') }}"
+          class="npc-img"
+          onerror="this.src='/static/assets/img/ui/npc/village/villager_trades.png'"
+        />
+        <h2 class="h5 npc-title">{{ t("village.home.npcs.pedro.title") }}</h2>
+        <p class="npc-text">
+          {{ t("village.home.npcs.pedro.text") }}
+        </p>
+        <span class="btn btn-sm btn-outline-secondary disabled npc-card-btn">
+          🔒 {{ t("village.home.npcs.pedro.button") }}
+        </span>
       </div>
+      {% endif %}
     </section>
 
   </div>
 
 </div>
+
+<!-- Modal Pedro verrouillé -->
+<div id="pedro-locked-modal" class="land-modal-backdrop" onclick="hidePedroLockedModal()">
+  <div class="land-modal" onclick="event.stopPropagation()">
+    <div class="land-modal-header">
+      <span class="land-modal-title">{{ t("village.home.npcs.pedro.title") }}</span>
+    </div>
+    <div class="land-modal-body">
+      <p style="margin:0;">{{ t("village.pedro.locked") }}</p>
+    </div>
+    <div class="land-modal-actions">
+      <button class="land-modal-btn land-modal-btn-primary" onclick="hidePedroLockedModal()">OK</button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
@@ -163,4 +196,18 @@
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_shop.js') }}"></script>
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_quests.js') }}"></script>
   <script src="{{ url_for('static', filename='GAME_UI/js/village/village_trades.js') }}"></script>
+
+  <script>
+    function showPedroLockedModal() {
+      var m = document.getElementById("pedro-locked-modal");
+      m.style.display = "flex";
+      void m.offsetWidth;
+      m.classList.add("is-visible");
+    }
+    function hidePedroLockedModal() {
+      var m = document.getElementById("pedro-locked-modal");
+      m.classList.remove("is-visible");
+      setTimeout(function() { m.style.display = ""; }, 200);
+    }
+  </script>
 {% endblock %}

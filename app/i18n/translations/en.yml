@@ -538,7 +538,7 @@ village:
     title: Pedro — Master Builder
     back_to_village: Back to village
     subtitle: Build permanent structures by gathering the required materials.
-    locked: Pedro will appear once you reach level 11.
+    locked: Pedro will appear once you reach level 5.
     no_cards: You don't have any building cards yet. Buy one at the Village Card Shop!
     grid:
       title: Your buildings

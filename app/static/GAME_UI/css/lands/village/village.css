@@ -89,11 +89,15 @@
 /* NPC card container (outer) */
 .npc-card {
   position: relative;
+  display: flex;
 }
 
 /* Inner card visual for a single NPC */
 .npc-card-inner {
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background: radial-gradient(circle at top left, #0b1220 0%, #020617 52%, #020617 100%);
   border-radius: 0.85rem;
   padding: 1rem 1.25rem;
@@ -107,6 +111,15 @@
     box-shadow 0.18s ease-out,
     border-color 0.18s ease-out,
     background 0.2s ease-out;
+  /* Link reset */
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Locked card: pointer cursor but no hover transform */
+.npc-card-locked {
+  cursor: pointer;
+  opacity: 0.72;
 }
 
 /* Glow border accent */
@@ -150,18 +163,34 @@
   font-weight: 600;
 }
 
-/* NPC short description text */
+/* NPC short description text — grows to push button to bottom */
 .npc-text {
   font-size: 0.9rem;
   color: #9ca3af; /* light gray */
   margin-bottom: 0.85rem;
+  flex: 1;
 }
 
-/* NPC buttons */
-.npc-card-inner .btn {
+/* NPC button (rendered as <span> inside clickable card) */
+.npc-card-btn {
   font-size: 0.8rem;
   border-radius: 999px;
   padding-inline: 1rem;
+  align-self: flex-start;
+  pointer-events: none; /* card itself handles the click */
+}
+
+/* Badge (e.g. "Nouveau !", "Mini-jeu") */
+.npc-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: .65rem;
+  font-weight: 700;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
 /* ---------------------------------------------
