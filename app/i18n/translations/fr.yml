@@ -286,9 +286,12 @@ lands:
       confirm:
         title: Confirmer l'achat
         message: Es-tu sûr de vouloir acheter un emplacement ?
+        cancel: Annuler
+        ok: Confirmer
       result:
         title_success: Emplacement débloqué
         message_success: Nouvel emplacement débloqué.
+        ok: OK
   select:
     tab_title: LodyLand – Sélection des lands
     title: Choisir un land

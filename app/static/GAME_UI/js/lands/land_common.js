@@ -721,6 +721,8 @@
       confirmHandler = typeof onConfirm === "function" ? onConfirm : null;
 
       confirmModalEl.hidden = false;
+      // Force reflow so the CSS transition plays from opacity:0
+      void confirmModalEl.offsetWidth;
       confirmModalEl.classList.add("is-visible");
     }
 
@@ -753,6 +755,7 @@
       resultHandler = typeof onClose === "function" ? onClose : null;
 
       resultModalEl.hidden = false;
+      void resultModalEl.offsetWidth;
       resultModalEl.classList.add("is-visible");
     }
 

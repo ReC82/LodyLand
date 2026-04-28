@@ -31,6 +31,7 @@ from app.models import (
 )
 
 import yaml
+from app.lands import invalidate_lands_cache
 
 # Blueprint for the admin panel
 admin_bp = Blueprint(
@@ -684,6 +685,7 @@ def edit_land(key: str):
 
         lands_data[key] = land_config
         save_lands_yaml(lands_data)
+        invalidate_lands_cache()  # force reload so the game sees new values immediately
         return redirect(url_for("admin.lands_list"))
 
     return render_template("ADMIN_UI/land_form.html",
