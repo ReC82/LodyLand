@@ -1,7 +1,6 @@
 {% extends "game_base.html" %}
 
 {% block title %}{{ t("profile.title") }} – LodyLand{% endblock %}
-
 {% block body_class %}profile-body{% endblock %}
 
 {% block extra_css %}
@@ -11,336 +10,265 @@
 {% block content %}
 <div class="profile-page container-lg py-3 py-md-4">
 
-  <!-- Titre + sous-titre -->
-  <header class="profile-header mb-3 mb-md-4">
+  <header class="profile-header mb-3">
     <h1 class="profile-title">{{ t("profile.title") }}</h1>
     <p class="profile-subtitle">{{ t("profile.subtitle") }}</p>
   </header>
 
-  <div class="row g-3 g-md-4">
-    <!-- Colonne gauche : carte joueur -->
-    <div class="col-12 col-lg-4">
-      <section class="profile-card profile-player-card">
-        <div class="profile-card-header">
-          <h2 class="profile-card-title">{{ t("profile.sections.player") }}</h2>
-        </div>
-        <div class="profile-card-body">
+  <!-- Tab navigation -->
+  <nav class="profile-tabs-nav mb-4">
+    <button class="profile-tab-btn active" data-tab="profil">👤 Profil</button>
+    <button class="profile-tab-btn" data-tab="stats">📊 Statistiques</button>
+    <button class="profile-tab-btn" data-tab="skills">⚡ Compétences</button>
+    <button class="profile-tab-btn" data-tab="settings">⚙️ Paramètres</button>
+  </nav>
 
-          <!-- Avatar -->
-          <div class="profile-avatar-wrapper">
-            <img
-              src="{{ url_for('static', filename='assets/img/ui/avatar_placeholder.png') }}"
-              alt="{{ t('profile.buttons.change_avatar') }}"
-              class="profile-avatar-img"
-            />
-            <button class="btn btn-sm btn-outline-light mt-2 w-100" disabled>
-              {{ t("profile.buttons.change_avatar_coming") }}
-            </button>
+  <!-- ══════════════════════════════════════════════
+       TAB 1 — Profil
+  ══════════════════════════════════════════════ -->
+  <div id="tab-profil" class="profile-tab-panel">
+    <div class="row g-3 g-md-4">
+
+      <!-- Carte joueur -->
+      <div class="col-12 col-lg-4">
+        <section class="profile-card profile-player-card">
+          <div class="profile-card-header">
+            <h2 class="profile-card-title">{{ t("profile.sections.player") }}</h2>
           </div>
-
-          <!-- Pseudo + niveau -->
-          <div class="profile-player-info mt-3">
-            <div class="profile-info-row">
-              <span class="profile-info-label">{{ t("profile.labels.pseudo") }}</span>
-              <span class="profile-info-value">
-                {{ pseudo or t("profile.values.undefined") }}
-              </span>
-            </div>
-
-            <div class="profile-info-row">
-              <span class="profile-info-label">{{ t("profile.labels.level") }}</span>
-              <span class="profile-info-value">{{ level }}</span>
-            </div>
-
-            <div class="profile-info-row profile-info-row-muted">
-              <span class="profile-info-label">{{ t("profile.labels.title") }}</span>
-              <span class="profile-info-value">
-                {{ t("profile.titles.beginner_explorer") }} {{ t("profile.values.wip") }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- Colonne droite : infos compte + stats -->
-    <div class="col-12 col-lg-8">
-      <!-- Infos de compte -->
-      <section class="profile-card mb-3 mb-md-4">
-        <div class="profile-card-header">
-          <h2 class="profile-card-title">{{ t("profile.sections.account") }}</h2>
-        </div>
-        <div class="profile-card-body">
-
-          <div class="profile-info-row">
-            <span class="profile-info-label">{{ t("profile.labels.email") }}</span>
-            <span class="profile-info-value">{{ email }}</span>
-          </div>
-
-          <div class="profile-info-row">
-            <span class="profile-info-label">{{ t("profile.labels.password") }}</span>
-            <span class="profile-info-value">
-              ••••••••
-              <button class="btn btn-sm btn-outline-light ms-2" disabled>
-                {{ t("profile.buttons.modify_password_coming") }}
+          <div class="profile-card-body">
+            <div class="profile-avatar-wrapper">
+              <img
+                src="{{ url_for('static', filename='assets/img/ui/avatar_placeholder.png') }}"
+                alt="{{ t('profile.buttons.change_avatar') }}"
+                class="profile-avatar-img"
+              />
+              <button class="btn btn-sm btn-outline-light mt-2 w-100" disabled>
+                {{ t("profile.buttons.change_avatar_coming") }}
               </button>
-            </span>
+            </div>
+            <div class="profile-player-info mt-3">
+              <div class="profile-info-row">
+                <span class="profile-info-label">{{ t("profile.labels.pseudo") }}</span>
+                <span class="profile-info-value">{{ pseudo or t("profile.values.undefined") }}</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="profile-info-label">{{ t("profile.labels.level") }}</span>
+                <span class="profile-info-value">{{ level }}</span>
+              </div>
+              <div class="profile-info-row profile-info-row-muted">
+                <span class="profile-info-label">{{ t("profile.labels.title") }}</span>
+                <span class="profile-info-value">{{ t("profile.titles.beginner_explorer") }}</span>
+              </div>
+            </div>
           </div>
+        </section>
+      </div>
 
-          <div class="profile-info-row">
-            <span class="profile-info-label">{{ t("profile.labels.registration_date") }}</span>
-            <span class="profile-info-value">
-              {% if created_at %}
-                {{ created_at.strftime("%d/%m/%Y") }}
-              {% else %}
-                {{ t("profile.values.unknown") }}
-              {% endif %}
-            </span>
+      <!-- Compte + Beta -->
+      <div class="col-12 col-lg-8 d-flex flex-column gap-3">
+        <section class="profile-card">
+          <div class="profile-card-header">
+            <h2 class="profile-card-title">{{ t("profile.sections.account") }}</h2>
           </div>
-
-          <div class="profile-info-row profile-info-row-muted">
-            <span class="profile-info-label">{{ t("profile.labels.email_verification") }}</span>
-            <span class="profile-info-value">
-              {{ t("profile.values.in_progress") }}
-            </span>
+          <div class="profile-card-body">
+            <div class="profile-info-row">
+              <span class="profile-info-label">{{ t("profile.labels.email") }}</span>
+              <span class="profile-info-value">{{ email }}</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">{{ t("profile.labels.password") }}</span>
+              <span class="profile-info-value">
+                ••••••••
+                <button class="btn btn-sm btn-outline-light ms-2" id="btn-change-pw">
+                  {{ t("profile.buttons.modify_password") }}
+                </button>
+              </span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">{{ t("profile.labels.registration_date") }}</span>
+              <span class="profile-info-value">
+                {% if created_at %}{{ created_at.strftime("%d/%m/%Y") }}{% else %}{{ t("profile.values.unknown") }}{% endif %}
+              </span>
+            </div>
+            <div class="profile-info-row profile-info-row-muted">
+              <span class="profile-info-label">{{ t("profile.labels.email_verification") }}</span>
+              <span class="profile-info-value">{{ t("profile.values.in_progress") }}</span>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Statistiques -->
+        <!-- Beta Reset -->
+        <section class="profile-card profile-danger-zone">
+          <div class="profile-card-header">
+            <h2 class="profile-card-title">⚠️ {{ t("profile.beta.title") }}</h2>
+          </div>
+          <div class="profile-card-body">
+            <p class="mb-3 text-warning">{{ t("profile.beta.description") }}</p>
+            <button class="btn btn-danger" id="btn-beta-reset">{{ t("profile.beta.button") }}</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB 2 — Statistiques
+  ══════════════════════════════════════════════ -->
+  <div id="tab-stats" class="profile-tab-panel" style="display:none;">
+    <div id="stats-loading" class="text-center py-5" style="color:#94a3b8;">Chargement…</div>
+    <div id="stats-content" style="display:none;"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB 3 — Compétences
+  ══════════════════════════════════════════════ -->
+  <div id="tab-skills" class="profile-tab-panel" style="display:none;">
+    <section class="profile-card">
+      <div class="profile-card-header">
+        <h2 class="profile-card-title">⚡ Skills passifs</h2>
+      </div>
+      <div class="profile-card-body" id="skills-body">
+        <p style="color:#94a3b8;font-size:.9rem;">Chargement…</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB 4 — Paramètres
+  ══════════════════════════════════════════════ -->
+  <div id="tab-settings" class="profile-tab-panel" style="display:none;">
+    <div class="d-flex flex-column gap-3">
+
+      <!-- Langue -->
       <section class="profile-card">
-        <div class="profile-card-header">
-          <h2 class="profile-card-title">{{ t("profile.sections.statistics") }}</h2>
-        </div>
-        <div class="profile-card-body">
-          <div class="row g-3">
-            <div class="col-6 col-md-3">
-              <div class="profile-stat">
-                <div class="profile-stat-label">{{ t("profile.stats.lands_unlocked") }}</div>
-                <div class="profile-stat-value">{{ stats.lands_unlocked }}</div>
-                <div class="profile-stat-hint">
-                  {{ t("profile.stats.slots") }}: {{ stats.total_slots }}
-                </div>
-              </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-              <div class="profile-stat">
-                <div class="profile-stat-label">{{ t("profile.stats.quests_completed") }}</div>
-                <div class="profile-stat-value">{{ stats.quests_completed }}</div>
-                <div class="profile-stat-hint">
-                  {{ t("profile.stats.quest_types") }}
-                </div>
-              </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-              <div class="profile-stat">
-                <div class="profile-stat-label">{{ t("profile.stats.level") }}</div>
-                <div class="profile-stat-value">{{ stats.level }}</div>
-                <div class="profile-stat-hint">
-                  {{ t("profile.stats.total_xp") }} ({{ t("profile.stats.coming_soon") }})
-                </div>
-              </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-              <div class="profile-stat">
-                <div class="profile-stat-label">{{ t("profile.stats.playtime") }}</div>
-                <div class="profile-stat-value">–</div>
-                <div class="profile-stat-hint">{{ t("profile.stats.to_implement") }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Paramètres de langue -->
-      <section class="profile-card mt-3 mt-md-4">
         <div class="profile-card-header">
           <h2 class="profile-card-title">{{ t("settings.language") }}</h2>
         </div>
         <div class="profile-card-body">
           <p class="mb-3">{{ t("settings.language_description") }}</p>
-
           <div class="language-selector">
             <label class="language-option">
-              <input type="radio" name="language" value="fr" 
-                    {% if current_lang == 'fr' %}checked{% endif %}>
+              <input type="radio" name="language" value="fr" {% if current_lang == 'fr' %}checked{% endif %}>
               <span class="language-flag">🇫🇷</span>
-              <span class="language-name">Français</span>
+              <span class="language-name">FR Français</span>
             </label>
-            
             <label class="language-option">
-              <input type="radio" name="language" value="en"
-                    {% if current_lang == 'en' %}checked{% endif %}>
+              <input type="radio" name="language" value="en" {% if current_lang == 'en' %}checked{% endif %}>
               <span class="language-flag">🇬🇧</span>
-              <span class="language-name">English</span>
+              <span class="language-name">GB English</span>
             </label>
           </div>
         </div>
       </section>
 
-      <!-- Thèmes -->
-      <section class="profile-card mt-3 mt-md-4">
+      <!-- Thème -->
+      <section class="profile-card">
         <div class="profile-card-header">
           <h2 class="profile-card-title">🎨 Thème de l'interface</h2>
         </div>
         <div class="profile-card-body">
           <p class="mb-3 small" style="color:#a0aec0;">Choisissez l'habillage visuel du jeu. Le contraste reste garanti pour chaque thème.</p>
           <div class="theme-picker" id="theme-picker">
-
-            <label class="theme-option {% if current_theme == 'default' %}active{% endif %}" data-theme="default" title="Cosmique sombre (défaut)">
-              <div class="theme-preview" style="background: linear-gradient(135deg, #020617 50%, #1d283a 100%); border-color: #374151;">
-                <span class="theme-dot" style="background:#fbbf24;"></span>
-                <span class="theme-dot" style="background:#6366f1;"></span>
-                <span class="theme-dot" style="background:#e5e7eb;"></span>
+            {% set themes = [
+              ("default",    "Cosmique",   "linear-gradient(135deg,#020617 50%,#1d283a 100%)", "#374151", "#fbbf24", "#6366f1", "#e5e7eb"),
+              ("light",      "Clair",      "linear-gradient(135deg,#f4f4f6 50%,#ffffff 100%)", "#c8cdd6", "#1f2937", "#5a6272", "#c8cdd6"),
+              ("monochrome", "Monochrome", "linear-gradient(135deg,#0a0a0a 50%,#222 100%)",    "#3a3a3a", "#ffffff", "#888",    "#444"),
+              ("medieval",   "Médiéval",  "linear-gradient(135deg,#1a0f02 50%,#3a2010 100%)", "#8b6343", "#d4af37", "#c4a882", "#f5deb3"),
+              ("fantasy",    "Arcane",     "linear-gradient(135deg,#0d0520 50%,#2d1b69 100%)", "#4c1d95", "#a78bfa", "#7c3aed", "#e9d5ff"),
+              ("emerald",    "Émeraude",  "linear-gradient(135deg,#021a0e 50%,#0f3a22 100%)", "#166534", "#4ade80", "#16a34a", "#d1fae5")
+            ] %}
+            {% for key, name, bg, border, d1, d2, d3 in themes %}
+            <label class="theme-option {% if current_theme == key %}active{% endif %}" data-theme="{{ key }}">
+              <div class="theme-preview" style="background:{{ bg }}; border-color:{{ border }};">
+                <span class="theme-dot" style="background:{{ d1 }};"></span>
+                <span class="theme-dot" style="background:{{ d2 }};"></span>
+                <span class="theme-dot" style="background:{{ d3 }};"></span>
               </div>
-              <span class="theme-name">Cosmique</span>
-              <span class="theme-check">{% if current_theme == 'default' %}✓{% endif %}</span>
+              <span class="theme-name">{{ name }}</span>
+              <span class="theme-check">{% if current_theme == key %}✓{% endif %}</span>
             </label>
-
-            <label class="theme-option {% if current_theme == 'light' %}active{% endif %}" data-theme="light" title="Blanc & Noir">
-              <div class="theme-preview" style="background: linear-gradient(135deg, #f4f4f6 50%, #ffffff 100%); border-color: #c8cdd6;">
-                <span class="theme-dot" style="background:#1f2937;"></span>
-                <span class="theme-dot" style="background:#5a6272;"></span>
-                <span class="theme-dot" style="background:#c8cdd6;"></span>
-              </div>
-              <span class="theme-name">Clair</span>
-              <span class="theme-check">{% if current_theme == 'light' %}✓{% endif %}</span>
-            </label>
-
-            <label class="theme-option {% if current_theme == 'monochrome' %}active{% endif %}" data-theme="monochrome" title="Noir & Blanc">
-              <div class="theme-preview" style="background: linear-gradient(135deg, #0a0a0a 50%, #222 100%); border-color: #3a3a3a;">
-                <span class="theme-dot" style="background:#ffffff;"></span>
-                <span class="theme-dot" style="background:#888;"></span>
-                <span class="theme-dot" style="background:#444;"></span>
-              </div>
-              <span class="theme-name">Monochrome</span>
-              <span class="theme-check">{% if current_theme == 'monochrome' %}✓{% endif %}</span>
-            </label>
-
-            <label class="theme-option {% if current_theme == 'medieval' %}active{% endif %}" data-theme="medieval" title="Parchemin médiéval">
-              <div class="theme-preview" style="background: linear-gradient(135deg, #1a0f02 50%, #3a2010 100%); border-color: #8b6343;">
-                <span class="theme-dot" style="background:#d4af37;"></span>
-                <span class="theme-dot" style="background:#c4a882;"></span>
-                <span class="theme-dot" style="background:#f5deb3;"></span>
-              </div>
-              <span class="theme-name">Médiéval</span>
-              <span class="theme-check">{% if current_theme == 'medieval' %}✓{% endif %}</span>
-            </label>
-
-            <label class="theme-option {% if current_theme == 'fantasy' %}active{% endif %}" data-theme="fantasy" title="Arcane violet">
-              <div class="theme-preview" style="background: linear-gradient(135deg, #0d0520 50%, #2d1b69 100%); border-color: #4c1d95;">
-                <span class="theme-dot" style="background:#a78bfa;"></span>
-                <span class="theme-dot" style="background:#7c3aed;"></span>
-                <span class="theme-dot" style="background:#e9d5ff;"></span>
-              </div>
-              <span class="theme-name">Arcane</span>
-              <span class="theme-check">{% if current_theme == 'fantasy' %}✓{% endif %}</span>
-            </label>
-
-            <label class="theme-option {% if current_theme == 'emerald' %}active{% endif %}" data-theme="emerald" title="Forêt émeraude">
-              <div class="theme-preview" style="background: linear-gradient(135deg, #021a0e 50%, #0f3a22 100%); border-color: #166534;">
-                <span class="theme-dot" style="background:#4ade80;"></span>
-                <span class="theme-dot" style="background:#16a34a;"></span>
-                <span class="theme-dot" style="background:#d1fae5;"></span>
-              </div>
-              <span class="theme-name">Émeraude</span>
-              <span class="theme-check">{% if current_theme == 'emerald' %}✓{% endif %}</span>
-            </label>
-
+            {% endfor %}
           </div>
           <div id="theme-save-msg" class="small mt-2" style="min-height:1.2em;"></div>
         </div>
       </section>
 
       <!-- Historique -->
-      <section class="profile-card mt-3 mt-md-4">
+      <section class="profile-card">
         <div class="profile-card-header">
           <h2 class="profile-card-title">{{ t("profile.sections.history") }}</h2>
         </div>
         <div class="profile-card-body">
           <p class="mb-3">{{ t("profile.history.description") }}</p>
-
           <div class="profile-history-grid">
-            <button class="btn btn-outline-light w-100" disabled>
-              {{ t("profile.history.resources_sold") }}
-            </button>
-            <button class="btn btn-outline-light w-100" disabled>
-              {{ t("profile.history.cards_bought") }}
-            </button>
-            <button class="btn btn-outline-light w-100" disabled>
-              {{ t("profile.history.slots_bought") }}
-            </button>
-            <button class="btn btn-outline-light w-100" disabled>
-              {{ t("profile.history.other_transactions") }}
-            </button>
+            <button class="btn btn-outline-light w-100" disabled>{{ t("profile.history.resources_sold") }}</button>
+            <button class="btn btn-outline-light w-100" disabled>{{ t("profile.history.cards_bought") }}</button>
+            <button class="btn btn-outline-light w-100" disabled>{{ t("profile.history.slots_bought") }}</button>
+            <button class="btn btn-outline-light w-100" disabled>{{ t("profile.history.other_transactions") }}</button>
           </div>
         </div>
       </section>
+
     </div>
   </div>
 
+</div><!-- /.profile-page -->
+
+<!-- ══════════════════════════════════════════════
+     Modal: changement de mot de passe
+══════════════════════════════════════════════ -->
+<div id="modal-change-pw" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);">
+  <div style="background:#1a1f35;border:1px solid rgba(99,102,241,.4);border-radius:16px;max-width:420px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.6);">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(99,102,241,.2);display:flex;align-items:center;justify-content:space-between;">
+      <h5 style="margin:0;font-weight:700;">🔐 Modifier le mot de passe</h5>
+      <button id="modal-pw-close" style="background:none;border:none;color:#9ca3af;font-size:1.5rem;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:.85rem;">
+      <div>
+        <label style="font-size:.85rem;color:#a0aec0;display:block;margin-bottom:.3rem;">Mot de passe actuel</label>
+        <input id="pw-current" type="password" style="width:100%;background:#0f172a;border:1px solid #374151;border-radius:8px;padding:.5rem .8rem;color:#f1f5f9;font-size:.9rem;" autocomplete="current-password">
+      </div>
+      <div>
+        <label style="font-size:.85rem;color:#a0aec0;display:block;margin-bottom:.3rem;">Nouveau mot de passe</label>
+        <input id="pw-new" type="password" style="width:100%;background:#0f172a;border:1px solid #374151;border-radius:8px;padding:.5rem .8rem;color:#f1f5f9;font-size:.9rem;" autocomplete="new-password">
+      </div>
+      <div>
+        <label style="font-size:.85rem;color:#a0aec0;display:block;margin-bottom:.3rem;">Confirmer le nouveau mot de passe</label>
+        <input id="pw-confirm" type="password" style="width:100%;background:#0f172a;border:1px solid #374151;border-radius:8px;padding:.5rem .8rem;color:#f1f5f9;font-size:.9rem;" autocomplete="new-password">
+      </div>
+      <div id="pw-feedback" style="font-size:.85rem;min-height:1.2em;"></div>
+    </div>
+    <div style="padding:1rem 1.5rem;border-top:1px solid rgba(99,102,241,.15);display:flex;gap:.75rem;justify-content:flex-end;">
+      <button id="modal-pw-cancel" class="btn btn-secondary">Annuler</button>
+      <button id="btn-pw-submit" class="btn btn-primary fw-bold">Enregistrer</button>
+    </div>
+  </div>
 </div>
 
-<!-- ── Skills ── -->
-<section class="profile-card mt-3 mt-md-4" id="skills-section">
-  <div class="profile-card-header">
-    <h2 class="profile-card-title">⚡ Skills passifs</h2>
-  </div>
-  <div class="profile-card-body" id="skills-body">
-    <p class="text-muted small">Chargement…</p>
-  </div>
-</section>
-
-<!-- Beta Reset -->
-      <section class="profile-card mt-3 mt-md-4 profile-danger-zone">
-        <div class="profile-card-header">
-          <h2 class="profile-card-title">⚠️ {{ t("profile.beta.title") }}</h2>
-        </div>
-        <div class="profile-card-body">
-          <p class="mb-3 text-warning">{{ t("profile.beta.description") }}</p>
-          <button class="btn btn-danger" id="btn-beta-reset">
-            {{ t("profile.beta.button") }}
-          </button>
-        </div>
-      </section>
-
-<!-- Modal Beta Reset (no Bootstrap JS required) -->
-<div id="modal-beta-reset" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,.7); backdrop-filter:blur(4px);">
-  <div style="background:#1a1f35; border:1px solid rgba(239,68,68,.5); border-radius:16px; max-width:480px; width:90%; padding:0; box-shadow:0 24px 64px rgba(0,0,0,.6);">
-    <!-- Header -->
-    <div style="padding:1.25rem 1.5rem; border-bottom:1px solid rgba(239,68,68,.3); display:flex; align-items:center; justify-content:space-between;">
-      <h5 style="margin:0; color:#f87171; font-weight:700;">⚠️ {{ t("profile.beta.modal_title") }}</h5>
-      <button id="modal-beta-close" style="background:none; border:none; color:#9ca3af; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+<!-- ══════════════════════════════════════════════
+     Modal: Beta Reset
+══════════════════════════════════════════════ -->
+<div id="modal-beta-reset" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);">
+  <div style="background:#1a1f35;border:1px solid rgba(239,68,68,.5);border-radius:16px;max-width:480px;width:90%;padding:0;box-shadow:0 24px 64px rgba(0,0,0,.6);">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(239,68,68,.3);display:flex;align-items:center;justify-content:space-between;">
+      <h5 style="margin:0;color:#f87171;font-weight:700;">⚠️ {{ t("profile.beta.modal_title") }}</h5>
+      <button id="modal-beta-close" style="background:none;border:none;color:#9ca3af;font-size:1.5rem;cursor:pointer;line-height:1;">&times;</button>
     </div>
-    <!-- Body -->
     <div style="padding:1.5rem;">
-      <p style="margin-bottom:.75rem; color:#f1f5f9;">{{ t("profile.beta.modal_warning") }}</p>
-      <ul style="color:#fca5a5; font-size:.88rem; line-height:1.9; margin-bottom:1rem; padding-left:1.25rem;">
-        {% for item in t("profile.beta.modal_list").split(" · ") %}
-        <li>{{ item }}</li>
-        {% endfor %}
+      <p style="margin-bottom:.75rem;color:#f1f5f9;">{{ t("profile.beta.modal_warning") }}</p>
+      <ul style="color:#fca5a5;font-size:.88rem;line-height:1.9;margin-bottom:1rem;padding-left:1.25rem;">
+        {% for item in t("profile.beta.modal_list").split(" · ") %}<li>{{ item }}</li>{% endfor %}
       </ul>
-      <p style="color:#4ade80; font-size:.88rem; margin-bottom:1.25rem;">{{ t("profile.beta.modal_kept") }}</p>
-      <label style="font-size:.9rem; color:#e2e8f0; display:block; margin-bottom:.4rem;">
-        {{ t("profile.beta.modal_confirm_label") }}
-        <strong style="color:#fbbf24;">{{ pseudo }}</strong>
+      <p style="color:#4ade80;font-size:.88rem;margin-bottom:1.25rem;">{{ t("profile.beta.modal_kept") }}</p>
+      <label style="font-size:.9rem;color:#e2e8f0;display:block;margin-bottom:.4rem;">
+        {{ t("profile.beta.modal_confirm_label") }} <strong style="color:#fbbf24;">{{ pseudo }}</strong>
       </label>
-      <input
-        type="text"
-        id="beta-reset-confirm-input"
-        style="width:100%; background:#0f172a; border:1px solid #374151; border-radius:8px; padding:.55rem .9rem; color:#f1f5f9; font-size:.95rem;"
-        placeholder="{{ pseudo }}"
-        autocomplete="off"
-      />
-      <div id="beta-reset-error" style="display:none; color:#f87171; font-size:.85rem; margin-top:.5rem;">
-        {{ t("profile.beta.modal_error") }}
-      </div>
+      <input type="text" id="beta-reset-confirm-input"
+        style="width:100%;background:#0f172a;border:1px solid #374151;border-radius:8px;padding:.55rem .9rem;color:#f1f5f9;font-size:.95rem;"
+        placeholder="{{ pseudo }}" autocomplete="off">
+      <div id="beta-reset-error" style="display:none;color:#f87171;font-size:.85rem;margin-top:.5rem;">{{ t("profile.beta.modal_error") }}</div>
     </div>
-    <!-- Footer -->
-    <div style="padding:1rem 1.5rem; border-top:1px solid rgba(239,68,68,.2); display:flex; gap:.75rem; justify-content:flex-end;">
+    <div style="padding:1rem 1.5rem;border-top:1px solid rgba(239,68,68,.2);display:flex;gap:.75rem;justify-content:flex-end;">
       <button id="modal-beta-cancel" class="btn btn-secondary">{{ t("profile.beta.modal_cancel") }}</button>
       <button id="btn-beta-reset-confirm" class="btn btn-danger fw-bold">🗑️ {{ t("profile.beta.modal_confirm_btn") }}</button>
     </div>
@@ -350,93 +278,311 @@
 {% endblock %}
 
 {% block extra_scripts %}
-  <script src="{{ url_for('static', filename='GAME_UI/js/ui/profile_app.js') }}"></script>
-  <script>
-  // ── Skills display ────────────────────────────────────────────────────────
-  const BONUS_LABELS = {
-    double_drop:          { fr: "Double drop",         en: "Double drop",          unit: "%" },
-    cooldown_reduction:   { fr: "Réduction cooldown",  en: "Cooldown reduction",   unit: "s" },
-    craft_time_reduction: { fr: "Réduction craft",     en: "Craft time reduction", unit: "%" },
-    instant_craft_chance: { fr: "Craft instantané",    en: "Instant craft chance", unit: "%" },
-    xp_bonus:             { fr: "Bonus XP",            en: "XP bonus",             unit: "%" },
-    shard_chance:         { fr: "Chance shards",       en: "Shard chance",         unit: "%" },
-  };
-  const CAT_LABELS = { resource: "Ressources", land: "Terres", craft: "Artisanat" };
-  const CAT_ICONS  = { resource: "🌿", land: "🗺️", craft: "⚙️" };
+<script src="{{ url_for('static', filename='GAME_UI/js/ui/profile_app.js') }}"></script>
+<script>
+// ═══════════════════════════════════════
+// Tab switching
+// ═══════════════════════════════════════
+const TABS = ["profil", "stats", "skills", "settings"];
 
-  function renderSkills(skills) {
-    const container = document.getElementById('skills-body');
-    if (!skills.length) {
-      container.innerHTML = '<p class="text-muted small">Aucun skill disponible pour l\'instant.</p>';
-      return;
-    }
-
-    // Group by category
-    const groups = {};
-    skills.forEach(sk => {
-      if (!groups[sk.category]) groups[sk.category] = [];
-      groups[sk.category].push(sk);
+document.querySelectorAll(".profile-tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    TABS.forEach(t => {
+      document.getElementById("tab-" + t).style.display = t === tab ? "" : "none";
+      document.querySelector(`[data-tab="${t}"]`).classList.toggle("active", t === tab);
     });
+    if (tab === "stats" && !window._statsLoaded) loadStats();
+    if (tab === "skills" && !window._skillsLoaded) loadSkills();
+  });
+});
 
-    const lang = document.documentElement.lang || 'fr';
+// ═══════════════════════════════════════
+// Stats dashboard
+// ═══════════════════════════════════════
+window._statsLoaded = false;
 
-    let html = '';
-    for (const cat of ['resource', 'land', 'craft']) {
-      if (!groups[cat]) continue;
-      html += `<div style="margin-bottom:1.25rem;">
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-                    color:#94a3b8;margin-bottom:.5rem;">${CAT_ICONS[cat]} ${CAT_LABELS[cat]}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem;">`;
+function pct(owned, total) {
+  return total > 0 ? Math.min(100, Math.round(owned / total * 100)) : 0;
+}
 
-      groups[cat].forEach(sk => {
-        const pct = sk.next_req ? Math.min(100, Math.round(sk.progress / sk.next_req * 100)) : 100;
-        const name = lang === 'fr' ? sk.name_fr : (sk.name_en || sk.name_fr);
-        const levelDots = Array.from({length: sk.max_level}, (_, i) =>
-          `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;
-                        background:${i < sk.level ? '#6366f1' : 'rgba(255,255,255,.15)'}"></span>`
-        ).join('');
+function progressBar(owned, total, color) {
+  const p = pct(owned, total);
+  color = color || "#6366f1";
+  return `
+    <div class="stat-bar-wrap">
+      <div class="stat-bar-track">
+        <div class="stat-bar-fill" style="width:${p}%;background:${color};"></div>
+      </div>
+      <span class="stat-bar-label">${owned} / ${total} <span class="stat-bar-pct">(${p}%)</span></span>
+    </div>`;
+}
 
-        const bonusHtml = sk.bonuses.length
-          ? sk.bonuses.map(b => {
-              const bl = BONUS_LABELS[b.type] || { fr: b.type, en: b.type, unit: '' };
-              const label = lang === 'fr' ? bl.fr : bl.en;
-              return `<span style="font-size:.72rem;background:rgba(99,102,241,.2);color:#a5b4fc;
-                             border-radius:4px;padding:.1rem .4rem;">${label} +${b.value}${bl.unit}</span>`;
-            }).join(' ')
-          : `<span style="font-size:.72rem;color:#64748b;">Aucun bonus actif (niv. 0)</span>`;
+const CARD_COLORS = {
+  land_access:     "#facc15",
+  craft_recipe:    "#fb923c",
+  craft_access:    "#f97316",
+  land_loot_boost: "#4ade80",
+  resource_boost:  "#34d399",
+  xp_boost:        "#a78bfa",
+  cooldown_boost:  "#60a5fa",
+  building_access: "#f472b6",
+  land_slot:       "#94a3b8",
+  passive_boost:   "#c084fc",
+};
 
-        const progressBar = sk.next_req
-          ? `<div style="background:rgba(255,255,255,.08);border-radius:99px;height:4px;margin:.4rem 0 .2rem;">
-               <div style="background:#6366f1;height:4px;border-radius:99px;width:${pct}%;transition:width .3s;"></div>
-             </div>
-             <div style="font-size:.68rem;color:#64748b;">${sk.progress.toLocaleString()} / ${sk.next_req.toLocaleString()}</div>`
-          : `<div style="font-size:.72rem;color:#4ade80;margin-top:.3rem;">✅ Niveau maximum atteint !</div>`;
+const QUEST_LABELS = {
+  storyline: { fr: "Histoire principale", en: "Main story" },
+  daily:     { fr: "Quotidiennes",        en: "Daily" },
+  weekly:    { fr: "Hebdomadaires",       en: "Weekly" },
+  other:     { fr: "Autres",             en: "Other" },
+};
 
-        html += `
-          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-                      border-radius:10px;padding:.7rem .85rem;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;">
-              <span style="font-weight:600;font-size:.88rem;">${name}</span>
-              <span style="font-size:.75rem;font-weight:700;color:#6366f1;">Niv. ${sk.level}</span>
-            </div>
-            <div style="margin-bottom:.35rem;">${levelDots}</div>
-            ${progressBar}
-            <div style="margin-top:.4rem;display:flex;gap:.3rem;flex-wrap:wrap;">${bonusHtml}</div>
-          </div>`;
-      });
-      html += '</div></div>';
-    }
-    container.innerHTML = html;
-  }
+function renderStats(d) {
+  const lang = document.documentElement.lang || "fr";
 
-  fetch('/api/skills')
+  // Cards section
+  const cardsTotal = d.cards.total, cardsOwned = d.cards.owned;
+  let cardsByTypeHtml = d.cards.by_type.map(ct => {
+    const lbl = lang === "fr" ? ct.label_fr : ct.label_en;
+    const color = CARD_COLORS[ct.type] || "#6366f1";
+    return `
+      <div class="stat-type-row">
+        <span class="stat-type-dot" style="background:${color};"></span>
+        <span class="stat-type-name">${lbl}</span>
+        ${progressBar(ct.owned, ct.total, color)}
+      </div>`;
+  }).join("");
+
+  // Quests section
+  const QUEST_ORDER = ["storyline", "daily", "weekly", "other"];
+  let questsHtml = QUEST_ORDER.map(qt => {
+    const q = d.quests[qt];
+    if (!q) return "";
+    const lbl = (lang === "fr" ? QUEST_LABELS[qt]?.fr : QUEST_LABELS[qt]?.en) || qt;
+    return `
+      <div class="stat-type-row">
+        <span class="stat-type-name" style="min-width:140px;">${lbl}</span>
+        ${progressBar(q.completed, q.total, "#22c55e")}
+      </div>`;
+  }).join("");
+
+  // Mini-games
+  let mgHtml = d.minigames.total === 0
+    ? `<p style="color:#64748b;font-size:.88rem;">Aucun mini-jeu disponible.</p>`
+    : progressBar(d.minigames.accessible, d.minigames.total, "#fb923c");
+
+  document.getElementById("stats-content").innerHTML = `
+    <div class="stats-grid">
+
+      <!-- Cards overall -->
+      <section class="profile-card stats-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">🃏 Cartes</h2>
+          <span class="stats-overall">${cardsOwned} / ${cardsTotal}</span>
+        </div>
+        <div class="profile-card-body">
+          ${progressBar(cardsOwned, cardsTotal, "#6366f1")}
+          <div class="stat-types-list mt-3">${cardsByTypeHtml}</div>
+        </div>
+      </section>
+
+      <!-- Resources -->
+      <section class="profile-card stats-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">🌿 Ressources découvertes</h2>
+          <span class="stats-overall">${d.resources.discovered} / ${d.resources.total}</span>
+        </div>
+        <div class="profile-card-body">
+          ${progressBar(d.resources.discovered, d.resources.total, "#34d399")}
+          <p class="stat-hint">Une ressource est considérée découverte dès que tu en possèdes au moins 1 en inventaire.</p>
+        </div>
+      </section>
+
+      <!-- Lands + slots -->
+      <section class="profile-card stats-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">🗺️ Terres débloquées</h2>
+          <span class="stats-overall">${d.lands.unlocked} / ${d.lands.total}</span>
+        </div>
+        <div class="profile-card-body">
+          ${progressBar(d.lands.unlocked, d.lands.total, "#facc15")}
+          <div class="stat-extra-row mt-3">
+            <span style="color:#94a3b8;font-size:.88rem;">Emplacements supplémentaires achetés</span>
+            <strong style="font-size:1.1rem;">${d.lands.extra_slots_purchased}</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quests -->
+      <section class="profile-card stats-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">📜 Quêtes terminées</h2>
+        </div>
+        <div class="profile-card-body">
+          ${questsHtml || '<p style="color:#64748b;font-size:.88rem;">Aucune quête enregistrée.</p>'}
+        </div>
+      </section>
+
+      <!-- Mini-games -->
+      <section class="profile-card stats-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">🎮 Mini-jeux accessibles</h2>
+          <span class="stats-overall">${d.minigames.accessible} / ${d.minigames.total}</span>
+        </div>
+        <div class="profile-card-body">${mgHtml}</div>
+      </section>
+
+    </div>`;
+}
+
+function loadStats() {
+  fetch("/api/profile/stats")
     .then(r => r.json())
     .then(d => {
-      if (d.ok) renderSkills(d.skills.filter(sk => sk.level > 0 || sk.progress > 0));
-      else document.getElementById('skills-body').innerHTML = '<p class="text-muted small">Erreur de chargement.</p>';
+      if (!d.ok) throw new Error(d.error);
+      window._statsLoaded = true;
+      document.getElementById("stats-loading").style.display = "none";
+      document.getElementById("stats-content").style.display = "";
+      renderStats(d);
     })
     .catch(() => {
-      document.getElementById('skills-body').innerHTML = '<p class="text-muted small">Skills non disponibles.</p>';
+      document.getElementById("stats-loading").textContent = "Erreur de chargement des statistiques.";
     });
-  </script>
+}
+
+// ═══════════════════════════════════════
+// Skills
+// ═══════════════════════════════════════
+window._skillsLoaded = false;
+
+const BONUS_LABELS = {
+  double_drop:          { fr: "Double drop",         en: "Double drop",          unit: "%" },
+  cooldown_reduction:   { fr: "Réduction cooldown",  en: "Cooldown reduction",   unit: "s" },
+  craft_time_reduction: { fr: "Réduction craft",     en: "Craft time reduction", unit: "%" },
+  instant_craft_chance: { fr: "Craft instantané",    en: "Instant craft chance", unit: "%" },
+  xp_bonus:             { fr: "Bonus XP",            en: "XP bonus",             unit: "%" },
+  shard_chance:         { fr: "Chance shards",       en: "Shard chance",         unit: "%" },
+};
+const CAT_LABELS = { resource: "Ressources", land: "Terres", craft: "Artisanat" };
+const CAT_ICONS  = { resource: "🌿", land: "🗺️", craft: "⚙️" };
+
+function renderSkills(skills) {
+  const container = document.getElementById("skills-body");
+  if (!skills.length) {
+    container.innerHTML = '<p style="color:#94a3b8;font-size:.9rem;">Aucun skill disponible.</p>';
+    return;
+  }
+  const groups = {};
+  skills.forEach(sk => { if (!groups[sk.category]) groups[sk.category] = []; groups[sk.category].push(sk); });
+  const lang = document.documentElement.lang || "fr";
+  let html = "";
+  for (const cat of ["resource", "land", "craft"]) {
+    if (!groups[cat]) continue;
+    html += `<div style="margin-bottom:1.25rem;">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:.5rem;">${CAT_ICONS[cat]} ${CAT_LABELS[cat]}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem;">`;
+    groups[cat].forEach(sk => {
+      const p = sk.next_req ? Math.min(100, Math.round(sk.progress / sk.next_req * 100)) : 100;
+      const name = lang === "fr" ? sk.name_fr : (sk.name_en || sk.name_fr);
+      const dots = Array.from({length: sk.max_level}, (_, i) =>
+        `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;background:${i < sk.level ? "#6366f1" : "rgba(255,255,255,.15)"}"></span>`
+      ).join("");
+      const bonusHtml = sk.bonuses.length
+        ? sk.bonuses.map(b => {
+            const bl = BONUS_LABELS[b.type] || {fr:b.type,en:b.type,unit:""};
+            return `<span style="font-size:.72rem;background:rgba(99,102,241,.2);color:#a5b4fc;border-radius:4px;padding:.1rem .4rem;">${lang==="fr"?bl.fr:bl.en} +${b.value}${bl.unit}</span>`;
+          }).join(" ")
+        : `<span style="font-size:.72rem;color:#64748b;">Aucun bonus actif (niv. 0)</span>`;
+      const bar = sk.next_req
+        ? `<div style="background:rgba(255,255,255,.08);border-radius:99px;height:4px;margin:.4rem 0 .2rem;">
+             <div style="background:#6366f1;height:4px;border-radius:99px;width:${p}%;"></div>
+           </div>
+           <div style="font-size:.68rem;color:#64748b;">${sk.progress.toLocaleString()} / ${sk.next_req.toLocaleString()}</div>`
+        : `<div style="font-size:.72rem;color:#4ade80;margin-top:.3rem;">✅ Niveau maximum atteint !</div>`;
+      html += `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem .85rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;">
+          <span style="font-weight:600;font-size:.88rem;">${name}</span>
+          <span style="font-size:.75rem;font-weight:700;color:#6366f1;">Niv. ${sk.level}</span>
+        </div>
+        <div style="margin-bottom:.35rem;">${dots}</div>
+        ${bar}
+        <div style="margin-top:.4rem;display:flex;gap:.3rem;flex-wrap:wrap;">${bonusHtml}</div>
+      </div>`;
+    });
+    html += "</div></div>";
+  }
+  container.innerHTML = html;
+}
+
+function loadSkills() {
+  fetch("/api/skills")
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        window._skillsLoaded = true;
+        renderSkills(d.skills.filter(sk => sk.level > 0 || sk.progress > 0));
+      }
+    })
+    .catch(() => {
+      document.getElementById("skills-body").innerHTML = '<p style="color:#94a3b8;">Erreur de chargement.</p>';
+    });
+}
+
+// Pre-load skills immediately (they show on tab open)
+loadSkills();
+
+// ═══════════════════════════════════════
+// Password change modal
+// ═══════════════════════════════════════
+function openPwModal() {
+  const m = document.getElementById("modal-change-pw");
+  m.style.display = "flex";
+  ["pw-current","pw-new","pw-confirm"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("pw-feedback").textContent = "";
+}
+function closePwModal() { document.getElementById("modal-change-pw").style.display = "none"; }
+
+document.getElementById("btn-change-pw").addEventListener("click", openPwModal);
+document.getElementById("modal-pw-close").addEventListener("click", closePwModal);
+document.getElementById("modal-pw-cancel").addEventListener("click", closePwModal);
+
+document.getElementById("btn-pw-submit").addEventListener("click", () => {
+  const feedback = document.getElementById("pw-feedback");
+  const body = {
+    current_password:  document.getElementById("pw-current").value,
+    new_password:      document.getElementById("pw-new").value,
+    confirm_password:  document.getElementById("pw-confirm").value,
+  };
+  feedback.style.color = "#94a3b8";
+  feedback.textContent = "Enregistrement…";
+
+  fetch("/api/profile/password", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body),
+  })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        feedback.style.color = "#4ade80";
+        feedback.textContent = "✅ Mot de passe modifié avec succès !";
+        setTimeout(closePwModal, 1500);
+      } else {
+        const msgs = {
+          missing_fields:        "Veuillez remplir tous les champs.",
+          password_mismatch:     "Les mots de passe ne correspondent pas.",
+          password_too_short:    "Le mot de passe doit contenir au moins 8 caractères.",
+          wrong_current_password:"Mot de passe actuel incorrect.",
+        };
+        feedback.style.color = "#f87171";
+        feedback.textContent = msgs[d.error] || "Une erreur est survenue.";
+      }
+    })
+    .catch(() => {
+      feedback.style.color = "#f87171";
+      feedback.textContent = "Erreur réseau.";
+    });
+});
+</script>
 {% endblock %}

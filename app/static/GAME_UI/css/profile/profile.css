@@ -267,3 +267,156 @@
   font-weight: 700;
   min-height: 1em;
 }
+
+/* ══════════════════════════════════════════════
+   Profile tabs navigation
+══════════════════════════════════════════════ */
+.profile-tabs-nav {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+  padding-bottom: 0;
+}
+
+.profile-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.55rem 1rem 0.65rem;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  margin-bottom: -2px;
+}
+
+.profile-tab-btn:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-tab-btn.active {
+  color: #f1f5f9;
+  border-bottom-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* ══════════════════════════════════════════════
+   Stats dashboard
+══════════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.stats-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-card .profile-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stats-overall {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+/* Progress bar */
+.stat-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.stat-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.stat-bar-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.stat-bar-pct {
+  opacity: 0.7;
+}
+
+/* Per-type rows in cards section */
+.stat-types-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.stat-type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.stat-type-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-type-name {
+  min-width: 110px;
+  color: #cbd5e1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-type-row .stat-bar-wrap {
+  flex: 1;
+}
+
+/* Misc */
+.stat-hint {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.stat-extra-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-top: 1px dashed rgba(148, 163, 184, 0.2);
+}
+
+/* Card header alignment fix for profile-card-title + stats-overall */
+.profile-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}

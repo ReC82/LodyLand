@@ -324,7 +324,7 @@ base:
   menu:
     title: Menu
     close_aria: Close menu
-    profile_wip: Profile (WIP)
+    profile_wip: Profile
     lands: Lands
     inventory: Inventory
     support: Report an issue

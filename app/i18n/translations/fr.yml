@@ -325,7 +325,7 @@ base:
   menu:
     title: Menu
     close_aria: Fermer le menu
-    profile_wip: Profil (En cours)
+    profile_wip: Profil
     lands: Mes terres
     inventory: Inventaire
     support: Signaler un problème

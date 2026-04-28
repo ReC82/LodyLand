@@ -855,3 +855,146 @@ def update_player_name():
         me.name = new_name
         s.commit()
         return jsonify({"ok": True, "name": me.name}), 200
+
+
+# =============================================================================
+# Profile: comprehensive stats dashboard
+# =============================================================================
+
+@bp.get("/profile/stats")
+def get_profile_stats():
+    from app.models import PlayerLandSlots, MiniGameDef
+
+    CARD_TYPE_LABELS = {
+        "land_access":     {"fr": "Accès terres",     "en": "Land access"},
+        "craft_recipe":    {"fr": "Recettes craft",   "en": "Craft recipes"},
+        "craft_access":    {"fr": "Accès craft",      "en": "Craft access"},
+        "land_loot_boost": {"fr": "Boost récolte",    "en": "Harvest boost"},
+        "resource_boost":  {"fr": "Boost ressources", "en": "Resource boost"},
+        "xp_boost":        {"fr": "Boost XP",         "en": "XP boost"},
+        "cooldown_boost":  {"fr": "Boost cooldown",   "en": "Cooldown boost"},
+        "building_access": {"fr": "Bâtiments",        "en": "Buildings"},
+        "land_slot":       {"fr": "Emplacements",     "en": "Land slots"},
+        "passive_boost":   {"fr": "Boosts passifs",   "en": "Passive boosts"},
+    }
+
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            return jsonify({"ok": False, "error": "not_authenticated"}), 401
+
+        # ── Cards ──────────────────────────────────────────────────────────
+        all_cards = s.query(CardDef).filter_by(enabled=True).all()
+        owned_map = {
+            pc.card_key: int(pc.qty or 0)
+            for pc in s.query(PlayerCard).filter_by(player_id=me.id).all()
+        }
+
+        cards_by_type: dict[str, dict] = {}
+        for cd in all_cards:
+            t = cd.card_type or "other"
+            if t not in cards_by_type:
+                lbl = CARD_TYPE_LABELS.get(t, {"fr": t, "en": t})
+                cards_by_type[t] = {
+                    "type": t,
+                    "label_fr": lbl["fr"],
+                    "label_en": lbl["en"],
+                    "total": 0,
+                    "owned": 0,
+                }
+            cards_by_type[t]["total"] += 1
+            if owned_map.get(cd.key, 0) > 0:
+                cards_by_type[t]["owned"] += 1
+
+        # ── Resources ──────────────────────────────────────────────────────
+        resources_total = s.query(ResourceDef).filter_by(enabled=True).count()
+        resources_discovered = s.query(ResourceStock).filter(
+            ResourceStock.player_id == me.id,
+            ResourceStock.qty > 0,
+        ).count()
+
+        # ── Lands + extra slots ────────────────────────────────────────────
+        land_card_defs = [cd for cd in all_cards if cd.key.startswith("land_")]
+        lands_total = len(land_card_defs)
+        lands_unlocked = sum(1 for cd in land_card_defs if owned_map.get(cd.key, 0) > 0)
+        extra_slots_total = sum(
+            pls.extra_slots
+            for pls in s.query(PlayerLandSlots).filter_by(player_id=me.id).all()
+        )
+
+        # ── Quests ────────────────────────────────────────────────────────
+        quest_stats: dict[str, dict] = {}
+        for q in s.query(PlayerQuest).filter_by(player_id=me.id).all():
+            qt = (getattr(q, "quest_type", None) or "other").lower()
+            if qt not in quest_stats:
+                quest_stats[qt] = {"completed": 0, "total": 0}
+            quest_stats[qt]["total"] += 1
+            if q.status == "completed":
+                quest_stats[qt]["completed"] += 1
+
+        # ── Mini-games ────────────────────────────────────────────────────
+        mg_total = s.query(MiniGameDef).filter_by(enabled=True).count()
+        mg_accessible = s.query(MiniGameDef).filter(
+            MiniGameDef.enabled == True,
+            MiniGameDef.min_level <= me.level,
+        ).count()
+
+        return jsonify({
+            "ok": True,
+            "cards": {
+                "total":   sum(v["total"] for v in cards_by_type.values()),
+                "owned":   sum(v["owned"] for v in cards_by_type.values()),
+                "by_type": sorted(cards_by_type.values(), key=lambda x: -x["total"]),
+            },
+            "resources": {
+                "total":      resources_total,
+                "discovered": resources_discovered,
+            },
+            "lands": {
+                "total":                 lands_total,
+                "unlocked":              lands_unlocked,
+                "extra_slots_purchased": extra_slots_total,
+            },
+            "quests": quest_stats,
+            "minigames": {
+                "total":      mg_total,
+                "accessible": mg_accessible,
+            },
+        }), 200
+
+
+# =============================================================================
+# Profile: password change
+# =============================================================================
+
+@bp.post("/profile/password")
+def change_password():
+    from werkzeug.security import generate_password_hash, check_password_hash
+    from app.models import Account as AccountModel
+
+    data = request.get_json(silent=True) or {}
+    current_pw  = (data.get("current_password")  or "").strip()
+    new_pw      = (data.get("new_password")       or "").strip()
+    confirm_pw  = (data.get("confirm_password")   or "").strip()
+
+    if not current_pw or not new_pw:
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+    if new_pw != confirm_pw:
+        return jsonify({"ok": False, "error": "password_mismatch"}), 400
+    if len(new_pw) < 8:
+        return jsonify({"ok": False, "error": "password_too_short"}), 400
+
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            return jsonify({"ok": False, "error": "not_authenticated"}), 401
+
+        account = s.query(AccountModel).filter_by(player_id=me.id).first()
+        if not account:
+            return jsonify({"ok": False, "error": "account_not_found"}), 404
+        if not check_password_hash(account.password_hash, current_pw):
+            return jsonify({"ok": False, "error": "wrong_current_password"}), 400
+
+        account.password_hash = generate_password_hash(new_pw)
+        s.commit()
+        return jsonify({"ok": True}), 200
