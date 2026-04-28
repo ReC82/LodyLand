@@ -280,6 +280,15 @@
           </a>
           {% endif %}
         </div>
+        {% if unlocked_specials %}
+        <div class="game-menu-section">
+          {% for sp in unlocked_specials %}
+          <a href="{{ sp.url }}" class="game-menu-item game-menu-item-special" style="text-decoration: none;">
+            {{ sp.icon }} {{ sp.label }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
 
         <div class="game-menu-section">
           <button

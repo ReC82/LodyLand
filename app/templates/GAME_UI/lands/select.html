@@ -31,36 +31,6 @@
     />
   </div>
 
-  {# --- LANDS SPÉCIAUX --- #}
-  {% if special_lands %}
-    <h2 class="land-select-section-title">{{ t("lands.select.sections.special") }}</h2>
-    <div class="land-select-grid" id="land-special-list">
-      {% for land in special_lands %}
-        <a
-          href="{{ land.url }}"
-          class="land-select-tile land-select-tile-special"
-          data-land-name="{{ land.title|lower }}"
-          data-land-key="{{ land.key|lower }}"
-          data-land-type="special"
-        >
-          {% if land.slot_icon %}
-            <div
-              class="land-select-icon"
-              style="background-image: url('{{ land.slot_icon }}');"
-            ></div>
-          {% else %}
-            <div class="land-select-icon land-select-icon-emoji">
-              {{ land.emoji }}
-            </div>
-          {% endif %}
-          <div class="land-select-label">
-            {{ land.title }}
-          </div>
-        </a>
-      {% endfor %}
-    </div>
-  {% endif %}
-
   {# --- LANDS CLASSIQUES --- #}
   <h2 class="land-select-section-title">{{ t("lands.select.sections.normal") }}</h2>
   {% if lands %}
@@ -94,33 +64,72 @@
       {{ t("lands.select.empty_normal") }}
     </p>
   {% endif %}
+
+  {# --- LANDS SPÉCIAUX (cachés par défaut) --- #}
+  {% if special_lands %}
+    <div class="land-select-specials-toggle" id="specials-toggle-row">
+      <button type="button" class="land-select-specials-btn" id="specials-toggle-btn" aria-expanded="false">
+        <span class="specials-toggle-line"></span>
+        <span class="specials-toggle-icon">✦</span>
+        <span class="specials-toggle-line"></span>
+      </button>
+    </div>
+    <div class="land-select-grid" id="land-special-list" hidden>
+      {% for land in special_lands %}
+        <a
+          href="{{ land.url }}"
+          class="land-select-tile land-select-tile-special"
+          data-land-name="{{ land.title|lower }}"
+          data-land-key="{{ land.key|lower }}"
+          data-land-type="special"
+        >
+          {% if land.slot_icon %}
+            <div
+              class="land-select-icon"
+              style="background-image: url('{{ land.slot_icon }}');"
+            ></div>
+          {% else %}
+            <div class="land-select-icon land-select-icon-emoji">
+              {{ land.emoji }}
+            </div>
+          {% endif %}
+          <div class="land-select-label">
+            {{ land.title }}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
 </div>
 
 <!-- Filtre simple côté front -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // ── Recherche ──────────────────────────────────────────────
     const input = document.getElementById("land-search-input");
-    if (!input) return;
-
-    const tiles = document.querySelectorAll(".land-select-tile");
-
-    input.addEventListener("input", (e) => {
-      const q = (e.target.value || "").toLowerCase().trim();
-
-      tiles.forEach((tile) => {
-        const name = (tile.dataset.landName || "").toLowerCase();
-        const key  = (tile.dataset.landKey  || "").toLowerCase();
-        const type = (tile.dataset.landType || "").toLowerCase();
-
-        const match =
-          !q ||
-          name.includes(q) ||
-          key.includes(q) ||
-          type.includes(q);
-
-        tile.style.display = match ? "" : "none";
+    if (input) {
+      input.addEventListener("input", (e) => {
+        const q = (e.target.value || "").toLowerCase().trim();
+        document.querySelectorAll(".land-select-tile").forEach((tile) => {
+          const name = (tile.dataset.landName || "").toLowerCase();
+          const key  = (tile.dataset.landKey  || "").toLowerCase();
+          tile.style.display = (!q || name.includes(q) || key.includes(q)) ? "" : "none";
+        });
       });
-    });
+    }
+
+    // ── Toggle lands spéciaux ──────────────────────────────────
+    const toggleBtn  = document.getElementById("specials-toggle-btn");
+    const specialList = document.getElementById("land-special-list");
+    if (toggleBtn && specialList) {
+      toggleBtn.addEventListener("click", () => {
+        const open = !specialList.hidden;
+        specialList.hidden = open;
+        toggleBtn.setAttribute("aria-expanded", String(!open));
+        toggleBtn.classList.toggle("is-open", !open);
+      });
+    }
   });
 </script>
 {% endblock %}
