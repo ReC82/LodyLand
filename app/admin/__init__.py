@@ -385,6 +385,274 @@ def set_user_role(player_id: int):
 # ROUTES: RESOURCES
 # =============================================================================
 
+@admin_bp.get("/resources/import")
+@admin_required(permission="edit_resources")
+def resources_import():
+    """Show the CSV import page (step 1)."""
+    return render_template("ADMIN_UI/resources_import.html")
+
+
+@admin_bp.get("/resources/import/template.csv")
+@admin_required(permission="edit_resources")
+def resources_import_template():
+    """Download an example CSV template."""
+    import io
+    from flask import make_response
+
+    header = "key,kind,label_fr,label_en,description_fr,description_en,base_sell_price,enabled"
+    examples = [
+        "iron_ore,resource,Minerai de fer,Iron Ore,Un minerai commun trouvé dans les caves.,A common ore found in caves.,3,yes",
+        "magic_crystal,treasure,Cristal magique,Magic Crystal,Très rare et précieux.,,10,yes",
+    ]
+    csv_content = "\n".join([header] + examples) + "\n"
+
+    resp = make_response(csv_content)
+    resp.headers["Content-Type"] = "text/csv; charset=utf-8"
+    resp.headers["Content-Disposition"] = "attachment; filename=resources_template.csv"
+    return resp
+
+
+@admin_bp.post("/resources/import/preview")
+@admin_required(permission="edit_resources")
+def resources_import_preview():
+    """Validate uploaded CSV and return a preview with any errors."""
+    import csv, io
+
+    VALID_KINDS = {"resource", "treasure", "material", "currency", "special"}
+    DEFAULT_IMG = "/static/assets/img/items/resources/default.png"
+    IMG_DIR     = Path(__file__).resolve().parent.parent / "static" / "assets" / "img" / "items" / "resources"
+
+    # ── Load existing resource keys (to detect duplicates) ────────────────────
+    db_session = SessionLocal()
+    try:
+        existing_keys = {r.key for r in db_session.query(ResourceDef.key).all()}
+    finally:
+        db_session.close()
+
+    yaml_existing = set(load_resources_yaml().keys())
+    all_existing  = existing_keys | yaml_existing
+
+    # ── Parse uploaded file ───────────────────────────────────────────────────
+    uploaded = request.files.get("csv_file")
+    if not uploaded or not uploaded.filename:
+        return render_template("ADMIN_UI/resources_import.html",
+                               error="Aucun fichier sélectionné.")
+
+    try:
+        raw = uploaded.read().decode("utf-8-sig")   # handle BOM from Excel
+    except UnicodeDecodeError:
+        return render_template("ADMIN_UI/resources_import.html",
+                               error="Encodage invalide. Sauvegarde le fichier en UTF-8.")
+
+    reader = csv.DictReader(io.StringIO(raw))
+
+    REQUIRED_COLS = {"key", "kind", "label_fr"}
+    if not REQUIRED_COLS.issubset(set(reader.fieldnames or [])):
+        missing = REQUIRED_COLS - set(reader.fieldnames or [])
+        return render_template("ADMIN_UI/resources_import.html",
+                               error=f"Colonnes manquantes dans le CSV : {', '.join(sorted(missing))}. "
+                                     "Télécharge le template pour voir le format attendu.")
+
+    rows       = []
+    errors     = []   # list of (row_num, field, message)
+    seen_keys  = set()
+
+    for i, row in enumerate(reader, start=2):   # row 1 = header
+        key       = (row.get("key") or "").strip().lower().replace(" ", "_")
+        kind      = (row.get("kind") or "resource").strip().lower()
+        label_fr  = (row.get("label_fr") or "").strip()
+        label_en  = (row.get("label_en") or "").strip()
+        desc_fr   = (row.get("description_fr") or "").strip()
+        desc_en   = (row.get("description_en") or "").strip()
+        price_raw = (row.get("base_sell_price") or "1").strip()
+        enabled   = (row.get("enabled") or "yes").strip().lower() in ("yes", "oui", "1", "true")
+
+        # Validation
+        if not key:
+            errors.append((i, "key", "La clé est obligatoire."))
+            continue
+        if not re.match(r"^[a-z0-9_]+$", key):
+            errors.append((i, "key", f"Clé invalide « {key} » — lettres minuscules, chiffres et _ uniquement."))
+        if key in seen_keys:
+            errors.append((i, "key", f"Clé dupliquée dans le CSV : « {key} »."))
+        if key in all_existing:
+            errors.append((i, "key", f"La ressource « {key} » existe déjà."))
+        if not label_fr:
+            errors.append((i, "label_fr", "Le label FR est obligatoire."))
+        if kind not in VALID_KINDS:
+            errors.append((i, "kind", f"Kind invalide « {kind} » — valeurs autorisées : {', '.join(sorted(VALID_KINDS))}."))
+        try:
+            price = max(0, int(price_raw))
+        except ValueError:
+            errors.append((i, "base_sell_price", f"Prix invalide « {price_raw} » — entier attendu."))
+            price = 1
+
+        seen_keys.add(key)
+
+        # Check if an image already exists for this key
+        has_image = (IMG_DIR / f"{key}.png").exists()
+
+        rows.append({
+            "row":       i,
+            "key":       key,
+            "kind":      kind,
+            "label_fr":  label_fr,
+            "label_en":  label_en or label_fr,
+            "desc_fr":   desc_fr,
+            "desc_en":   desc_en,
+            "price":     price,
+            "enabled":   enabled,
+            "has_image": has_image,
+            "image_url": f"/static/assets/img/items/resources/{key}.png" if has_image else DEFAULT_IMG,
+        })
+
+    # Keep the raw CSV for the confirm step (stored in a hidden textarea)
+    return render_template(
+        "ADMIN_UI/resources_import.html",
+        preview_rows=rows,
+        errors=errors,
+        csv_raw=raw,
+        valid_count=len([r for r in rows if not any(e[0] == r["row"] for e in errors)]),
+        error_count=len(errors),
+    )
+
+
+@admin_bp.post("/resources/import/execute")
+@admin_required(permission="edit_resources")
+def resources_import_execute():
+    """Actually create the resources from the validated CSV."""
+    import csv, io
+
+    VALID_KINDS = {"resource", "treasure", "material", "currency", "special"}
+    DEFAULT_IMG = "/static/assets/img/items/resources/default.png"
+    IMG_DIR     = Path(__file__).resolve().parent.parent / "static" / "assets" / "img" / "items" / "resources"
+
+    raw = (request.form.get("csv_raw") or "").strip()
+    if not raw:
+        return render_template("ADMIN_UI/resources_import.html",
+                               error="Données perdues. Recommence l'import.")
+
+    reader = csv.DictReader(io.StringIO(raw))
+    yaml_data = load_resources_yaml()
+
+    db_session = SessionLocal()
+    try:
+        existing_keys = {r.key for r in db_session.query(ResourceDef.key).all()}
+    finally:
+        db_session.close()
+
+    created = []
+    skipped = []
+
+    db_session = SessionLocal()
+    try:
+        for row in reader:
+            key      = (row.get("key") or "").strip().lower().replace(" ", "_")
+            kind     = (row.get("kind") or "resource").strip().lower()
+            label_fr = (row.get("label_fr") or "").strip()
+            label_en = (row.get("label_en") or "").strip() or label_fr
+            desc_fr  = (row.get("description_fr") or "").strip() or None
+            desc_en  = (row.get("description_en") or "").strip() or None
+            try:
+                price = max(0, int((row.get("base_sell_price") or "1").strip()))
+            except ValueError:
+                price = 1
+            enabled  = (row.get("enabled") or "yes").strip().lower() in ("yes", "oui", "1", "true")
+
+            if not key or not label_fr or kind not in VALID_KINDS:
+                skipped.append(key or "(vide)")
+                continue
+            if key in existing_keys or key in yaml_data:
+                skipped.append(key)
+                continue
+
+            # Determine icon path
+            img_path = IMG_DIR / f"{key}.png"
+            icon = f"/static/assets/img/items/resources/{key}.png" if img_path.exists() else DEFAULT_IMG
+
+            # DB row
+            rd = ResourceDef(
+                key=key,
+                label=f"items.{key}.label",
+                kind=kind if kind in VALID_KINDS else "resource",
+                base_sell_price=price,
+                enabled=enabled,
+                icon=icon,
+                description=desc_fr,
+            )
+            db_session.add(rd)
+
+            # YAML entry
+            yaml_data[key] = {"key": key, "kind": kind, "label": label_fr, "enabled": enabled}
+
+            # i18n translations
+            _save_item_translations(key, {
+                "fr": {"label": label_fr, "description": desc_fr},
+                "en": {"label": label_en, "description": desc_en},
+            })
+
+            created.append(key)
+            existing_keys.add(key)
+
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        return render_template("ADMIN_UI/resources_import.html",
+                               error=f"Erreur lors de l'import : {e}")
+    finally:
+        db_session.close()
+
+    save_resources_yaml(yaml_data)
+
+    return render_template(
+        "ADMIN_UI/resources_import.html",
+        import_done=True,
+        created=created,
+        skipped=skipped,
+    )
+
+
+_RES_IMG_DIR  = Path(__file__).resolve().parent.parent / "static" / "assets" / "img" / "items" / "resources"
+_RES_IMG_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
+
+
+@admin_bp.post("/resources/import/upload-image")
+@admin_required(permission="edit_resources")
+def resources_import_upload_image():
+    """Upload an image for a single resource key (AJAX). Saves as {key}.png."""
+    from PIL import Image
+    import io as _io
+
+    key      = (request.form.get("key") or "").strip().lower()
+    img_file = request.files.get("image")
+
+    if not key or not re.match(r"^[a-z0-9_]+$", key):
+        return jsonify({"ok": False, "error": "Clé invalide."}), 400
+    if not img_file or not img_file.filename:
+        return jsonify({"ok": False, "error": "Aucun fichier."}), 400
+
+    ext = Path(img_file.filename).suffix.lower()
+    if ext not in _RES_IMG_EXTS:
+        return jsonify({"ok": False, "error": f"Format non supporté ({ext}). Utilise PNG, JPG ou WEBP."}), 400
+
+    try:
+        raw_bytes = img_file.read()
+        img = Image.open(_io.BytesIO(raw_bytes)).convert("RGBA")
+        # Square-crop (centre) → 256×256 PNG
+        w, h = img.size
+        side = min(w, h)
+        img  = img.crop(((w-side)//2, (h-side)//2, (w+side)//2, (h+side)//2))
+        img  = img.resize((256, 256), Image.LANCZOS)
+
+        _RES_IMG_DIR.mkdir(parents=True, exist_ok=True)
+        dest = _RES_IMG_DIR / f"{key}.png"
+        img.save(dest, "PNG", optimize=True)
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Erreur traitement image : {e}"}), 500
+
+    return jsonify({"ok": True, "url": f"/static/assets/img/items/resources/{key}.png"})
+
+
 @admin_bp.get("/resources/print")
 @admin_required(permission="edit_resources")
 def resources_print():
@@ -870,6 +1138,84 @@ def cards_list():
         })
 
     return render_template("ADMIN_UI/cards_list.html", cards=cards_view)
+
+
+@admin_bp.get("/cards/<key>/edit")
+@admin_bp.post("/cards/<key>/edit")
+@admin_required(permission="edit_cards")
+def edit_card(key: str):
+    """Edit a card — updates YAML and DB CardDef."""
+    yaml_data = load_cards_yaml()
+    if key not in yaml_data:
+        abort(404)
+
+    card_cfg = dict(yaml_data[key] or {})
+    error = None
+
+    if request.method == "POST":
+        label_fr  = request.form.get("label_fr",  "").strip()
+        label_en  = request.form.get("label_en",  "").strip()
+        card_type = request.form.get("type",       "").strip()
+        rarity    = request.form.get("rarity",     "common").strip()
+        enabled   = request.form.get("enabled") == "on"
+        desc_fr   = request.form.get("desc_fr",    "").strip()
+        desc_en   = request.form.get("desc_en",    "").strip()
+
+        if not card_type:
+            error = "Le type est requis."
+        else:
+            # Update core fields in YAML
+            if label_fr:  card_cfg["label_fr"] = label_fr
+            if label_en:  card_cfg["label_en"] = label_en
+            # Keep generic 'label' in sync with FR
+            card_cfg["label"]   = label_fr or card_cfg.get("label", key)
+            card_cfg["type"]    = card_type
+            card_cfg["rarity"]  = rarity
+            card_cfg["enabled"] = enabled
+            if desc_fr: card_cfg["description_fr"] = desc_fr
+            if desc_en: card_cfg["description_en"] = desc_en
+
+            # Advanced JSON fields (gameplay / shop / unlock_rules / tags)
+            adv_raw = request.form.get("advanced_json", "").strip()
+            if adv_raw:
+                try:
+                    adv = json.loads(adv_raw)
+                    _CORE = {"key","label","label_fr","label_en","type","rarity","enabled",
+                             "description_fr","description_en"}
+                    for k, v in adv.items():
+                        if k not in _CORE:
+                            card_cfg[k] = v
+                except json.JSONDecodeError as e:
+                    error = f"JSON avancé invalide : {e}"
+
+        if not error:
+            yaml_data[key] = card_cfg
+            save_cards_yaml(yaml_data)
+
+            # Sync DB CardDef if it exists
+            session = SessionLocal()
+            try:
+                db_card = session.query(CardDef).filter_by(key=key).first()
+                if db_card:
+                    db_card.card_label       = label_fr or db_card.card_label
+                    db_card.card_type        = card_type
+                    db_card.card_rarity      = rarity or None
+                    db_card.enabled          = enabled
+                    db_card.card_description = desc_fr or None
+                    session.commit()
+            finally:
+                session.close()
+
+            return redirect(url_for("admin.cards_list"))
+
+    # Build advanced JSON (everything except core fields)
+    _CORE = {"key","label","label_fr","label_en","type","rarity","enabled",
+             "description_fr","description_en"}
+    adv = {k: v for k, v in card_cfg.items() if k not in _CORE}
+    adv_json = json.dumps(adv, ensure_ascii=False, indent=2)
+
+    return render_template("ADMIN_UI/card_form.html", key=key, card=card_cfg,
+                           adv_json=adv_json, error=error)
 
 
 @admin_bp.post("/cards/")

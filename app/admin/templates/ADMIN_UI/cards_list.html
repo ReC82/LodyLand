@@ -4,9 +4,13 @@
 {% block page_title %}Cards{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Manage Cards</h3>
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal">+ New Card</button>
+</div>
+<div class="mb-3">
+    <input type="search" id="table-search" class="form-control form-control-sm w-auto d-inline-block"
+           placeholder="🔍 Rechercher..." style="min-width:220px;">
 </div>
 
 <div class="table-responsive">
@@ -24,7 +28,7 @@
         </thead>
         <tbody>
             {% for c in cards %}
-            <tr>
+            <tr data-search="{{ c.key|lower }} {{ (c.label or '')|lower }} {{ (c.type or '')|lower }}">
                 <td><code>{{ c.key }}</code></td>
                 <td>{{ c.label }}</td>
                 <td>{{ c.type }}</td>
@@ -46,7 +50,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ url_for('admin.cards_list') }}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{{ url_for('admin.edit_card', key=c.key) }}" class="btn btn-sm btn-primary">Edit</a>
                 </td>
             </tr>
             {% endfor %}
@@ -102,6 +106,16 @@
 
 {% block extra_scripts %}
 <script>
+(function(){
+  const s = document.getElementById('table-search');
+  s.addEventListener('input', () => {
+    const q = s.value.toLowerCase();
+    document.querySelectorAll('tbody tr[data-search]').forEach(r => {
+      r.style.display = !q || r.dataset.search.includes(q) ? '' : 'none';
+    });
+  });
+})();
+
 document.getElementById('createForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const data = {

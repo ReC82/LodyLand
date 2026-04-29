@@ -1,0 +1,335 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Import Ressources CSV — Admin{% endblock %}
+{% block page_title %}📥 Import Ressources (CSV){% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Step indicator ───────────────────────────────────────────── */
+.import-steps { display:flex; gap:0; margin-bottom:2rem; }
+.import-step  {
+  flex:1; padding:.6rem 1rem; background:#f8fafc; border:1px solid #e2e8f0;
+  font-size:.85rem; font-weight:600; color:#94a3b8; text-align:center;
+}
+.import-step:first-child { border-radius:8px 0 0 8px; }
+.import-step:last-child  { border-radius:0 8px 8px 0; }
+.import-step.active  { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+.import-step.done    { background:#22c55e; color:#fff; border-color:#22c55e; }
+
+/* ── Upload zone ──────────────────────────────────────────────── */
+.drop-zone {
+  border:2px dashed #cbd5e1; border-radius:12px; padding:2.5rem;
+  text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color:#3b82f6; background:#eff6ff; }
+.drop-zone input[type=file] { display:none; }
+.drop-zone-icon { font-size:2.5rem; margin-bottom:.5rem; }
+
+/* ── Preview table ────────────────────────────────────────────── */
+.preview-table th { white-space:nowrap; }
+.preview-table td { vertical-align:middle; font-size:.82rem; }
+.row-ok   { background:rgba(34,197,94,.06); }
+.row-err  { background:rgba(239,68,68,.08); }
+.img-thumb { width:36px; height:36px; object-fit:contain; border-radius:4px;
+             background:#f1f5f9; border:1px solid #e2e8f0; }
+.badge-kind-resource { background:#dbeafe; color:#1d4ed8; }
+.badge-kind-treasure { background:#fef3c7; color:#b45309; }
+.badge-kind-material { background:#f3e8ff; color:#6d28d9; }
+.badge-kind-currency { background:#dcfce7; color:#15803d; }
+.badge-kind-special  { background:#fce7f3; color:#be185d; }
+
+/* ── Image upload per row ─────────────────────────────────────── */
+.img-upload-label {
+  display:inline-flex; align-items:center; gap:.35rem;
+  font-size:.75rem; cursor:pointer; color:#3b82f6; text-decoration:underline;
+}
+.img-upload-label input { display:none; }
+.img-upload-spinner { display:none; font-size:.7rem; color:#94a3b8; }
+
+/* ── Results ──────────────────────────────────────────────────── */
+.result-list { max-height:200px; overflow-y:auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.resources_list') }}" class="btn btn-sm btn-outline-secondary">← Retour aux ressources</a>
+</div>
+
+{# ════════════════════════════════════════════════════════════════
+   ÉTAPE 1 — RÉSULTAT D'IMPORT
+════════════════════════════════════════════════════════════════ #}
+{% if import_done %}
+<div class="import-steps">
+  <div class="import-step done">① Fichier</div>
+  <div class="import-step done">② Vérification</div>
+  <div class="import-step active">③ Résultat</div>
+</div>
+
+<div class="alert alert-success d-flex align-items-center gap-2">
+  ✅ <strong>Import terminé !</strong> {{ created|length }} ressource(s) créée(s).
+</div>
+
+{% if created %}
+<div class="card mb-3">
+  <div class="card-header fw-semibold text-success">✓ Créées ({{ created|length }})</div>
+  <div class="card-body p-2">
+    <div class="result-list">
+      {% for k in created %}
+        <code class="me-2">{{ k }}</code>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if skipped %}
+<div class="card mb-3">
+  <div class="card-header fw-semibold text-warning">⚠ Ignorées — déjà existantes ou invalides ({{ skipped|length }})</div>
+  <div class="card-body p-2">
+    <div class="result-list">
+      {% for k in skipped %}
+        <code class="me-2 text-warning">{{ k }}</code>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="d-flex gap-2 mt-3">
+  <a href="{{ url_for('admin.resources_import') }}" class="btn btn-primary">Nouvel import</a>
+  <a href="{{ url_for('admin.resources_list') }}" class="btn btn-outline-secondary">Voir les ressources</a>
+</div>
+
+{# ════════════════════════════════════════════════════════════════
+   ÉTAPE 2 — PRÉVISUALISATION
+════════════════════════════════════════════════════════════════ #}
+{% elif preview_rows is defined %}
+<div class="import-steps">
+  <div class="import-step done">① Fichier</div>
+  <div class="import-step active">② Vérification</div>
+  <div class="import-step">③ Résultat</div>
+</div>
+
+{% if errors %}
+<div class="alert alert-danger">
+  <strong>⛔ {{ error_count }} erreur(s) trouvée(s).</strong>
+  Corrige le fichier CSV et réimporte-le.
+  Les lignes en rouge ne seront <strong>pas importées</strong>.
+  <ul class="mb-0 mt-2">
+    {% for row_num, field, msg in errors %}
+    <li>Ligne {{ row_num }} — <em>{{ field }}</em> : {{ msg }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<div class="alert alert-success">
+  ✅ Fichier valide — <strong>{{ valid_count }} ressource(s)</strong> prête(s) à importer.
+  Tu peux ajouter des images ci-dessous avant de confirmer.
+</div>
+{% endif %}
+
+<!-- Preview table -->
+<div class="table-responsive mb-3">
+  <table class="table table-sm table-hover preview-table">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Image</th>
+        <th>Key</th>
+        <th>Kind</th>
+        <th>Label FR</th>
+        <th>Label EN</th>
+        <th>Description FR</th>
+        <th>Prix</th>
+        <th>Actif</th>
+        <th>Image</th>
+      </tr>
+    </thead>
+    <tbody id="preview-tbody">
+      {% for r in preview_rows %}
+      {% set row_has_err = errors | selectattr(0, 'eq', r.row) | list | length > 0 %}
+      <tr class="{{ 'row-err' if row_has_err else 'row-ok' }}" data-key="{{ r.key }}">
+        <td class="text-muted">{{ r.row }}</td>
+        <td>
+          <img id="img-{{ r.key }}" src="{{ r.image_url }}" class="img-thumb" alt="{{ r.key }}">
+        </td>
+        <td><code>{{ r.key }}</code></td>
+        <td>
+          <span class="badge badge-kind-{{ r.kind }}">{{ r.kind }}</span>
+        </td>
+        <td>{{ r.label_fr }}</td>
+        <td class="text-muted">{{ r.label_en }}</td>
+        <td class="text-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+            title="{{ r.desc_fr }}">{{ r.desc_fr }}</td>
+        <td>{{ r.price }}</td>
+        <td>{{ '✓' if r.enabled else '—' }}</td>
+        <td>
+          {% if not row_has_err %}
+          <label class="img-upload-label" title="Choisir une image pour {{ r.key }}">
+            📷 Changer
+            <input type="file" accept="image/png,image/jpeg,image/webp"
+                   onchange="uploadImage('{{ r.key }}', this)">
+          </label>
+          <span class="img-upload-spinner" id="spin-{{ r.key }}">⏳</span>
+          <span id="img-ok-{{ r.key }}" style="display:none;color:#22c55e;font-size:.75rem;">✓</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Confirm form (sends raw CSV back) -->
+{% if valid_count > 0 %}
+<form method="POST" action="{{ url_for('admin.resources_import_execute') }}">
+  <input type="hidden" name="csv_raw" value="{{ csv_raw | e }}">
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-success">
+      ✅ Confirmer l'import ({{ valid_count }} ressource{{ 's' if valid_count > 1 }})
+    </button>
+    <a href="{{ url_for('admin.resources_import') }}" class="btn btn-outline-secondary">Recommencer</a>
+  </div>
+</form>
+{% else %}
+<a href="{{ url_for('admin.resources_import') }}" class="btn btn-outline-secondary">← Recommencer</a>
+{% endif %}
+
+{# ════════════════════════════════════════════════════════════════
+   ÉTAPE 1 — UPLOAD DU FICHIER
+════════════════════════════════════════════════════════════════ #}
+{% else %}
+<div class="import-steps">
+  <div class="import-step active">① Fichier</div>
+  <div class="import-step">② Vérification</div>
+  <div class="import-step">③ Résultat</div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">⛔ {{ error }}</div>
+{% endif %}
+
+<!-- Instructions -->
+<div class="card mb-4">
+  <div class="card-header fw-semibold">📋 Comment ça marche ?</div>
+  <div class="card-body">
+    <ol class="mb-2">
+      <li>Télécharge le <strong>template CSV</strong> ci-dessous.</li>
+      <li>Remplis-le dans Excel, LibreOffice ou Google Sheets (sauvegarde en <strong>CSV UTF-8</strong>).</li>
+      <li>Upload le fichier → vérification automatique des données.</li>
+      <li>Corrige les erreurs éventuelles, puis confirme l'import.</li>
+      <li><em>Optionnel :</em> ajoute les images avant de confirmer.</li>
+    </ol>
+    <a href="{{ url_for('admin.resources_import_template') }}" class="btn btn-sm btn-outline-primary">
+      ⬇️ Télécharger le template CSV
+    </a>
+  </div>
+</div>
+
+<!-- Colonnes du CSV -->
+<div class="card mb-4">
+  <div class="card-header fw-semibold">📑 Colonnes du fichier</div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr><th>Colonne</th><th>Obligatoire</th><th>Description</th><th>Exemples</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>key</code></td><td>✅</td><td>Identifiant unique (lettres minuscules, chiffres, _)</td><td><code>iron_ore</code></td></tr>
+        <tr><td><code>kind</code></td><td>✅</td><td>Type de ressource</td><td><code>resource</code> / <code>treasure</code> / <code>material</code> / <code>currency</code> / <code>special</code></td></tr>
+        <tr><td><code>label_fr</code></td><td>✅</td><td>Nom affiché en français</td><td><code>Minerai de fer</code></td></tr>
+        <tr><td><code>label_en</code></td><td></td><td>Nom en anglais (optionnel, reprend le FR si vide)</td><td><code>Iron Ore</code></td></tr>
+        <tr><td><code>description_fr</code></td><td></td><td>Description courte en français</td><td><code>Un minerai commun.</code></td></tr>
+        <tr><td><code>description_en</code></td><td></td><td>Description courte en anglais</td><td><code>A common ore.</code></td></tr>
+        <tr><td><code>base_sell_price</code></td><td></td><td>Prix de vente (entier, défaut : 1)</td><td><code>3</code></td></tr>
+        <tr><td><code>enabled</code></td><td></td><td>Activer la ressource ? (défaut : yes)</td><td><code>yes</code> / <code>no</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Drop zone -->
+<form method="POST" action="{{ url_for('admin.resources_import_preview') }}"
+      enctype="multipart/form-data" id="upload-form">
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()">
+    <div class="drop-zone-icon">📂</div>
+    <p class="mb-1 fw-semibold">Glisse ton fichier CSV ici</p>
+    <p class="text-muted small mb-3">ou clique pour choisir</p>
+    <span id="file-name" class="badge bg-secondary">Aucun fichier sélectionné</span>
+    <input type="file" name="csv_file" id="csv-file-input" accept=".csv,text/csv"
+           onchange="onFileChosen(this)">
+  </div>
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary" id="btn-upload" disabled>
+      🔍 Vérifier le fichier
+    </button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Drop zone ────────────────────────────────────────────────────
+const dz  = document.getElementById('drop-zone');
+const inp = document.getElementById('csv-file-input');
+const btn = document.getElementById('btn-upload');
+
+if (dz) {
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', ()  => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      inp.files = e.dataTransfer.files;
+      onFileChosen(inp);
+    }
+  });
+}
+
+function onFileChosen(input) {
+  const name = input.files[0]?.name || '';
+  const nameEl = document.getElementById('file-name');
+  if (nameEl) {
+    nameEl.textContent = name || 'Aucun fichier sélectionné';
+    nameEl.className   = name ? 'badge bg-primary' : 'badge bg-secondary';
+  }
+  if (btn) btn.disabled = !name;
+}
+
+// ── Image upload per row (AJAX) ──────────────────────────────────
+async function uploadImage(key, inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+
+  const spinEl  = document.getElementById('spin-' + key);
+  const okEl    = document.getElementById('img-ok-' + key);
+  const imgEl   = document.getElementById('img-' + key);
+
+  if (spinEl) spinEl.style.display = 'inline';
+  if (okEl)   okEl.style.display   = 'none';
+
+  const fd = new FormData();
+  fd.append('key',   key);
+  fd.append('image', file);
+
+  try {
+    const resp = await fetch('{{ url_for("admin.resources_import_upload_image") }}', {
+      method: 'POST', body: fd
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      if (imgEl) imgEl.src = data.url + '?t=' + Date.now();
+      if (okEl)  { okEl.style.display = 'inline'; }
+    } else {
+      alert('Erreur upload : ' + data.error);
+    }
+  } catch (e) {
+    alert('Erreur réseau : ' + e.message);
+  } finally {
+    if (spinEl) spinEl.style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

@@ -29,9 +29,13 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
   <p class="text-muted mb-0">{{ npcs|length }} personnage(s) enregistré(s).</p>
-  <button class="btn btn-primary" id="btn-new-npc">+ Nouveau PNJ</button>
+  <div class="d-flex gap-2">
+    <input type="search" id="npc-search" class="form-control form-control-sm"
+           placeholder="🔍 Rechercher..." style="min-width:180px;">
+    <button class="btn btn-primary" id="btn-new-npc">+ Nouveau PNJ</button>
+  </div>
 </div>
 
 <!-- New NPC modal -->
@@ -53,7 +57,7 @@
 {% if npcs %}
 <div class="npc-grid">
   {% for npc in npcs %}
-  <div class="npc-card">
+  <div class="npc-card" data-search="{{ npc.key|lower }} {{ (npc.name_fr or '')|lower }} {{ (npc.name_en or '')|lower }}">
     <div class="npc-portrait">
       {% if npc.portrait %}
       <img src="/static/assets/img/pnj/villagers/{{ npc.portrait }}" alt="{{ npc.name_fr }}">
@@ -81,6 +85,16 @@
 {% endif %}
 
 <script>
+(function(){
+  const s = document.getElementById('npc-search');
+  s.addEventListener('input', () => {
+    const q = s.value.toLowerCase();
+    document.querySelectorAll('.npc-card[data-search]').forEach(c => {
+      c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
+    });
+  });
+})();
+
 const modal = document.getElementById('modal-new-npc');
 document.getElementById('btn-new-npc').onclick = () => {
   document.getElementById('new-npc-key').value = '';

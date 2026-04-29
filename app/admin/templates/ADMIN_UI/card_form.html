@@ -1,0 +1,124 @@
+{% extends "ADMIN_UI/layout.html" %}
+{% block title %}Card {{ key }} — Admin{% endblock %}
+{% block page_title %}🃏 Card — {{ key }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('admin.cards_list') }}" class="btn btn-sm btn-outline-secondary">← Back to Cards</a>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<form method="POST">
+  <div class="row g-3">
+
+    <!-- Left column: core fields -->
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-header fw-semibold">Core</div>
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label class="form-label">Key <span class="text-muted small">(read-only)</span></label>
+            <input type="text" class="form-control font-monospace" value="{{ key }}" disabled>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">🇫🇷 Label FR</label>
+            <input type="text" name="label_fr" class="form-control"
+                   value="{{ card.get('label_fr') or card.get('label', '') }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">🇬🇧 Label EN</label>
+            <input type="text" name="label_en" class="form-control"
+                   value="{{ card.get('label_en', '') }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Type <span class="text-danger">*</span></label>
+            <input type="text" name="type" class="form-control" required
+                   value="{{ card.get('type', '') }}"
+                   placeholder="resource_boost, land_access, recipe, building…">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Rarity</label>
+            <select name="rarity" class="form-select">
+              {% for r in ['common','uncommon','rare','epic','legendary'] %}
+              <option value="{{ r }}" {{ 'selected' if card.get('rarity','common') == r }}>
+                {{ r.capitalize() }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="enabled" id="enabled"
+                   {{ 'checked' if card.get('enabled', True) }}>
+            <label class="form-check-label" for="enabled">Enabled</label>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header fw-semibold">Description</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">🇫🇷 Description FR</label>
+            <textarea name="desc_fr" class="form-control" rows="3">{{ card.get('description_fr', '') }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">🇬🇧 Description EN</label>
+            <textarea name="desc_en" class="form-control" rows="3">{{ card.get('description_en', '') }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: advanced JSON -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+          Advanced config
+          <span class="text-muted small fw-normal">gameplay · shop · unlock_rules · tags…</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-2">
+            Edit the JSON fields below. The core fields above (label, type, rarity, enabled, description) are handled separately and will override any matching keys here.
+          </p>
+          <textarea name="advanced_json" class="form-control font-monospace" rows="22"
+                    id="advanced-json-area" spellcheck="false">{{ adv_json }}</textarea>
+          <div id="json-error" class="text-danger small mt-1" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mt-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">💾 Save</button>
+    <a href="{{ url_for('admin.cards_list') }}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+
+<script>
+// Live JSON validation
+const ta = document.getElementById('advanced-json-area');
+const errEl = document.getElementById('json-error');
+ta.addEventListener('input', () => {
+  try {
+    if (ta.value.trim()) JSON.parse(ta.value);
+    errEl.style.display = 'none';
+    ta.classList.remove('is-invalid');
+  } catch(e) {
+    errEl.textContent = 'JSON invalide : ' + e.message;
+    errEl.style.display = 'block';
+    ta.classList.add('is-invalid');
+  }
+});
+</script>
+{% endblock %}
