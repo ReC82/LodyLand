@@ -1950,8 +1950,7 @@ function renderTravelList(filterText = "") {
   }
 
   listEl.innerHTML = filtered
-    .map((land, index) => {
-      const isSelectedClass = index === 0 ? " travel-item-selected" : "";
+    .map((land) => {
       const iconHtml = land.icon
         ? `<img src="${land.icon}" alt="${land.label}" class="travel-item-icon">`
         : "";
@@ -1959,7 +1958,7 @@ function renderTravelList(filterText = "") {
       return `
         <button
           type="button"
-          class="travel-item${isSelectedClass}"
+          class="travel-item"
           data-land-key="${land.land_key}"
           data-land-url="${land.url}"
         >
@@ -1970,14 +1969,11 @@ function renderTravelList(filterText = "") {
     })
     .join("");
 
-  // Click = select
+  // Single click = navigate immediately
   listEl.querySelectorAll(".travel-item").forEach((btn) => {
     btn.addEventListener("click", () => {
-      setSelectedTravelItem(btn);
-    });
-    btn.addEventListener("dblclick", () => {
-      setSelectedTravelItem(btn);
-      confirmTravelSelection();
+      const url = btn.getAttribute("data-land-url");
+      if (url) window.location.href = url;
     });
   });
 }
@@ -2039,8 +2035,6 @@ function initTravelUI() {
   const closeBtn = document.getElementById("travelModalClose");
   const backdrop = document.getElementById("travelModalBackdrop");
   const searchInput = document.getElementById("travel-search-input");
-  const confirmBtn = document.getElementById("travelConfirmBtn");
-
   if (btn) {
     btn.addEventListener("click", async () => {
       // Lazy load lands when opening the modal
@@ -2055,12 +2049,6 @@ function initTravelUI() {
 
   if (closeBtn) closeBtn.addEventListener("click", close);
   if (backdrop) backdrop.addEventListener("click", close);
-
-  if (confirmBtn) {
-    confirmBtn.addEventListener("click", () => {
-      confirmTravelSelection();
-    });
-  }
 
   if (searchInput) {
     // Filter as you type
