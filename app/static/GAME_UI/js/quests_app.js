@@ -148,6 +148,15 @@ function QQ_updateBadges() {
       el.style.display = "none";
     }
   });
+
+  // HUD dot: lit when at least one quest is claimable across all types
+  const dot = document.getElementById("hud-quest-dot");
+  if (dot) {
+    const anyReady = ["daily", "weekly", "continuous"].some(
+      type => (QQ_quests[type] || []).some(QQ_isReady)
+    );
+    dot.style.display = anyReady ? "block" : "none";
+  }
 }
 
 // ---------------------------------------------------------------------------
