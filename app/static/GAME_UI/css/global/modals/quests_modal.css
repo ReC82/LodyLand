@@ -103,6 +103,7 @@
    ============================================================ */
 
 .gh-btn.gh-btn-quests {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -113,6 +114,25 @@
   color: #e5e7eb;
   font-size: 0.8rem;
   cursor: pointer;
+}
+
+/* Red notification dot on the HUD quest button */
+.hud-quest-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e11d48;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.9);
+  pointer-events: none;
+  animation: quest-dot-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes quest-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.65; transform: scale(1.25); }
 }
 
 .gh-btn.gh-btn-quests:hover {

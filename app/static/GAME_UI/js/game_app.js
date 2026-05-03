@@ -1703,6 +1703,10 @@ function showQuestReadyToasts(quests) {
   const container = document.getElementById("loot-toasts");
   if (!container) return;
 
+  // Light up the HUD dot immediately when a quest becomes claimable
+  const dot = document.getElementById("hud-quest-dot");
+  if (dot) dot.style.display = "block";
+
   quests.forEach((q, index) => {
     const toast = document.createElement("div");
     toast.className = "quest-ready-toast";
