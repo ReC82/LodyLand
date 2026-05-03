@@ -1726,6 +1726,75 @@ window.showQuestReadyToasts = showQuestReadyToasts;
 
 
 // ---------------------------------------------------------------------------
+// Global land cooldown watcher — fires notifications even off-page
+// ---------------------------------------------------------------------------
+(function () {
+  const STORE_KEY  = "llLandCooldowns";   // written by land_common.js
+  const FIRED_KEY  = "llCooldownFired";   // { landKey: lastFiredIso } — avoids double-fire
+  const CHECK_MS   = 5000;               // check every 5 s
+
+  function _store()   { try { return JSON.parse(localStorage.getItem(STORE_KEY)  || "{}"); } catch(_){ return {}; } }
+  function _fired()   { try { return JSON.parse(localStorage.getItem(FIRED_KEY)  || "{}"); } catch(_){ return {}; } }
+  function _setFired(map) { try { localStorage.setItem(FIRED_KEY, JSON.stringify(map)); } catch(_){} }
+
+  function checkCooldowns() {
+    const store = _store();
+    const fired = _fired();
+    const now   = Date.now();
+    let changed = false;
+
+    Object.entries(store).forEach(([landKey, info]) => {
+      const slots  = (info.slots || []);
+      const label  = info.label || landKey;
+
+      const expired = slots.filter(iso => new Date(iso).getTime() <= now);
+      const pending = slots.filter(iso => new Date(iso).getTime() >  now);
+
+      if (!expired.length) return;
+
+      // Dedup: use the latest expired iso to detect re-fire
+      const latestExpiredIso = expired.reduce((a, b) => a > b ? a : b);
+      if (fired[landKey] === latestExpiredIso) return;
+
+      // Accumulate: add newly-expired count on top of previously notified ready count
+      const previousReady = info.ready || 0;
+      const totalReady    = previousReady + expired.length;
+
+      if (typeof window.GameNotif !== "undefined") {
+        window.GameNotif.show({
+          type:     "info",
+          icon:     "⛏️",
+          title:    `${label} — Prêt à récolter !`,
+          body:     totalReady > 1
+            ? `${totalReady} emplacements disponibles.`
+            : "Un emplacement est disponible.",
+          url:      `/land/${landKey}`,
+          duration: 6000,
+        });
+      }
+
+      fired[landKey] = latestExpiredIso;
+      changed = true;
+
+      // Update store: keep pending slots, carry forward the cumulative ready count
+      const updatedStore = _store();
+      if (pending.length) {
+        updatedStore[landKey] = { label, slots: pending, ready: totalReady };
+      } else {
+        delete updatedStore[landKey];
+      }
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(updatedStore)); } catch(_){}
+    });
+
+    if (changed) _setFired(fired);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setInterval(checkCooldowns, CHECK_MS);
+  });
+})();
+
+// ---------------------------------------------------------------------------
 // Initialisation
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {

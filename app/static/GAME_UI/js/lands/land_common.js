@@ -294,6 +294,61 @@
   // LandCooldown: per-slot cooldown + optional green bar
   // ==========================================================================
 
+  // ── localStorage key for cross-page cooldown tracking ──────────────────────
+  const COOLDOWN_STORE_KEY = "llLandCooldowns";
+
+  /** Read the stored map: { landKey: { label, slots: [iso, …] } } */
+  function _readCooldownStore() {
+    try { return JSON.parse(localStorage.getItem(COOLDOWN_STORE_KEY) || "{}"); }
+    catch (_) { return {}; }
+  }
+
+  /** Persist the map back to localStorage. */
+  function _writeCooldownStore(map) {
+    try { localStorage.setItem(COOLDOWN_STORE_KEY, JSON.stringify(map)); }
+    catch (_) {}
+  }
+
+  /**
+   * Register / update a slot cooldown end-time in the persistent store.
+   * landKey + landLabel are taken from window globals set by the template.
+   */
+  function _storeCooldown(iso) {
+    const landKey   = window.CURRENT_LAND || "?";
+    const landLabel = window.LAND_LABEL   || landKey;
+    const map = _readCooldownStore();
+    if (!map[landKey]) map[landKey] = { label: landLabel, slots: [] };
+    map[landKey].label = landLabel;   // keep fresh
+    // Replace or add: keep only the latest end-time per call (one entry per collect)
+    map[landKey].slots.push(iso);
+    // Deduplicate and remove past entries while we're here
+    const now = Date.now();
+    map[landKey].slots = [...new Set(map[landKey].slots)]
+      .filter(t => new Date(t).getTime() > now);
+    _writeCooldownStore(map);
+  }
+
+  /**
+   * Called when a slot is collected on the current land page —
+   * clears all stored cooldowns for this land then re-registers
+   * only the slots that are still on cooldown (from the DOM).
+   */
+  function _syncCooldownStoreFromDOM() {
+    const landKey   = window.CURRENT_LAND || "?";
+    const landLabel = window.LAND_LABEL   || landKey;
+    const map = _readCooldownStore();
+    const activeIsos = [];
+    document.querySelectorAll(".slot-tile:not(.slot-add)").forEach(slot => {
+      if (slot.dataset.cooldownUntil) activeIsos.push(slot.dataset.cooldownUntil);
+    });
+    if (activeIsos.length) {
+      map[landKey] = { label: landLabel, slots: activeIsos };
+    } else {
+      delete map[landKey];
+    }
+    _writeCooldownStore(map);
+  }
+
   const LandCooldown = (function () {
     let intervalId = null;
 
@@ -392,12 +447,16 @@
         slotEl.dataset.cooldownDuration = String(durationSec);
       }
 
+      // Persist so the global ticker in game_app.js can notify even off-page
+      _storeCooldown(iso);
+
       ensureTicker();
       updateOneSlot(slotEl);
     }
 
     /**
      * Rebuild cooldowns at page load from data-* attributes.
+     * Also syncs localStorage so the global ticker is accurate.
      */
     function initFromDataset() {
       const slots = document.querySelectorAll(".slot-tile:not(.slot-add)");
@@ -412,6 +471,9 @@
         }
       });
 
+      // Sync store: removes stale entries for this land if all slots are ready
+      _syncCooldownStoreFromDOM();
+
       if (found) ensureTicker();
     }
 
@@ -419,6 +481,7 @@
     return {
       setSlotCooldown,
       initFromDataset,
+      syncStore: _syncCooldownStoreFromDOM,
     };
   })();
 
@@ -598,6 +661,8 @@
           const duration = Number(data.cooldown_duration || 0);
           LandCooldown.setSlotCooldown(slotEl, data.next, duration);
         }
+        // Keep the global cooldown store in sync with the current DOM state
+        LandCooldown.syncStore();
 
         console.log("[LandCollect] OK:", land, "slot", slotIndex, data);
       } catch (err) {

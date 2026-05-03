@@ -214,6 +214,25 @@
           </div>
         </div>
 
+        <!-- Notification bell -->
+        <div class="hud-notif-bell-wrap" id="hud-notif-wrap">
+          <button id="hud-notif-btn" class="hud-icon-wrapper" title="Notifications" aria-haspopup="true" aria-expanded="false">
+            <span class="hud-icon-emoji" aria-hidden="true">🔔</span>
+            <span id="hud-notif-badge" class="hud-notif-badge" style="display:none;" aria-label="notifications non lues"></span>
+          </button>
+          <!-- Dropdown panel -->
+          <div id="hud-notif-panel" class="hud-notif-panel" hidden>
+            <div class="hud-notif-panel-header">
+              <span class="hud-notif-panel-title">Notifications</span>
+              <button id="hud-notif-clear" class="hud-notif-clear-btn" title="Tout effacer">✕</button>
+            </div>
+            <div class="hud-notif-panel-list" id="hud-notif-list">
+              <!-- filled by JS -->
+            </div>
+            <div class="hud-notif-panel-empty" id="hud-notif-empty" style="display:none;">Aucune notification.</div>
+          </div>
+        </div>
+
         <div
           id="hud-travel-btn"
           class="hud-icon-wrapper"

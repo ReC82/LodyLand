@@ -49,7 +49,10 @@
   function showGameNotification(opts) {
     if (!opts || !opts.title) return;
 
-    _persistNotif(opts);
+    const ts = _persistNotif(opts);
+    // Update badge & refresh panel if open
+    _updateBadge();
+    if (_isPanelOpen()) _renderPanel();
 
     const type     = opts.type     || "info";
     const duration = opts.duration ?? 5500;
@@ -81,7 +84,7 @@
     notif.className = `game-notif game-notif--${type}`;
 
     notif.innerHTML = `
-      <div class="game-notif-inner">
+      <div class="game-notif-inner${opts.url ? " game-notif-inner--clickable" : ""}">
         ${iconHtml}
         <div class="game-notif-content">
           <div class="game-notif-title">${_esc(opts.title)}</div>
@@ -102,6 +105,16 @@
       e.stopPropagation();
       _dismiss(notif);
     });
+
+    // Click on body → remove all notifs for this url + navigate
+    if (opts.url) {
+      notif.querySelector(".game-notif-inner")?.addEventListener("click", () => {
+        _dismiss(notif);
+        _removeFromHistoryByUrl(opts.url);
+        _updateBadge();
+        window.location.href = opts.url;
+      });
+    }
 
     // Animate in (double rAF to allow CSS to register initial state first)
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -251,26 +264,202 @@
   // ---------------------------------------------------------------------------
   // Notification history (localStorage, capped at 150 entries)
   // ---------------------------------------------------------------------------
-  const HISTORY_KEY = "llNotifHistory";
-  const HISTORY_MAX = 150;
+  const HISTORY_KEY    = "llNotifHistory";
+  const LAST_SEEN_KEY  = "llNotifLastSeen";   // ISO timestamp: last panel open
+  const HISTORY_MAX    = 150;
+  const PANEL_MAX_ROWS = 20;
+
+  function _removeFromHistory(ts) {
+    try {
+      const history = _getHistory().filter(n => n.ts !== ts);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (_) {}
+  }
+
+  function _removeFromHistoryByUrl(url) {
+    if (!url) return;
+    try {
+      const history = _getHistory().filter(n => n.url !== url);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (_) {}
+  }
 
   function _persistNotif(opts) {
+    const ts = new Date().toISOString();
     try {
       const entry = {
         type:  opts.type  || "info",
         icon:  opts.icon  || null,
         title: opts.title || "",
         body:  opts.body  || "",
-        ts:    new Date().toISOString(),
+        url:   opts.url   || null,
+        ts,
       };
-      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-      history.unshift(entry);
-      if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
+      let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      // If the most recent entry has the same url, replace it (no duplicate land notifs)
+      if (entry.url && history.length > 0 && history[0].url === entry.url) {
+        history[0] = entry;
+      } else {
+        history.unshift(entry);
+        if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
+      }
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     } catch (_) {
       // localStorage may be unavailable (private mode, quota)
     }
+    return ts;
   }
+
+  // ---------------------------------------------------------------------------
+  // HUD notification panel
+  // ---------------------------------------------------------------------------
+
+  const TYPE_EMOJI = {
+    level_up:       "⭐",
+    unlock:         "🔓",
+    first_resource: "🌿",
+    daily:          "🎁",
+    quest:          "📜",
+    info:           "ℹ️",
+  };
+
+  function _relTime(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    const h = Math.floor(diff / 3600000);
+    const d = Math.floor(diff / 86400000);
+    if (m < 1)  return "À l'instant";
+    if (m < 60) return `${m} min`;
+    if (h < 24) return `${h}h`;
+    return `${d}j`;
+  }
+
+  function _getLastSeen() {
+    try { return localStorage.getItem(LAST_SEEN_KEY) || ""; } catch (_) { return ""; }
+  }
+  function _setLastSeen() {
+    try { localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString()); } catch (_) {}
+  }
+
+  function _getUnreadCount() {
+    const lastSeen = _getLastSeen();
+    if (!lastSeen) return Math.min(_getHistory().length, 9);
+    return _getHistory().filter(n => n.ts > lastSeen).length;
+  }
+
+  function _getHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch (_) { return []; }
+  }
+
+  function _updateBadge() {
+    const badge = document.getElementById("hud-notif-badge");
+    if (!badge) return;
+    const count = _getUnreadCount();
+    if (count > 0) {
+      badge.textContent = count > 9 ? "9+" : String(count);
+      badge.style.display = "block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  function _renderPanel() {
+    const list    = document.getElementById("hud-notif-list");
+    const empty   = document.getElementById("hud-notif-empty");
+    if (!list) return;
+
+    const history  = _getHistory().slice(0, PANEL_MAX_ROWS);
+    const lastSeen = _getLastSeen();
+
+    if (!history.length) {
+      list.innerHTML = "";
+      if (empty) empty.style.display = "";
+      return;
+    }
+    if (empty) empty.style.display = "none";
+
+    list.innerHTML = history.map(n => {
+      const icon    = TYPE_EMOJI[n.type] || "ℹ️";
+      const time    = _relTime(n.ts);
+      const unread  = lastSeen && n.ts > lastSeen;
+      const clickable = n.url ? " hud-notif-row--clickable" : "";
+      const dataUrl   = n.url ? ` data-url="${_escAttr(n.url)}"` : "";
+      return `
+        <div class="hud-notif-row${unread ? " is-unread" : ""}${clickable}" data-type="${_escAttr(n.type)}" data-ts="${_escAttr(n.ts)}"${dataUrl}>
+          <div class="hud-notif-row-icon">${icon}</div>
+          <div class="hud-notif-row-content">
+            <div class="hud-notif-row-title">${_esc(n.title)}</div>
+            ${n.body ? `<div class="hud-notif-row-body">${_esc(n.body)}</div>` : ""}
+          </div>
+          <div class="hud-notif-row-time">${time}</div>
+        </div>`;
+    }).join("");
+
+    // Navigate on click for rows that have a url — removes all notifs for that url
+    list.querySelectorAll(".hud-notif-row--clickable").forEach(row => {
+      row.addEventListener("click", () => {
+        _removeFromHistoryByUrl(row.dataset.url);
+        _closePanel();
+        window.location.href = row.dataset.url;
+      });
+    });
+  }
+
+  function _openPanel() {
+    const panel = document.getElementById("hud-notif-panel");
+    const btn   = document.getElementById("hud-notif-btn");
+    if (!panel) return;
+    _renderPanel();
+    panel.hidden = false;
+    if (btn) btn.setAttribute("aria-expanded", "true");
+    // Mark all as read
+    _setLastSeen();
+    _updateBadge();
+  }
+
+  function _closePanel() {
+    const panel = document.getElementById("hud-notif-panel");
+    const btn   = document.getElementById("hud-notif-btn");
+    if (panel) panel.hidden = true;
+    if (btn)   btn.setAttribute("aria-expanded", "false");
+  }
+
+  function _isPanelOpen() {
+    const p = document.getElementById("hud-notif-panel");
+    return p && !p.hidden;
+  }
+
+  // Wire up DOM once ready
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn   = document.getElementById("hud-notif-btn");
+    const clear = document.getElementById("hud-notif-clear");
+
+    if (btn) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        _isPanelOpen() ? _closePanel() : _openPanel();
+      });
+    }
+
+    if (clear) {
+      clear.addEventListener("click", (e) => {
+        e.stopPropagation();
+        try { localStorage.removeItem(HISTORY_KEY); } catch (_) {}
+        _setLastSeen();
+        _updateBadge();
+        _renderPanel();
+      });
+    }
+
+    // Click outside closes panel
+    document.addEventListener("click", (e) => {
+      const wrap = document.getElementById("hud-notif-wrap");
+      if (wrap && !wrap.contains(e.target)) _closePanel();
+    });
+
+    // Initial badge
+    _updateBadge();
+  });
 
   // ---------------------------------------------------------------------------
   // Utils
@@ -280,6 +469,11 @@
     const d = document.createElement("div");
     d.textContent = str;
     return d.innerHTML;
+  }
+
+  function _escAttr(str) {
+    if (!str) return "";
+    return String(str).replace(/['"<>&]/g, c => ({"'":"&#39;",'"':"&quot;","<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
   }
 
   // ---------------------------------------------------------------------------
@@ -293,12 +487,12 @@
     questComplete: notifyQuestComplete,
     FEATURE_LABELS,
     HISTORY_KEY,
-    getHistory: () => {
-      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
-      catch (_) { return []; }
-    },
+    getHistory: _getHistory,
     clearHistory: () => {
       try { localStorage.removeItem(HISTORY_KEY); } catch (_) {}
+      _setLastSeen();
+      _updateBadge();
+      if (_isPanelOpen()) _renderPanel();
     },
   };
 
