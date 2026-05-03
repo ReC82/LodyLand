@@ -49,6 +49,8 @@
   function showGameNotification(opts) {
     if (!opts || !opts.title) return;
 
+    _persistNotif(opts);
+
     const type     = opts.type     || "info";
     const duration = opts.duration ?? 5500;
     const container = _getContainer();
@@ -247,6 +249,30 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Notification history (localStorage, capped at 150 entries)
+  // ---------------------------------------------------------------------------
+  const HISTORY_KEY = "llNotifHistory";
+  const HISTORY_MAX = 150;
+
+  function _persistNotif(opts) {
+    try {
+      const entry = {
+        type:  opts.type  || "info",
+        icon:  opts.icon  || null,
+        title: opts.title || "",
+        body:  opts.body  || "",
+        ts:    new Date().toISOString(),
+      };
+      const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      history.unshift(entry);
+      if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (_) {
+      // localStorage may be unavailable (private mode, quota)
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Utils
   // ---------------------------------------------------------------------------
   function _esc(str) {
@@ -266,6 +292,14 @@
     dailyChest: notifyDailyChest,
     questComplete: notifyQuestComplete,
     FEATURE_LABELS,
+    HISTORY_KEY,
+    getHistory: () => {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+      catch (_) { return []; }
+    },
+    clearHistory: () => {
+      try { localStorage.removeItem(HISTORY_KEY); } catch (_) {}
+    },
   };
 
 })(window);
