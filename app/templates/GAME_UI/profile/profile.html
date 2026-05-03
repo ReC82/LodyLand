@@ -21,6 +21,7 @@
     <button class="profile-tab-btn" data-tab="stats">📊 Statistiques</button>
     <button class="profile-tab-btn" data-tab="skills">⚡ Compétences</button>
     <button class="profile-tab-btn" data-tab="settings">⚙️ Paramètres</button>
+    <button class="profile-tab-btn" data-tab="history">📖 Historique</button>
   </nav>
 
   <!-- ══════════════════════════════════════════════
@@ -212,6 +213,36 @@
     </div>
   </div>
 
+  <!-- ══════════════════════════════════════════════
+       TAB 5 — Historique
+  ══════════════════════════════════════════════ -->
+  <div id="tab-history" class="profile-tab-panel" style="display:none;">
+    <div class="d-flex flex-column gap-3">
+
+      <!-- Notifications -->
+      <section class="profile-card">
+        <div class="profile-card-header d-flex align-items-center justify-content-between">
+          <h2 class="profile-card-title">🔔 Notifications</h2>
+          <button class="btn btn-sm btn-outline-secondary" id="btn-clear-notifs" style="font-size:.75rem;">Effacer</button>
+        </div>
+        <div class="profile-card-body" id="notif-history-body">
+          <p style="color:#64748b;font-size:.88rem;">Chargement…</p>
+        </div>
+      </section>
+
+      <!-- Dialogues -->
+      <section class="profile-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">💬 Dialogues</h2>
+        </div>
+        <div class="profile-card-body" id="dialogue-history-body">
+          <p style="color:#64748b;font-size:.88rem;">Chargement…</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
 </div><!-- /.profile-page -->
 
 <!-- ══════════════════════════════════════════════
@@ -283,7 +314,7 @@
 // ═══════════════════════════════════════
 // Tab switching
 // ═══════════════════════════════════════
-const TABS = ["profil", "stats", "skills", "settings"];
+const TABS = ["profil", "stats", "skills", "settings", "history"];
 
 document.querySelectorAll(".profile-tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -292,8 +323,9 @@ document.querySelectorAll(".profile-tab-btn").forEach(btn => {
       document.getElementById("tab-" + t).style.display = t === tab ? "" : "none";
       document.querySelector(`[data-tab="${t}"]`).classList.toggle("active", t === tab);
     });
-    if (tab === "stats" && !window._statsLoaded) loadStats();
-    if (tab === "skills" && !window._skillsLoaded) loadSkills();
+    if (tab === "stats"    && !window._statsLoaded)    loadStats();
+    if (tab === "skills"   && !window._skillsLoaded)   loadSkills();
+    if (tab === "history"  && !window._historyLoaded)  loadHistory();
   });
 });
 
@@ -531,6 +563,144 @@ function loadSkills() {
 
 // Pre-load skills immediately (they show on tab open)
 loadSkills();
+
+// ═══════════════════════════════════════
+// History tab
+// ═══════════════════════════════════════
+window._historyLoaded = false;
+
+const NOTIF_TYPE_ICONS = {
+  level_up:       "⭐",
+  unlock:         "🔓",
+  first_resource: "🌿",
+  daily:          "🎁",
+  quest:          "📜",
+  info:           "ℹ️",
+};
+
+const NOTIF_TYPE_LABELS = {
+  level_up:       "Niveau",
+  unlock:         "Déblocage",
+  first_resource: "Découverte",
+  daily:          "Coffre",
+  quest:          "Quête",
+  info:           "Info",
+};
+
+function _relativeTime(isoStr) {
+  const now = Date.now();
+  const d   = new Date(isoStr);
+  const diffMs = now - d;
+  const diffM  = Math.floor(diffMs / 60000);
+  const diffH  = Math.floor(diffMs / 3600000);
+  const diffD  = Math.floor(diffMs / 86400000);
+  if (diffM < 2)  return "À l'instant";
+  if (diffM < 60) return `Il y a ${diffM} min`;
+  if (diffH < 24) return `Il y a ${diffH}h`;
+  if (diffD < 7)  return `Il y a ${diffD}j`;
+  return d.toLocaleDateString("fr-FR");
+}
+
+function _speakerLabel(raw) {
+  if (!raw) return "—";
+  if (raw === "self") return "Vous";
+  if (raw.startsWith("npc_")) {
+    const base = raw.replace(/^npc_/, "").replace(/_/g, " ");
+    return base.charAt(0).toUpperCase() + base.slice(1);
+  }
+  return raw;
+}
+
+function renderNotifHistory() {
+  const container = document.getElementById("notif-history-body");
+  const history   = (window.GameNotif && window.GameNotif.getHistory) ? window.GameNotif.getHistory() : [];
+
+  if (!history.length) {
+    container.innerHTML = '<p style="color:#64748b;font-size:.88rem;">Aucune notification enregistrée.</p>';
+    return;
+  }
+
+  const rows = history.map(n => {
+    const icon  = NOTIF_TYPE_ICONS[n.type] || "ℹ️";
+    const label = NOTIF_TYPE_LABELS[n.type] || n.type;
+    const time  = _relativeTime(n.ts);
+    return `
+      <div class="hist-row">
+        <span class="hist-type-badge hist-type-${n.type}">${icon} ${label}</span>
+        <div class="hist-content">
+          <div class="hist-title">${n.title}</div>
+          ${n.body ? `<div class="hist-body">${n.body}</div>` : ""}
+        </div>
+        <span class="hist-time">${time}</span>
+      </div>`;
+  }).join("");
+
+  container.innerHTML = `<div class="hist-list">${rows}</div>`;
+}
+
+function renderDialogueHistory(dialogues) {
+  const container = document.getElementById("dialogue-history-body");
+
+  if (!dialogues.length) {
+    container.innerHTML = '<p style="color:#64748b;font-size:.88rem;">Aucun dialogue enregistré.</p>';
+    return;
+  }
+
+  const rows = dialogues.map(d => {
+    const time    = _relativeTime(d.seen_at);
+    const speaker = _speakerLabel(d.speaker);
+    return `
+      <div class="hist-row hist-dialogue-row" data-story-id="${d.id}">
+        <span class="hist-type-badge hist-type-dialogue">💬 Dialogue</span>
+        <div class="hist-content">
+          <div class="hist-title">${speaker}</div>
+          ${d.preview ? `<div class="hist-body">${d.preview}</div>` : ""}
+        </div>
+        <div class="d-flex flex-column align-items-end gap-1">
+          <span class="hist-time">${time}</span>
+          ${d.pages && d.pages.length ? `<button class="hist-replay-btn" data-story='${JSON.stringify(d)}'>▶ Revoir</button>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+
+  container.innerHTML = `<div class="hist-list">${rows}</div>`;
+
+  // Wire up replay buttons
+  container.querySelectorAll(".hist-replay-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const ev = JSON.parse(btn.dataset.story);
+      if (typeof window.openStoryModalForEvent === "function") {
+        window.openStoryModalForEvent(ev, null);
+      }
+    });
+  });
+}
+
+function loadHistory() {
+  window._historyLoaded = true;
+
+  // Notifications from localStorage (synchronous)
+  renderNotifHistory();
+
+  // Dialogues from server
+  fetch("/api/profile/history/dialogues")
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) renderDialogueHistory(d.dialogues);
+      else document.getElementById("dialogue-history-body").innerHTML =
+        '<p style="color:#f87171;font-size:.88rem;">Erreur de chargement.</p>';
+    })
+    .catch(() => {
+      document.getElementById("dialogue-history-body").innerHTML =
+        '<p style="color:#f87171;font-size:.88rem;">Erreur réseau.</p>';
+    });
+}
+
+// Clear notifications button
+document.getElementById("btn-clear-notifs").addEventListener("click", () => {
+  if (window.GameNotif && window.GameNotif.clearHistory) window.GameNotif.clearHistory();
+  renderNotifHistory();
+});
 
 // ═══════════════════════════════════════
 // Password change modal

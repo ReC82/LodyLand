@@ -998,3 +998,54 @@ def change_password():
         account.password_hash = generate_password_hash(new_pw)
         s.commit()
         return jsonify({"ok": True}), 200
+
+
+# =============================================================================
+# Profile: dialogue history
+# =============================================================================
+
+@bp.get("/profile/history/dialogues")
+def get_dialogue_history():
+    """Return the list of story events the player has seen, most recent first."""
+    from app.models import StoryEventDef
+
+    with SessionLocal() as s:
+        me = get_current_player(s)
+        if not me:
+            return jsonify({"ok": False, "error": "not_authenticated"}), 401
+
+        flags = (
+            s.query(PlayerStoryFlag)
+            .filter_by(player_id=me.id)
+            .order_by(PlayerStoryFlag.seen_at.desc())
+            .all()
+        )
+
+        if not flags:
+            return jsonify({"ok": True, "dialogues": []}), 200
+
+        # Fetch matching event defs in one query
+        story_ids = [f.story_id for f in flags]
+        defs_map = {
+            ev.id: ev
+            for ev in s.query(StoryEventDef).filter(StoryEventDef.id.in_(story_ids)).all()
+        }
+
+        dialogues = []
+        for flag in flags:
+            ev = defs_map.get(flag.story_id)
+            pages = (ev.pages if ev else None) or []
+            # Build a short preview: speaker + first line of first page
+            first_page = pages[0] if pages else {}
+            speaker = first_page.get("speaker") or (ev.id if ev else flag.story_id)
+            text_block = first_page.get("text") or {}
+            preview = text_block.get("fr") or text_block.get("en") or ""
+            dialogues.append({
+                "id": flag.story_id,
+                "seen_at": flag.seen_at.isoformat() + "Z",
+                "speaker": speaker,
+                "preview": preview[:120] + ("…" if len(preview) > 120 else ""),
+                "pages": pages,
+            })
+
+        return jsonify({"ok": True, "dialogues": dialogues}), 200

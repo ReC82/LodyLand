@@ -420,3 +420,81 @@
   gap: 0.35rem;
   margin-bottom: 0.75rem;
 }
+/* ── History tab ─────────────────────────────────────────────── */
+.hist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.hist-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.82rem;
+}
+
+.hist-type-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  white-space: nowrap;
+  background: rgba(148,163,184,0.15);
+  color: #94a3b8;
+}
+
+.hist-type-level_up       { background: rgba(250,204,21,0.15); color: #facc15; }
+.hist-type-unlock         { background: rgba(74,222,128,0.15); color: #4ade80; }
+.hist-type-first_resource { background: rgba(52,211,153,0.15); color: #34d399; }
+.hist-type-daily          { background: rgba(251,146,60,0.15);  color: #fb923c; }
+.hist-type-quest          { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.hist-type-dialogue       { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+
+.hist-content { flex: 1; min-width: 0; }
+
+.hist-title {
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hist-body {
+  color: #94a3b8;
+  font-size: 0.76rem;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hist-time {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.hist-replay-btn {
+  background: none;
+  border: 1px solid rgba(96,165,250,0.4);
+  color: #60a5fa;
+  border-radius: 6px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hist-replay-btn:hover {
+  background: rgba(96,165,250,0.12);
+}
