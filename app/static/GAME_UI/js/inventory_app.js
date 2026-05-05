@@ -217,15 +217,18 @@ function renderCardList(filterText = "") {
 
   items.forEach((c) => {
     const row = document.createElement("div");
-    row.className = "inv-card-tile inv-tooltip";
+    row.className = "inv-card-tile";
+    row.style.cursor = "pointer";
 
     row.innerHTML = `
       <div class="inv-card-image-wrapper">
-        <img src="${c.icon}" class="inv-card-clickable" />
+        <img src="${c.icon}" alt="${c.label}" />
         <span class="inv-card-qty-badge">x${c.owned_qty}</span>
       </div>
       <div class="inv-card-name">${c.label}</div>
     `;
+
+    row.addEventListener("click", () => openCardModal(c));
     listEl.appendChild(row);
   });
 }
@@ -341,6 +344,78 @@ async function loadInventoryData() {
 }
 
 /* ---------------------------------------------------------------------------
+   Card detail modal
+--------------------------------------------------------------------------- */
+
+const RARITY_LABELS = {
+  common:    { label: "Commune",    color: "#94a3b8" },
+  uncommon:  { label: "Peu commune", color: "#4ade80" },
+  rare:      { label: "Rare",       color: "#60a5fa" },
+  epic:      { label: "Épique",     color: "#a78bfa" },
+  legendary: { label: "Légendaire", color: "#fbbf24" },
+};
+
+const TYPE_LABELS = {
+  land_access:     "Accès Terre",
+  craft_recipe:    "Recette Craft",
+  craft_access:    "Accès Craft",
+  land_loot_boost: "Boost Récolte",
+  resource_boost:  "Boost Ressource",
+  xp_boost:        "Boost XP",
+  cooldown_boost:  "Boost Cooldown",
+  building_access: "Bâtiment",
+  land_slot:       "Emplacement",
+  passive_boost:   "Boost Passif",
+};
+
+function openCardModal(card) {
+  const modal    = $("invCardModal");
+  const imgEl    = $("invCardModalImg");
+  const qtyEl    = $("invCardModalQty");
+  const rarityEl = $("invCardModalRarity");
+  const titleEl  = $("invCardModalTitle");
+  const typeEl   = $("invCardModalType");
+  const descEl   = $("invCardModalDesc");
+  const gpEl     = $("invCardModalGameplay");
+  if (!modal) return;
+
+  if (imgEl)  { imgEl.src = card.icon || ""; imgEl.alt = card.label || ""; }
+  if (qtyEl)  { qtyEl.textContent = `x${card.owned_qty}`; }
+
+  const rarity = RARITY_LABELS[card.rarity] || null;
+  if (rarityEl) {
+    rarityEl.textContent = rarity ? rarity.label : "";
+    rarityEl.style.color = rarity ? rarity.color : "#94a3b8";
+    rarityEl.hidden = !rarity;
+  }
+
+  if (titleEl) titleEl.textContent = card.label || card.key || "";
+  if (typeEl)  typeEl.textContent  = TYPE_LABELS[card.type] || card.type || "";
+  if (descEl)  descEl.textContent  = card.description || "";
+
+  // Gameplay bonuses
+  if (gpEl) {
+    const gp = card.gameplay || {};
+    const entries = Object.entries(gp);
+    if (entries.length) {
+      gpEl.innerHTML = entries.map(([k, v]) =>
+        `<div class="inv-card-modal-gp-row"><span>${k.replace(/_/g, " ")}</span><strong>${v}</strong></div>`
+      ).join("");
+      gpEl.hidden = false;
+    } else {
+      gpEl.hidden = true;
+    }
+  }
+
+  modal.hidden = false;
+}
+
+function closeCardModal() {
+  const modal = $("invCardModal");
+  if (modal) modal.hidden = true;
+}
+
+/* ---------------------------------------------------------------------------
    Init
 --------------------------------------------------------------------------- */
 
@@ -348,6 +423,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupInventoryTabs();
   setupFilters();
   await loadInventoryData();
+
+  $("invCardModalClose")?.addEventListener("click", closeCardModal);
+  $("invCardModal")?.addEventListener("click", (e) => {
+    if (e.target === $("invCardModal")) closeCardModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeCardModal();
+  });
 
   // First-visit tutorial for this page
   if (typeof window.TutorialApp !== "undefined") {
