@@ -168,7 +168,7 @@
           <button
             type="button"
             class="inv-toolbar-btn"
-            onclick="window.location.href='{{ url_for('frontend.village_market') }}'"
+            onclick="window.location.href='{{ url_for('frontend.shop') }}'"
           >
             {{ t("inventory.actions.shop_cards") }}
           </button>
@@ -183,6 +183,26 @@
         {{ t("inventory.empty.cards") }}
       </div>
     </section>
+  </div>
+</div>
+
+<!-- Card detail modal -->
+<div id="invCardModal" class="inv-card-modal-backdrop" hidden aria-modal="true" role="dialog">
+  <div class="inv-card-modal">
+    <button class="inv-card-modal-close" id="invCardModalClose" aria-label="Fermer">✕</button>
+    <div class="inv-card-modal-body">
+      <div class="inv-card-modal-left">
+        <img id="invCardModalImg" src="" alt="" class="inv-card-modal-img" />
+        <span id="invCardModalQty" class="inv-card-modal-qty"></span>
+      </div>
+      <div class="inv-card-modal-right">
+        <div id="invCardModalRarity" class="inv-card-modal-rarity"></div>
+        <h2 id="invCardModalTitle" class="inv-card-modal-title"></h2>
+        <div id="invCardModalType" class="inv-card-modal-type"></div>
+        <p id="invCardModalDesc" class="inv-card-modal-desc"></p>
+        <div id="invCardModalGameplay" class="inv-card-modal-gameplay"></div>
+      </div>
+    </div>
   </div>
 </div>
 

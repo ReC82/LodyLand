@@ -352,3 +352,119 @@
   font-size: 0.78rem;
   color: #facc15;
 }
+
+/* ── Card detail modal ───────────────────────────────────────── */
+.inv-card-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inv-card-modal {
+  position: relative;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  width: min(560px, 94vw);
+  padding: 1.5rem;
+}
+
+.inv-card-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.inv-card-modal-close:hover { color: #94a3b8; }
+
+.inv-card-modal-body {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.inv-card-modal-left {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inv-card-modal-img {
+  width: 120px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+.inv-card-modal-qty {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(255,255,255,0.07);
+  border-radius: 99px;
+  padding: 2px 10px;
+}
+
+.inv-card-modal-right { flex: 1; min-width: 0; }
+
+.inv-card-modal-rarity {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.3rem;
+}
+
+.inv-card-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 0.2rem;
+}
+
+.inv-card-modal-type {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.inv-card-modal-desc {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+}
+
+.inv-card-modal-gameplay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 0.65rem;
+}
+
+.inv-card-modal-gp-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.inv-card-modal-gp-row strong { color: #e2e8f0; }
+
+@media (max-width: 480px) {
+  .inv-card-modal-body { flex-direction: column; align-items: center; }
+  .inv-card-modal-img  { width: 90px; }
+}
