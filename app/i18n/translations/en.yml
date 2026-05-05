@@ -439,6 +439,13 @@ village:
           they produce continuously!
         button: View buildings
         badge_new: New!
+      niko:
+        alt: Niko — the Gambler
+        title: Niko — the Gambler
+        text: Try your luck at the village mini-games! Each victory can earn unique
+          rewards and bonus coins.
+        button: View mini-games
+        badge_new: Mini-games!
   market:
     tab_title: Village market — LodyLand
     title: Village market
@@ -566,6 +573,14 @@ village:
       start_btn: Start
       recipe_label: Recipe
       duration_label: Duration
+  niko:
+    tab_title: Niko — the Gambler — LodyLand
+    title: Niko — the Gambler
+    back_to_village: Back to village
+    subtitle: Try your luck at the village mini-games and earn unique rewards!
+    no_games: No mini-games are available for you yet. Come back later!
+    play_btn: Play
+    locked_level: "Available from level %s"
 items:
   branch:
     label: Branch

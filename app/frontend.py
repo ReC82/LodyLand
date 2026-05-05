@@ -830,6 +830,52 @@ def village_trades():
 
 
 # ---------------------------------------------------------------------------
+# Niko — Mini-game hub
+# ---------------------------------------------------------------------------
+
+@frontend_bp.get("/village/niko")
+@login_required
+def village_niko():
+    """Niko — Mini-game hub listing all unlocked mini-games for the player."""
+    from app.db import SessionLocal
+    from app.models import MiniGameDef
+    from app.i18n import get_user_language
+
+    player = g.player
+    lang = get_user_language(request, player=player)
+
+    session = SessionLocal()
+    try:
+        all_games = (
+            session.query(MiniGameDef)
+            .filter_by(enabled=True)
+            .order_by(MiniGameDef.min_level)
+            .all()
+        )
+
+        def _game_dict(mg):
+            return {
+                "key": mg.key,
+                "label": (mg.name_fr if lang == "fr" else mg.name_en) or mg.key,
+                "description": (mg.description_fr if lang == "fr" else mg.description_en) or "",
+                "min_level": mg.min_level,
+                "free_attempts_per_day": mg.free_attempts_per_day,
+            }
+
+        available = [_game_dict(mg) for mg in all_games if mg.min_level <= player.level]
+        locked = [_game_dict(mg) for mg in all_games if mg.min_level > player.level]
+
+        return render_template(
+            "GAME_UI/lands/village/village_niko.html",
+            player=player,
+            available_games=available,
+            locked_games=locked,
+        )
+    finally:
+        session.close()
+
+
+# ---------------------------------------------------------------------------
 # Mini-games
 # ---------------------------------------------------------------------------
 
