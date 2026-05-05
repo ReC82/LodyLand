@@ -441,6 +441,13 @@ village:
           Une fois construits, ils produisent en continu !
         button: Voir les bâtiments
         badge_new: Nouveau !
+      niko:
+        alt: Niko — le Joueur
+        title: Niko — le Joueur
+        text: Tente ta chance aux mini-jeux du village ! Chaque victoire peut rapporter
+          des récompenses uniques et des coins supplémentaires.
+        button: Voir les mini-jeux
+        badge_new: Mini-jeux !
   market:
     tab_title: Marché du village — LodyLand
     title: Marché du village
@@ -572,6 +579,14 @@ village:
       start_btn: Lancer
       recipe_label: Recette
       duration_label: Durée
+  niko:
+    tab_title: Niko — le Joueur — LodyLand
+    title: Niko — le Joueur
+    back_to_village: Retour au village
+    subtitle: Tente ta chance aux mini-jeux du village et remporte des récompenses uniques !
+    no_games: Aucun mini-jeu n'est encore disponible pour toi. Reviens plus tard !
+    play_btn: Jouer
+    locked_level: "Disponible à partir du niveau %s"
 items:
   branch:
     label: Branches

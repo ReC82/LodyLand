@@ -106,24 +106,27 @@
       </a>
     </section>
 
-    <!-- NPC Mini-jeux (niveau 5+) -->
-    {% if current_player and current_player.level >= 5 %}
+    <!-- PNJ Niko — Mini-jeux -->
     <section class="npc-card">
-      <a href="/minigame/doors_level5" class="npc-card-inner" style="position:relative;">
-        <span class="npc-badge" style="background:#7c3aed;color:#fff;">Mini-jeu</span>
+      <a href="{{ url_for('frontend.village_niko') }}" class="npc-card-inner" style="position:relative;">
+        <span class="npc-badge" style="background:#7c3aed;color:#fff;">
+          {{ t("village.home.npcs.niko.badge_new") }}
+        </span>
         <img
-          src="/static/assets/img/ui/npc/village/villager_trades.png"
-          alt="Salle des portes"
+          src="/static/assets/img/ui/npc/village/villager_niko.png"
+          alt="{{ t('village.home.npcs.niko.alt') }}"
           class="npc-img"
+          onerror="this.src='/static/assets/img/ui/npc/village/villager_trades.png'"
         />
-        <h2 class="h5 npc-title">La Salle des Portes</h2>
+        <h2 class="h5 npc-title">{{ t("village.home.npcs.niko.title") }}</h2>
         <p class="npc-text">
-          Dix niveaux, trois portes chacun. Une cachette, une récompense, ou la porte de la gloire. Oses-tu entrer ?
+          {{ t("village.home.npcs.niko.text") }}
         </p>
-        <span class="btn btn-sm btn-outline-primary npc-card-btn">Entrer dans la salle</span>
+        <span class="btn btn-sm btn-outline-primary npc-card-btn">
+          {{ t("village.home.npcs.niko.button") }}
+        </span>
       </a>
     </section>
-    {% endif %}
 
     <!-- PNJ Pedro — Maître constructeur -->
     <section class="npc-card">

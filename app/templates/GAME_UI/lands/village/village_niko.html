@@ -1,0 +1,112 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/lands.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/lands/village/village.css') }}">
+{% endblock %}
+
+{% block title %}{{ t("village.niko.tab_title") }}{% endblock %}
+
+{% block content %}
+<div class="land-wrapper land-village">
+
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.village_home') }}" class="btn btn-sm btn-outline-light">
+      {{ t("village.niko.back_to_village") }}
+    </a>
+  </div>
+
+  <header class="land-header mb-4">
+    <div class="land-header-main">
+      <img
+        src="/static/assets/img/ui/npc/village/villager_niko.png"
+        alt="{{ t('village.niko.title') }}"
+        class="land-logo me-2"
+        onerror="this.src='/static/assets/img/ui/npc/village/villager_trades.png'"
+      />
+      <div>
+        <h1 class="h4 mb-1">{{ t("village.niko.title") }}</h1>
+        <p class="text-muted mb-0">{{ t("village.niko.subtitle") }}</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="village-panel p-3">
+
+    {% if not available_games and not locked_games %}
+      <div class="text-center py-5">
+        <div style="font-size:3rem; margin-bottom:1rem;">🎮</div>
+        <p class="text-muted mb-0">{{ t("village.niko.no_games") }}</p>
+      </div>
+
+    {% else %}
+      <div class="vs-offers-grid">
+
+        {% for mg in available_games %}
+        <article class="vs-offer-card">
+          <div class="vs-offer-header">
+            <div class="vs-offer-icon-wrap">
+              <div class="vs-offer-icon-fallback">🎮</div>
+            </div>
+            <div class="vs-offer-title-block">
+              <div class="vs-offer-title">{{ mg.label }}</div>
+              <div class="vs-offer-subtitle text-muted">
+                {{ t("village.niko.play_btn") }} — {{ mg.free_attempts_per_day }}x / jour
+              </div>
+            </div>
+          </div>
+
+          {% if mg.description %}
+            <p class="vs-offer-desc text-muted mb-2" style="font-size:.8rem;">{{ mg.description }}</p>
+          {% endif %}
+
+          <div class="vs-offer-footer">
+            <div class="vs-offer-actions">
+              <a href="{{ url_for('frontend.minigame_page', key=mg.key) }}"
+                 class="btn btn-sm btn-success">
+                🎮 {{ t("village.niko.play_btn") }}
+              </a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+
+        {% for mg in locked_games %}
+        <article class="vs-offer-card" style="opacity:.55; pointer-events:none;">
+          <div class="vs-offer-header">
+            <div class="vs-offer-icon-wrap">
+              <div class="vs-offer-icon-fallback">🔒</div>
+            </div>
+            <div class="vs-offer-title-block">
+              <div class="vs-offer-title">{{ mg.label }}</div>
+              <div class="vs-offer-subtitle text-muted">
+                🔒 {{ t("village.niko.locked_level") | replace("%s", mg.min_level | string) }}
+              </div>
+            </div>
+          </div>
+
+          {% if mg.description %}
+            <p class="vs-offer-desc text-muted mb-2" style="font-size:.8rem;">{{ mg.description }}</p>
+          {% endif %}
+
+          <div class="vs-offer-footer">
+            <div class="vs-offer-actions">
+              <button class="btn btn-sm btn-secondary" disabled>
+                🔒 {{ t("village.niko.play_btn") }}
+              </button>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('static', filename='GAME_UI/js/lands/land_common.js') }}"></script>
+  <script src="{{ url_for('static', filename='GAME_UI/js/village/village_common.js') }}"></script>
+{% endblock %}
