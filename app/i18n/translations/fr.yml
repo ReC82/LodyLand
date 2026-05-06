@@ -644,3 +644,58 @@ items:
     label: Pierre
   item:
     label: Planche de bois
+  tool_wooden_shovel:
+    label: Pelle en bois
+    description: Une pelle rudimentaire pour creuser le sol. Consommée lors d'une Chasse au Trésor.
+
+minigame:
+  treasure:
+    tab_title: La Chasse au Trésor — LodyLand
+    title: La Chasse au Trésor
+    subtitle: Utilise les indices pour trouver le trésor en creusant le moins de cases possible !
+    back: Retour à Niko
+    level_required: "Ce mini-jeu est disponible à partir du niveau {0}."
+    game_over: La partie est terminée.
+    stat:
+      shovels: Pelles
+      dug: Cases creusées
+      reward_preview: Récompense estimée
+      reward_fmt: "{0} éclats"
+    start:
+      description: Une nouvelle grille est générée chaque jour. Lis les indices, puis creuse intelligemment !
+      button: Commencer la partie
+    no_shovel:
+      text: Il te faut au moins une pelle en bois (tool_wooden_shovel) pour creuser.
+      market_link: Trouver des pelles
+    won:
+      title: Trésor trouvé !
+      msg_fmt: "Trouvé en {0} coup(s) !"
+      reward_label: éclats
+      come_back: Reviens demain pour une nouvelle grille.
+    clues:
+      title: Indices
+      distance: "Le trésor est à moins de {1} cases de {0}."
+      same_row: "Le trésor est sur la même ligne que {0}."
+      same_col: "Le trésor est sur la même colonne que {0}."
+      adjacent: "Le trésor est adjacent à {0}."
+      zone_left: "Le trésor est dans la moitié gauche de la grille."
+      zone_right: "Le trésor est dans la moitié droite de la grille."
+      zone_top: "Le trésor est dans la moitié haute de la grille."
+      zone_bottom: "Le trésor est dans la moitié basse de la grille."
+      closer_to: "Le trésor est plus proche de {0} que de {1}."
+      locked: Creuse pour découvrir…
+    objects:
+      flint: le silex
+      pearl: la perle
+      stone_chunk: la pierre
+      seashell: le coquillage
+      branch: la branche
+      starfish: l'étoile de mer
+      coal: le charbon
+    result:
+      treasure: 💎 Trésor trouvé !
+      empty: Rien ici…
+    legend:
+      object: Objet (repère)
+      empty: Case creusée (vide)
+      unknown: Case inconnue
