@@ -1,0 +1,133 @@
+{% extends "game_base.html" %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='GAME_UI/css/minigame/minigame_treasure.css') }}">
+{% endblock %}
+
+{% block title %}{{ t("minigame.treasure.tab_title") }}{% endblock %}
+
+{% block content %}
+<div class="land-wrapper mg-treasure-wrapper">
+
+  <!-- Back link -->
+  <div class="mb-3">
+    <a href="{{ url_for('frontend.village_niko') }}" class="btn btn-sm btn-outline-light">
+      ← {{ t("minigame.treasure.back") }}
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="mg-treasure-header">
+    <div class="mg-treasure-header-icon">💎</div>
+    <div>
+      <h1 class="h3 mb-1">{{ t("minigame.treasure.title") }}</h1>
+      <p class="text-muted mb-0">{{ t("minigame.treasure.subtitle") }}</p>
+    </div>
+  </header>
+
+  <!-- Status bar -->
+  <div class="mg-treasure-statbar" id="tStatBar">
+    <div class="mg-treasure-stat">
+      <span class="mg-treasure-stat-label">{{ t("minigame.treasure.stat.shovels") }}</span>
+      <span class="mg-treasure-stat-value" id="tShovelCount">–</span>
+    </div>
+    <div class="mg-treasure-stat">
+      <span class="mg-treasure-stat-label">{{ t("minigame.treasure.stat.dug") }}</span>
+      <span class="mg-treasure-stat-value" id="tDugCount">0</span>
+    </div>
+    <div class="mg-treasure-stat">
+      <span class="mg-treasure-stat-label">{{ t("minigame.treasure.stat.reward_preview") }}</span>
+      <span class="mg-treasure-stat-value" id="tRewardPreview">–</span>
+    </div>
+  </div>
+
+  <!-- Main layout: clues | grid -->
+  <div class="mg-treasure-layout" id="tLayout" style="display:none;">
+
+    <!-- Clue panel -->
+    <aside class="mg-treasure-clues-panel">
+      <h2 class="mg-treasure-clues-title">{{ t("minigame.treasure.clues.title") }}</h2>
+      <ul class="mg-treasure-clues-list" id="tClueList"></ul>
+    </aside>
+
+    <!-- Grid area -->
+    <section class="mg-treasure-grid-section">
+      <div class="mg-treasure-grid" id="tGrid"></div>
+    </section>
+
+  </div>
+
+  <!-- No-game panel (before start) -->
+  <div class="mg-treasure-panel" id="tPanelStart">
+    <div class="mg-treasure-panel-icon">🗺️</div>
+    <p id="tStartMsg">{{ t("minigame.treasure.start.description") }}</p>
+    <button class="btn btn-warning mg-treasure-btn-start" id="tBtnStart">
+      🌟 {{ t("minigame.treasure.start.button") }}
+    </button>
+  </div>
+
+  <!-- No shovels warning -->
+  <div class="mg-treasure-panel mg-treasure-panel-warning d-none" id="tPanelNoShovel">
+    <div class="mg-treasure-panel-icon">🔨</div>
+    <p>{{ t("minigame.treasure.no_shovel.text") }}</p>
+    <a href="{{ url_for('frontend.village_market') }}" class="btn btn-sm btn-outline-warning">
+      {{ t("minigame.treasure.no_shovel.market_link") }}
+    </a>
+  </div>
+
+  <!-- Won panel -->
+  <div class="mg-treasure-panel mg-treasure-panel-won d-none" id="tPanelWon">
+    <div class="mg-treasure-panel-icon">🎉</div>
+    <h2 class="mg-treasure-won-title" id="tWonTitle">{{ t("minigame.treasure.won.title") }}</h2>
+    <p id="tWonMsg"></p>
+    <div class="mg-treasure-won-reward" id="tWonReward"></div>
+    <p class="text-muted mt-2" style="font-size:.85rem;" id="tWonNextMsg">
+      {{ t("minigame.treasure.won.come_back") }}
+    </p>
+  </div>
+
+  <!-- Legend -->
+  <div class="mg-treasure-legend" id="tLegend" style="display:none;">
+    <span class="mg-treasure-legend-item"><span class="mg-treasure-cell mg-treasure-cell--obj-sample">🦴</span> {{ t("minigame.treasure.legend.object") }}</span>
+    <span class="mg-treasure-legend-item"><span class="mg-treasure-cell mg-treasure-cell--dug-sample">✗</span> {{ t("minigame.treasure.legend.empty") }}</span>
+    <span class="mg-treasure-legend-item"><span class="mg-treasure-cell mg-treasure-cell--undug-sample">?</span> {{ t("minigame.treasure.legend.unknown") }}</span>
+  </div>
+
+</div>
+
+<!-- Toast overlay for dig results -->
+<div id="tDigToast" class="mg-treasure-toast" hidden></div>
+
+<script>
+  window.TREASURE_I18N = {
+    clue_distance:   "{{ t('minigame.treasure.clues.distance')  | e }}",
+    clue_same_row:   "{{ t('minigame.treasure.clues.same_row')  | e }}",
+    clue_same_col:   "{{ t('minigame.treasure.clues.same_col')  | e }}",
+    clue_adjacent:   "{{ t('minigame.treasure.clues.adjacent')  | e }}",
+    clue_zone_left:  "{{ t('minigame.treasure.clues.zone_left') | e }}",
+    clue_zone_right: "{{ t('minigame.treasure.clues.zone_right')| e }}",
+    clue_zone_top:   "{{ t('minigame.treasure.clues.zone_top')  | e }}",
+    clue_zone_bot:   "{{ t('minigame.treasure.clues.zone_bottom')| e }}",
+    clue_closer_to:  "{{ t('minigame.treasure.clues.closer_to') | e }}",
+    clue_locked:     "{{ t('minigame.treasure.clues.locked') | e }}",
+    obj_flint:       "{{ t('minigame.treasure.objects.flint')       | e }}",
+    obj_pearl:       "{{ t('minigame.treasure.objects.pearl')       | e }}",
+    obj_stone_chunk: "{{ t('minigame.treasure.objects.stone_chunk') | e }}",
+    obj_seashell:    "{{ t('minigame.treasure.objects.seashell')    | e }}",
+    obj_branch:      "{{ t('minigame.treasure.objects.branch')      | e }}",
+    obj_starfish:    "{{ t('minigame.treasure.objects.starfish')    | e }}",
+    obj_coal:        "{{ t('minigame.treasure.objects.coal')        | e }}",
+    result_treasure: "{{ t('minigame.treasure.result.treasure') | e }}",
+    result_empty:    "{{ t('minigame.treasure.result.empty')    | e }}",
+    reward_label:    "{{ t('minigame.treasure.won.reward_label')| e }}",
+    stat_reward_fmt: "{{ t('minigame.treasure.stat.reward_fmt') | e }}",
+    won_msg_fmt:     "{{ t('minigame.treasure.won.msg_fmt')     | e }}",
+    level_required:  "{{ t('minigame.treasure.level_required')  | e }}",
+    no_shovel:       "{{ t('minigame.treasure.no_shovel.text')  | e }}",
+    game_over:       "{{ t('minigame.treasure.game_over')       | e }}",
+  };
+  window.PLAYER_LEVEL = {{ current_player.level }};
+  window.MIN_LEVEL    = 7;
+</script>
+<script src="{{ url_for('static', filename='GAME_UI/js/minigame_treasure.js') }}"></script>
+{% endblock %}

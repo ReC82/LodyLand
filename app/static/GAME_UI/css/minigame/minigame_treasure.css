@@ -1,0 +1,391 @@
+/* ==========================================================================
+   Treasure Hunt Mini-Game Styles
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Page wrapper
+--------------------------------------------------------------------------- */
+
+.mg-treasure-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Header
+--------------------------------------------------------------------------- */
+
+.mg-treasure-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.mg-treasure-header-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Stat bar
+--------------------------------------------------------------------------- */
+
+.mg-treasure-statbar {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: .6rem 1.2rem;
+  margin-bottom: 1.25rem;
+}
+
+.mg-treasure-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+
+.mg-treasure-stat-label {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #9ca3af;
+}
+
+.mg-treasure-stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+/* ---------------------------------------------------------------------------
+   Main layout: clues + grid
+--------------------------------------------------------------------------- */
+
+.mg-treasure-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .mg-treasure-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Clue panel
+--------------------------------------------------------------------------- */
+
+.mg-treasure-clues-panel {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.mg-treasure-clues-title {
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #fbbf24;
+  margin-bottom: .75rem;
+}
+
+.mg-treasure-clues-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+}
+
+.mg-treasure-clue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  font-size: .82rem;
+  line-height: 1.4;
+  color: #e5e7eb;
+}
+
+.mg-treasure-clue-locked {
+  opacity: .45;
+  font-style: italic;
+}
+
+.mg-treasure-clue-lock-text {
+  color: #9ca3af;
+  font-size: .78rem;
+}
+
+.mg-treasure-clue-num {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(251,191,36,.18);
+  color: #fbbf24;
+  font-size: .7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: .1rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Grid
+--------------------------------------------------------------------------- */
+
+.mg-treasure-grid-section {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.mg-treasure-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--tg-size, 9), 1fr);
+  gap: 3px;
+  width: 100%;
+}
+
+/* Base cell */
+.mg-treasure-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  transition: background .15s, transform .1s;
+  user-select: none;
+  min-width: 0;
+}
+
+/* Undug (clickable) — neutral colour works on both dark and light */
+.mg-treasure-cell--undug {
+  background: #d1d5db;
+  border: 1px solid #9ca3af;
+  cursor: pointer;
+}
+
+.mg-treasure-cell--undug:hover {
+  background: #fbbf24;
+  border-color: #d97706;
+  transform: scale(1.07);
+}
+
+/* Being dug (animation) */
+.mg-treasure-cell--digging {
+  background: rgba(251,191,36,.6) !important;
+  animation: mg-dig-pulse .35s ease;
+}
+
+@keyframes mg-dig-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+
+/* Dug — empty */
+.mg-treasure-cell--dug {
+  background: #6b7280;
+  border: 1px solid #4b5563;
+  color: #374151;
+  font-size: .65rem;
+  font-weight: 700;
+  cursor: default;
+}
+
+/* Object landmark (visible from start) */
+.mg-treasure-cell--object {
+  background: #818cf8;
+  border: 2px solid #6366f1;
+  cursor: default;
+  font-size: 1rem;
+}
+
+/* Treasure revealed (won) */
+.mg-treasure-cell--treasure {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border: 2px solid #d97706;
+  animation: mg-treasure-glow 1.2s ease infinite alternate;
+  font-size: 1.1rem;
+}
+
+@keyframes mg-treasure-glow {
+  from { box-shadow: 0 0 6px rgba(251,191,36,.6); }
+  to   { box-shadow: 0 0 20px rgba(251,191,36,1); }
+}
+
+/* Legend sample cells */
+.mg-treasure-cell--obj-sample    { background: #818cf8; border: 2px solid #6366f1; display:inline-flex; }
+.mg-treasure-cell--dug-sample    { background: #6b7280; border: 1px solid #4b5563; color: #374151; display:inline-flex; font-size:.65rem; font-weight:700; }
+.mg-treasure-cell--undug-sample  { background: #d1d5db; border: 1px solid #9ca3af; display:inline-flex; }
+
+/* ---------------------------------------------------------------------------
+   Info panels (start / no-shovel / won)
+--------------------------------------------------------------------------- */
+
+.mg-treasure-panel {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  margin-top: 1rem;
+}
+
+.mg-treasure-panel-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.mg-treasure-panel-warning {
+  border-color: rgba(251,191,36,.3);
+  background: rgba(251,191,36,.06);
+}
+
+.mg-treasure-panel-won {
+  border-color: rgba(34,197,94,.35);
+  background: rgba(34,197,94,.07);
+}
+
+.mg-treasure-won-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #4ade80;
+  margin-bottom: .5rem;
+}
+
+.mg-treasure-reward-badge {
+  display: inline-block;
+  background: rgba(251,191,36,.2);
+  border: 1px solid rgba(251,191,36,.45);
+  color: #fbbf24;
+  font-weight: 700;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  padding: .3rem .9rem;
+  margin: .5rem 0;
+}
+
+.mg-treasure-btn-start {
+  margin-top: .75rem;
+  min-width: 160px;
+}
+
+/* ---------------------------------------------------------------------------
+   Legend
+--------------------------------------------------------------------------- */
+
+.mg-treasure-legend {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  font-size: .78rem;
+  color: #9ca3af;
+}
+
+.mg-treasure-legend-item {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.mg-treasure-legend-item .mg-treasure-cell {
+  width: 22px;
+  height: 22px;
+  font-size: .7rem;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Dig toast
+--------------------------------------------------------------------------- */
+
+.mg-treasure-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: .5rem 1.25rem;
+  border-radius: 999px;
+  font-size: .88rem;
+  font-weight: 600;
+  z-index: 9999;
+  pointer-events: none;
+  background: rgba(30,30,30,.92);
+  color: #e5e7eb;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.mg-treasure-toast--success { background: rgba(34,197,94,.88);  color: #fff; }
+.mg-treasure-toast--warning { background: rgba(234,179,8,.88);   color: #000; }
+.mg-treasure-toast--error   { background: rgba(239,68,68,.88);   color: #fff; }
+
+/* ---------------------------------------------------------------------------
+   Dark theme overrides (the base colours above are light-mode-first)
+--------------------------------------------------------------------------- */
+
+.theme-default .mg-treasure-cell--undug,
+.theme-dark    .mg-treasure-cell--undug {
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.18);
+}
+
+.theme-default .mg-treasure-cell--undug:hover,
+.theme-dark    .mg-treasure-cell--undug:hover {
+  background: rgba(251,191,36,.25);
+  border-color: rgba(251,191,36,.6);
+}
+
+.theme-default .mg-treasure-cell--dug,
+.theme-dark    .mg-treasure-cell--dug {
+  background: rgba(0,0,0,.45);
+  border-color: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.3);
+}
+
+.theme-default .mg-treasure-cell--object,
+.theme-dark    .mg-treasure-cell--object {
+  background: rgba(99,102,241,.25);
+  border-color: rgba(99,102,241,.5);
+}
+
+.theme-default .mg-treasure-statbar,
+.theme-dark    .mg-treasure-statbar,
+.theme-default .mg-treasure-clues-panel,
+.theme-dark    .mg-treasure-clues-panel,
+.theme-default .mg-treasure-panel,
+.theme-dark    .mg-treasure-panel {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.09);
+}
+
+.theme-default .mg-treasure-clue-item,
+.theme-dark    .mg-treasure-clue-item { color: #e5e7eb; }
+
+.theme-default .mg-treasure-stat-label,
+.theme-dark    .mg-treasure-stat-label { color: #9ca3af; }
+
+.theme-light .mg-treasure-statbar,
+.theme-light .mg-treasure-clues-panel,
+.theme-light .mg-treasure-panel {
+  background: rgba(0,0,0,.03);
+  border-color: rgba(0,0,0,.1);
+}
+
+.theme-light .mg-treasure-clue-item { color: #374151; }
+.theme-light .mg-treasure-stat-label { color: #6b7280; }

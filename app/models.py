@@ -530,6 +530,11 @@ class MiniGameDef(Base):
     # Rewards per level (JSON list of 10 items)
     rewards_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
+    # Dispatch key: "doors" | "treasure" (determines template + API)
+    path_type: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="doors", server_default="doors"
+    )
+
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime, nullable=False, default=dt.datetime.utcnow
@@ -720,3 +725,61 @@ class SupportTicket(Base):
 
     player   = relationship("Player", foreign_keys=[player_id], backref="support_tickets")
     handler  = relationship("Player", foreign_keys=[handled_by])
+
+
+# =============================================================================
+# Treasure Hunt Mini-Game
+# =============================================================================
+
+class TreasureGame(Base):
+    """
+    One treasure-hunt game session per player per day.
+
+    game_state_json structure:
+    {
+      "grid_size": 9,
+      "treasure": {"row": 3, "col": 5},
+      "objects": [{"key": "bone", "row": 1, "col": 2}, ...],
+      "clues": [
+        {"type": "distance",  "obj_idx": 0, "object_key": "bone", "distance": 4},
+        {"type": "same_row",  "obj_idx": 1, "object_key": "pearl"},
+        {"type": "zone",      "zone": "left"},
+        {"type": "closer_to", "obj_a_idx": 0, "obj_a_key": "bone",
+                               "obj_b_idx": 2, "obj_b_key": "stone"},
+      ],
+      "dug": [[2, 3], [5, 7], ...]
+    }
+
+    status: "active" | "won" | "abandoned"
+    """
+
+    __tablename__ = "treasure_games"
+    __table_args__ = (
+        UniqueConstraint("player_id", "game_date", name="uq_treasure_player_date"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("players.id"), index=True, nullable=False
+    )
+
+    # One game per player per calendar day (UTC)
+    game_date: Mapped[dt.date] = mapped_column(Date, nullable=False, index=True)
+
+    # Full mutable game state
+    game_state_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="active"  # active | won | abandoned
+    )
+
+    # Denormalised counters for quick stats
+    dug_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    reward_shards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    started_at: Mapped[dt.datetime] = mapped_column(
+        DateTime, nullable=False, default=dt.datetime.utcnow
+    )
+    finished_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+    player = relationship("Player", backref="treasure_games")

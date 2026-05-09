@@ -882,7 +882,7 @@ def village_niko():
 @frontend_bp.get("/minigame/<key>")
 @login_required
 def minigame_page(key: str):
-    """Mini-game doors page."""
+    """Dispatch to the correct mini-game template based on MiniGameDef.path_type."""
     from app.db import SessionLocal
     from app.models import MiniGameDef
 
@@ -892,12 +892,17 @@ def minigame_page(key: str):
         mg = session.query(MiniGameDef).filter_by(key=key, enabled=True).first()
         if not mg:
             return redirect(url_for("frontend.village_home"))
-        return render_template(
+
+        template_map = {
+            "doors":    "GAME_UI/minigame/minigame_doors.html",
+            "treasure": "GAME_UI/minigame/minigame_treasure.html",
+        }
+        template = template_map.get(
+            mg.path_type or "doors",
             "GAME_UI/minigame/minigame_doors.html",
-            mg=mg,
-            mg_key=key,
-            player=player,
         )
+
+        return render_template(template, mg=mg, mg_key=key, player=player)
     finally:
         session.close()
 

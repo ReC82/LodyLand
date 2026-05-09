@@ -68,6 +68,45 @@ def _seed_minigames() -> None:
         session.close()
 
 
+def _seed_treasure_minigame() -> None:
+    """Ensure the Treasure Hunt mini-game definition exists in DB."""
+    from .db import SessionLocal
+    from .models import MiniGameDef
+
+    session = SessionLocal()
+    try:
+        if session.query(MiniGameDef).filter_by(key="treasure_hunt").first():
+            return
+
+        mg = MiniGameDef(
+            key="treasure_hunt",
+            name_fr="La Chasse au Trésor",
+            name_en="The Treasure Hunt",
+            description_fr=(
+                "Une grille, un trésor caché, des indices et des pelles. "
+                "Trouve le trésor en creusant le moins de cases possible !"
+            ),
+            description_en=(
+                "A grid, a hidden treasure, clues, and shovels. "
+                "Find the treasure by digging as few cells as possible!"
+            ),
+            min_level=7,
+            path_type="treasure",
+            free_attempts_per_day=1,
+            extra_attempt_cost_diams=0,
+            rewards_json=None,
+            enabled=True,
+        )
+        session.add(mg)
+        session.commit()
+        print("[minigame] Seeded mini-game: treasure_hunt")
+    except Exception as e:
+        print(f"[minigame] Treasure seed error: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
+
 def _seed_story_events() -> None:
     """
     Import story events from levels.yml into the StoryEventDef table (one-time).
@@ -252,6 +291,7 @@ def create_app() -> Flask:
     load_craft_defs()
     load_quest_templates()
     _seed_minigames()
+    _seed_treasure_minigame()
     _seed_skills()
     _seed_story_events()
     register_routes(app)

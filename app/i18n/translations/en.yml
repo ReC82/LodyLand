@@ -589,3 +589,58 @@ items:
   stone_chunk: {}
   item:
     label: Wooden plank
+  tool_wooden_shovel:
+    label: Wooden Shovel
+    description: A basic shovel for digging. Consumed during Treasure Hunt games.
+
+minigame:
+  treasure:
+    tab_title: The Treasure Hunt — LodyLand
+    title: The Treasure Hunt
+    subtitle: Use the clues to find the treasure by digging as few cells as possible!
+    back: Back to Niko
+    level_required: "This mini-game requires level {0}."
+    game_over: The game is over.
+    stat:
+      shovels: Shovels
+      dug: Cells dug
+      reward_preview: Estimated reward
+      reward_fmt: "{0} shards"
+    start:
+      description: A new grid is generated every day. Read the clues, then dig smart!
+      button: Start game
+    no_shovel:
+      text: You need at least one wooden shovel (tool_wooden_shovel) to dig.
+      market_link: Find shovels
+    won:
+      title: Treasure found!
+      msg_fmt: "Found in {0} dig(s)!"
+      reward_label: shards
+      come_back: Come back tomorrow for a new grid.
+    clues:
+      title: Clues
+      distance: "The treasure is less than {1} cells from {0}."
+      same_row: "The treasure is on the same row as {0}."
+      same_col: "The treasure is on the same column as {0}."
+      adjacent: "The treasure is adjacent to {0}."
+      zone_left: "The treasure is in the left half of the grid."
+      zone_right: "The treasure is in the right half of the grid."
+      zone_top: "The treasure is in the top half of the grid."
+      zone_bottom: "The treasure is in the bottom half of the grid."
+      closer_to: "The treasure is closer to {0} than to {1}."
+      locked: Dig to discover…
+    objects:
+      flint: the flint
+      pearl: the pearl
+      stone_chunk: the stone
+      seashell: the shell
+      branch: the branch
+      starfish: the starfish
+      coal: the coal
+    result:
+      treasure: 💎 Treasure found!
+      empty: Nothing here…
+    legend:
+      object: Object (landmark)
+      empty: Dug cell (empty)
+      unknown: Unknown cell
