@@ -137,10 +137,11 @@
 {% block content %}
 <!-- Serialize data for JS -->
 <script>
-const GW_PLAYERS  = {{ players  | tojson }};
-const GW_CARDS    = {{ cards    | tojson }};
+const GW_PLAYERS   = {{ players   | tojson }};
+const GW_CARDS     = {{ cards     | tojson }};
 const GW_RESOURCES = {{ resources | tojson }};
-const GW_ITEMS    = {{ items    | tojson }};
+const GW_TOOLS     = {{ tools     | tojson }};
+const GW_ITEMS     = {{ items     | tojson }};
 </script>
 
 <div class="gw-layout">
@@ -182,7 +183,8 @@ const GW_ITEMS    = {{ items    | tojson }};
         <button class="gw-tab active" onclick="switchTab('currencies', this)">💰 Monnaies</button>
         <button class="gw-tab" onclick="switchTab('cards', this)">🎴 Cartes</button>
         <button class="gw-tab" onclick="switchTab('resources', this)">📦 Ressources</button>
-        <button class="gw-tab" onclick="switchTab('items', this)">🔧 Objets</button>
+        <button class="gw-tab" onclick="switchTab('tools', this)">🔨 Outils</button>
+        <button class="gw-tab" onclick="switchTab('items', this)">🧪 Objets</button>
       </div>
 
       <!-- Currencies tab -->
@@ -242,6 +244,27 @@ const GW_ITEMS    = {{ items    | tojson }};
           <button class="btn btn-sm btn-outline-danger" onclick="applyItem('resource','remove')">− Remove</button>
         </div>
         <div class="gw-log" id="log-resources"><div class="log-entry" style="color:#cbd5e1;">Aucune action.</div></div>
+      </div>
+
+      <!-- Tools tab -->
+      <div class="gw-tab-content" id="tab-tools">
+        <div class="item-search-wrap">
+          <input type="text" class="item-search-input" id="toolSearch" placeholder="🔍 Chercher un outil… (pelle, hache…)"
+                 oninput="filterDropdown('toolSearch','toolDropdown', GW_TOOLS)"
+                 onfocus="openDropdown('toolDropdown')" onblur="closeDropdownDelayed('toolDropdown')">
+          <div class="item-dropdown" id="toolDropdown"></div>
+          <input type="hidden" id="toolKey">
+        </div>
+        <div id="toolSelected" style="font-size:.82rem;color:#64748b;margin-bottom:.5rem;min-height:1.2rem;"></div>
+        <div style="font-size:.75rem;color:#94a3b8;margin-bottom:.6rem;">
+          Les outils sont stockés dans l'inventaire du joueur (PlayerItem).
+        </div>
+        <div class="apply-row">
+          <input type="number" class="qty-input" id="qty-tool" value="5" min="1">
+          <button class="btn btn-sm btn-success" onclick="applyItem('tool','give')">+ Give</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="applyItem('tool','remove')">− Remove</button>
+        </div>
+        <div class="gw-log" id="log-tools"><div class="log-entry" style="color:#cbd5e1;">Aucune action.</div></div>
       </div>
 
       <!-- Items tab -->
@@ -334,14 +357,14 @@ function openDropdown(dropdownId) {
   const dd = document.getElementById(dropdownId);
   if (dd.children.length === 0) {
     // populate with first 40 items
-    const map = { cardDropdown: GW_CARDS, resourceDropdown: GW_RESOURCES, itemDropdown: GW_ITEMS };
+    const map = { cardDropdown: GW_CARDS, resourceDropdown: GW_RESOURCES, toolDropdown: GW_TOOLS, itemDropdown: GW_ITEMS };
     const dataset = map[dropdownId] || [];
     dataset.slice(0, 40).forEach(d => {
       const label = d.label || d.card_label || d.key;
       const key   = d.key;
       const div = document.createElement('div');
       div.className = 'item-option';
-      const inputMap = { cardDropdown: 'cardSearch', resourceDropdown: 'resourceSearch', itemDropdown: 'itemSearch' };
+      const inputMap = { cardDropdown: 'cardSearch', resourceDropdown: 'resourceSearch', toolDropdown: 'toolSearch', itemDropdown: 'itemSearch' };
       div.innerHTML = `<span>${label}</span><span class="item-key">${key}</span>`;
       div.onclick = () => pickItem(inputMap[dropdownId], dropdownId, key, label);
       dd.appendChild(div);
@@ -360,10 +383,10 @@ function pickItem(inputId, dropdownId, key, label) {
 
   // set hidden key + selected label
   const keyMap = {
-    cardSearch: 'cardKey', resourceSearch: 'resourceKey', itemSearch: 'itemKey'
+    cardSearch: 'cardKey', resourceSearch: 'resourceKey', toolSearch: 'toolKey', itemSearch: 'itemKey'
   };
   const selMap = {
-    cardSearch: 'cardSelected', resourceSearch: 'resourceSelected', itemSearch: 'itemSelected'
+    cardSearch: 'cardSelected', resourceSearch: 'resourceSelected', toolSearch: 'toolSelected', itemSearch: 'itemSelected'
   };
   const hiddenId = keyMap[inputId];
   const selId    = selMap[inputId];
@@ -415,9 +438,9 @@ async function applyCurrency(type, action) {
 
 async function applyItem(type, action) {
   if (!selectedPlayerId) { alert('Sélectionnez un joueur.'); return; }
-  const keyMap = { card: 'cardKey', resource: 'resourceKey', item: 'itemKey' };
-  const qtyMap = { card: 'qty-card', resource: 'qty-resource', item: 'qty-item' };
-  const logMap = { card: 'log-cards', resource: 'log-resources', item: 'log-items' };
+  const keyMap = { card: 'cardKey', resource: 'resourceKey', tool: 'toolKey', item: 'itemKey' };
+  const qtyMap = { card: 'qty-card', resource: 'qty-resource', tool: 'qty-tool', item: 'qty-item' };
+  const logMap = { card: 'log-cards', resource: 'log-resources', tool: 'log-tools', item: 'log-items' };
 
   const key = document.getElementById(keyMap[type]).value.trim();
   const qty = parseInt(document.getElementById(qtyMap[type]).value) || 0;

@@ -19,6 +19,7 @@ from app.auth import get_current_player
 from app.models import (
     Player,
     PlayerCard,
+    PlayerItem,
     CardDef,
     ResourceStock,
     ResourceDef,
@@ -2240,13 +2241,15 @@ def giveaway_list():
 
     all_items = sorted(craft_defs.ITEM_DEFS.values(), key=lambda x: x.get("label", x.get("key", "")))
     resources_data = [i for i in all_items if i.get("kind") == "resource"]
-    items_data = [i for i in all_items if i.get("kind") in ("tool", "item", "treasure")]
+    tools_data     = [i for i in all_items if i.get("kind") == "tool"]
+    items_data     = [i for i in all_items if i.get("kind") in ("item", "treasure")]
 
     return render_template(
         "ADMIN_UI/giveaway.html",
         players=players_data,
         cards=cards_data,
         resources=resources_data,
+        tools=tools_data,
         items=items_data,
     )
 
@@ -2267,7 +2270,7 @@ def giveaway_apply():
 
     if not player_id:
         return jsonify({"ok": False, "error": "missing_player_id"}), 400
-    if gtype not in ("shards", "essence", "card", "resource", "item"):
+    if gtype not in ("shards", "essence", "card", "resource", "tool", "item"):
         return jsonify({"ok": False, "error": "invalid_type"}), 400
     if qty <= 0:
         return jsonify({"ok": False, "error": "qty_must_be_positive"}), 400
@@ -2319,8 +2322,48 @@ def giveaway_apply():
                 session.commit()
                 return jsonify({"ok": True, "owned": new_qty})
 
-        # ── Resource or Item (stored in ResourceStock) ───────────────────────
-        if gtype in ("resource", "item"):
+        # ── Resource (stored in ResourceStock) ──────────────────────────────
+        if gtype == "resource":
+            if not key:
+                return jsonify({"ok": False, "error": "missing_key"}), 400
+            stock = session.query(ResourceStock).filter_by(player_id=player.id, resource=key).first()
+            if action == "give":
+                if stock:
+                    stock.qty = stock.qty + qty
+                else:
+                    stock = ResourceStock(player_id=player.id, resource=key, qty=qty)
+                    session.add(stock)
+                session.commit()
+                return jsonify({"ok": True, "qty": float(stock.qty)})
+            else:
+                if not stock:
+                    return jsonify({"ok": False, "error": "no_stock"}), 400
+                stock.qty = max(0.0, stock.qty - qty)
+                session.commit()
+                return jsonify({"ok": True, "qty": float(stock.qty)})
+
+        # ── Tool (stored in PlayerItem) ──────────────────────────────────────
+        if gtype == "tool":
+            if not key:
+                return jsonify({"ok": False, "error": "missing_key"}), 400
+            pi = session.query(PlayerItem).filter_by(player_id=player.id, item_key=key).first()
+            if action == "give":
+                if pi:
+                    pi.quantity = pi.quantity + qty
+                else:
+                    pi = PlayerItem(player_id=player.id, item_key=key, quantity=qty)
+                    session.add(pi)
+                session.commit()
+                return jsonify({"ok": True, "qty": pi.quantity})
+            else:
+                if not pi:
+                    return jsonify({"ok": False, "error": "no_stock"}), 400
+                pi.quantity = max(0, pi.quantity - qty)
+                session.commit()
+                return jsonify({"ok": True, "qty": pi.quantity})
+
+        # ── Item/Treasure (stored in ResourceStock as legacy) ────────────────
+        if gtype == "item":
             if not key:
                 return jsonify({"ok": False, "error": "missing_key"}), 400
             stock = session.query(ResourceStock).filter_by(player_id=player.id, resource=key).first()
