@@ -130,6 +130,20 @@
   outline: none;
 }
 
+/* Discord */
+.game-menu-discord {
+  display: flex;
+  align-items: center;
+  color: #818cf8 !important;
+}
+
+.game-menu-discord:hover,
+.game-menu-discord:focus-visible {
+  background: rgba(88, 101, 242, 0.15);
+  color: #a5b4fc !important;
+  outline: none;
+}
+
 /* ============================================================
    END GAME MENU
    ============================================================ */
