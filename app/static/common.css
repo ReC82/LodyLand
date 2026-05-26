@@ -114,6 +114,26 @@
   cursor: default;
 }
 
+.home-link-discord {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: .6rem;
+  padding: .45rem 1.1rem;
+  background: #5865F2;
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: .88rem;
+  transition: background .15s, transform .1s;
+}
+
+.home-link-discord:hover {
+  background: #4752c4;
+  transform: translateY(-1px);
+}
+
 /* --- Beta Warning Banner --- */
 .beta-banner {
   width: 100%;
